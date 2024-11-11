@@ -4,7 +4,7 @@
 
 package de.gematik.ti.healthcard.model.command
 
-import de.gematik.ti.healthcard.model.nfc.card.PasswordReference
+import de.gematik.ti.healthcard.model.card.PasswordReference
 
 /**
  * Command representing Get Pin Status Command gemSpec_COS#14.6.4

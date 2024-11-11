@@ -4,38 +4,28 @@
  * ${GEMATIK_COPYRIGHT_STATEMENT}
  */
 
-package de.gematik.ti.healthcard.model.nfc.exchange
+package de.gematik.ti.healthcard.model.exchange
 
 import de.gematik.ti.healthcard.Requirement
 import de.gematik.ti.healthcard.model.CardUtilities.byteArrayToECPoint
 import de.gematik.ti.healthcard.model.CardUtilities.extractKeyObjectEncoded
 import de.gematik.ti.healthcard.model.card.CardKey
+import de.gematik.ti.healthcard.model.card.HealthCardVersion2
 import de.gematik.ti.healthcard.model.card.ICardChannel
 import de.gematik.ti.healthcard.model.card.PaceKey
 import de.gematik.ti.healthcard.model.card.isEGK21
 import de.gematik.ti.healthcard.model.cardobjects.Ef
+import de.gematik.ti.healthcard.model.command.HealthCardCommand
 import de.gematik.ti.healthcard.model.command.executeSuccessfulOn
 import de.gematik.ti.healthcard.model.command.generalAuthenticate
 import de.gematik.ti.healthcard.model.command.manageSecEnvWithoutCurves
 import de.gematik.ti.healthcard.model.command.read
 import de.gematik.ti.healthcard.model.command.select
-import de.gematik.ti.healthcard.model.exchange.KeyDerivationFunction
 import de.gematik.ti.healthcard.model.exchange.KeyDerivationFunction.getAES128Key
-import de.gematik.ti.healthcard.model.exchange.PaceInfo
 import de.gematik.ti.healthcard.model.identifier.FileIdentifier
 import de.gematik.ti.healthcard.model.identifier.ShortFileIdentifier
 import de.gematik.ti.healthcard.utils.Bytes
-import org.bouncycastle.asn1.ASN1EncodableVector
-import org.bouncycastle.asn1.ASN1ObjectIdentifier
-import org.bouncycastle.asn1.BERTags
-import org.bouncycastle.asn1.DEROctetString
-import org.bouncycastle.asn1.DERSequence
-import org.bouncycastle.asn1.DERTaggedObject
-import org.bouncycastle.crypto.engines.AESEngine
-import org.bouncycastle.crypto.macs.CMac
-import org.bouncycastle.crypto.params.KeyParameter
-import java.math.BigInteger
-import java.security.SecureRandom
+
 
 private const val SECRET_KEY_REFERENCE = 2 // Reference of secret key for PACE (CAN)
 private const val AES_BLOCK_SIZE = 16
@@ -51,25 +41,27 @@ private const val TAG_49 = 0x49
  * pcd = smartphone
  */
 suspend fun ICardChannel.establishTrustedChannel(cardAccessNumber: String): PaceKey {
-    val randomGenerator = SecureRandom()
+    var secureRandom = byteArrayOf()
+
+    val randomGenerator = SecureRandom() // use the HealthcardCommand for Reading the secureRandom
 
     suspend fun step0ReadSupportedPaceParameters(step1: suspend (paceInfo: PaceInfo) -> PaceKey): PaceKey {
-        de.gematik.ti.healthcard.model.command.HealthCardCommand.select(selectParentElseRoot = false, readFirst = true).executeSuccessfulOn(
+        HealthCardCommand.select(selectParentElseRoot = false, readFirst = true).executeSuccessfulOn(
             this
         )
 
-        de.gematik.ti.healthcard.model.command.HealthCardCommand.read(
+        HealthCardCommand.read(
             ShortFileIdentifier(Ef.Version2.SFID), 0).executeSuccessfulOn(this).let {
-            check(de.gematik.ti.healthcard.model.card.HealthCardVersion2.of(it.apdu.data).isEGK21()) { "Invalid eGK Version." }
+            check(HealthCardVersion2.of(it.apdu.data).isEGK21()) { "Invalid eGK Version." }
         }
 
-        de.gematik.ti.healthcard.model.command.HealthCardCommand.select(
-            FileIdentifier(de.gematik.ti.healthcard.model.cardobjects.Ef.CardAccess.FID), false)
+        HealthCardCommand.select(
+            FileIdentifier(Ef.CardAccess.FID), false)
             .executeSuccessfulOn(this)
 
-        val paceInfo = PaceInfo(de.gematik.ti.healthcard.model.command.HealthCardCommand.read().executeOn(this).apdu.data)
+        val paceInfo = PaceInfo(HealthCardCommand.read().executeOn(this).apdu.data)
 
-        de.gematik.ti.healthcard.model.command.HealthCardCommand.manageSecEnvWithoutCurves(
+        HealthCardCommand.manageSecEnvWithoutCurves(
             CardKey(SECRET_KEY_REFERENCE),
             false,
             paceInfo.paceInfoProtocolBytes
@@ -87,7 +79,7 @@ suspend fun ICardChannel.establishTrustedChannel(cardAccessNumber: String): Pace
             pcdPk1: ByteArray
         ) -> PaceKey
     ): PaceKey {
-        val nonceZBytes = de.gematik.ti.healthcard.model.command.HealthCardCommand.generalAuthenticate(true).executeSuccessfulOn(this).apdu.data
+        val nonceZBytes = HealthCardCommand.generalAuthenticate(true).executeSuccessfulOn(this).apdu.data
         val nonceZBytesEncoded = extractKeyObjectEncoded(nonceZBytes)
         val canBytes = cardAccessNumber.toByteArray()
 
@@ -154,7 +146,7 @@ suspend fun ICardChannel.establishTrustedChannel(cardAccessNumber: String): Pace
         ) -> Boolean
     ): PaceKey {
         val piccPk2Bytes =
-            de.gematik.ti.healthcard.model.command.HealthCardCommand.generalAuthenticate(true, pcdPkS2, 3).executeSuccessfulOn(this).apdu.data
+            HealthCardCommand.generalAuthenticate(true, pcdPkS2, 3).executeSuccessfulOn(this).apdu.data
 
         val piccPk2 = extractKeyObjectEncoded(piccPk2Bytes)
 

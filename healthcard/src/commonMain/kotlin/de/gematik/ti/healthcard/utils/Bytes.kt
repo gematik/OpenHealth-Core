@@ -4,7 +4,6 @@
 
 package de.gematik.ti.healthcard.utils
 
-import java.math.BigInteger
 
 object Bytes {
     private const val PAD = 0x80.toByte()

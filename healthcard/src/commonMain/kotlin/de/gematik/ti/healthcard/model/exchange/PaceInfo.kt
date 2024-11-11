@@ -5,12 +5,6 @@
 package de.gematik.ti.healthcard.model.exchange
 
 import de.gematik.ti.healthcard.model.CardUtilities
-import org.bouncycastle.asn1.ASN1InputStream
-import org.bouncycastle.asn1.ASN1Integer
-import org.bouncycastle.asn1.ASN1ObjectIdentifier
-import org.bouncycastle.asn1.ASN1Sequence
-import org.bouncycastle.asn1.DLSet
-import org.bouncycastle.jce.ECNamedCurveTable
 
 private const val PARAMETER256 = 13
 private const val PARAMETER384 = 16

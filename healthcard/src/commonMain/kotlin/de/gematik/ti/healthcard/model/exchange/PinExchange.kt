@@ -12,13 +12,14 @@ import de.gematik.ti.healthcard.model.command.executeSuccessfulOn
 import de.gematik.ti.healthcard.model.command.select
 import de.gematik.ti.healthcard.model.command.unlockEgk
 import de.gematik.ti.healthcard.model.command.verifyPin
-import de.gematik.ti.healthcard.model.nfc.card.PasswordReference
+import de.gematik.ti.healthcard.model.card.PasswordReference
+import de.gematik.ti.healthcard.model.cardobjects.Mf
 
 fun ICardChannel.verifyPin(pin: String): ResponseStatus {
     de.gematik.ti.healthcard.model.command.HealthCardCommand.select(selectParentElseRoot = false, readFirst = false)
         .executeSuccessfulOn(this)
 
-    val passwordReference = PasswordReference(de.gematik.ti.healthcard.model.cardobjects.Mf.MrPinHome.PWID)
+    val passwordReference = PasswordReference(Mf.MrPinHome.PWID)
 
     val response =
         de.gematik.ti.healthcard.model.command.HealthCardCommand.verifyPin(
@@ -52,7 +53,7 @@ fun ICardChannel.unlockEgk(
     de.gematik.ti.healthcard.model.command.HealthCardCommand.select(selectParentElseRoot = false, readFirst = false)
         .executeSuccessfulOn(this)
 
-    val passwordReference = PasswordReference(de.gematik.ti.healthcard.model.cardobjects.Mf.MrPinHome.PWID)
+    val passwordReference = PasswordReference(Mf.MrPinHome.PWID)
 
     val response = if (unlockMethod == de.gematik.ti.healthcard.model.command.UnlockMethod.ChangeReferenceData.name) {
         de.gematik.ti.healthcard.model.command.HealthCardCommand.changeReferenceData(

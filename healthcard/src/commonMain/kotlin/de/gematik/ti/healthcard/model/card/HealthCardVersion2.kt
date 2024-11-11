@@ -6,12 +6,6 @@
 
 package de.gematik.ti.healthcard.model.card
 
-import org.bouncycastle.asn1.ASN1InputStream
-import org.bouncycastle.asn1.DEROctetString
-import org.bouncycastle.asn1.DLSequence
-import org.bouncycastle.asn1.DLTaggedObject
-import java.io.IOException
-
 /**
  * Represent the Version2 information of HealthCard
  */

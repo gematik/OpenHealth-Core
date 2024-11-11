@@ -12,7 +12,6 @@ import de.gematik.ti.healthcard.model.command.read
 import de.gematik.ti.healthcard.model.command.select
 import de.gematik.ti.healthcard.model.identifier.ApplicationIdentifier
 import de.gematik.ti.healthcard.model.identifier.FileIdentifier
-import java.io.ByteArrayOutputStream
 
 fun ICardChannel.retrieveCertificate(): ByteArray {
     de.gematik.ti.healthcard.model.command.HealthCardCommand.select(
@@ -25,7 +24,7 @@ fun ICardChannel.retrieveCertificate(): ByteArray {
         fcpLength = de.gematik.ti.healthcard.model.command.EXPECTED_LENGTH_WILDCARD_EXTENDED
     ).executeSuccessfulOn(this)
 
-    val buffer = ByteArrayOutputStream()
+    var buffer = byteArrayOf()
     var offset = 0
     while (true) {
         val response = de.gematik.ti.healthcard.model.command.HealthCardCommand.read(offset)
@@ -34,7 +33,7 @@ fun ICardChannel.retrieveCertificate(): ByteArray {
         val data = response.apdu.data
 
         if (data.isNotEmpty()) {
-            buffer.write(data)
+            buffer += data
             offset += data.size
         }
 
@@ -46,5 +45,5 @@ fun ICardChannel.retrieveCertificate(): ByteArray {
         }
     }
 
-    return buffer.toByteArray()
+    return buffer
 }

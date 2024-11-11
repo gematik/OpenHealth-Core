@@ -2,10 +2,11 @@
  * ${GEMATIK_COPYRIGHT_STATEMENT}
  */
 
-package de.gematik.ti.healthcard.model.nfc.tagobjects
+package de.gematik.ti.healthcard.model.tagobjects
 
-import org.bouncycastle.asn1.DEROctetString
-import org.bouncycastle.asn1.DERTaggedObject
+import de.gematik.kmp.asn1.Asn1Encoder
+import de.gematik.kmp.asn1.writeTaggedObject
+
 
 private const val DO_87_TAG = 0x07
 private const val DO_81_EXTRACTED_TAG = 0x81
@@ -18,11 +19,14 @@ private const val DO_81_TAG = 0x01
  * @param tag int with extracted tag number
  */
 class DataObject(val data: ByteArray, val tag: Byte = 0) {
-    val taggedObject: DERTaggedObject
-        get() =
-            if (tag == DO_81_EXTRACTED_TAG.toByte()) {
-                DERTaggedObject(false, DO_81_TAG, DEROctetString(data))
-            } else {
-                DERTaggedObject(false, DO_87_TAG, DEROctetString(data))
+    val encoded: ByteArray
+        get() {
+            val encoder = Asn1Encoder()
+            return encoder.write {
+                val actualTag = if (tag == DO_81_EXTRACTED_TAG.toByte()) DO_81_TAG else DO_87_TAG
+                writeTaggedObject(actualTag) {
+                    write(data) // Write the raw data as an octet string
+                }
             }
+        }
 }

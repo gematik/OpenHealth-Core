@@ -6,29 +6,16 @@
 
 package de.gematik.ti.healthcard.model.card
 
-import de.gematik.ti.healthcard.BCProvider
 import de.gematik.ti.healthcard.model.command.CommandApdu
 import de.gematik.ti.healthcard.model.command.EXPECTED_LENGTH_WILDCARD_EXTENDED
 import de.gematik.ti.healthcard.model.command.EXPECTED_LENGTH_WILDCARD_SHORT
 import de.gematik.ti.healthcard.model.command.ResponseApdu
-import de.gematik.ti.healthcard.model.nfc.tagobjects.DataObject
-import de.gematik.ti.healthcard.model.nfc.tagobjects.LengthObject
-import de.gematik.ti.healthcard.model.nfc.tagobjects.MacObject
-import de.gematik.ti.healthcard.model.nfc.tagobjects.StatusObject
+import de.gematik.ti.healthcard.model.tagobjects.DataObject
+import de.gematik.ti.healthcard.model.tagobjects.LengthObject
+import de.gematik.ti.healthcard.model.tagobjects.MacObject
+import de.gematik.ti.healthcard.model.tagobjects.StatusObject
 import de.gematik.ti.healthcard.utils.Bytes.padData
 import de.gematik.ti.healthcard.utils.Bytes.unPadData
-import org.bouncycastle.asn1.DERTaggedObject
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.InputStream
-import java.math.BigInteger
-import java.security.Key
-import java.security.spec.AlgorithmParameterSpec
-import javax.crypto.Cipher
-import javax.crypto.Cipher.DECRYPT_MODE
-import javax.crypto.Cipher.ENCRYPT_MODE
-import javax.crypto.spec.IvParameterSpec
-import javax.crypto.spec.SecretKeySpec
 import kotlin.experimental.or
 
 private const val SECURE_MESSAGING_COMMAND = 0x0C.toByte()
@@ -138,6 +125,7 @@ class SecureMessaging(private val paceKey: PaceKey) {
 
         return CommandApdu.ofOptions(
             cla = header[0].toInt() and 0xFF,
+            cla = header[0].toInt() and 0xFF,
             ins = header[1].toInt() and 0xFF,
             p1 = header[2].toInt() and 0xFF,
             p2 = header[3].toInt() and 0xFF,
@@ -154,7 +142,7 @@ class SecureMessaging(private val paceKey: PaceKey) {
         val statusBytes = ByteArray(2)
         val macBytes = ByteArray(MAC_SIZE)
 
-        val responseDataOutput = ByteArrayOutputStream()
+        var responseDataOutput = byteArrayOf()
 
         require(apduResponseBytes.size >= MIN_RESPONSE_SIZE) { MALFORMED_SECURE_MESSAGING_APDU }
 

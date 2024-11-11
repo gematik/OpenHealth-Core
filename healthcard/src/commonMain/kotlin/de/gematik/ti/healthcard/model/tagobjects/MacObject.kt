@@ -2,15 +2,11 @@
  * ${GEMATIK_COPYRIGHT_STATEMENT}
  */
 
-package de.gematik.ti.healthcard.model.nfc.tagobjects
+package de.gematik.ti.healthcard.model.tagobjects
 
+import de.gematik.kmp.asn1.Asn1Encoder
+import de.gematik.kmp.asn1.writeTaggedObject
 import de.gematik.ti.healthcard.utils.Bytes.padData
-import org.bouncycastle.asn1.DEROctetString
-import org.bouncycastle.asn1.DERTaggedObject
-import org.bouncycastle.crypto.engines.AESEngine
-import org.bouncycastle.crypto.macs.CMac
-import org.bouncycastle.crypto.params.KeyParameter
-import java.io.ByteArrayOutputStream
 
 private const val DO_8E_TAG = 0x0E
 private const val MAC_SIZE = 8
@@ -27,36 +23,42 @@ private const val BLOCK_SIZE = 16
  */
 class MacObject(
     private val header: ByteArray? = null,
-    private val commandOutput: ByteArrayOutputStream,
+    private val commandOutput: ByteArray,
     private val kMac: ByteArray,
     private val ssc: ByteArray
 ) {
-    private var _mac: ByteArray = ByteArray(BLOCK_SIZE)
-    val mac: ByteArray
-        get() = _mac.copyOf()
-
-    val taggedObject: DERTaggedObject
-        get() =
-            DERTaggedObject(false, DO_8E_TAG, DEROctetString(_mac))
+    private val mac: ByteArray
 
     init {
-        calculateMac()
+        mac = calculateMac()
     }
 
-    private fun calculateMac() {
+    val encoded: ByteArray
+        get() {
+            val encoder = Asn1Encoder()
+            return encoder.write {
+                writeTaggedObject(DO_8E_TAG) {
+                    write(mac) // Write the calculated MAC as an octet string
+                }
+            }
+        }
+
+    private fun calculateMac(): ByteArray {
         val cbcMac = getCMac(ssc, kMac)
 
         if (header != null) {
             val paddedHeader = padData(header, BLOCK_SIZE)
             cbcMac.update(paddedHeader, 0, paddedHeader.size)
         }
-        if (commandOutput.size() > 0) {
-            val paddedData = padData(commandOutput.toByteArray(), BLOCK_SIZE)
+        if (commandOutput.isNotEmpty()) {
+            val paddedData = padData(commandOutput, BLOCK_SIZE)
             cbcMac.update(paddedData, 0, paddedData.size)
         }
-        cbcMac.doFinal(_mac, 0)
 
-        _mac = _mac.copyOfRange(0, MAC_SIZE)
+        val macData = ByteArray(BLOCK_SIZE)
+        cbcMac.doFinal(macData, 0)
+
+        return macData.copyOfRange(0, MAC_SIZE)
     }
 
     private fun getCMac(secureMessagingSSC: ByteArray, kMac: ByteArray): CMac =

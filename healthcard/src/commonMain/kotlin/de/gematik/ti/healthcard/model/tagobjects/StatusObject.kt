@@ -2,10 +2,10 @@
  * ${GEMATIK_COPYRIGHT_STATEMENT}
  */
 
-package de.gematik.ti.healthcard.model.nfc.tagobjects
+package de.gematik.ti.healthcard.model.tagobjects
 
-import org.bouncycastle.asn1.DEROctetString
-import org.bouncycastle.asn1.DERTaggedObject
+import de.gematik.kmp.asn1.Asn1Encoder
+import de.gematik.kmp.asn1.writeTaggedObject
 
 private const val DO_99_TAG = 0x19
 
@@ -15,6 +15,13 @@ private const val DO_99_TAG = 0x19
  * @param statusBytes byte array with extracted response status from encrypted ResponseApdu
  */
 class StatusObject(private val statusBytes: ByteArray) {
-    val taggedObject: DERTaggedObject =
-        DERTaggedObject(false, DO_99_TAG, DEROctetString(statusBytes))
+    val encoded: ByteArray
+        get() {
+            val encoder = Asn1Encoder()
+            return encoder.write {
+                writeTaggedObject(DO_99_TAG) {
+                    write(statusBytes) // Write the status bytes as an octet string
+                }
+            }
+        }
 }
