@@ -1,0 +1,59 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 27,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "ems",
+      "description": "Emscripten configuration for Web and NodeJs",
+      "binaryDir": "${sourceDir}/build-ems",
+      "generator": "Ninja"
+    },
+    {
+      "name": "ems-debug",
+      "inherits": "ems",
+      "binaryDir": "${sourceDir}/build-ems-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "ems-release",
+      "inherits": "ems",
+      "binaryDir": "${sourceDir}/build-ems-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "jni",
+      "description": "JNI configuration for JVM",
+      "binaryDir": "${sourceDir}/build-jni",
+      "generator": "Ninja"
+    },
+    {
+      "name": "jni-debug",
+      "inherits": "jni",
+      "binaryDir": "${sourceDir}/build-jni-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "ems-debug",
+      "configurePreset": "ems-debug",
+      "configuration": "Debug",
+      "verbose": true
+    },
+    {
+      "name": "ems-release",
+      "configurePreset": "ems-release",
+      "configuration": "Release"
+    }
+  ]
+}

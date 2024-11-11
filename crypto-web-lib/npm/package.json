@@ -1,0 +1,26 @@
+{
+  "name": "gematik-internal-oh-crypto",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OpenSSL wrapper for usage with WebAssembly",
+  "type": "module",
+  "main": "./lib/oh_crypto.js",
+  "types": "./lib/oh_crypto.d.ts",
+  "exports": {
+    ".": {
+      "default": "./lib/oh_crypto.js",
+      "import": "./lib/oh_crypto.js",
+      "types": "./lib/oh_crypto.d.ts"
+    }
+  },
+  "author": "gematik GmbH",
+  "license": "Apache-2.0",
+  "files": [
+    "lib/"
+  ],
+  "devDependencies": {
+    "@types/node": "^22.13.14",
+    "ts-morph": "^25.0.1",
+    "commander": "^13.1.0"
+  }
+}

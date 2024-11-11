@@ -1,0 +1,31 @@
+build:
+  maxIssues: 0
+  excludeCorrectable: false
+
+config:
+  validation: true
+  warningsAsErrors: false
+  checkExhaustiveness: false
+
+complexity:
+  TooManyFunctions:
+    active: false
+  LongParameterList:
+    active: false
+
+comments:
+  # FIXME: Activate before launch
+  UndocumentedPublicClass:
+    active: false
+  UndocumentedPublicFunction:
+    active: false
+
+naming:
+  MatchingDeclarationName:
+    active: false
+
+style:
+  DestructuringDeclarationWithTooManyEntries:
+    active: false
+  MagicNumber:
+    active: false

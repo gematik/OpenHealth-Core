@@ -1,0 +1,31 @@
+diff --git a/Configurations/10-main.conf b/Configurations/10-main.conf
+index cba57b4127..b025a52712 100644
+--- a/Configurations/10-main.conf
++++ b/Configurations/10-main.conf
+@@ -1948,6 +1948,12 @@ my %targets = (
+         multilib         => "64",
+     },
+ 
++    "wasm32-wasi" => {
++        inherit_from     => [ "BASE_unix" ],
++        lib_cppflags     => add("-DL_ENDIAN"),
++        bn_ops           => "THIRTY_TWO_BIT",
++    },
++
+ ##### VxWorks for various targets
+     "vxworks-ppc60x" => {
+         inherit_from     => [ "BASE_unix" ],
+
+diff --git a/providers/implementations/rands/seeding/rand_unix.c b/providers/implementations/rands/seeding/rand_unix.c
+index c3a5d8b3bf..c4a8fba878 100644
+--- a/providers/implementations/rands/seeding/rand_unix.c
++++ b/providers/implementations/rands/seeding/rand_unix.c
+@@ -395,7 +395,7 @@ static ssize_t syscall_random(void *buf, size_t buflen)
+     return getrandom(buf, buflen, 0);
+ #  elif (defined(__FreeBSD__) || defined(__NetBSD__)) && defined(KERN_ARND)
+     return sysctl_random(buf, buflen);
+-#  elif defined(__wasi__)
++#  elif defined(__wasi__) || defined(__wasm__)
+     if (getentropy(buf, buflen) == 0)
+       return (ssize_t)buflen;
+     return -1;
