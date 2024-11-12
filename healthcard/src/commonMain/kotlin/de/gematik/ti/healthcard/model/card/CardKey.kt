@@ -15,11 +15,7 @@ class CardKey(private val keyId: Int) : ICardKeyReference {
     init {
         require(!(keyId < MIN_KEY_ID || keyId > MAX_KEY_ID)) {
             // gemSpec_COS#N016.400 and #N017.100
-            String.format(
-                "Key ID out of range [%d,%d]",
-                MIN_KEY_ID,
-                MAX_KEY_ID
-            )
+            "Key ID out of range [$MIN_KEY_ID,$MAX_KEY_ID]"
         }
     }
 

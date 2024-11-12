@@ -4,13 +4,6 @@
 
 package de.gematik.ti.healthcard.model
 
-import de.gematik.ti.healthcard.BCProvider
-import org.bouncycastle.asn1.ASN1InputStream
-import org.bouncycastle.asn1.ASN1Object
-import org.bouncycastle.asn1.ASN1TaggedObject
-import org.bouncycastle.math.ec.ECCurve
-import org.bouncycastle.math.ec.ECPoint
-
 /**
  * Utility class for card functions
  */
@@ -54,8 +47,3 @@ object CardUtilities {
             seqObj.encoded.copyOfRange(2, seqObj.encoded.size)
         }
 }
-
-fun ByteArray.toX509Certificate() =
-    CertificateFactory.getInstance("X.509", BCProvider).let {
-        it.generateCertificate(this.inputStream()) as X509Certificate
-    }

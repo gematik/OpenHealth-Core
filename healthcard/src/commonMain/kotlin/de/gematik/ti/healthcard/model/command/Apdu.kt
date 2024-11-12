@@ -6,8 +6,6 @@
 
 package de.gematik.ti.healthcard.model.command
 
-import java.io.ByteArrayOutputStream
-
 /**
  * Value for when wildcardShort for expected length encoding is needed
  */
@@ -93,9 +91,7 @@ class CommandApdu(
                 }
             }
 
-            val bytes = ByteArrayOutputStream()
-            // write header |CLA|INS|P1 |P2 |
-            bytes.write(byteArrayOf(cla.toByte(), ins.toByte(), p1.toByte(), p2.toByte()))
+            var bytes = byteArrayOf(cla.toByte(), ins.toByte(), p1.toByte(), p2.toByte())
 
             return if (data != null) {
                 val nc = data.size
@@ -109,15 +105,15 @@ class CommandApdu(
                     if (nc <= 255 && ne <= EXPECTED_LENGTH_WILDCARD_SHORT) {
                         // case 4s
                         dataOffset = 5
-                        bytes.write(encodeDataLengthShort(nc))
-                        bytes.write(data)
-                        bytes.write(encodeExpectedLengthShort(ne))
+                        bytes += encodeDataLengthShort(nc)
+                        bytes += data
+                        bytes += encodeExpectedLengthShort(ne)
                     } else {
                         // case 4e
                         dataOffset = 7
-                        bytes.write(encodeDataLengthExtended(nc))
-                        bytes.write(data)
-                        bytes.write(encodeExpectedLengthExtended(ne))
+                        bytes += encodeDataLengthExtended(nc)
+                        bytes += data
+                        bytes += encodeExpectedLengthExtended(ne)
                     }
                 } else {
                     // case 3s or 3e
@@ -125,17 +121,17 @@ class CommandApdu(
                     if (nc <= 255) {
                         // case 3s
                         dataOffset = 5
-                        bytes.write(encodeDataLengthShort(nc))
+                        bytes += encodeDataLengthShort(nc)
                     } else {
                         // case 3e
                         dataOffset = 7
-                        bytes.write(encodeDataLengthExtended(nc))
+                        bytes += encodeDataLengthExtended(nc)
                     }
-                    bytes.write(data)
+                    bytes += data
                 }
 
                 CommandApdu(
-                    apduBytes = bytes.toByteArray(),
+                    apduBytes = bytes,
                     rawNc = nc,
                     rawNe = le,
                     dataOffset = dataOffset
@@ -147,15 +143,15 @@ class CommandApdu(
                     if (ne <= EXPECTED_LENGTH_WILDCARD_SHORT) {
                         // case 2s
                         // 256 is encoded 0x0
-                        bytes.write(encodeExpectedLengthShort(ne))
+                        bytes += encodeExpectedLengthShort(ne)
                     } else {
                         // case 2e
-                        bytes.write(0x0)
-                        bytes.write(encodeExpectedLengthExtended(ne))
+                        bytes += 0x0
+                        bytes += encodeExpectedLengthExtended(ne)
                     }
 
                     CommandApdu(
-                        apduBytes = bytes.toByteArray(),
+                        apduBytes = bytes,
                         rawNc = 0,
                         rawNe = ne,
                         dataOffset = 0
@@ -163,7 +159,7 @@ class CommandApdu(
                 } else {
                     // case 1
                     CommandApdu(
-                        apduBytes = bytes.toByteArray(),
+                        apduBytes = bytes,
                         rawNc = 0,
                         rawNe = null,
                         dataOffset = 0
@@ -213,9 +209,7 @@ class ResponseApdu(apdu: ByteArray) {
 
         other as ResponseApdu
 
-        if (!apdu.contentEquals(other.apdu)) return false
-
-        return true
+        return apdu.contentEquals(other.apdu)
     }
 
     override fun hashCode(): Int {

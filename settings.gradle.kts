@@ -14,4 +14,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "multiplatform-library-template"
-include(":asn1", ":crypto")
+include(":asn1", ":crypto", ":healthcard")

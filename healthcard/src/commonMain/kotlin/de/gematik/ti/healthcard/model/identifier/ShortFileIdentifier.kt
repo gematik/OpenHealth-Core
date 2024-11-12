@@ -4,8 +4,6 @@
 
 package de.gematik.ti.healthcard.model.identifier
 
-import org.bouncycastle.util.encoders.Hex
-
 private const val MIN_VALUE = 1
 private const val MAX_VALUE = 30
 
@@ -21,17 +19,14 @@ class ShortFileIdentifier(val sfId: Int) {
         sanityCheck()
     }
 
-    constructor(hexSfId: String) : this(Hex.decode(hexSfId)[0].toInt())
+    @OptIn(ExperimentalStdlibApi::class)
+    constructor(hexSfId: String) : this(hexSfId.hexToByteArray()[0].toInt())
 
     @Suppress("ImplicitDefaultLocale")
     private fun sanityCheck() {
         require(!(sfId < MIN_VALUE || sfId > MAX_VALUE)) {
             // gemSpec_COS#N007.000
-            String.format(
-                "Short File Identifier out of valid range [%d,%d]",
-                MIN_VALUE,
-                MAX_VALUE
-            )
+            "Short File Identifier out of valid range [$MIN_VALUE,$MAX_VALUE]"
         }
     }
 }

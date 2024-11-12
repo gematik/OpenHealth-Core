@@ -5,7 +5,7 @@
 package de.gematik.ti.healthcard.model.command
 
 import de.gematik.ti.healthcard.model.card.EncryptedPinFormat2
-import de.gematik.ti.healthcard.model.nfc.card.PasswordReference
+import de.gematik.ti.healthcard.model.card.PasswordReference
 
 private const val CLA = 0x00
 private const val VERIFY_SECRET_INS = 0x20

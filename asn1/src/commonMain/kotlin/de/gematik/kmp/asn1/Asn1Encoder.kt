@@ -1,20 +1,22 @@
 package de.gematik.kmp.asn1
 
-import kotlin.experimental.and
+import kotlin.js.JsExport
+import kotlin.js.JsName
 
+@JsExport
 class Asn1Encoder {
     class WriterScope {
         var data = ByteArray(0)
         private set
-
+        @JsName("writeByte")
         fun write(byte: Byte) {
             data += byte
         }
-
+        @JsName("writeBytes")
         fun write(bytes: ByteArray) {
             data += bytes
         }
-
+        @JsName("writeInt")
         fun write(integer: Int) {
             val bytes = mutableListOf<Byte>()
             var value = integer
@@ -29,7 +31,7 @@ class Asn1Encoder {
                 write(byte)
             }
         }
-
+        @JsName("writeScope")
         fun write(other: WriterScope) {
             // length
             write(other.data.size)

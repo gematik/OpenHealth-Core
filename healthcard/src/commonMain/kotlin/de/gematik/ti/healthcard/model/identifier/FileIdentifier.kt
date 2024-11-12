@@ -6,9 +6,6 @@
 
 package de.gematik.ti.healthcard.model.identifier
 
-import org.bouncycastle.util.encoders.Hex
-import java.nio.ByteBuffer
-
 /**
  * A file identifier may reference any file. It consists of two bytes. The value '3F00'
  * is reserved for referencing the MF. The value 'FFFF' is reserved for future use. The value '3FFF' is reserved
@@ -21,11 +18,7 @@ class FileIdentifier {
 
     constructor(fid: ByteArray) {
         require(fid.size == 2) { "requested length of byte array for a File Identifier value is 2 but was " + fid.size }
-        val b = ByteBuffer.allocate(Int.SIZE_BYTES)
-        for (i in fid.indices) {
-            b.put(fid.size + i, fid[i])
-        }
-        this.fid = b.int
+        this.fid = (fid[0].toInt() and 0xFF shl 8) or (fid[1].toInt() and 0xFF)
         sanityCheck()
     }
 
@@ -34,17 +27,18 @@ class FileIdentifier {
         sanityCheck()
     }
 
-    constructor(hexFid: String) : this(Hex.decode(hexFid))
+    @OptIn(ExperimentalStdlibApi::class)
+    constructor(hexFid: String) : this(hexFid.hexToByteArray())
 
     fun getFid(): ByteArray {
-        val buffer = ByteBuffer.allocate(Short.SIZE_BYTES)
-        return buffer.putShort(fid.toShort()).array()
+        return byteArrayOf((fid shr 8).toByte(), fid.toByte())
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     private fun sanityCheck() {
         // gemSpec_COS#N006.700, N006.900
         require(!((fid < 0x1000 || fid > 0xFEFF) && fid != 0x011C || fid == 0x3FFF)) {
-            "File Identifier is out of range: 0x" + Hex.toHexString(getFid())
+            "File Identifier is out of range: 0x" + getFid().toHexString()
         }
     }
 }

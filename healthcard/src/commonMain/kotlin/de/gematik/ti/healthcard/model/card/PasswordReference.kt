@@ -2,9 +2,7 @@
  * ${GEMATIK_COPYRIGHT_STATEMENT}
  */
 
-package de.gematik.ti.healthcard.model.nfc.card
-
-import de.gematik.ti.healthcard.model.card.ICardKeyReference
+package de.gematik.ti.healthcard.model.card
 
 /**
  * A password can be a regular password or multireference password

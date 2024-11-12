@@ -4,8 +4,6 @@
 
 package de.gematik.ti.healthcard.model.exchange
 
-import org.bouncycastle.crypto.digests.SHA1Digest
-
 private const val CHECKSUMLENGTH = 20
 private const val AES128LENGTH = 16
 private const val OFFSETLENGTH = 4
