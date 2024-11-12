@@ -23,7 +23,6 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
     js {
-        browser {}
         nodejs {}
         generateTypeScriptDefinitions()
         binaries.library()
@@ -33,17 +32,33 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                //put your multiplatform dependencies here
+                implementation(libs.kotlinx.coroutines.core)
             }
         }
         val commonTest by getting {
             dependencies {
                 implementation(libs.kotlin.test)
+                implementation(libs.kotlinx.coroutines.test)
             }
+        }
+        val jvmMain by getting {
+            dependencies {
+                implementation(libs.bouncycastle.bcprov)
+            }
+        }
+        val jvmTest by getting {
+        }
+        val jsMain by getting {
+            dependencies {
+                implementation(npm("aes-cmac", "3.0.2"))
+            }
+        }
+        val jsTest by getting {
         }
         all {
             languageSettings {
                 optIn("kotlin.js.ExperimentalJsExport")
+                optIn("de.gematik.kmp.crypto.ExperimentalCryptoApi")
             }
         }
     }
