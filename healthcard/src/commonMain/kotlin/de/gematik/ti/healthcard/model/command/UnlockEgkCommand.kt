@@ -12,7 +12,6 @@ private const val UNLOCK_EGK_INS = 0x2C
 private const val MODE_VERIFICATION_DATA_NEW_SECRET = 0x00
 private const val MODE_VERIFICATION_DATA = 0x01
 
-@Serializable
 enum class UnlockMethod {
     ChangeReferenceData,
     ResetRetryCounterWithNewSecret,

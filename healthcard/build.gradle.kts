@@ -29,6 +29,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(project(":asn1"))
+                implementation(project(":crypto"))
             }
         }
         val commonTest by getting {

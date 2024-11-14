@@ -4,7 +4,10 @@
 
 package de.gematik.ti.healthcard.model.exchange
 
-private const val CHECKSUMLENGTH = 20
+import de.gematik.kmp.crypto.ExperimentalCryptoApi
+import de.gematik.kmp.crypto.HashAlgorithm
+import de.gematik.kmp.crypto.createHash
+
 private const val AES128LENGTH = 16
 private const val OFFSETLENGTH = 4
 private const val ENCLASTBYTE = 1
@@ -22,13 +25,12 @@ object KeyDerivationFunction {
      * @param mode key derivation for ENC, MAC or derivation from password
      * @return byte array with AES-128 key
      */
-    fun getAES128Key(sharedSecretK: ByteArray, mode: Mode): ByteArray {
-        val checksum = ByteArray(CHECKSUMLENGTH)
+    @OptIn(ExperimentalCryptoApi::class)
+    suspend fun getAES128Key(sharedSecretK: ByteArray, mode: Mode): ByteArray {
         val data = replaceLastKeyByte(sharedSecretK, mode)
-        SHA1Digest().apply {
-            update(data, 0, data.size)
-            doFinal(checksum, 0)
-        }
+        val checksum = createHash(HashAlgorithm.Sha1).apply {
+            update(data)
+        }.digest()
         return checksum.copyOf(AES128LENGTH)
     }
 
