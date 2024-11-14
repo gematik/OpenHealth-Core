@@ -8,8 +8,8 @@ plugins {
     alias(libs.plugins.vanniktech.mavenPublish)
 }
 
-group = "de.gematik.ti.healthcard"
-version = "1.0.0"
+group = "de.gematik.kmp.healthcard"
+version = project.findProperty("gematik.version") as String
 
 kotlin {
     jvm()

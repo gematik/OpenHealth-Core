@@ -31,4 +31,4 @@ import kotlin.annotation.AnnotationTarget.VALUE_PARAMETER
     TYPEALIAS
 )
 @MustBeDocumented
-public annotation class ExperimentalCryptoApi
+annotation class ExperimentalCryptoApi

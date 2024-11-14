@@ -51,6 +51,7 @@ kotlin {
         val jsMain by getting {
             dependencies {
                 implementation(npm("aes-cmac", "3.0.2"))
+                implementation(libs.kotlin.node)
             }
         }
         val jsTest by getting {

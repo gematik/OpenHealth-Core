@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "multiplatform-library-template"
+rootProject.name = "kmp-gematik-common"
 include(":asn1", ":crypto", ":healthcard")
