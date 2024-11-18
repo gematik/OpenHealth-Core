@@ -1,6 +1,4 @@
-/*
- * ${GEMATIK_COPYRIGHT_STATEMENT}
- */
+
 
 package de.gematik.ti.healthcard.model.card
 

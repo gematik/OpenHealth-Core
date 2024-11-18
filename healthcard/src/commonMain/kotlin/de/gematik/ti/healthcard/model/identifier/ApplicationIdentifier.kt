@@ -1,9 +1,5 @@
 @file:Suppress("ImplicitDefaultLocale")
 
-/*
- * ${GEMATIK_COPYRIGHT_STATEMENT}
- */
-
 package de.gematik.ti.healthcard.model.identifier
 
 private const val AID_MIN_LENGTH = 5
@@ -12,7 +8,9 @@ private const val AID_MAX_LENGTH = 16
 /**
  * An application identifier (AID) is used to address an application on the card
  */
-class ApplicationIdentifier(aid: ByteArray) {
+class ApplicationIdentifier(
+    aid: ByteArray,
+) {
     val aid: ByteArray = aid.copyOf()
         get() =
             field.copyOf()

@@ -1,6 +1,4 @@
-/*
- * ${GEMATIK_COPYRIGHT_STATEMENT}
- */
+
 
 package de.gematik.ti.healthcard.model.command
 
@@ -17,13 +15,12 @@ private const val MODE_VERIFICATION_DATA = 0x00
 fun HealthCardCommand.Companion.verifyPin(
     passwordReference: PasswordReference,
     dfSpecific: Boolean,
-    pin: EncryptedPinFormat2
-) =
-    HealthCardCommand(
-        expectedStatus = verifySecretStatus,
-        cla = CLA,
-        ins = VERIFY_SECRET_INS,
-        p1 = MODE_VERIFICATION_DATA,
-        p2 = passwordReference.calculateKeyReference(dfSpecific),
-        data = pin.bytes
-    )
+    pin: EncryptedPinFormat2,
+) = HealthCardCommand(
+    expectedStatus = verifySecretStatus,
+    cla = CLA,
+    ins = VERIFY_SECRET_INS,
+    p1 = MODE_VERIFICATION_DATA,
+    p2 = passwordReference.calculateKeyReference(dfSpecific),
+    data = pin.bytes,
+)

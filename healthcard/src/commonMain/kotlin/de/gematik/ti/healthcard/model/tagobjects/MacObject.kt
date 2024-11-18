@@ -1,6 +1,4 @@
-/*
- * ${GEMATIK_COPYRIGHT_STATEMENT}
- */
+
 
 package de.gematik.ti.healthcard.model.tagobjects
 
@@ -25,7 +23,7 @@ class MacObject(
     private val header: ByteArray? = null,
     private val commandOutput: ByteArray,
     private val kMac: ByteArray,
-    private val ssc: ByteArray
+    private val ssc: ByteArray,
 ) {
     private val mac: ByteArray
 
@@ -61,7 +59,10 @@ class MacObject(
         return macData.copyOfRange(0, MAC_SIZE)
     }
 
-    private fun getCMac(secureMessagingSSC: ByteArray, kMac: ByteArray): CMac =
+    private fun getCMac(
+        secureMessagingSSC: ByteArray,
+        kMac: ByteArray,
+    ): CMac =
         CMac(AESEngine()).apply {
             init(KeyParameter(kMac))
             update(secureMessagingSSC, 0, secureMessagingSSC.size)

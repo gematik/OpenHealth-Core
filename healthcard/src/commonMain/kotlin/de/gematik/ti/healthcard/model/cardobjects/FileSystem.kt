@@ -1,6 +1,4 @@
-/*
- * ${GEMATIK_COPYRIGHT_STATEMENT}
- */
+
 
 package de.gematik.ti.healthcard.model.cardobjects
 
@@ -31,6 +29,7 @@ object Mf {
     object MrPinHome {
         const val PWID = 0x02
     }
+
     object Df {
         object Esign {
             object Ef {
@@ -39,6 +38,7 @@ object Mf {
                     const val SFID = 0x04
                 }
             }
+
             object PrK {
                 object ChAutE256 {
                     const val KID = 0x04

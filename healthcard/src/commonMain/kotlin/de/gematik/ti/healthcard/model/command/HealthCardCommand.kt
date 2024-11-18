@@ -1,6 +1,4 @@
-/*
- * ${GEMATIK_COPYRIGHT_STATEMENT}
- */
+
 
 package de.gematik.ti.healthcard.model.command
 
@@ -22,10 +20,12 @@ class HealthCardCommand(
     val p1: Int = 0,
     val p2: Int = 0,
     val data: ByteArray? = null,
-    val ne: Int? = null
+    val ne: Int? = null,
 ) {
     init {
-        require(!(cla > HEX_FF || ins > HEX_FF || p1 > HEX_FF || p2 > HEX_FF)) { "Parameter value exceeds one byte" }
+        require(!(cla > HEX_FF || ins > HEX_FF || p1 > HEX_FF || p2 > HEX_FF)) {
+            "Parameter value exceeds one byte"
+        }
     }
 
     /**
@@ -44,15 +44,16 @@ class HealthCardCommand(
     }
 
     private fun getCommandApdu(channel: ICardChannel): CommandApdu {
-        val expectedLength = if (ne != null && ne == EXPECT_ALL_WILDCARD) {
-            if (channel.isExtendedLengthSupported) {
-                NE_MAX_EXTENDED_LENGTH
+        val expectedLength =
+            if (ne != null && ne == EXPECT_ALL_WILDCARD) {
+                if (channel.isExtendedLengthSupported) {
+                    NE_MAX_EXTENDED_LENGTH
+                } else {
+                    NE_MAX_SHORT_LENGTH
+                }
             } else {
-                NE_MAX_SHORT_LENGTH
+                ne
             }
-        } else {
-            ne
-        }
 
         val commandAPDU = CommandApdu.ofOptions(cla, ins, p1, p2, data, expectedLength)
 
@@ -68,14 +69,19 @@ class HealthCardCommand(
     companion object
 }
 
-class HealthCardResponse(val status: ResponseStatus, val apdu: ResponseApdu)
+class HealthCardResponse(
+    val status: ResponseStatus,
+    val apdu: ResponseApdu,
+)
 
 fun HealthCardCommand.executeSuccessfulOn(channel: ICardChannel): HealthCardResponse =
     this.executeOn(channel).also {
         it.requireSuccess()
     }
 
-class ResponseException(val responseStatus: ResponseStatus) : Exception()
+class ResponseException(
+    val responseStatus: ResponseStatus,
+) : Exception()
 
 fun HealthCardResponse.requireSuccess() {
     if (this.status != ResponseStatus.SUCCESS) {

@@ -1,6 +1,4 @@
-/*
- * ${GEMATIK_COPYRIGHT_STATEMENT}
- */
+
 
 package de.gematik.ti.healthcard.model.card
 
@@ -16,7 +14,9 @@ package de.gematik.ti.healthcard.model.card
 private const val MIN_PWD_ID = 0
 private const val MAX_PWD_ID = 31
 
-class PasswordReference(val pwdId: Int) : ICardKeyReference {
+class PasswordReference(
+    val pwdId: Int,
+) : ICardKeyReference {
     init {
         require(!(pwdId < MIN_PWD_ID || pwdId > MAX_PWD_ID)) {
             // gemSpec_COS#N015.000
@@ -26,9 +26,10 @@ class PasswordReference(val pwdId: Int) : ICardKeyReference {
 
     // gemSpec_COS#N072.800
     override fun calculateKeyReference(dfSpecific: Boolean): Int =
-        pwdId + if (dfSpecific) {
-            ICardKeyReference.DF_SPECIFIC_PWD_MARKER
-        } else {
-            0
-        }
+        pwdId +
+            if (dfSpecific) {
+                ICardKeyReference.DF_SPECIFIC_PWD_MARKER
+            } else {
+                0
+            }
 }

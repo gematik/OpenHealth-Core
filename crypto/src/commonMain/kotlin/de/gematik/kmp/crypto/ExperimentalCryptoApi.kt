@@ -28,7 +28,7 @@ import kotlin.annotation.AnnotationTarget.VALUE_PARAMETER
     FUNCTION,
     PROPERTY_GETTER,
     PROPERTY_SETTER,
-    TYPEALIAS
+    TYPEALIAS,
 )
 @MustBeDocumented
 annotation class ExperimentalCryptoApi

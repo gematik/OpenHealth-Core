@@ -1,118 +1,126 @@
-/*
- * ${GEMATIK_COPYRIGHT_STATEMENT}
- */
+
 
 package de.gematik.ti.healthcard.model.command
 
-val generalAuthenticateStatus = mapOf(
-    0x0000 to ResponseStatus.UNKNOWN_STATUS,
-    0x9000 to ResponseStatus.SUCCESS,
-    0x6300 to ResponseStatus.AUTHENTICATION_FAILURE,
-    0x6400 to ResponseStatus.PARAMETER_MISMATCH,
-    0x6982 to ResponseStatus.SECURITY_STATUS_NOT_SATISFIED,
-    0x6983 to ResponseStatus.KEY_EXPIRED,
-    0x6985 to ResponseStatus.NO_KEY_REFERENCE,
-    0x6A80 to ResponseStatus.NUMBER_PRECONDITION_WRONG,
-    0x6A81 to ResponseStatus.UNSUPPORTED_FUNCTION,
-    0x6A88 to ResponseStatus.KEY_NOT_FOUND
-)
+val generalAuthenticateStatus =
+    mapOf(
+        0x0000 to ResponseStatus.UNKNOWN_STATUS,
+        0x9000 to ResponseStatus.SUCCESS,
+        0x6300 to ResponseStatus.AUTHENTICATION_FAILURE,
+        0x6400 to ResponseStatus.PARAMETER_MISMATCH,
+        0x6982 to ResponseStatus.SECURITY_STATUS_NOT_SATISFIED,
+        0x6983 to ResponseStatus.KEY_EXPIRED,
+        0x6985 to ResponseStatus.NO_KEY_REFERENCE,
+        0x6A80 to ResponseStatus.NUMBER_PRECONDITION_WRONG,
+        0x6A81 to ResponseStatus.UNSUPPORTED_FUNCTION,
+        0x6A88 to ResponseStatus.KEY_NOT_FOUND,
+    )
 
-val pinStatus = mapOf(
-    0x9000 to ResponseStatus.SUCCESS,
-    0x62C1 to ResponseStatus.TRANSPORT_STATUS_TRANSPORT_PIN,
-    0x62C7 to ResponseStatus.TRANSPORT_STATUS_EMPTY_PIN,
-    0x62D0 to ResponseStatus.PASSWORD_DISABLED,
-    0x63C0 to ResponseStatus.RETRY_COUNTER_COUNT_00,
-    0x63C1 to ResponseStatus.RETRY_COUNTER_COUNT_01,
-    0x63C2 to ResponseStatus.RETRY_COUNTER_COUNT_02,
-    0x63C3 to ResponseStatus.RETRY_COUNTER_COUNT_03,
-    0x6982 to ResponseStatus.SECURITY_STATUS_NOT_SATISFIED,
-    0x6988 to ResponseStatus.PASSWORD_NOT_FOUND
-)
+val pinStatus =
+    mapOf(
+        0x9000 to ResponseStatus.SUCCESS,
+        0x62C1 to ResponseStatus.TRANSPORT_STATUS_TRANSPORT_PIN,
+        0x62C7 to ResponseStatus.TRANSPORT_STATUS_EMPTY_PIN,
+        0x62D0 to ResponseStatus.PASSWORD_DISABLED,
+        0x63C0 to ResponseStatus.RETRY_COUNTER_COUNT_00,
+        0x63C1 to ResponseStatus.RETRY_COUNTER_COUNT_01,
+        0x63C2 to ResponseStatus.RETRY_COUNTER_COUNT_02,
+        0x63C3 to ResponseStatus.RETRY_COUNTER_COUNT_03,
+        0x6982 to ResponseStatus.SECURITY_STATUS_NOT_SATISFIED,
+        0x6988 to ResponseStatus.PASSWORD_NOT_FOUND,
+    )
 
-val manageSecurityEnvironmentStatus = mapOf(
-    0x9000 to ResponseStatus.SUCCESS,
-    0x6A81 to ResponseStatus.UNSUPPORTED_FUNCTION,
-    0x6A88 to ResponseStatus.KEY_NOT_FOUND
-)
+val manageSecurityEnvironmentStatus =
+    mapOf(
+        0x9000 to ResponseStatus.SUCCESS,
+        0x6A81 to ResponseStatus.UNSUPPORTED_FUNCTION,
+        0x6A88 to ResponseStatus.KEY_NOT_FOUND,
+    )
 
-val psoComputeDigitalSignatureStatus = mapOf(
-    0x9000 to ResponseStatus.SUCCESS,
-    0x6400 to ResponseStatus.KEY_INVALID,
-    0x6982 to ResponseStatus.SECURITY_STATUS_NOT_SATISFIED,
-    0x6985 to ResponseStatus.NO_KEY_REFERENCE,
-    0x6A81 to ResponseStatus.UNSUPPORTED_FUNCTION,
-    0x6A88 to ResponseStatus.KEY_NOT_FOUND
-)
+val psoComputeDigitalSignatureStatus =
+    mapOf(
+        0x9000 to ResponseStatus.SUCCESS,
+        0x6400 to ResponseStatus.KEY_INVALID,
+        0x6982 to ResponseStatus.SECURITY_STATUS_NOT_SATISFIED,
+        0x6985 to ResponseStatus.NO_KEY_REFERENCE,
+        0x6A81 to ResponseStatus.UNSUPPORTED_FUNCTION,
+        0x6A88 to ResponseStatus.KEY_NOT_FOUND,
+    )
 
-val readStatus = mapOf(
-    0x9000 to ResponseStatus.SUCCESS,
-    0x6281 to ResponseStatus.CORRUPT_DATA_WARNING,
-    0x6282 to ResponseStatus.END_OF_FILE_WARNING,
-    0x6981 to ResponseStatus.WRONG_FILE_TYPE,
-    0x6982 to ResponseStatus.SECURITY_STATUS_NOT_SATISFIED,
-    0x6986 to ResponseStatus.NO_CURRENT_EF,
-    0x6A82 to ResponseStatus.FILE_NOT_FOUND,
-    0x6B00 to ResponseStatus.OFFSET_TOO_BIG
-)
+val readStatus =
+    mapOf(
+        0x9000 to ResponseStatus.SUCCESS,
+        0x6281 to ResponseStatus.CORRUPT_DATA_WARNING,
+        0x6282 to ResponseStatus.END_OF_FILE_WARNING,
+        0x6981 to ResponseStatus.WRONG_FILE_TYPE,
+        0x6982 to ResponseStatus.SECURITY_STATUS_NOT_SATISFIED,
+        0x6986 to ResponseStatus.NO_CURRENT_EF,
+        0x6A82 to ResponseStatus.FILE_NOT_FOUND,
+        0x6B00 to ResponseStatus.OFFSET_TOO_BIG,
+    )
 
-val selectStatus = mapOf(
-    0x9000 to ResponseStatus.SUCCESS,
-    0x6283 to ResponseStatus.FILE_DEACTIVATED,
-    0x6285 to ResponseStatus.FILE_TERMINATED,
-    0x6A82 to ResponseStatus.FILE_NOT_FOUND,
-    0x6D00 to ResponseStatus.INSTRUCTION_NOT_SUPPORTED
-)
+val selectStatus =
+    mapOf(
+        0x9000 to ResponseStatus.SUCCESS,
+        0x6283 to ResponseStatus.FILE_DEACTIVATED,
+        0x6285 to ResponseStatus.FILE_TERMINATED,
+        0x6A82 to ResponseStatus.FILE_NOT_FOUND,
+        0x6D00 to ResponseStatus.INSTRUCTION_NOT_SUPPORTED,
+    )
 
-val verifySecretStatus = mapOf(
-    0x9000 to ResponseStatus.SUCCESS,
-    0x63C0 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_00,
-    0x63C1 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_01,
-    0x63C2 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_02,
-    0x63C3 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_03,
-    0x6581 to ResponseStatus.MEMORY_FAILURE,
-    0x6982 to ResponseStatus.SECURITY_STATUS_NOT_SATISFIED,
-    0x6983 to ResponseStatus.PASSWORD_BLOCKED,
-    0x6985 to ResponseStatus.PASSWORD_NOT_USABLE,
-    0x6988 to ResponseStatus.PASSWORD_NOT_FOUND
-)
+val verifySecretStatus =
+    mapOf(
+        0x9000 to ResponseStatus.SUCCESS,
+        0x63C0 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_00,
+        0x63C1 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_01,
+        0x63C2 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_02,
+        0x63C3 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_03,
+        0x6581 to ResponseStatus.MEMORY_FAILURE,
+        0x6982 to ResponseStatus.SECURITY_STATUS_NOT_SATISFIED,
+        0x6983 to ResponseStatus.PASSWORD_BLOCKED,
+        0x6985 to ResponseStatus.PASSWORD_NOT_USABLE,
+        0x6988 to ResponseStatus.PASSWORD_NOT_FOUND,
+    )
 
-val unlockEgkStatus = mapOf(
-    0x9000 to ResponseStatus.SUCCESS,
-    0x6983 to ResponseStatus.PUK_BLOCKED,
-    0x63C0 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_00,
-    0x63C1 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_01,
-    0x63C2 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_02,
-    0x63C3 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_03,
-    0x63C4 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_04,
-    0x63C5 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_05,
-    0x63C6 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_06,
-    0x63C7 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_07,
-    0x63C8 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_08,
-    0x63C9 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_09,
-    0x6581 to ResponseStatus.MEMORY_FAILURE,
-    0x6982 to ResponseStatus.SECURITY_STATUS_NOT_SATISFIED,
-    0x6985 to ResponseStatus.WRONG_PASSWORD_LENGTH,
-    0x6A88 to ResponseStatus.PASSWORD_NOT_FOUND
-)
+val unlockEgkStatus =
+    mapOf(
+        0x9000 to ResponseStatus.SUCCESS,
+        0x6983 to ResponseStatus.PUK_BLOCKED,
+        0x63C0 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_00,
+        0x63C1 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_01,
+        0x63C2 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_02,
+        0x63C3 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_03,
+        0x63C4 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_04,
+        0x63C5 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_05,
+        0x63C6 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_06,
+        0x63C7 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_07,
+        0x63C8 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_08,
+        0x63C9 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_09,
+        0x6581 to ResponseStatus.MEMORY_FAILURE,
+        0x6982 to ResponseStatus.SECURITY_STATUS_NOT_SATISFIED,
+        0x6985 to ResponseStatus.WRONG_PASSWORD_LENGTH,
+        0x6A88 to ResponseStatus.PASSWORD_NOT_FOUND,
+    )
 
-val changeReferenceDataStatus = mapOf(
-    0x9000 to ResponseStatus.SUCCESS,
-    0x63C0 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_00,
-    0x63C1 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_01,
-    0x63C2 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_02,
-    0x63C3 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_03, // oldSecret wrong
-    0x6581 to ResponseStatus.MEMORY_FAILURE,
-    0x6982 to ResponseStatus.SECURITY_STATUS_NOT_SATISFIED,
-    0x6983 to ResponseStatus.PASSWORD_BLOCKED,
-    0x6985 to ResponseStatus.WRONG_PASSWORD_LENGTH,
-    0x6A88 to ResponseStatus.PASSWORD_NOT_FOUND
-)
+val changeReferenceDataStatus =
+    mapOf(
+        0x9000 to ResponseStatus.SUCCESS,
+        0x63C0 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_00,
+        0x63C1 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_01,
+        0x63C2 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_02,
+        0x63C3 to ResponseStatus.WRONG_SECRET_WARNING_COUNT_03, // oldSecret wrong
+        0x6581 to ResponseStatus.MEMORY_FAILURE,
+        0x6982 to ResponseStatus.SECURITY_STATUS_NOT_SATISFIED,
+        0x6983 to ResponseStatus.PASSWORD_BLOCKED,
+        0x6985 to ResponseStatus.WRONG_PASSWORD_LENGTH,
+        0x6A88 to ResponseStatus.PASSWORD_NOT_FOUND,
+    )
 
-val getRandomValuesStatus = mapOf(
-    0x9000 to ResponseStatus.SUCCESS,
-    0x6982 to ResponseStatus.SECURITY_STATUS_NOT_SATISFIED
-)
+val getRandomValuesStatus =
+    mapOf(
+        0x9000 to ResponseStatus.SUCCESS,
+        0x6982 to ResponseStatus.SECURITY_STATUS_NOT_SATISFIED,
+    )
 
 /**
  * All response status codes
@@ -234,5 +242,5 @@ enum class ResponseStatus {
     DF_NAME_EXISTS,
     OFFSET_TOO_BIG,
     INSTRUCTION_NOT_SUPPORTED,
-    PUK_BLOCKED
+    PUK_BLOCKED,
 }

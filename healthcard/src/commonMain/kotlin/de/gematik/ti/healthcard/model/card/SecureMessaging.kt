@@ -1,9 +1,5 @@
 @file:Suppress("MagicNumber")
 
-/*
- * ${GEMATIK_COPYRIGHT_STATEMENT}
- */
-
 package de.gematik.ti.healthcard.model.card
 
 import de.gematik.ti.healthcard.model.command.CommandApdu
@@ -34,7 +30,9 @@ private const val LENGTH_TAG = 0x80
 private const val BYTE_MASK = 0x0F
 private const val MALFORMED_SECURE_MESSAGING_APDU = "Malformed Secure Messaging APDU"
 
-class SecureMessaging(private val paceKey: PaceKey) {
+class SecureMessaging(
+    private val paceKey: PaceKey,
+) {
     private val secureMessagingSSC: ByteArray = ByteArray(BLOCK_SIZE)
 
     private fun incrementSSC() {
@@ -64,11 +62,11 @@ class SecureMessaging(private val paceKey: PaceKey) {
 
         val commandDataOutput = ByteArrayOutputStream()
 
-        apduToEncrypt.copyOfRange(
-            commandApdu.dataOffset,
-            commandApdu.dataOffset + commandApdu.rawNc
-        )
-            .takeIf { it.isNotEmpty() }
+        apduToEncrypt
+            .copyOfRange(
+                commandApdu.dataOffset,
+                commandApdu.dataOffset + commandApdu.rawNc,
+            ).takeIf { it.isNotEmpty() }
             ?.let {
                 var data = it
                 data = padData(data, BLOCK_SIZE)
@@ -79,49 +77,54 @@ class SecureMessaging(private val paceKey: PaceKey) {
                 DataObject(data).taggedObject.encodeTo(commandDataOutput)
             }
 
-        val le = commandApdu.rawNe?.also {
-            // write length object to output
-            LengthObject(it).taggedObject.encodeTo(commandDataOutput)
-        } ?: -1
+        val le =
+            commandApdu.rawNe?.also {
+                // write length object to output
+                LengthObject(it).taggedObject.encodeTo(commandDataOutput)
+            } ?: -1
 
         val commandMacObject = MacObject(header, commandDataOutput, paceKey.mac, secureMessagingSSC)
         return createEncryptedCommand(
             le = le,
             data = commandDataOutput,
             do8E = commandMacObject.taggedObject,
-            header = header
+            header = header,
         )
     }
 
     private fun setSecureMessagingCommand(header: ByteArray) {
-        require(header[0] != (header[0] or SECURE_MESSAGING_COMMAND)) { MALFORMED_SECURE_MESSAGING_APDU }
+        require(
+            header[0] != (header[0] or SECURE_MESSAGING_COMMAND),
+        ) { MALFORMED_SECURE_MESSAGING_APDU }
         header[0] = (header[0] or SECURE_MESSAGING_COMMAND)
     }
 
-    private fun encryptData(paddedData: ByteArray) =
-        getCipher(ENCRYPT_MODE).doFinal(paddedData)
+    private fun encryptData(paddedData: ByteArray) = getCipher(ENCRYPT_MODE).doFinal(paddedData)
 
     private fun createEncryptedCommand(
         le: Int,
         data: ByteArrayOutputStream,
         do8E: DERTaggedObject,
-        header: ByteArray
+        header: ByteArray,
     ): CommandApdu {
         val tempData = data
         // write do8E to output
         do8E.encodeTo(data)
 
-        val ne = if (tempData.size() < 1 && le == -1) {
-            EXPECTED_LENGTH_WILDCARD_SHORT
-        } else if (tempData.size() < 1 && le > -1) {
-            EXPECTED_LENGTH_WILDCARD_EXTENDED
-        } else if (tempData.size() > 0 && le < 0) {
-            if (data.size() <= 255) {
+        val ne =
+            if (tempData.size() < 1 && le == -1) {
                 EXPECTED_LENGTH_WILDCARD_SHORT
+            } else if (tempData.size() < 1 && le > -1) {
+                EXPECTED_LENGTH_WILDCARD_EXTENDED
+            } else if (tempData.size() > 0 && le < 0) {
+                if (data.size() <= 255) {
+                    EXPECTED_LENGTH_WILDCARD_SHORT
+                } else {
+                    EXPECTED_LENGTH_WILDCARD_EXTENDED
+                }
             } else {
                 EXPECTED_LENGTH_WILDCARD_EXTENDED
             }
-        } else EXPECTED_LENGTH_WILDCARD_EXTENDED
 
         return CommandApdu.ofOptions(
             cla = header[0].toInt() and 0xFF,
@@ -130,7 +133,7 @@ class SecureMessaging(private val paceKey: PaceKey) {
             p1 = header[2].toInt() and 0xFF,
             p2 = header[3].toInt() and 0xFF,
             data = data.toByteArray(),
-            ne = ne
+            ne = ne,
         )
     }
 
@@ -155,24 +158,28 @@ class SecureMessaging(private val paceKey: PaceKey) {
         // write status object to output
         StatusObject(statusBytes).taggedObject.encodeTo(responseDataOutput)
 
-        val responseMacObject = MacObject(
-            commandOutput = responseDataOutput,
-            kMac = paceKey.mac,
-            ssc = secureMessagingSSC
-        )
+        val responseMacObject =
+            MacObject(
+                commandOutput = responseDataOutput,
+                kMac = paceKey.mac,
+                ssc = secureMessagingSSC,
+            )
         checkMac(responseMacObject.mac, macBytes)
 
         return createDecryptedResponse(statusBytes, dataObject)
     }
 
-    private fun checkMac(mac: ByteArray, macObject: ByteArray) {
+    private fun checkMac(
+        mac: ByteArray,
+        macObject: ByteArray,
+    ) {
         require(mac.contentEquals(macObject)) { "Secure Messaging MAC verification failed" }
     }
 
     private fun getResponseObjects(
         statusBytes: ByteArray,
         macBytes: ByteArray,
-        apduResponseBytes: ByteArray
+        apduResponseBytes: ByteArray,
     ): DataObject? {
         val inputStream = ByteArrayInputStream(apduResponseBytes)
 
@@ -221,14 +228,15 @@ class SecureMessaging(private val paceKey: PaceKey) {
 
     private fun createDecryptedResponse(
         statusBytes: ByteArray,
-        dataObject: DataObject?
+        dataObject: DataObject?,
     ): ResponseApdu {
         val outputStream = ByteArrayOutputStream()
         if (dataObject != null) {
             if (dataObject.tag == DO_87_TAG.toByte()) {
-                val dataDecrypted = removePaddingIndicator(dataObject.data).let {
-                    getCipher(DECRYPT_MODE).doFinal(it)
-                }
+                val dataDecrypted =
+                    removePaddingIndicator(dataObject.data).let {
+                        getCipher(DECRYPT_MODE).doFinal(it)
+                    }
                 outputStream.write(unPadData(dataDecrypted))
             } else {
                 outputStream.write(dataObject.data)
@@ -259,7 +267,10 @@ class SecureMessaging(private val paceKey: PaceKey) {
         }
 }
 
-private fun InputStream.readAndCheckExpectedLength(b: ByteArray, expected: Int) {
+private fun InputStream.readAndCheckExpectedLength(
+    b: ByteArray,
+    expected: Int,
+) {
     val l = this.read(b, 0, expected)
     require(l == expected) { MALFORMED_SECURE_MESSAGING_APDU }
 }

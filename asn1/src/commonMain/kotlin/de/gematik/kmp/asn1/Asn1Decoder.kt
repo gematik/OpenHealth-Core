@@ -2,21 +2,36 @@ package de.gematik.kmp.asn1
 
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
+import kotlin.experimental.and
 import kotlin.js.JsExport
 import kotlin.js.JsName
 
 @JsExport
-class Asn1DecoderException(override val message: String, override val cause: Throwable?) : IllegalArgumentException(message, cause) {
+class Asn1DecoderException(
+    override val message: String,
+    override val cause: Throwable?,
+) : IllegalArgumentException(message, cause) {
     @JsExport.Ignore
     constructor(message: String) : this(message, null)
 }
+
+@OptIn(ExperimentalStdlibApi::class)
+private val hexDebugFormat =
+    HexFormat {
+        number {
+            prefix = "0x"
+            removeLeadingZeros = true
+        }
+    }
 
 /**
  * Constructs an [Asn1Decoder] from the given [data].
  * The [data] byte array will not be copied!
  */
 @JsExport
-class Asn1Decoder(private val data: ByteArray) {
+class Asn1Decoder(
+    private val data: ByteArray,
+) {
     init {
         require(data.isNotEmpty()) { "Data must not be empty" }
     }
@@ -47,26 +62,28 @@ class Asn1Decoder(private val data: ByteArray) {
         val remainingLength get() = endOffset - offset
 
         /**
-         * Throws an [ParserException] with the result of calling [message].
+         * Throws an [Asn1DecoderException] with the result of calling [message].
          */
         @JsName("fail")
-        inline fun fail(message: () -> String): Nothing {
-            throw Asn1DecoderException(message())
-        }
+        inline fun fail(message: () -> String): Nothing = throw Asn1DecoderException(message())
 
         /**
-         * Throws an [ParserException] with the result of calling [message] and the [cause].
+         * Throws an [Asn1DecoderException] with the result of calling [message] and the [cause].
          */
         @JsName("failWithCause")
-        inline fun fail(cause: Throwable, message: () -> String): Nothing {
-            throw Asn1DecoderException(message(), cause)
-        }
+        inline fun fail(
+            cause: Throwable,
+            message: () -> String,
+        ): Nothing = throw Asn1DecoderException(message(), cause)
 
         /**
          * Throws an [ParserException] if [value] is `false` with the result of calling [message].
          */
         @OptIn(ExperimentalContracts::class)
-        inline fun check(value: Boolean, message: () -> String) {
+        inline fun check(
+            value: Boolean,
+            message: () -> String,
+        ) {
             contract {
                 returns() implies value
             }
@@ -77,7 +94,7 @@ class Asn1Decoder(private val data: ByteArray) {
          * Advance with one of the [block]s and return the resulting [Asn1Object].
          * Returns [Result.failure] if no [block] was matched.
          */
-        fun <T > advance(vararg block: ParserScope.() -> T): T {
+        fun <T> advance(vararg block: ParserScope.() -> T): T {
             val originalOffset = offset
             val originalEndOffset = endOffset
             for (bl in block) {
@@ -112,8 +129,21 @@ class Asn1Decoder(private val data: ByteArray) {
          * Advance with the given [tag] and return the resulting [Asn1Object]. Throws an [ParserException] if the [tag] doesn't match.
          * @param tag the tag to advance with.
          */
-        fun <T> Asn1Decoder.ParserScope.advanceWithTag(tag: Int, block: Asn1Decoder.ParserScope.() -> T): T {
-            if (readTag() != tag) fail { "Expected tag `${tag}`" }
+        @OptIn(ExperimentalStdlibApi::class)
+        fun <T> Asn1Decoder.ParserScope.advanceWithTag(
+            tag: Int,
+            block: Asn1Decoder.ParserScope.() -> T,
+        ): T {
+            val tagRead = readTag()
+            if (tagRead !=
+                tag
+            ) {
+                fail {
+                    "Expected tag `${tag.toHexString(
+                        hexDebugFormat,
+                    )}` but got `${tagRead.toHexString(hexDebugFormat)}`"
+                }
+            }
             val length = readLength()
             val isInfiniteLength = length == -1
 
@@ -122,13 +152,14 @@ class Asn1Decoder(private val data: ByteArray) {
             endOffset = if (isInfiniteLength) Int.MAX_VALUE else offset + length
             val result = block()
 
-            when(isInfiniteLength) {
+            when (isInfiniteLength) {
                 false ->
                     if (endOffset != offset) fail { "Unparsed bytes remaining" }
                 true ->
                     // check end of content `0x00 0x00` on infinite length
-                    if (!readBytes(2).contentEquals(byteArrayOf(0x00, 0x00)))
+                    if (!readBytes(2).contentEquals(byteArrayOf(0x00, 0x00))) {
                         fail { "Infinite length object must be finished with `0x00 0x00`" }
+                    }
             }
 
             endOffset = originalEndOffset
@@ -139,9 +170,7 @@ class Asn1Decoder(private val data: ByteArray) {
         /**
          * Read one byte.
          */
-        fun readByte(): Byte {
-            return data[offset++]
-        }
+        fun readByte(): Byte = data[offset++]
 
         /**
          * Read one bytes.
@@ -156,9 +185,7 @@ class Asn1Decoder(private val data: ByteArray) {
         /**
          * Read the tag of an object.
          */
-        fun readTag(): Int {
-            return readByte().toInt() and 0xFF
-        }
+        fun readTag(): Int = readByte().toInt() and 0xFF
 
         /**
          * Read the length. Returns `-1` for infinite length.
@@ -174,7 +201,7 @@ class Asn1Decoder(private val data: ByteArray) {
                 else -> {
                     // long form length
                     val lengthSize = lengthByte and 0x7F
-                    readInt(lengthSize)
+                    readInt(lengthSize, false)
                 }
             }
         }
@@ -182,14 +209,19 @@ class Asn1Decoder(private val data: ByteArray) {
         /**
          * Read [length] bytes as an integer.
          */
-        fun readInt(length: Int): Int {
+        fun readInt(
+            length: Int,
+            signed: Boolean = true,
+        ): Int {
             check(length in 1..4) { "Length must be in range of [1, 4]. Is `$length`" }
             val bytes = data.copyOfRange(offset, offset + length)
             offset += length
 
             var result = bytes[0].toInt()
-            if (result and 0x80 != 0) { // Check if the sign bit is set
+            if (signed && result and 0x80 != 0) { // Check if the sign bit is set
                 result = result or -0x100 // Sign extend for negative numbers
+            } else {
+                result = result and 0xFF // Clear the sign bit
             }
 
             for (i in 1 until length) {
@@ -215,11 +247,12 @@ class Asn1Decoder(private val data: ByteArray) {
         }
     }
 
-    fun <T > read(block: ParserScope.() -> T): T {
-        val scope = ParserScope(
-            startOffset = 0,
-            endOffset = data.size
-        )
+    fun <T> read(block: ParserScope.() -> T): T {
+        val scope =
+            ParserScope(
+                startOffset = 0,
+                endOffset = data.size,
+            )
         return block(scope)
     }
 }
@@ -243,6 +276,23 @@ fun Asn1Decoder.ParserScope.readInt(): Int =
     }
 
 /**
+ * Read [Asn1Type.BitString].
+ */
+@JsExport
+fun Asn1Decoder.ParserScope.readBitString(): ByteArray =
+    advanceWithTag(Asn1Type.BitString) {
+        val unusedBits = readByte().toInt()
+        if (unusedBits !in 0..7) fail { "Invalid unused bit count: $unusedBits" }
+        val bitString = readBytes(remainingLength)
+        if (unusedBits == 0) {
+            bitString
+        } else {
+            bitString.copyOfRange(0, bitString.size - 1) +
+                (bitString.last() and ((0xFF shl unusedBits).toByte()))
+        }
+    }
+
+/**
  * Read [Asn1Type.Utf8String].
  */
 @JsExport
@@ -262,4 +312,13 @@ fun Asn1Decoder.ParserScope.readUtf8String(): String =
 fun Asn1Decoder.ParserScope.readVisibleString(): String =
     advanceWithTag(Asn1Type.VisibleString) {
         readBytes(remainingLength).decodeToString()
+    }
+
+/**
+ * Read [Asn1Type.OctetString].
+ */
+@JsExport
+fun Asn1Decoder.ParserScope.readOctetString(): ByteArray =
+    advanceWithTag(Asn1Type.OctetString) {
+        readBytes(remainingLength)
     }

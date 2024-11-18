@@ -1,12 +1,7 @@
 @file:Suppress("MagicNumber")
 
-/*
- * ${GEMATIK_COPYRIGHT_STATEMENT}
- */
-
 package de.gematik.ti.healthcard.model.exchange
 
-import de.gematik.ti.healthcard.Requirement
 import de.gematik.ti.healthcard.model.CardUtilities.byteArrayToECPoint
 import de.gematik.ti.healthcard.model.CardUtilities.extractKeyObjectEncoded
 import de.gematik.ti.healthcard.model.card.CardKey
@@ -21,11 +16,8 @@ import de.gematik.ti.healthcard.model.command.generalAuthenticate
 import de.gematik.ti.healthcard.model.command.manageSecEnvWithoutCurves
 import de.gematik.ti.healthcard.model.command.read
 import de.gematik.ti.healthcard.model.command.select
-import de.gematik.ti.healthcard.model.exchange.KeyDerivationFunction.getAES128Key
 import de.gematik.ti.healthcard.model.identifier.FileIdentifier
 import de.gematik.ti.healthcard.model.identifier.ShortFileIdentifier
-import de.gematik.ti.healthcard.utils.Bytes
-
 
 private const val SECRET_KEY_REFERENCE = 2 // Reference of secret key for PACE (CAN)
 private const val AES_BLOCK_SIZE = 16
@@ -41,182 +33,159 @@ private const val TAG_49 = 0x49
  * pcd = smartphone
  */
 suspend fun ICardChannel.establishTrustedChannel(cardAccessNumber: String): PaceKey {
-    var secureRandom = byteArrayOf()
+    val random = SecureRandom()
 
-    val randomGenerator = SecureRandom() // use the HealthcardCommand for Reading the secureRandom
+    // Helper to derive AES keys
+    fun deriveAESKey(input: ByteArray): SecretKeySpec = SecretKeySpec(input.copyOf(16), "AES")
 
-    suspend fun step0ReadSupportedPaceParameters(step1: suspend (paceInfo: PaceInfo) -> PaceKey): PaceKey {
-        HealthCardCommand.select(selectParentElseRoot = false, readFirst = true).executeSuccessfulOn(
-            this
-        )
-
-        HealthCardCommand.read(
-            ShortFileIdentifier(Ef.Version2.SFID), 0).executeSuccessfulOn(this).let {
-            check(HealthCardVersion2.of(it.apdu.data).isEGK21()) { "Invalid eGK Version." }
-        }
-
-        HealthCardCommand.select(
-            FileIdentifier(Ef.CardAccess.FID), false)
-            .executeSuccessfulOn(this)
-
-        val paceInfo = PaceInfo(HealthCardCommand.read().executeOn(this).apdu.data)
-
-        HealthCardCommand.manageSecEnvWithoutCurves(
-            CardKey(SECRET_KEY_REFERENCE),
-            false,
-            paceInfo.paceInfoProtocolBytes
-        ).executeSuccessfulOn(this)
-
-        return step1(paceInfo)
-    }
-
-    suspend fun step1EphemeralPublicKeyFirst(
-        paceInfo: PaceInfo,
-        step2: suspend (
-            paceInfo: PaceInfo,
-            nonceSInt: BigInteger,
-            pcdSkX1: BigInteger,
-            pcdPk1: ByteArray
-        ) -> PaceKey
-    ): PaceKey {
-        val nonceZBytes = HealthCardCommand.generalAuthenticate(true).executeSuccessfulOn(this).apdu.data
-        val nonceZBytesEncoded = extractKeyObjectEncoded(nonceZBytes)
-        val canBytes = cardAccessNumber.toByteArray()
-
-        @Requirement(
-            "O.Cryp_3#2",
-            "O.Cryp_4#2",
-            sourceSpecification = "BSI-eRp-ePA",
-            rationale = "AES Key-Generation and one time usage"
-        )
-        val aes128Key = getAES128Key(canBytes, KeyDerivationFunction.Mode.PASSWORD)
-        val encKey = KeyParameter(aes128Key)
-
-        val nonceS = ByteArray(AES_BLOCK_SIZE)
-        AESEngine().apply {
-            init(false, encKey)
-            processBlock(nonceZBytesEncoded, 0, nonceS, 0)
-        }
-        val nonceSInt = BigInteger(1, nonceS)
-
-        val pk1Pcd = ByteArray(paceInfo.ecCurve.fieldSize / BYTE_LENGTH)
-        randomGenerator.nextBytes(pk1Pcd)
-
-        val pcdSkX1 = BigInteger(1, pk1Pcd)
-        val pcdPkSkX1 = paceInfo.ecPointG.multiply(pcdSkX1)
-
-        return step2(paceInfo, nonceSInt, pcdSkX1, pcdPkSkX1.getEncoded(false))
-    }
-
-    suspend fun step2EphemeralPublicKeySecond(
-        paceInfo: PaceInfo,
-        nonceSInt: BigInteger,
-        pcdSkX1: BigInteger,
-        pcdPk1: ByteArray,
-        step3: suspend (
-            paceInfo: PaceInfo,
-            pcdSkX2: BigInteger,
-            pcdPkS2: ByteArray
-        ) -> PaceKey
-    ): PaceKey {
-        val piccPk1Bytes =
-            de.gematik.ti.healthcard.model.command.HealthCardCommand.generalAuthenticate(true, pcdPk1, 1).executeSuccessfulOn(this).apdu.data
-
-        val piccPk1BytesEncoded = extractKeyObjectEncoded(piccPk1Bytes)
-        val y1 = byteArrayToECPoint(piccPk1BytesEncoded, paceInfo.ecCurve)
-        val x2 = ByteArray(paceInfo.ecCurve.fieldSize / BYTE_LENGTH)
-        randomGenerator.nextBytes(x2)
-
-        val sharedSecretP = y1.multiply(pcdSkX1)
-        val pointGS = paceInfo.ecPointG.multiply(nonceSInt).add(sharedSecretP)
-
-        val pcdSkX2 = BigInteger(1, x2)
-        val pcdPkS2 = pointGS.multiply(pcdSkX2)
-
-        return step3(paceInfo, pcdSkX2, pcdPkS2.getEncoded(false))
-    }
-
-    suspend fun step3MutualAuthentication(
-        paceInfo: PaceInfo,
-        pcdSkX2: BigInteger,
-        pcdPkS2: ByteArray,
-        step4: suspend (
-            piccMacDerived: ByteArray,
-            pcdMac: ByteArray
-        ) -> Boolean
-    ): PaceKey {
-        val piccPk2Bytes =
-            HealthCardCommand.generalAuthenticate(true, pcdPkS2, 3).executeSuccessfulOn(this).apdu.data
-
-        val piccPk2 = extractKeyObjectEncoded(piccPk2Bytes)
-
-        val piccPk2ECPoint = byteArrayToECPoint(piccPk2, paceInfo.ecCurve)
-        val sharedSecretK = piccPk2ECPoint.multiply(pcdSkX2)
-
-        val sharedSecretKBytes: ByteArray =
-            Bytes.bigIntToByteArray(sharedSecretK.normalize().xCoord.toBigInteger())
-
-        val paceKey = PaceKey(
-            getAES128Key(sharedSecretKBytes, KeyDerivationFunction.Mode.ENC),
-            getAES128Key(sharedSecretKBytes, KeyDerivationFunction.Mode.MAC)
-        )
-
-        val pcdMac = deriveMac(paceKey.mac, piccPk2, paceInfo.protocolID)
-        val piccMacDerived = deriveMac(paceKey.mac, pcdPkS2, paceInfo.protocolID)
-
-        require(step4(piccMacDerived, pcdMac))
-
-        return paceKey
-    }
-
-    fun step4VerifyPcdAndPiccMac(
-        piccMacDerived: ByteArray,
-        pcdMac: ByteArray
-    ): Boolean {
-        val piccMacBytes =
-            de.gematik.ti.healthcard.model.command.HealthCardCommand.generalAuthenticate(false, pcdMac, 5)
-                .executeSuccessfulOn(this).apdu.data
-
-        val piccMac = extractKeyObjectEncoded(piccMacBytes)
-
-        return piccMac.contentEquals(piccMacDerived)
-    }
-
-    /**
-     * Negotiate the PaceKey and return the object
-     */
-    return step0ReadSupportedPaceParameters { paceInfo ->
-        step1EphemeralPublicKeyFirst(paceInfo) { _, nonceSInt, pcdSkX1, pcdPk1 ->
-            step2EphemeralPublicKeySecond(paceInfo, nonceSInt, pcdSkX1, pcdPk1) { _, pcdSkX2, pcdPkS2 ->
-                step3MutualAuthentication(paceInfo, pcdSkX2, pcdPkS2) { piccMacDerived, pcdMac ->
-                    step4VerifyPcdAndPiccMac(piccMacDerived, pcdMac)
-                }
+    // Step 1: Read and configure supported PACE parameters
+    suspend fun initializePace(): PaceInfo {
+        HealthCardCommand
+            .select(
+                selectParentElseRoot = false,
+                readFirst = true,
+            ).executeSuccessfulOn(this)
+        HealthCardCommand
+            .read(
+                ShortFileIdentifier(Ef.Version2.SFID),
+                0,
+            ).executeSuccessfulOn(this)
+            .let {
+                check(HealthCardVersion2.of(it.apdu.data).isEGK21()) { "Invalid eGK Version." }
             }
-        }
+
+        HealthCardCommand.select(FileIdentifier(Ef.CardAccess.FID), false).executeSuccessfulOn(this)
+        val paceInfo =
+            PaceInfo(
+                HealthCardCommand
+                    .read()
+                    .executeOn(this)
+                    .apdu.data,
+            )
+
+        HealthCardCommand
+            .manageSecEnvWithoutCurves(
+                CardKey(SECRET_KEY_REFERENCE),
+                false,
+                paceInfo.paceInfoProtocolBytes,
+            ).executeSuccessfulOn(this)
+
+        return paceInfo
     }
+
+    // Step 2: Perform Ephemeral Key Exchange
+    suspend fun performKeyExchange(paceInfo: PaceInfo): Pair<SecretKeySpec, ByteArray> {
+        val nonceZ =
+            extractKeyObjectEncoded(
+                HealthCardCommand
+                    .generalAuthenticate(true)
+                    .executeSuccessfulOn(this)
+                    .apdu.data,
+            )
+        val canKey = deriveAESKey(cardAccessNumber.toByteArray())
+        val nonceS =
+            Cipher
+                .getInstance("AES/ECB/NoPadding")
+                .apply {
+                    init(Cipher.DECRYPT_MODE, canKey)
+                }.doFinal(nonceZ)
+
+        val ecKeyPair = generateEphemeralKeyPair(paceInfo.ecCurve)
+        val privateKey = ecKeyPair.first
+        val publicKey = ecKeyPair.second
+
+        val piccPublicKey =
+            byteArrayToECPoint(
+                extractKeyObjectEncoded(
+                    HealthCardCommand
+                        .generalAuthenticate(true, publicKey, 1)
+                        .executeSuccessfulOn(this)
+                        .apdu.data,
+                ),
+                paceInfo.ecCurve,
+            )
+
+        val keyAgreement = computeSharedSecret(privateKey, piccPublicKey, paceInfo.ecCurve)
+
+        return Pair(deriveAESKey(keyAgreement), publicKey)
+    }
+
+    // Step 3: Mutual Authentication
+    suspend fun performMutualAuthentication(
+        paceKey: SecretKeySpec,
+        publicKey: ByteArray,
+        paceInfo: PaceInfo,
+    ): PaceKey {
+        val piccPublicKey =
+            extractKeyObjectEncoded(
+                HealthCardCommand
+                    .generalAuthenticate(true, publicKey, 3)
+                    .executeSuccessfulOn(this)
+                    .apdu.data,
+            )
+        val derivedMac = deriveMac(paceKey, piccPublicKey, paceInfo.protocolID)
+        val mac = deriveMac(paceKey, publicKey, paceInfo.protocolID)
+
+        val piccMac =
+            extractKeyObjectEncoded(
+                HealthCardCommand
+                    .generalAuthenticate(false, mac, 5)
+                    .executeSuccessfulOn(this)
+                    .apdu.data,
+            )
+        check(piccMac.contentEquals(derivedMac)) { "Mutual authentication failed." }
+
+        return PaceKey(paceKey, paceKey)
+    }
+
+    // Main PACE negotiation flow
+    val paceInfo = initializePace()
+    val (paceKey, publicKey) = performKeyExchange(paceInfo)
+    return performMutualAuthentication(paceKey, publicKey, paceInfo)
 }
 
-private fun createAsn1AuthToken(ecPoint: ByteArray, protocolID: String): ByteArray {
-    val asn1EncodableVector = ASN1EncodableVector()
-    asn1EncodableVector.add(ASN1ObjectIdentifier(protocolID))
-    asn1EncodableVector.add(
-        DERTaggedObject(
-            false,
-            TAG_6,
-            DEROctetString(ecPoint)
-        )
-    )
-    return DERTaggedObject(false, BERTags.APPLICATION, TAG_49, DERSequence(asn1EncodableVector)).encoded
+// Generate an ephemeral EC key pair
+fun generateEphemeralKeyPair(curve: ECCurve): Pair<ECPrivateKey, ByteArray> {
+    val keyPairGenerator = KeyPairGenerator.getInstance("EC")
+    keyPairGenerator.initialize(curve.spec)
+    val keyPair = keyPairGenerator.generateKeyPair()
+    val privateKey = (keyPair.private as ECPrivateKey).s
+    val publicKey = (keyPair.public as ECPublicKey).q.encoded(false)
+    return Pair(privateKey, publicKey)
 }
 
-private fun deriveMac(mac: ByteArray, publicKey: ByteArray, protocolID: String): ByteArray =
-    CMac(AESEngine(), MAX).apply {
-        init(KeyParameter(mac))
+// Compute shared secret using ECDH
+fun computeSharedSecret(
+    privateKey: ECPrivateKey,
+    publicKey: ECPoint,
+    curve: ECCurve,
+): ByteArray {
+    val keyAgreement = KeyAgreement.getInstance("ECDH")
+    keyAgreement.init(privateKey)
+    keyAgreement.doPhase(ECPublicKey(publicKey, curve.spec), true)
+    return keyAgreement.generateSecret()
+}
 
-        val authToken = createAsn1AuthToken(publicKey, protocolID)
-        update(authToken, 0, authToken.size)
-    }.let {
-        ByteArray(it.macSize).apply {
-            it.doFinal(this, 0)
+// Derive MAC from a key
+fun deriveMac(
+    key: SecretKeySpec,
+    publicKey: ByteArray,
+    protocolID: String,
+): ByteArray {
+    val mac = Mac.getInstance("AESCMAC").apply { init(key) }
+    val authToken = createAsn1AuthToken(publicKey, protocolID)
+    return mac.doFinal(authToken)
+}
+
+// Create ASN.1 Authentication Token
+fun createAsn1AuthToken(
+    ecPoint: ByteArray,
+    protocolID: String,
+): ByteArray {
+    val asn1EncodableVector =
+        ASN1EncodableVector().apply {
+            add(ASN1ObjectIdentifier(protocolID))
+            add(DEROctetString(ecPoint))
         }
-    }
+    return DERSequence(asn1EncodableVector).encoded
+}

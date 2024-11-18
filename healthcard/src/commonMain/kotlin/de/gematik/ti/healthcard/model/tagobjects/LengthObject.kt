@@ -1,6 +1,4 @@
-/*
- * ${GEMATIK_COPYRIGHT_STATEMENT}
- */
+
 
 package de.gematik.ti.healthcard.model.tagobjects
 
@@ -17,24 +15,27 @@ private const val BYTE_VALUE = 8
  *
  * @param le extracted expected length from plain CommandApdu
  */
-class LengthObject(le: Int) {
+class LengthObject(
+    le: Int,
+) {
     private val leData: ByteArray
 
     init {
-        leData = when {
-            le == EXPECTED_LENGTH_WILDCARD_SHORT -> {
-                byteArrayOf(0x00)
+        leData =
+            when {
+                le == EXPECTED_LENGTH_WILDCARD_SHORT -> {
+                    byteArrayOf(0x00)
+                }
+                le > EXPECTED_LENGTH_WILDCARD_SHORT -> {
+                    byteArrayOf(
+                        (le shr BYTE_VALUE and BYTE_MASK).toByte(),
+                        (le and BYTE_MASK).toByte(),
+                    )
+                }
+                else -> {
+                    byteArrayOf(le.toByte())
+                }
             }
-            le > EXPECTED_LENGTH_WILDCARD_SHORT -> {
-                byteArrayOf(
-                    (le shr BYTE_VALUE and BYTE_MASK).toByte(),
-                    (le and BYTE_MASK).toByte()
-                )
-            }
-            else -> {
-                byteArrayOf(le.toByte())
-            }
-        }
     }
 
     val encoded: ByteArray

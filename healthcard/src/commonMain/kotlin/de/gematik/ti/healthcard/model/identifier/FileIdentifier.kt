@@ -1,9 +1,5 @@
 @file:Suppress("MagicNumber")
 
-/*
- * ${GEMATIK_COPYRIGHT_STATEMENT}
- */
-
 package de.gematik.ti.healthcard.model.identifier
 
 /**
@@ -17,7 +13,10 @@ class FileIdentifier {
     private val fid: Int
 
     constructor(fid: ByteArray) {
-        require(fid.size == 2) { "requested length of byte array for a File Identifier value is 2 but was " + fid.size }
+        require(fid.size == 2) {
+            "requested length of byte array for a File Identifier value is 2 but was " +
+                fid.size
+        }
         this.fid = (fid[0].toInt() and 0xFF shl 8) or (fid[1].toInt() and 0xFF)
         sanityCheck()
     }
@@ -30,9 +29,7 @@ class FileIdentifier {
     @OptIn(ExperimentalStdlibApi::class)
     constructor(hexFid: String) : this(hexFid.hexToByteArray())
 
-    fun getFid(): ByteArray {
-        return byteArrayOf((fid shr 8).toByte(), fid.toByte())
-    }
+    fun getFid(): ByteArray = byteArrayOf((fid shr 8).toByte(), fid.toByte())
 
     @OptIn(ExperimentalStdlibApi::class)
     private fun sanityCheck() {

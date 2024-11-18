@@ -1,6 +1,4 @@
-/*
- * ${GEMATIK_COPYRIGHT_STATEMENT}
- */
+
 
 package de.gematik.ti.healthcard.model.exchange
 
@@ -13,7 +11,9 @@ private const val PARAMETER512 = 17
 /**
  * Extracts PACE Information from CardAccess
  */
-class PaceInfo(cardAccess: ByteArray) {
+class PaceInfo(
+    cardAccess: ByteArray,
+) {
     private val protocol: ASN1ObjectIdentifier
     private val parameterID: Int
 
@@ -37,18 +37,18 @@ class PaceInfo(cardAccess: ByteArray) {
      */
     val protocolID: String = protocol.id
 
-    private val ecNamedCurveParameterSpec = ECNamedCurveTable.getParameterSpec(
-        when (parameterID) {
-            PARAMETER256 -> "BrainpoolP256r1"
-            PARAMETER384 -> "BrainpoolP384r1"
-            PARAMETER512 -> "BrainpoolP512r1"
-            else -> ""
-        }
-    )
+    private val ecNamedCurveParameterSpec =
+        ECNamedCurveTable.getParameterSpec(
+            when (parameterID) {
+                PARAMETER256 -> "BrainpoolP256r1"
+                PARAMETER384 -> "BrainpoolP384r1"
+                PARAMETER512 -> "BrainpoolP512r1"
+                else -> ""
+            },
+        )
 
     val ecCurve = ecNamedCurveParameterSpec.curve
     val ecPointG = ecNamedCurveParameterSpec.g
 
-    fun convertECPoint(ecPoint: ByteArray) =
-        CardUtilities.byteArrayToECPoint(ecPoint, ecCurve)
+    fun convertECPoint(ecPoint: ByteArray) = CardUtilities.byteArrayToECPoint(ecPoint, ecCurve)
 }

@@ -1,13 +1,14 @@
-/*
- * ${GEMATIK_COPYRIGHT_STATEMENT}
- */
+
 
 package de.gematik.ti.healthcard.model.card
 
 /**
  * Pace Key for TrustedChannel with Session key for encoding and Session key for message authentication
  */
-data class PaceKey(val enc: ByteArray, val mac: ByteArray) {
+data class PaceKey(
+    val enc: ByteArray,
+    val mac: ByteArray,
+) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

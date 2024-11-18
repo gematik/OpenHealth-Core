@@ -1,6 +1,4 @@
-/*
- * ${GEMATIK_COPYRIGHT_STATEMENT}
- */
+
 
 package de.gematik.ti.healthcard.model.command
 
@@ -21,8 +19,7 @@ private const val MAX_OFFSET_WITH_SFI_RANGE = 255
 /**
  * Calls ReadCommand(0x00, EXPECT_ALL_WILDCARD)
  */
-fun HealthCardCommand.Companion.read() =
-    HealthCardCommand.read(0x00, EXPECT_ALL_WILDCARD)
+fun HealthCardCommand.Companion.read() = HealthCardCommand.read(0x00, EXPECT_ALL_WILDCARD)
 
 /**
  * Calls ReadCommand(offset, EXPECT_ALL_WILDCARD)
@@ -33,7 +30,10 @@ fun HealthCardCommand.Companion.read(offset: Int) =
 /**
  * Use case Read Binary without ShortFileIdentifier gemSpec_COS#14.3.2.1
  */
-fun HealthCardCommand.Companion.read(offset: Int, ne: Int): HealthCardCommand {
+fun HealthCardCommand.Companion.read(
+    offset: Int,
+    ne: Int,
+): HealthCardCommand {
     require(offset in MIN_OFFSET_RANGE..MAX_OFFSET_WITHOUT_SFI_RANGE)
 
     val p2 = offset % BYTE_MODULO
@@ -45,7 +45,7 @@ fun HealthCardCommand.Companion.read(offset: Int, ne: Int): HealthCardCommand {
         ins = INS,
         p1 = p1,
         p2 = p2,
-        ne = ne
+        ne = ne,
     )
 }
 
@@ -58,13 +58,19 @@ fun HealthCardCommand.Companion.read(sfi: ShortFileIdentifier) =
 /**
  * Calls ReadCommand(sfi, offset, EXPECT_ALL_WILDCARD)
  */
-fun HealthCardCommand.Companion.read(sfi: ShortFileIdentifier, offset: Int) =
-    HealthCardCommand.read(sfi, offset, EXPECT_ALL_WILDCARD)
+fun HealthCardCommand.Companion.read(
+    sfi: ShortFileIdentifier,
+    offset: Int,
+) = HealthCardCommand.read(sfi, offset, EXPECT_ALL_WILDCARD)
 
 /**
  * Use case Read Binary with ShortFileIdentifier gemSpec_COS#14.3.2.2
  */
-fun HealthCardCommand.Companion.read(sfi: ShortFileIdentifier, offset: Int, ne: Int): HealthCardCommand {
+fun HealthCardCommand.Companion.read(
+    sfi: ShortFileIdentifier,
+    offset: Int,
+    ne: Int,
+): HealthCardCommand {
     require(offset in MIN_OFFSET_RANGE..MAX_OFFSET_WITH_SFI_RANGE)
 
     return HealthCardCommand(
@@ -73,6 +79,6 @@ fun HealthCardCommand.Companion.read(sfi: ShortFileIdentifier, offset: Int, ne: 
         ins = INS,
         p1 = SFI_MARKER + sfi.sfId,
         p2 = offset,
-        ne = ne
+        ne = ne,
     )
 }

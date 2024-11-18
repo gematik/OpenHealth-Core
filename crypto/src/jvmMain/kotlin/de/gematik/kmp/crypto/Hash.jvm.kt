@@ -2,11 +2,13 @@ package de.gematik.kmp.crypto
 
 import java.security.MessageDigest
 
-class JvmHash(override val algorithm: HashAlgorithm) : Hash {
+class JvmHash(
+    override val algorithm: HashAlgorithm,
+) : Hash {
     private var digested = false
     private val hash = MessageDigest.getInstance(algorithm.name, BCProvider)
 
-    override fun update(data: ByteArray) {
+    override suspend fun update(data: ByteArray) {
         hash.update(data)
     }
 
@@ -16,6 +18,4 @@ class JvmHash(override val algorithm: HashAlgorithm) : Hash {
     }
 }
 
-actual fun createHash(algorithm: HashAlgorithm): Hash {
-    return JvmHash(algorithm)
-}
+actual fun createHash(algorithm: HashAlgorithm): Hash = JvmHash(algorithm)

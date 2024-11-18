@@ -1,6 +1,4 @@
-/*
- * ${GEMATIK_COPYRIGHT_STATEMENT}
- */
+
 
 package de.gematik.ti.healthcard.model
 
@@ -18,8 +16,11 @@ object CardUtilities {
      * @param curve     The curve on which the point should lie.
      * @return EC point generated from input data
      */
-    fun byteArrayToECPoint(byteArray: ByteArray, curve: ECCurve): ECPoint {
-        return if (byteArray[0] != UNCOMPRESSEDPOINTVALUE.toByte()) {
+    fun byteArrayToECPoint(
+        byteArray: ByteArray,
+        curve: ECCurve,
+    ): ECPoint =
+        if (byteArray[0] != UNCOMPRESSEDPOINTVALUE.toByte()) {
             throw IllegalArgumentException("Found no uncompressed point!")
         } else {
             val x = ByteArray((byteArray.size - 1) / 2)
@@ -31,11 +32,10 @@ object CardUtilities {
                 1 + (byteArray.size - 1) / 2,
                 y,
                 0,
-                (byteArray.size - 1) / 2
+                (byteArray.size - 1) / 2,
             )
             curve.createPoint(BigInteger(1, x), BigInteger(1, y))
         }
-    }
 
     /**
      * Encodes an ASN1 KeyObject

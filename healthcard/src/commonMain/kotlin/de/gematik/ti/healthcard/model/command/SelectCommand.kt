@@ -1,6 +1,4 @@
-/*
- * ${GEMATIK_COPYRIGHT_STATEMENT}
- */
+
 
 package de.gematik.ti.healthcard.model.command
 
@@ -22,16 +20,20 @@ private const val P2 = 0x0C
 
 // Note: Left out use case Select parent folder requesting File Control Parameter gemSpec_Cos#14.2.6.12
 // Note: Left out use case Select parent folder requesting File Control Parameter gemSpec_Cos#14.2.6.14
-private fun calculateP2(requestFCP: Boolean, nextOccurrence: Boolean): Int =
+private fun calculateP2(
+    requestFCP: Boolean,
+    nextOccurrence: Boolean,
+): Int =
     if (requestFCP) {
         RESPONSE_TYPE_FCP
     } else {
         RESPONSE_TYPE_NO_RESPONSE
-    } + if (nextOccurrence) {
-        FILE_OCCURRENCE_NEXT
-    } else {
-        FILE_OCCURRENCE_FIRST
-    }
+    } +
+        if (nextOccurrence) {
+            FILE_OCCURRENCE_NEXT
+        } else {
+            FILE_OCCURRENCE_FIRST
+        }
 
 /**
  * Commands representing Select Command gemSpec_COS#14.2.6
@@ -44,17 +46,20 @@ private fun calculateP2(requestFCP: Boolean, nextOccurrence: Boolean): Int =
  * @param selectParentElseRoot if true SELECTION_MODE_PARENT else SELECTION_MODE_AID
  * @param readFirst if true read FCP else only select
  */
-fun HealthCardCommand.Companion.select(selectParentElseRoot: Boolean, readFirst: Boolean) =
-    HealthCardCommand(
-        expectedStatus = selectStatus,
-        cla = CLA,
-        ins = INS,
-        p1 = if (selectParentElseRoot) SELECTION_MODE_PARENT else SELECTION_MODE_AID,
-        p2 = calculateP2(readFirst, false),
-        ne = if (readFirst) EXPECT_ALL_WILDCARD else null
-    )
+fun HealthCardCommand.Companion.select(
+    selectParentElseRoot: Boolean,
+    readFirst: Boolean,
+) = HealthCardCommand(
+    expectedStatus = selectStatus,
+    cla = CLA,
+    ins = INS,
+    p1 = if (selectParentElseRoot) SELECTION_MODE_PARENT else SELECTION_MODE_AID,
+    p2 = calculateP2(readFirst, false),
+    ne = if (readFirst) EXPECT_ALL_WILDCARD else null,
+)
 
 // Note: Left out use cases Select without Application Identifier, next gemSpec_Cos#14.2.6.3 - 14.2.6.4
+
 /**
  * Use case Select file with Application Identifier, first occurrence, no File Control Parameter gemSpec_Cos#14.2.6.5
  *
@@ -65,7 +70,7 @@ fun HealthCardCommand.Companion.select(aid: ApplicationIdentifier) =
         aid,
         selectNextElseFirstOccurrence = false,
         requestFcp = false,
-        fcpLength = 0
+        fcpLength = 0,
     )
 
 /**
@@ -77,24 +82,25 @@ fun HealthCardCommand.Companion.select(
     aid: ApplicationIdentifier,
     selectNextElseFirstOccurrence: Boolean,
     requestFcp: Boolean,
-    fcpLength: Int
-) =
-    HealthCardCommand(
-        expectedStatus = selectStatus,
-        cla = CLA,
-        ins = INS,
-        p1 = SELECTION_MODE_AID,
-        p2 = calculateP2(requestFcp, selectNextElseFirstOccurrence),
-        data = aid.aid,
-        ne = if (requestFcp) fcpLength else null
-    )
+    fcpLength: Int,
+) = HealthCardCommand(
+    expectedStatus = selectStatus,
+    cla = CLA,
+    ins = INS,
+    p1 = SELECTION_MODE_AID,
+    p2 = calculateP2(requestFcp, selectNextElseFirstOccurrence),
+    data = aid.aid,
+    ne = if (requestFcp) fcpLength else null,
+)
 
 /**
  * Use case Select DF with File Identifier gemSpec_Cos#14.2.6.9 and
  * use case Select EF with File Identifier gemSpec_Cos#14.2.6.13
  */
-fun HealthCardCommand.Companion.select(fid: FileIdentifier, selectDfElseEf: Boolean) =
-    HealthCardCommand.select(fid, selectDfElseEf, false, 0)
+fun HealthCardCommand.Companion.select(
+    fid: FileIdentifier,
+    selectDfElseEf: Boolean,
+) = HealthCardCommand.select(fid, selectDfElseEf, false, 0)
 
 /**
  * Use cases Select DF with File Identifier gemSpec_Cos#14.2.6.9 - 14.2.6.10 and
@@ -107,14 +113,13 @@ fun HealthCardCommand.Companion.select(
     fid: FileIdentifier,
     selectDfElseEf: Boolean,
     requestFcp: Boolean,
-    fcpLength: Int
-) =
-    HealthCardCommand(
-        expectedStatus = selectStatus,
-        cla = CLA,
-        ins = INS,
-        p1 = if (selectDfElseEf) SELECTION_MODE_DF_BY_FID else SELECTION_MODE_EF_BY_FID,
-        p2 = if (requestFcp) P2_FCP else P2,
-        data = fid.getFid(),
-        ne = if (requestFcp) fcpLength else null
-    )
+    fcpLength: Int,
+) = HealthCardCommand(
+    expectedStatus = selectStatus,
+    cla = CLA,
+    ins = INS,
+    p1 = if (selectDfElseEf) SELECTION_MODE_DF_BY_FID else SELECTION_MODE_EF_BY_FID,
+    p2 = if (requestFcp) P2_FCP else P2,
+    data = fid.getFid(),
+    ne = if (requestFcp) fcpLength else null,
+)

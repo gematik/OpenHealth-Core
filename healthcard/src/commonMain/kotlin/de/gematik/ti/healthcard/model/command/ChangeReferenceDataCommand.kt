@@ -1,6 +1,4 @@
-/*
- * ${GEMATIK_COPYRIGHT_STATEMENT}
- */
+
 
 package de.gematik.ti.healthcard.model.command
 
@@ -18,14 +16,13 @@ fun HealthCardCommand.Companion.changeReferenceData(
     passwordReference: PasswordReference,
     dfSpecific: Boolean,
     oldSecret: EncryptedPinFormat2,
-    newSecret: EncryptedPinFormat2
-) =
-    HealthCardCommand(
-        expectedStatus = changeReferenceDataStatus,
-        cla = CLA,
-        ins = INS,
-        p1 = MODE_VERIFICATION_DATA,
-        p2 = passwordReference.calculateKeyReference(dfSpecific),
-        data =
-        oldSecret.bytes + newSecret.bytes
-    )
+    newSecret: EncryptedPinFormat2,
+) = HealthCardCommand(
+    expectedStatus = changeReferenceDataStatus,
+    cla = CLA,
+    ins = INS,
+    p1 = MODE_VERIFICATION_DATA,
+    p2 = passwordReference.calculateKeyReference(dfSpecific),
+    data =
+        oldSecret.bytes + newSecret.bytes,
+)

@@ -1,5 +1,4 @@
 import com.vanniktech.maven.publish.SonatypeHost
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -32,6 +31,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
+                implementation(project(":asn1"))
                 implementation(libs.kotlinx.coroutines.core)
             }
         }
@@ -48,6 +48,12 @@ kotlin {
         }
         val jvmTest by getting {
         }
+        val androidMain by getting {
+            dependsOn(jvmMain)
+        }
+        val androidUnitTest by getting {
+            dependsOn(jvmTest)
+        }
         val jsMain by getting {
             dependencies {
                 implementation(npm("aes-cmac", "3.0.2"))
@@ -56,10 +62,16 @@ kotlin {
         }
         val jsTest by getting {
         }
-        all {
+        this.all {
             languageSettings {
                 optIn("kotlin.js.ExperimentalJsExport")
                 optIn("de.gematik.kmp.crypto.ExperimentalCryptoApi")
+            }
+
+            if (name.contains("Test")) {
+                languageSettings {
+                    optIn("kotlin.ExperimentalStdlibApi")
+                }
             }
         }
     }
@@ -67,9 +79,15 @@ kotlin {
 
 android {
     namespace = "org.jetbrains.kotlinx.multiplatform.library.template"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk =
+        libs.versions.android.compileSdk
+            .get()
+            .toInt()
     defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
+        minSdk =
+            libs.versions.android.minSdk
+                .get()
+                .toInt()
     }
 }
 

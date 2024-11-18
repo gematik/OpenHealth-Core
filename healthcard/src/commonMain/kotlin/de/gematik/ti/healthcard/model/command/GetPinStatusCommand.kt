@@ -1,6 +1,4 @@
-/*
- * ${GEMATIK_COPYRIGHT_STATEMENT}
- */
+
 
 package de.gematik.ti.healthcard.model.command
 
@@ -21,11 +19,13 @@ private const val NO_MEANING = 0x00
  * @param dfSpecific whether or not the password object specifies a Global or DF-specific.
  * true = DF-Specific, false = global
  */
-fun HealthCardCommand.Companion.getPinStatus(password: PasswordReference, dfSpecific: Boolean) =
-    HealthCardCommand(
-        expectedStatus = pinStatus,
-        cla = CLA,
-        ins = INS,
-        p1 = NO_MEANING,
-        p2 = password.calculateKeyReference(dfSpecific)
-    )
+fun HealthCardCommand.Companion.getPinStatus(
+    password: PasswordReference,
+    dfSpecific: Boolean,
+) = HealthCardCommand(
+    expectedStatus = pinStatus,
+    cla = CLA,
+    ins = INS,
+    p1 = NO_MEANING,
+    p2 = password.calculateKeyReference(dfSpecific),
+)

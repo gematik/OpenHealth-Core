@@ -1,6 +1,4 @@
-/*
- * ${GEMATIK_COPYRIGHT_STATEMENT}
- */
+
 
 package de.gematik.ti.healthcard.model.tagobjects
 
@@ -14,7 +12,9 @@ private const val DO_99_TAG = 0x19
  *
  * @param statusBytes byte array with extracted response status from encrypted ResponseApdu
  */
-class StatusObject(private val statusBytes: ByteArray) {
+class StatusObject(
+    private val statusBytes: ByteArray,
+) {
     val encoded: ByteArray
         get() {
             val encoder = Asn1Encoder()

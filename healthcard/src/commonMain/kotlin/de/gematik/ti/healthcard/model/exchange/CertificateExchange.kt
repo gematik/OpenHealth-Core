@@ -1,6 +1,4 @@
-/*
- * ${GEMATIK_COPYRIGHT_STATEMENT}
- */
+
 
 package de.gematik.ti.healthcard.model.exchange
 
@@ -14,21 +12,27 @@ import de.gematik.ti.healthcard.model.identifier.ApplicationIdentifier
 import de.gematik.ti.healthcard.model.identifier.FileIdentifier
 
 fun ICardChannel.retrieveCertificate(): ByteArray {
-    de.gematik.ti.healthcard.model.command.HealthCardCommand.select(
-        ApplicationIdentifier(Df.Esign.AID)
-    ).executeSuccessfulOn(this)
-    de.gematik.ti.healthcard.model.command.HealthCardCommand.select(
-        FileIdentifier(de.gematik.ti.healthcard.model.cardobjects.Mf.Df.Esign.Ef.CchAutE256.FID),
-        selectDfElseEf = false,
-        requestFcp = true,
-        fcpLength = de.gematik.ti.healthcard.model.command.EXPECTED_LENGTH_WILDCARD_EXTENDED
-    ).executeSuccessfulOn(this)
+    de.gematik.ti.healthcard.model.command.HealthCardCommand
+        .select(
+            ApplicationIdentifier(Df.Esign.AID),
+        ).executeSuccessfulOn(this)
+    de.gematik.ti.healthcard.model.command.HealthCardCommand
+        .select(
+            FileIdentifier(
+                de.gematik.ti.healthcard.model.cardobjects.Mf.Df.Esign.Ef.CchAutE256.FID,
+            ),
+            selectDfElseEf = false,
+            requestFcp = true,
+            fcpLength = de.gematik.ti.healthcard.model.command.EXPECTED_LENGTH_WILDCARD_EXTENDED,
+        ).executeSuccessfulOn(this)
 
     var buffer = byteArrayOf()
     var offset = 0
     while (true) {
-        val response = de.gematik.ti.healthcard.model.command.HealthCardCommand.read(offset)
-            .executeOn(this)
+        val response =
+            de.gematik.ti.healthcard.model.command.HealthCardCommand
+                .read(offset)
+                .executeOn(this)
 
         val data = response.apdu.data
 
@@ -40,7 +44,8 @@ fun ICardChannel.retrieveCertificate(): ByteArray {
         when (response.status) {
             ResponseStatus.SUCCESS -> { }
             ResponseStatus.END_OF_FILE_WARNING,
-            ResponseStatus.OFFSET_TOO_BIG -> break
+            ResponseStatus.OFFSET_TOO_BIG,
+            -> break
             else -> error("Couldn't read certificate: ${response.status}")
         }
     }

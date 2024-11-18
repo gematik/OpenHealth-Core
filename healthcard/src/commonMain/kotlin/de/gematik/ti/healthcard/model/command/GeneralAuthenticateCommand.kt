@@ -1,9 +1,5 @@
 @file:Suppress("MagicNumber")
 
-/*
- * ${GEMATIK_COPYRIGHT_STATEMENT}
- */
-
 package de.gematik.ti.healthcard.model.command
 
 import org.bouncycastle.asn1.BERTags
@@ -33,7 +29,7 @@ fun HealthCardCommand.Companion.generalAuthenticate(commandChaining: Boolean) =
         p1 = NO_MEANING,
         p2 = NO_MEANING,
         data = DERTaggedObject(false, BERTags.APPLICATION, 28, DERSequence()).encoded,
-        ne = NE_MAX_SHORT_LENGTH
+        ne = NE_MAX_SHORT_LENGTH,
     )
 
 /**
@@ -45,19 +41,19 @@ fun HealthCardCommand.Companion.generalAuthenticate(commandChaining: Boolean) =
 fun HealthCardCommand.Companion.generalAuthenticate(
     commandChaining: Boolean,
     data: ByteArray,
-    tagNo: Int
-) =
-    HealthCardCommand(
-        expectedStatus = generalAuthenticateStatus,
-        cla = if (commandChaining) CLA_COMMAND_CHAINING else CLA_NO_COMMAND_CHAINING,
-        ins = INS,
-        p1 = NO_MEANING,
-        p2 = NO_MEANING,
-        data = DERTaggedObject(
+    tagNo: Int,
+) = HealthCardCommand(
+    expectedStatus = generalAuthenticateStatus,
+    cla = if (commandChaining) CLA_COMMAND_CHAINING else CLA_NO_COMMAND_CHAINING,
+    ins = INS,
+    p1 = NO_MEANING,
+    p2 = NO_MEANING,
+    data =
+        DERTaggedObject(
             true,
             BERTags.APPLICATION,
             28,
-            DERTaggedObject(false, tagNo, DEROctetString(data))
+            DERTaggedObject(false, tagNo, DEROctetString(data)),
         ).encoded,
-        ne = NE_MAX_SHORT_LENGTH
-    )
+    ne = NE_MAX_SHORT_LENGTH,
+)

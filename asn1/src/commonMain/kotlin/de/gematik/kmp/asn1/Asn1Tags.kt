@@ -43,22 +43,22 @@ object Asn1Type {
  * Marks a tag constructed.
  */
 @JsExport
-fun Int.asConstructedTag(): Int = this or 0x20
+fun Int.toConstructedTag(): Int = this or 0x20
 
 /**
  * Marks a tag as application.
  */
 @JsExport
-fun Int.asApplicationTag(): Int = this or 0x40
+fun Int.toApplicationTag(): Int = this or 0x40
 
 /**
  * Marks a tag as context specific.
  */
 @JsExport
-fun Int.asContextSpecificTag(): Int = this or 0x80
+fun Int.toContextSpecificTag(): Int = this or 0x80
 
 /**
  * Marks a tag private.
  */
 @JsExport
-fun Int.asPrivateTag(): Int = this or 0xC0
+fun Int.toPrivateTag(): Int = this or 0xC0

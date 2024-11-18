@@ -1,6 +1,4 @@
-/*
- * ${GEMATIK_COPYRIGHT_STATEMENT}
- */
+
 
 package de.gematik.ti.healthcard.model.exchange
 
@@ -23,26 +21,29 @@ import de.gematik.ti.healthcard.model.identifier.ApplicationIdentifier
     "A_20172#3",
     "A_20700-07#1",
     sourceSpecification = "gemF_Tokenverschlüsselung",
-    rationale = "Sign challenge using the health card certificate."
+    rationale = "Sign challenge using the health card certificate.",
 )
 @Requirement(
     "O.Cryp_1#1",
     "O.Cryp_4#1",
     sourceSpecification = "BSI-eRp-ePA",
-    rationale = "Signature via ecdh ephemeral-static (one time usage)"
+    rationale = "Signature via ecdh ephemeral-static (one time usage)",
 )
 fun ICardChannel.signChallenge(challenge: ByteArray): ByteArray {
-    de.gematik.ti.healthcard.model.command.HealthCardCommand.select(
-        ApplicationIdentifier(Df.Esign.AID)
-    ).executeSuccessfulOn(this)
+    de.gematik.ti.healthcard.model.command.HealthCardCommand
+        .select(
+            ApplicationIdentifier(Df.Esign.AID),
+        ).executeSuccessfulOn(this)
 
-    de.gematik.ti.healthcard.model.command.HealthCardCommand.manageSecEnvForSigning(
-        PsoAlgorithm.SIGN_VERIFY_ECDSA,
-        CardKey(de.gematik.ti.healthcard.model.cardobjects.Mf.Df.Esign.PrK.ChAutE256.KID),
-        true
-    ).executeSuccessfulOn(this)
+    de.gematik.ti.healthcard.model.command.HealthCardCommand
+        .manageSecEnvForSigning(
+            PsoAlgorithm.SIGN_VERIFY_ECDSA,
+            CardKey(de.gematik.ti.healthcard.model.cardobjects.Mf.Df.Esign.PrK.ChAutE256.KID),
+            true,
+        ).executeSuccessfulOn(this)
 
-    return de.gematik.ti.healthcard.model.command.HealthCardCommand.psoComputeDigitalSignature(challenge)
+    return de.gematik.ti.healthcard.model.command.HealthCardCommand
+        .psoComputeDigitalSignature(challenge)
         .executeSuccessfulOn(this)
         .apdu.data
 }

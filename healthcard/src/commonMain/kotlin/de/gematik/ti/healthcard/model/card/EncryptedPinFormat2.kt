@@ -1,6 +1,4 @@
-/*
- * ${GEMATIK_COPYRIGHT_STATEMENT}
- */
+
 
 package de.gematik.ti.healthcard.model.card
 
@@ -22,7 +20,9 @@ private const val MIN_DIGIT = 0 // specSpec_COS#N008.000
 private const val MAX_DIGIT = 9 // specSpec_COS#N008.000
 private const val STRING_INT_OFFSET = 48
 
-class EncryptedPinFormat2(pin: String) {
+class EncryptedPinFormat2(
+    pin: String,
+) {
     val bytes: ByteArray
         get() = field.copyOf()
 
@@ -45,18 +45,20 @@ class EncryptedPinFormat2(pin: String) {
         val format2 = IntArray(FORMAT2_PIN_SIZE) // specSpec_COS#N008.100
         format2[0] = FORMAT_PIN_2_ID + intPin.size
         for (i in intPin.indices) {
-            format2[1 + i / 2] += if ((i + 2) % 2 == 0) {
-                intPin[i] shl NIBBLE_SIZE
-            } else {
-                intPin[i]
-            }
+            format2[1 + i / 2] +=
+                if ((i + 2) % 2 == 0) {
+                    intPin[i] shl NIBBLE_SIZE
+                } else {
+                    intPin[i]
+                }
         }
         for (i in intPin.size until 2 * FORMAT2_PIN_SIZE - 2) {
-            format2[1 + i / 2] += if (i % 2 == 0) {
-                FORMAT2_PIN_FILLER shl NIBBLE_SIZE
-            } else {
-                FORMAT2_PIN_FILLER
-            }
+            format2[1 + i / 2] +=
+                if (i % 2 == 0) {
+                    FORMAT2_PIN_FILLER shl NIBBLE_SIZE
+                } else {
+                    FORMAT2_PIN_FILLER
+                }
         }
 
         val b = ByteArray(FORMAT2_PIN_SIZE)

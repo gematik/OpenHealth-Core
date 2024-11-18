@@ -1,9 +1,5 @@
 @file:Suppress("MagicNumber")
 
-/*
- * ${GEMATIK_COPYRIGHT_STATEMENT}
- */
-
 package de.gematik.ti.healthcard.model.command
 
 /**
@@ -13,10 +9,16 @@ const val EXPECTED_LENGTH_WILDCARD_EXTENDED: Int = 65536
 const val EXPECTED_LENGTH_WILDCARD_SHORT: Int = 256
 
 private fun encodeDataLengthExtended(nc: Int): ByteArray =
-    byteArrayOf(0x0, (nc shr 8).toByte(), (nc and 0xFF).toByte())
+    byteArrayOf(
+        0x0,
+        (nc shr 8).toByte(),
+        (
+            nc and
+                0xFF
+        ).toByte(),
+    )
 
-private fun encodeDataLengthShort(nc: Int): ByteArray =
-    byteArrayOf(nc.toByte())
+private fun encodeDataLengthShort(nc: Int): ByteArray = byteArrayOf(nc.toByte())
 
 private fun encodeExpectedLengthExtended(ne: Int): ByteArray =
     if (ne != EXPECTED_LENGTH_WILDCARD_EXTENDED) { // == 65536
@@ -31,7 +33,7 @@ private fun encodeExpectedLengthShort(ne: Int): ByteArray =
             ne.toByte()
         } else {
             0x0
-        }
+        },
     )
 
 /**
@@ -55,7 +57,7 @@ class CommandApdu(
     apduBytes: ByteArray,
     val rawNc: Int,
     val rawNe: Int?,
-    val dataOffset: Int
+    val dataOffset: Int,
 ) {
     private val _apduBytes = apduBytes.copyOf()
     val bytes
@@ -67,7 +69,7 @@ class CommandApdu(
             ins: Int,
             p1: Int,
             p2: Int,
-            ne: Int?
+            ne: Int?,
         ) = ofOptions(cla = cla, ins = ins, p1 = p1, p2 = p2, data = null, ne = ne)
 
         @Suppress("CyclomaticComplexMethod")
@@ -77,7 +79,7 @@ class CommandApdu(
             p1: Int,
             p2: Int,
             data: ByteArray?,
-            ne: Int?
+            ne: Int?,
         ): CommandApdu {
             require(!(cla < 0 || ins < 0 || p1 < 0 || p2 < 0)) {
                 "APDU header fields must not be less than 0"
@@ -134,7 +136,7 @@ class CommandApdu(
                     apduBytes = bytes,
                     rawNc = nc,
                     rawNe = le,
-                    dataOffset = dataOffset
+                    dataOffset = dataOffset,
                 )
             } else {
                 // data empty
@@ -154,7 +156,7 @@ class CommandApdu(
                         apduBytes = bytes,
                         rawNc = 0,
                         rawNe = ne,
-                        dataOffset = 0
+                        dataOffset = 0,
                     )
                 } else {
                     // case 1
@@ -162,25 +164,26 @@ class CommandApdu(
                         apduBytes = bytes,
                         rawNc = 0,
                         rawNe = null,
-                        dataOffset = 0
+                        dataOffset = 0,
                     )
                 }
             }
         }
     }
 
-    override fun toString(): String {
-        return "Apdu.cla=${_apduBytes[0]})"
-    }
-
+    override fun toString(): String = "Apdu.cla=${_apduBytes[0]})"
 }
 
 /**
  * APDU Response
  */
-class ResponseApdu(apdu: ByteArray) {
+class ResponseApdu(
+    apdu: ByteArray,
+) {
     init {
-        require(apdu.size >= 2) { "Response APDU must not have less than 2 bytes (status bytes SW1, SW2)" }
+        require(
+            apdu.size >= 2,
+        ) { "Response APDU must not have less than 2 bytes (status bytes SW1, SW2)" }
     }
 
     private val apdu = apdu.copyOf()
@@ -212,7 +215,5 @@ class ResponseApdu(apdu: ByteArray) {
         return apdu.contentEquals(other.apdu)
     }
 
-    override fun hashCode(): Int {
-        return apdu.contentHashCode()
-    }
+    override fun hashCode(): Int = apdu.contentHashCode()
 }

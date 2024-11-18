@@ -1,6 +1,4 @@
-/*
- * ${GEMATIK_COPYRIGHT_STATEMENT}
- */
+
 
 package de.gematik.ti.healthcard.model.identifier
 
@@ -14,7 +12,9 @@ private const val MAX_VALUE = 30
  *
  * @see "ISO/IEC7816-4 und gemSpec_COS 'Spezifikation des Card Operating System'"
  */
-class ShortFileIdentifier(val sfId: Int) {
+class ShortFileIdentifier(
+    val sfId: Int,
+) {
     init {
         sanityCheck()
     }
