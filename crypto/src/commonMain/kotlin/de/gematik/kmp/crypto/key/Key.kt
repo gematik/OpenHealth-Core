@@ -30,4 +30,26 @@ class SecretKey(
     override val data: ByteArray,
 ) : Key {
     val length: ByteUnit = data.size.bytes
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as SecretKey
+
+        if (!data.contentEquals(other.data)) return false
+        if (length != other.length) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = data.contentHashCode()
+        result = 31 * result + length.hashCode()
+        return result
+    }
+
+    override fun toString(): String {
+        return "SecretKey(data=${data.contentToString()})"
+    }
 }

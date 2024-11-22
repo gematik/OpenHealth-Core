@@ -16,6 +16,8 @@
 
 package de.gematik.kmp.crypto
 
+import de.gematik.kmp.crypto.key.SecretKey
+
 @ExperimentalCryptoApi
 class CmacException(
     override val message: String,
@@ -29,7 +31,7 @@ enum class CmacAlgorithm {
 
 @ExperimentalCryptoApi
 interface Cmac {
-    val algorithm: CmacAlgorithm
+    val spec: CmacSpec
 
     suspend fun update(data: ByteArray)
 
@@ -37,7 +39,9 @@ interface Cmac {
 }
 
 @ExperimentalCryptoApi
-expect fun createCmac(
-    algorithm: CmacAlgorithm,
-    secret: ByteArray,
+class CmacSpec(val algorithm: CmacAlgorithm)
+
+@ExperimentalCryptoApi
+expect fun CmacSpec.createCmac(
+    secret: SecretKey,
 ): Cmac

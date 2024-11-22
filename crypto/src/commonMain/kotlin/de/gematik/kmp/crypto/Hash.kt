@@ -29,7 +29,7 @@ enum class HashAlgorithm {
 
 @ExperimentalCryptoApi
 interface Hash {
-    val algorithm: HashAlgorithm
+    val spec: HashSpec
 
     suspend fun update(data: ByteArray)
 
@@ -37,4 +37,7 @@ interface Hash {
 }
 
 @ExperimentalCryptoApi
-expect fun createHash(algorithm: HashAlgorithm): Hash
+class HashSpec(val algorithm: HashAlgorithm)
+
+@ExperimentalCryptoApi
+expect fun HashSpec.createHash(): Hash

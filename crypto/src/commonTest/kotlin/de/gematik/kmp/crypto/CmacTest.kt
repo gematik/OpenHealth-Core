@@ -18,6 +18,7 @@
 
 package de.gematik.kmp.crypto
 
+import de.gematik.kmp.crypto.key.SecretKey
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -30,12 +31,12 @@ private val hexFormat =
     }
 
 class CmacTest {
-    val secret = "67 AD A7 BE 54 75 0C 47 44 D0 E3 46 66 33 64 05".hexToByteArray(hexFormat)
+    private val secret = SecretKey("67 AD A7 BE 54 75 0C 47 44 D0 E3 46 66 33 64 05".hexToByteArray(hexFormat))
 
     @Test
     fun `cmac with valid data - expected`() =
         runTest {
-            val cmac = createCmac(CmacAlgorithm.Aes, secret)
+            val cmac = CmacSpec(CmacAlgorithm.Aes).createCmac(secret)
             cmac.update("Hello, World!".encodeToByteArray())
             val result = cmac.final()
             assertEquals(
@@ -47,7 +48,7 @@ class CmacTest {
     @Test
     fun `cmac with empty data`() =
         runTest {
-            val cmac = createCmac(CmacAlgorithm.Aes, secret)
+            val cmac = CmacSpec(CmacAlgorithm.Aes).createCmac(secret)
             cmac.update(ByteArray(0))
             val result = cmac.final()
             assertEquals(
@@ -59,7 +60,7 @@ class CmacTest {
     @Test
     fun `cmac with multiple updates`() =
         runTest {
-            val cmac = createCmac(CmacAlgorithm.Aes, secret)
+            val cmac = CmacSpec(CmacAlgorithm.Aes).createCmac(secret)
             cmac.update("Hello, ".encodeToByteArray())
             cmac.update("World!".encodeToByteArray())
             val result = cmac.final()
@@ -72,7 +73,7 @@ class CmacTest {
     @Test
     fun `cmac final can only be called once`() =
         runTest {
-            val cmac = createCmac(CmacAlgorithm.Aes, secret)
+            val cmac = CmacSpec(CmacAlgorithm.Aes).createCmac(secret)
             cmac.update("Test data".encodeToByteArray())
             cmac.final()
             assertFailsWith<CmacException> {

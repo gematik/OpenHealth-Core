@@ -16,10 +16,10 @@
 
 package de.gematik.kmp.crypto
 
-internal class NodeHash(
-    override val algorithm: HashAlgorithm,
+private class NodeHash(
+    override val spec: HashSpec,
 ) : Hash {
-    private val hash = node.crypto.createHash(algorithm.name)
+    private val hash = node.crypto.createHash(spec.algorithm.name)
 
     override suspend fun update(data: ByteArray) {
         hash.update(data)
@@ -31,4 +31,4 @@ internal class NodeHash(
     }
 }
 
-actual fun createHash(algorithm: HashAlgorithm): Hash = NodeHash(algorithm)
+actual fun HashSpec.createHash(): Hash = NodeHash(this)

@@ -16,26 +16,27 @@
 
 package de.gematik.kmp.crypto
 
+import de.gematik.kmp.crypto.key.SecretKey
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
-class JvmCmac(
-    override val algorithm: CmacAlgorithm,
-    secret: ByteArray,
+private class JvmCmac(
+    override val spec: CmacSpec,
+    secret: SecretKey,
 ) : Cmac {
     private var final = false
 
     private val algorithmName =
-        when (algorithm) {
+        when (spec.algorithm) {
             CmacAlgorithm.Aes -> "AESCMAC"
             else -> throw IllegalArgumentException("Unknown algorithm")
         }
     private val keyName =
-        when (algorithm) {
+        when (spec.algorithm) {
             CmacAlgorithm.Aes -> "AES"
             else -> throw IllegalArgumentException("Unknown algorithm")
         }
-    private val secretKey = SecretKeySpec(secret, keyName)
+    private val secretKey = SecretKeySpec(secret.data, keyName)
     private val mac = Mac.getInstance(algorithmName, BCProvider).apply { init(secretKey) }
 
     override suspend fun update(data: ByteArray) {
@@ -48,7 +49,6 @@ class JvmCmac(
     }
 }
 
-actual fun createCmac(
-    algorithm: CmacAlgorithm,
-    secret: ByteArray,
-): Cmac = JvmCmac(algorithm, secret)
+actual fun CmacSpec.createCmac(
+    secret: SecretKey,
+): Cmac = JvmCmac(this, secret)

@@ -16,6 +16,7 @@
 
 package de.gematik.kmp.crypto
 
+import de.gematik.kmp.crypto.key.SecretKey
 import kotlinx.coroutines.await
 import org.khronos.webgl.Uint8Array
 import kotlin.js.Promise
@@ -30,13 +31,17 @@ external object aesCmac {
     }
 }
 
-internal class NodeCmac(
-    override val algorithm: CmacAlgorithm,
-    secret: ByteArray,
+private class NodeCmac(
+    override val spec: CmacSpec,
+    secret: SecretKey,
 ) : Cmac {
+    init {
+        require(spec.algorithm == CmacAlgorithm.Aes) { "Only AES is supported" }
+    }
+
     private var final = false
 
-    private val cmac = runNodeCatching { aesCmac.AesCmac(js("Buffer").from(secret) as Uint8Array) }
+    private val cmac = runNodeCatching { aesCmac.AesCmac(js("Buffer").from(secret.data) as Uint8Array) }
     private var data = byteArrayOf()
 
     override suspend fun update(data: ByteArray) {
@@ -56,7 +61,6 @@ internal class NodeCmac(
     }
 }
 
-actual fun createCmac(
-    algorithm: CmacAlgorithm,
-    secret: ByteArray,
-): Cmac = NodeCmac(algorithm, secret)
+actual fun CmacSpec.createCmac(
+    secret: SecretKey,
+): Cmac = NodeCmac(this, secret)

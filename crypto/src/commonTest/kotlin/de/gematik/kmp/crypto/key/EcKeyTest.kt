@@ -16,15 +16,23 @@
 
 package de.gematik.kmp.crypto.key
 
+import kotlinx.coroutines.test.runTest
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class EcKeyTest {
     @Test
+    fun `create ec key pair`() = runTest {
+        val (publicKeyResult, privateKeyResult) = EcKeyPairSpec(EcCurve.BrainpoolP256r1).generateKeyPair()
+        assertEquals(EcCurve.BrainpoolP256r1, publicKeyResult.curve)
+        assertEquals(EcCurve.BrainpoolP256r1, privateKeyResult.curve)
+    }
+
+    @Test
     fun `encode and decode ec public key from pem`() {
         val ecPublicKey =
-            EcPublicKey.fromUncompressedFormat(
+            EcPublicKey.decodeFromUncompressedFormat(
                 EcCurve.BrainpoolP256r1,
                 byteArrayOf(0x04) + Random.nextBytes(32) + Random.nextBytes(32),
             )

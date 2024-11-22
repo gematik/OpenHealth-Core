@@ -1,0 +1,225 @@
+public final class de/gematik/kmp/crypto/ByteUnit {
+	public static final synthetic fun box-impl (I)Lde/gematik/kmp/crypto/ByteUnit;
+	public static fun constructor-impl (I)I
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (ILjava/lang/Object;)Z
+	public static final fun equals-impl0 (II)Z
+	public final fun getValue ()I
+	public fun hashCode ()I
+	public static fun hashCode-impl (I)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (I)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()I
+}
+
+public abstract interface class de/gematik/kmp/crypto/Cmac {
+	public abstract fun final (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getAlgorithm ()Lde/gematik/kmp/crypto/CmacAlgorithm;
+	public abstract fun update ([BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class de/gematik/kmp/crypto/CmacAlgorithm : java/lang/Enum {
+	public static final field Aes Lde/gematik/kmp/crypto/CmacAlgorithm;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lde/gematik/kmp/crypto/CmacAlgorithm;
+	public static fun values ()[Lde/gematik/kmp/crypto/CmacAlgorithm;
+}
+
+public final class de/gematik/kmp/crypto/CmacException : java/lang/Throwable {
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getCause ()Ljava/lang/Throwable;
+	public fun getMessage ()Ljava/lang/String;
+}
+
+public final class de/gematik/kmp/crypto/Cmac_jvmKt {
+	public static final fun createCmac (Lde/gematik/kmp/crypto/CmacAlgorithm;[B)Lde/gematik/kmp/crypto/Cmac;
+}
+
+public abstract interface annotation class de/gematik/kmp/crypto/ExperimentalCryptoApi : java/lang/annotation/Annotation {
+}
+
+public abstract interface class de/gematik/kmp/crypto/Hash {
+	public abstract fun digest (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getAlgorithm ()Lde/gematik/kmp/crypto/HashAlgorithm;
+	public abstract fun update ([BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class de/gematik/kmp/crypto/HashAlgorithm : java/lang/Enum {
+	public static final field Sha1 Lde/gematik/kmp/crypto/HashAlgorithm;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lde/gematik/kmp/crypto/HashAlgorithm;
+	public static fun values ()[Lde/gematik/kmp/crypto/HashAlgorithm;
+}
+
+public final class de/gematik/kmp/crypto/HashException : java/lang/Throwable {
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getCause ()Ljava/lang/Throwable;
+	public fun getMessage ()Ljava/lang/String;
+}
+
+public final class de/gematik/kmp/crypto/Hash_jvmKt {
+	public static final fun createHash (Lde/gematik/kmp/crypto/HashAlgorithm;)Lde/gematik/kmp/crypto/Hash;
+}
+
+public final class de/gematik/kmp/crypto/JvmCmac : de/gematik/kmp/crypto/Cmac {
+	public fun <init> (Lde/gematik/kmp/crypto/CmacAlgorithm;[B)V
+	public fun final (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getAlgorithm ()Lde/gematik/kmp/crypto/CmacAlgorithm;
+	public fun update ([BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class de/gematik/kmp/crypto/JvmHash : de/gematik/kmp/crypto/Hash {
+	public fun <init> (Lde/gematik/kmp/crypto/HashAlgorithm;)V
+	public fun digest (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getAlgorithm ()Lde/gematik/kmp/crypto/HashAlgorithm;
+	public fun update ([BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class de/gematik/kmp/crypto/Pem {
+	public fun <init> (Ljava/lang/String;[B)V
+	public final fun getData ()[B
+	public final fun getType ()Ljava/lang/String;
+}
+
+public final class de/gematik/kmp/crypto/PemKt {
+	public static final fun decodeToPem (Ljava/lang/String;)Lde/gematik/kmp/crypto/Pem;
+	public static final fun encodeToString (Lde/gematik/kmp/crypto/Pem;)Ljava/lang/String;
+}
+
+public abstract class de/gematik/kmp/crypto/SecureRandom : kotlin/random/Random {
+	public fun <init> ()V
+}
+
+public final class de/gematik/kmp/crypto/SecureRandom_jvmKt {
+	public static final fun secureRandom ()Lde/gematik/kmp/crypto/SecureRandom;
+}
+
+public final class de/gematik/kmp/crypto/UnitsKt {
+	public static final fun getBits (I)I
+	public static final fun getBits-CJXw4fk (I)I
+	public static final fun getBytes (I)I
+	public static final fun getBytes-CJXw4fk (I)I
+}
+
+public abstract interface annotation class de/gematik/kmp/crypto/UnsafeCryptoApi : java/lang/annotation/Annotation {
+}
+
+public abstract interface class de/gematik/kmp/crypto/cipher/AesCipher : de/gematik/kmp/crypto/cipher/Cipher {
+	public abstract fun authTag ()[B
+	public abstract fun getSpec ()Lde/gematik/kmp/crypto/cipher/AesCipherSpec;
+}
+
+public abstract interface class de/gematik/kmp/crypto/cipher/AesCipherSpec {
+	public abstract fun getTagLength-aQnKl3Q ()I
+}
+
+public abstract interface class de/gematik/kmp/crypto/cipher/AesDecipher : de/gematik/kmp/crypto/cipher/Cipher {
+	public abstract fun getSpec ()Lde/gematik/kmp/crypto/cipher/AesDecipherSpec;
+}
+
+public abstract interface class de/gematik/kmp/crypto/cipher/AesDecipherSpec {
+	public abstract fun getTagLength-aQnKl3Q ()I
+}
+
+public final class de/gematik/kmp/crypto/cipher/AesEcbSpec : de/gematik/kmp/crypto/cipher/AesCipherSpec, de/gematik/kmp/crypto/cipher/AesDecipherSpec {
+	public synthetic fun <init> (ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getTagLength-aQnKl3Q ()I
+}
+
+public final class de/gematik/kmp/crypto/cipher/AesGcmCipherSpec : de/gematik/kmp/crypto/cipher/AesCipherSpec {
+	public synthetic fun <init> (I[B[BLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getAad ()[B
+	public final fun getIv ()[B
+	public fun getTagLength-aQnKl3Q ()I
+}
+
+public final class de/gematik/kmp/crypto/cipher/AesGcmDecipherSpec : de/gematik/kmp/crypto/cipher/AesDecipherSpec {
+	public synthetic fun <init> (I[B[B[BLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getAad ()[B
+	public final fun getAuthTag ()[B
+	public final fun getIv ()[B
+	public fun getTagLength-aQnKl3Q ()I
+}
+
+public final class de/gematik/kmp/crypto/cipher/Aes_jvmKt {
+	public static final fun createCipher (Lde/gematik/kmp/crypto/cipher/AesCipherSpec;Lde/gematik/kmp/crypto/key/SecretKey;)Lde/gematik/kmp/crypto/cipher/AesCipher;
+	public static final fun createDecipher (Lde/gematik/kmp/crypto/cipher/AesDecipherSpec;Lde/gematik/kmp/crypto/key/SecretKey;)Lde/gematik/kmp/crypto/cipher/AesDecipher;
+}
+
+public abstract interface class de/gematik/kmp/crypto/cipher/Cipher {
+	public abstract fun final (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun update ([BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class de/gematik/kmp/crypto/exchange/Ecdh {
+	public abstract fun computeSecret (Lde/gematik/kmp/crypto/key/EcPublicKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class de/gematik/kmp/crypto/exchange/EcdhSpec {
+	public fun <init> (Lde/gematik/kmp/crypto/key/EcCurve;)V
+	public final fun getCurve ()Lde/gematik/kmp/crypto/key/EcCurve;
+}
+
+public final class de/gematik/kmp/crypto/exchange/Ecdh_jvmKt {
+	public static final fun createKeyExchange (Lde/gematik/kmp/crypto/exchange/EcdhSpec;Lde/gematik/kmp/crypto/key/EcPrivateKey;)Lde/gematik/kmp/crypto/exchange/Ecdh;
+}
+
+public final class de/gematik/kmp/crypto/key/EcCurve : java/lang/Enum {
+	public static final field BrainpoolP256r1 Lde/gematik/kmp/crypto/key/EcCurve;
+	public static final field BrainpoolP384r1 Lde/gematik/kmp/crypto/key/EcCurve;
+	public static final field BrainpoolP512r1 Lde/gematik/kmp/crypto/key/EcCurve;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun getOid ()Ljava/lang/String;
+	public static fun valueOf (Ljava/lang/String;)Lde/gematik/kmp/crypto/key/EcCurve;
+	public static fun values ()[Lde/gematik/kmp/crypto/key/EcCurve;
+}
+
+public final class de/gematik/kmp/crypto/key/EcKeyKt {
+	public static final fun decodeFromAsn1 (Lde/gematik/kmp/crypto/key/EcPrivateKey$Companion;[B)Lde/gematik/kmp/crypto/key/EcPrivateKey;
+	public static final fun decodeFromAsn1 (Lde/gematik/kmp/crypto/key/EcPublicKey$Companion;[B)Lde/gematik/kmp/crypto/key/EcPublicKey;
+	public static final fun decodeFromPem (Lde/gematik/kmp/crypto/key/EcPrivateKey$Companion;Ljava/lang/String;)Lde/gematik/kmp/crypto/key/EcPrivateKey;
+	public static final fun decodeFromPem (Lde/gematik/kmp/crypto/key/EcPublicKey$Companion;Ljava/lang/String;)Lde/gematik/kmp/crypto/key/EcPublicKey;
+	public static final fun encodeToAsn1 (Lde/gematik/kmp/crypto/key/EcPrivateKey;)[B
+	public static final fun encodeToAsn1 (Lde/gematik/kmp/crypto/key/EcPublicKey;)[B
+	public static final fun encodeToPem (Lde/gematik/kmp/crypto/key/EcPrivateKey;)Ljava/lang/String;
+	public static final fun encodeToPem (Lde/gematik/kmp/crypto/key/EcPublicKey;)Ljava/lang/String;
+	public static final fun fromScalar (Lde/gematik/kmp/crypto/key/EcPrivateKey$Companion;Lde/gematik/kmp/crypto/key/EcCurve;[B)Lde/gematik/kmp/crypto/key/EcPrivateKey;
+	public static final fun fromUncompressedFormat (Lde/gematik/kmp/crypto/key/EcPublicKey$Companion;Lde/gematik/kmp/crypto/key/EcCurve;[B)Lde/gematik/kmp/crypto/key/EcPublicKey;
+	public static final fun readEcCurveFromAlgorithmIdentifier (Lde/gematik/kmp/asn1/Asn1Decoder$ParserScope;)Lde/gematik/kmp/crypto/key/EcCurve;
+}
+
+public final class de/gematik/kmp/crypto/key/EcPrivateKey : de/gematik/kmp/crypto/key/Key {
+	public static final field Companion Lde/gematik/kmp/crypto/key/EcPrivateKey$Companion;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCurve ()Lde/gematik/kmp/crypto/key/EcCurve;
+	public fun getData ()[B
+	public fun hashCode ()I
+}
+
+public final class de/gematik/kmp/crypto/key/EcPrivateKey$Companion {
+}
+
+public final class de/gematik/kmp/crypto/key/EcPublicKey : de/gematik/kmp/crypto/key/Key {
+	public static final field Companion Lde/gematik/kmp/crypto/key/EcPublicKey$Companion;
+	public static final field oid Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCurve ()Lde/gematik/kmp/crypto/key/EcCurve;
+	public fun getData ()[B
+	public fun hashCode ()I
+}
+
+public final class de/gematik/kmp/crypto/key/EcPublicKey$Companion {
+}
+
+public abstract interface class de/gematik/kmp/crypto/key/Key {
+	public abstract fun getData ()[B
+}
+
+public final class de/gematik/kmp/crypto/key/SecretKey : de/gematik/kmp/crypto/key/Key {
+	public fun <init> ([B)V
+	public fun getData ()[B
+	public final fun getLength-aQnKl3Q ()I
+}
+

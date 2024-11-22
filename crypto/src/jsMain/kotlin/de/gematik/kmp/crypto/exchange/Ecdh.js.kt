@@ -34,6 +34,10 @@ private class NodeEcdh(
     val spec: EcdhSpec,
     val privateKey: EcPrivateKey,
 ) : Ecdh {
+    init {
+        require(spec.curve == privateKey.curve) { "Spec curve and private key curve must match." }
+    }
+
     private val ecdh =
         run {
             val ecdh = createECDH(spec.curve.curveName())

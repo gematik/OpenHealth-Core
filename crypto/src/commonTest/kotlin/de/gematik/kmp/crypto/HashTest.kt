@@ -33,7 +33,7 @@ class HashTest {
     @Test
     fun `hash with valid data - expected`() =
         runTest {
-            val hash = createHash(HashAlgorithm.Sha1)
+            val hash = HashSpec(HashAlgorithm.Sha1).createHash()
             hash.update("Hello, World!".encodeToByteArray())
             val result = hash.digest()
             assertEquals(
@@ -45,7 +45,7 @@ class HashTest {
     @Test
     fun `hash with empty data`() =
         runTest {
-            val hash = createHash(HashAlgorithm.Sha1)
+            val hash = HashSpec(HashAlgorithm.Sha1).createHash()
             hash.update(ByteArray(0))
             val result = hash.digest()
             assertEquals(
@@ -57,7 +57,7 @@ class HashTest {
     @Test
     fun `hash with multiple updates`() =
         runTest {
-            val hash = createHash(HashAlgorithm.Sha1)
+            val hash = HashSpec(HashAlgorithm.Sha1).createHash()
             hash.update("Hello, ".encodeToByteArray())
             hash.update("World!".encodeToByteArray())
             val result = hash.digest()
@@ -70,7 +70,7 @@ class HashTest {
     @Test
     fun `digest can only be called once`() =
         runTest {
-            val hash = createHash(HashAlgorithm.Sha1)
+            val hash = HashSpec(HashAlgorithm.Sha1).createHash()
             hash.update("Test data".encodeToByteArray())
             hash.digest()
             assertFailsWith<Throwable> {
