@@ -39,9 +39,9 @@ interface Cmac {
 }
 
 @ExperimentalCryptoApi
-class CmacSpec(val algorithm: CmacAlgorithm)
+class CmacSpec(
+    val algorithm: CmacAlgorithm,
+)
 
 @ExperimentalCryptoApi
-expect fun CmacSpec.createCmac(
-    secret: SecretKey,
-): Cmac
+expect fun CmacSpec.createCmac(secret: SecretKey): Cmac

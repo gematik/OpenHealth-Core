@@ -1,11 +1,11 @@
-# KMP Gematik Common
+# OpenHealth - Connecting the eHealth Sector
 
 Version: 1.0.0
 
 ## Current Stage
 
 Getting things started. This project is in its initial draft phase.
-Most of the api will be subject to change.
+Most of the APIs will be subject to change.
 
 ## Version Scheme
 

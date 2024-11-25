@@ -19,8 +19,7 @@
 package de.gematik.kmp.healthcard.model.command
 
 import de.gematik.kmp.asn1.Asn1Encoder
-import de.gematik.kmp.asn1.contextSpecificTag
-import de.gematik.kmp.asn1.writeOctetString
+import de.gematik.kmp.asn1.Asn1Tag
 import de.gematik.kmp.asn1.writeTaggedObject
 import de.gematik.kmp.healthcard.model.card.CardKey
 import de.gematik.kmp.healthcard.model.card.PsoAlgorithm
@@ -49,16 +48,17 @@ fun HealthCardCommand.Companion.manageSecEnvWithoutCurves(
     ins = INS,
     p1 = MODE_SET_SECRET_KEY_OBJECT_P1,
     p2 = MODE_AFFECTED_LIST_ELEMENT_IS_EXT_AUTH_P2,
-    data = Asn1Encoder().write {
-        // '80 I2OS(OctetLength(OID), 1) || OID
-        writeTaggedObject(0.contextSpecificTag()) {
-            write(oid)
-        }
-        // '83 01 || keyRef'
-        writeTaggedObject(3.contextSpecificTag()) {
-            write(byteArrayOf(cardKey.calculateKeyReference(dfSpecific).toByte()))
-        }
-    }
+    data =
+        Asn1Encoder().write {
+            // '80 I2OS(OctetLength(OID), 1) || OID
+            writeTaggedObject(0, Asn1Tag.CONTEXT_SPECIFIC) {
+                write(oid)
+            }
+            // '83 01 || keyRef'
+            writeTaggedObject(3, Asn1Tag.CONTEXT_SPECIFIC) {
+                write(byteArrayOf(cardKey.calculateKeyReference(dfSpecific).toByte()))
+            }
+        },
 )
 
 /**
@@ -74,14 +74,15 @@ fun HealthCardCommand.Companion.manageSecEnvForSigning(
     ins = INS,
     p1 = MODE_SET_PRIVATE_KEY_P1,
     p2 = MODE_AFFECTED_LIST_ELEMENT_IS_SIGNATURE_CREATION,
-    data = Asn1Encoder().write {
-        // '8401 || keyRef'
-        writeTaggedObject(4.contextSpecificTag()) {
-            write(key.calculateKeyReference(dfSpecific).toByte())
-        }
-        // '8001 || algId'
-        writeTaggedObject(0.contextSpecificTag()) {
-            write(psoAlgorithm.identifier.toByte())
-        }
-    }
+    data =
+        Asn1Encoder().write {
+            // '8401 || keyRef'
+            writeTaggedObject(4, Asn1Tag.CONTEXT_SPECIFIC) {
+                write(key.calculateKeyReference(dfSpecific).toByte())
+            }
+            // '8001 || algId'
+            writeTaggedObject(0, Asn1Tag.CONTEXT_SPECIFIC) {
+                write(psoAlgorithm.identifier.toByte())
+            }
+        },
 )

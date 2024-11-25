@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-
-
 package de.gematik.kmp.healthcard.model.command
 
 import de.gematik.kmp.healthcard.model.identifier.ApplicationIdentifier

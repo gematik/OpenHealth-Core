@@ -19,9 +19,7 @@
 package de.gematik.kmp.healthcard.model.command
 
 import de.gematik.kmp.asn1.Asn1Encoder
-import de.gematik.kmp.asn1.applicationTag
-import de.gematik.kmp.asn1.constructedTag
-import de.gematik.kmp.asn1.contextSpecificTag
+import de.gematik.kmp.asn1.Asn1Tag
 import de.gematik.kmp.asn1.writeTaggedObject
 
 private const val CLA_COMMAND_CHAINING = 0x10
@@ -45,11 +43,12 @@ fun HealthCardCommand.Companion.generalAuthenticate(commandChaining: Boolean) =
         ins = INS,
         p1 = NO_MEANING,
         p2 = NO_MEANING,
-        data = Asn1Encoder().write {
-            writeTaggedObject(28.applicationTag().constructedTag()) {
-                // Empty
-            }
-        },
+        data =
+            Asn1Encoder().write {
+                writeTaggedObject(28, Asn1Tag.APPLICATION or Asn1Tag.CONSTRUCTED) {
+                    // Empty
+                }
+            },
         ne = NE_MAX_SHORT_LENGTH,
     )
 
@@ -69,12 +68,13 @@ fun HealthCardCommand.Companion.generalAuthenticate(
     ins = INS,
     p1 = NO_MEANING,
     p2 = NO_MEANING,
-    data = Asn1Encoder().write {
-        writeTaggedObject(28.applicationTag().constructedTag()) {
-            writeTaggedObject(tagNo.contextSpecificTag()) {
-                write(data)
+    data =
+        Asn1Encoder().write {
+            writeTaggedObject(28, Asn1Tag.APPLICATION or Asn1Tag.CONSTRUCTED) {
+                writeTaggedObject(tagNo, Asn1Tag.CONTEXT_SPECIFIC) {
+                    write(data)
+                }
             }
-        }
-    },
+        },
     ne = NE_MAX_SHORT_LENGTH,
 )

@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-
-
 package de.gematik.kmp.healthcard.model.card
 
-import de.gematik.kmp.healthcard.model.command.CommandApdu
-import de.gematik.kmp.healthcard.model.command.ResponseApdu
+import de.gematik.kmp.healthcard.model.command.CardCommandApdu
+import de.gematik.kmp.healthcard.model.command.CardResponseApdu
 
 interface IHealthCard {
-    fun transmit(apduCommand: CommandApdu): ResponseApdu
+    fun transmit(apduCommand: CardCommandApdu): CardResponseApdu
 }

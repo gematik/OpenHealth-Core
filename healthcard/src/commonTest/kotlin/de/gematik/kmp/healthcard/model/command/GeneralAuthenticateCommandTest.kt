@@ -28,29 +28,44 @@ class GeneralAuthenticateCommandTest {
     private val parameters = arrayOf(true, false)
 
     @Test
-    fun shouldEqualGeneralAuthenticateCommand1() = runParametrizedTest(*parameters) {
-        val commandChaining = parameter<Boolean>()
-        val expectedAPDU = getExpectedApdu("GENERALAUTHENTICATECOMMAND_APDU-1", commandChaining)
-        val command = HealthCardCommand.generalAuthenticate(commandChaining)
+    fun shouldEqualGeneralAuthenticateCommand1() =
+        runParametrizedTest(*parameters) {
+            val commandChaining = parameter<Boolean>()
+            val expectedAPDU = getExpectedApdu("GENERALAUTHENTICATECOMMAND_APDU-1", commandChaining)
+            val command = HealthCardCommand.generalAuthenticate(commandChaining)
 
-        assertEquals(expectedAPDU, TestChannel().test(command).toHexString(hexSpaceFormat), message)
-    }
-
-    @Test
-    fun shouldEqualGeneralAuthenticateCommand2() = runParametrizedTest(*parameters) {
-        val commandChaining = parameter<Boolean>()
-        val expectedAPDU = getExpectedApdu("GENERALAUTHENTICATECOMMAND_APDU-2", commandChaining)
-        val command = HealthCardCommand.generalAuthenticate(commandChaining, byteArrayOf(), 1)
-
-        assertEquals(expectedAPDU, TestChannel().test(command).toHexString(hexSpaceFormat), message)
-    }
+            assertEquals(
+                expectedAPDU,
+                TestChannel().test(command).toHexString(hexSpaceFormat),
+                message,
+            )
+        }
 
     @Test
-    fun shouldEqualGeneralAuthenticateCommand3() = runParametrizedTest(*parameters) {
-        val commandChaining = parameter<Boolean>()
-        val expectedAPDU = getExpectedApdu("GENERALAUTHENTICATECOMMAND_APDU-3", commandChaining)
-        val command = HealthCardCommand.generalAuthenticate(commandChaining, byteArrayOf(), 3)
+    fun shouldEqualGeneralAuthenticateCommand2() =
+        runParametrizedTest(*parameters) {
+            val commandChaining = parameter<Boolean>()
+            val expectedAPDU = getExpectedApdu("GENERALAUTHENTICATECOMMAND_APDU-2", commandChaining)
+            val command = HealthCardCommand.generalAuthenticate(commandChaining, byteArrayOf(), 1)
 
-        assertEquals(expectedAPDU, TestChannel().test(command).toHexString(hexSpaceFormat), message)
-    }
+            assertEquals(
+                expectedAPDU,
+                TestChannel().test(command).toHexString(hexSpaceFormat),
+                message,
+            )
+        }
+
+    @Test
+    fun shouldEqualGeneralAuthenticateCommand3() =
+        runParametrizedTest(*parameters) {
+            val commandChaining = parameter<Boolean>()
+            val expectedAPDU = getExpectedApdu("GENERALAUTHENTICATECOMMAND_APDU-3", commandChaining)
+            val command = HealthCardCommand.generalAuthenticate(commandChaining, byteArrayOf(), 3)
+
+            assertEquals(
+                expectedAPDU,
+                TestChannel().test(command).toHexString(hexSpaceFormat),
+                message,
+            )
+        }
 }

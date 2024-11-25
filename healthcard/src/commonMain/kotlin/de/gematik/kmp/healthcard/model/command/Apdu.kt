@@ -69,7 +69,7 @@ private fun encodeExpectedLengthShort(ne: Int): ByteArray =
  * LC must not be 0x00 and LC1|LC2 must not be 0x00|0x00
  * ```
  */
-class CommandApdu(
+class CardCommandApdu(
     apduBytes: ByteArray,
     val rawNc: Int,
     val rawNe: Int?,
@@ -88,7 +88,6 @@ class CommandApdu(
             ne: Int?,
         ) = ofOptions(cla = cla, ins = ins, p1 = p1, p2 = p2, data = null, ne = ne)
 
-        @Suppress("CyclomaticComplexMethod")
         fun ofOptions(
             cla: Int,
             ins: Int,
@@ -96,7 +95,7 @@ class CommandApdu(
             p2: Int,
             data: ByteArray?,
             ne: Int?,
-        ): CommandApdu {
+        ): CardCommandApdu {
             require(!(cla < 0 || ins < 0 || p1 < 0 || p2 < 0)) {
                 "APDU header fields must not be less than 0"
             }
@@ -148,7 +147,7 @@ class CommandApdu(
                     bytes += data
                 }
 
-                CommandApdu(
+                CardCommandApdu(
                     apduBytes = bytes,
                     rawNc = nc,
                     rawNe = le,
@@ -168,7 +167,7 @@ class CommandApdu(
                         bytes += encodeExpectedLengthExtended(ne)
                     }
 
-                    CommandApdu(
+                    CardCommandApdu(
                         apduBytes = bytes,
                         rawNc = 0,
                         rawNe = ne,
@@ -176,7 +175,7 @@ class CommandApdu(
                     )
                 } else {
                     // case 1
-                    CommandApdu(
+                    CardCommandApdu(
                         apduBytes = bytes,
                         rawNc = 0,
                         rawNe = null,
@@ -193,7 +192,7 @@ class CommandApdu(
 /**
  * APDU Response
  */
-class ResponseApdu(
+class CardResponseApdu(
     apdu: ByteArray,
 ) {
     init {
@@ -226,13 +225,10 @@ class ResponseApdu(
         if (this === other) return true
         if (other == null || this::class != other::class) return false
 
-        other as ResponseApdu
+        other as CardResponseApdu
 
         return apdu.contentEquals(other.apdu)
     }
 
-    override fun hashCode(): Int {
-        return apdu.contentHashCode()
-    }
-
+    override fun hashCode(): Int = apdu.contentHashCode()
 }

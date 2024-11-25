@@ -37,7 +37,9 @@ interface Hash {
 }
 
 @ExperimentalCryptoApi
-class HashSpec(val algorithm: HashAlgorithm)
+class HashSpec(
+    val algorithm: HashAlgorithm,
+)
 
 @ExperimentalCryptoApi
 expect fun HashSpec.createHash(): Hash

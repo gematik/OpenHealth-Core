@@ -32,7 +32,7 @@ class Asn1DecoderException(
 }
 
 @OptIn(ExperimentalStdlibApi::class)
-private val hexDebugFormat =
+internal val hexDebugFormat =
     HexFormat {
         number {
             prefix = "0x"
@@ -145,19 +145,15 @@ class Asn1Decoder(
          * Advance with the given [tag] and return the resulting [Asn1Object]. Throws an [ParserException] if the [tag] doesn't match.
          * @param tag the tag to advance with.
          */
-        @OptIn(ExperimentalStdlibApi::class)
         fun <T> Asn1Decoder.ParserScope.advanceWithTag(
-            tag: Int,
+            tagNumber: Int,
+            tagClass: Int = 0x00,
             block: Asn1Decoder.ParserScope.() -> T,
         ): T {
-            val tagRead = readTag()
-            if (tagRead !=
-                tag
-            ) {
+            val tag = readTag()
+            if (tag.tagNumber != tagNumber && tag.tagClass != tagClass) {
                 fail {
-                    "Expected tag `${tag.toHexString(
-                        hexDebugFormat,
-                    )}` but got `${tagRead.toHexString(hexDebugFormat)}`"
+                    "Expected tag `${Asn1Tag(tagClass, tagNumber)}` but got `$tag`"
                 }
             }
             val length = readLength()
@@ -199,9 +195,28 @@ class Asn1Decoder(
         }
 
         /**
-         * Read the tag of an object.
+         * Reads the next tag from the data, handling multi-byte tags.
          */
-        fun readTag(): Int = readByte().toInt() and 0xFF
+        fun readTag(): Asn1Tag {
+            // Read the first byte of the tag
+            val firstByte = data[offset++].toInt() and 0xFF
+            val tagClassAndConstructed = firstByte and 0xE0 // Class and constructed bits
+            val tagNumber = firstByte and 0x1F // Low 5 bits
+
+            return if (tagNumber == 0x1F) {
+                // Multi-byte tag: Read until MSB is 0
+                var value = 0
+                do {
+                    if (offset >= endOffset) fail { "Unexpected end of data in tag" }
+                    val nextByte = data[offset++].toInt() and 0xFF
+                    value = (value shl 7) or (nextByte and 0x7F)
+                } while (nextByte and 0x80 != 0)
+                Asn1Tag(tagClassAndConstructed, value)
+            } else {
+                // Single-byte tag
+                Asn1Tag(tagClassAndConstructed, tagNumber)
+            }
+        }
 
         /**
          * Read the length. Returns `-1` for infinite length.
@@ -234,11 +249,12 @@ class Asn1Decoder(
             offset += length
 
             var result = bytes[0].toInt()
-            if (signed && result and 0x80 != 0) { // Check if the sign bit is set
-                result = result or -0x100 // Sign extend for negative numbers
-            } else {
-                result = result and 0xFF // Clear the sign bit
-            }
+            result =
+                if (signed && result and 0x80 != 0) { // Check if the sign bit is set
+                    result or -0x100 // Sign extend for negative numbers
+                } else {
+                    result and 0xFF // Clear the sign bit
+                }
 
             for (i in 1 until length) {
                 result = (result shl 8) or (bytes[i].toInt() and 0xFF)

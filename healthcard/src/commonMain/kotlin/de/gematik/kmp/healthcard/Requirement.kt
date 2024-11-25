@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package de.gematik.kmp.healthcard
 
 @Target(

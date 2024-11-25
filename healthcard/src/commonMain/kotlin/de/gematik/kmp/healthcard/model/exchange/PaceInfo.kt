@@ -14,22 +14,23 @@
  * limitations under the License.
  */
 
-
-
 package de.gematik.kmp.healthcard.model.exchange
 
 import de.gematik.kmp.asn1.Asn1Decoder
 import de.gematik.kmp.asn1.Asn1Encoder
+import de.gematik.kmp.asn1.Asn1Tag
 import de.gematik.kmp.asn1.Asn1Type
 import de.gematik.kmp.asn1.readInt
 import de.gematik.kmp.asn1.readObjectIdentifier
-import de.gematik.kmp.asn1.constructedTag
 import de.gematik.kmp.asn1.writeObjectIdentifier
 import de.gematik.kmp.crypto.ExperimentalCryptoApi
 import de.gematik.kmp.crypto.key.EcCurve
 
 @OptIn(ExperimentalCryptoApi::class)
-class PaceInfo(val protocolId: String, val curve: EcCurve) {
+class PaceInfo(
+    val protocolId: String,
+    val curve: EcCurve,
+) {
     val protocolIdBytes: ByteArray =
         Asn1Encoder()
             .write { writeObjectIdentifier(protocolId) }
@@ -37,20 +38,21 @@ class PaceInfo(val protocolId: String, val curve: EcCurve) {
 }
 
 @OptIn(ExperimentalCryptoApi::class)
-fun parsePaceInfo(asn1: ByteArray): PaceInfo {
-    return Asn1Decoder(asn1).read {
-        advanceWithTag(Asn1Type.Set.constructedTag()) {
-            advanceWithTag(Asn1Type.Sequence.constructedTag()) {
+fun parsePaceInfo(asn1: ByteArray): PaceInfo =
+    Asn1Decoder(asn1).read {
+        advanceWithTag(Asn1Type.Set, Asn1Tag.CONSTRUCTED) {
+            advanceWithTag(Asn1Type.Sequence, Asn1Tag.CONSTRUCTED) {
                 val protocolId = readObjectIdentifier()
                 readInt()
                 val parameterId = readInt()
 
-                val curve = when (parameterId) {
-                    13 -> EcCurve.BrainpoolP256r1
-                    16 -> EcCurve.BrainpoolP384r1
-                    17 -> EcCurve.BrainpoolP512r1
-                    else -> fail { "Unsupported parameter ID: $parameterId" }
-                }
+                val curve =
+                    when (parameterId) {
+                        13 -> EcCurve.BrainpoolP256r1
+                        16 -> EcCurve.BrainpoolP384r1
+                        17 -> EcCurve.BrainpoolP512r1
+                        else -> fail { "Unsupported parameter ID: $parameterId" }
+                    }
 
                 skipToEnd()
 
@@ -58,4 +60,3 @@ fun parsePaceInfo(asn1: ByteArray): PaceInfo {
             }
         }
     }
-}

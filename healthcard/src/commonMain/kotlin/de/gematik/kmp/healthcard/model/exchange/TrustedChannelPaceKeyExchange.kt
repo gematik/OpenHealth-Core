@@ -22,32 +22,27 @@ import com.ionspin.kotlin.bignum.integer.BigInteger
 import com.ionspin.kotlin.bignum.integer.Sign
 import de.gematik.kmp.asn1.Asn1Decoder
 import de.gematik.kmp.asn1.Asn1Encoder
-import de.gematik.kmp.asn1.Asn1Type
-import de.gematik.kmp.asn1.applicationTag
-import de.gematik.kmp.asn1.constructedTag
-import de.gematik.kmp.asn1.contextSpecificTag
+import de.gematik.kmp.asn1.Asn1Tag
 import de.gematik.kmp.asn1.writeObjectIdentifier
 import de.gematik.kmp.asn1.writeTaggedObject
-import de.gematik.kmp.crypto.Cmac
 import de.gematik.kmp.crypto.CmacAlgorithm
 import de.gematik.kmp.crypto.CmacSpec
 import de.gematik.kmp.crypto.ExperimentalCryptoApi
+import de.gematik.kmp.crypto.UnoptimizedCryptoApi
 import de.gematik.kmp.crypto.UnsafeCryptoApi
 import de.gematik.kmp.crypto.bytes
-import de.gematik.kmp.crypto.cipher.AesCipherSpec
-import de.gematik.kmp.crypto.cipher.AesDecipherSpec
 import de.gematik.kmp.crypto.cipher.AesEcbSpec
 import de.gematik.kmp.crypto.cipher.createDecipher
 import de.gematik.kmp.crypto.createCmac
-import de.gematik.kmp.crypto.exchange.EcdhSpec
-import de.gematik.kmp.crypto.exchange.createKeyExchange
-import de.gematik.kmp.crypto.key.EcCurve
 import de.gematik.kmp.crypto.key.EcKeyPairSpec
+import de.gematik.kmp.crypto.key.EcPoint
 import de.gematik.kmp.crypto.key.EcPrivateKey
 import de.gematik.kmp.crypto.key.EcPublicKey
 import de.gematik.kmp.crypto.key.SecretKey
 import de.gematik.kmp.crypto.key.decodeFromUncompressedFormat
 import de.gematik.kmp.crypto.key.generateKeyPair
+import de.gematik.kmp.crypto.key.toEcPoint
+import de.gematik.kmp.crypto.key.toEcPublicKey
 import de.gematik.kmp.crypto.secureRandom
 import de.gematik.kmp.healthcard.model.card.CardKey
 import de.gematik.kmp.healthcard.model.card.ICardChannel
@@ -79,12 +74,20 @@ private const val TAG_49 = 0x49
  * picc = card
  * pcd = smartphone
  */
-@OptIn(ExperimentalCryptoApi::class, UnsafeCryptoApi::class)
+@OptIn(
+    ExperimentalCryptoApi::class,
+    UnsafeCryptoApi::class,
+    ExperimentalStdlibApi::class,
+    UnoptimizedCryptoApi::class,
+)
 suspend fun ICardChannel.establishTrustedChannel(cardAccessNumber: String): PaceKey {
     val random = secureRandom()
 
     // Helper to derive AES keys
-    suspend fun deriveAESKey(sharedSecret: ByteArray, mode: Mode): SecretKey {
+    suspend fun deriveAESKey(
+        sharedSecret: ByteArray,
+        mode: Mode,
+    ): SecretKey {
         val keyBytes = getAES128Key(sharedSecret, mode)
         return SecretKey(keyBytes)
     }
@@ -125,7 +128,7 @@ suspend fun ICardChannel.establishTrustedChannel(cardAccessNumber: String): Pace
     }
 
     // Step 2: Perform Ephemeral Key Exchange
-    suspend fun performKeyExchange(paceInfo: PaceInfo): Pair<PaceKey, EcPublicKey> {
+    suspend fun performKeyExchange(paceInfo: PaceInfo): Pair<EcPoint, EcPrivateKey> {
         val nonceZ =
             parseAsn1KeyObject(
                 HealthCardCommand
@@ -134,53 +137,71 @@ suspend fun ICardChannel.establishTrustedChannel(cardAccessNumber: String): Pace
                     .apdu.data,
             )
         val canKey = deriveAESKey(cardAccessNumber.encodeToByteArray(), Mode.PASSWORD)
-        val nonceS = AesEcbSpec(16.bytes)
-            .createDecipher(canKey)
-            .let {
-                BigInteger.fromByteArray(it.update(nonceZ) + it.final(), Sign.POSITIVE)
-            }
+        val nonceS =
+            AesEcbSpec(16.bytes, autoPadding = false)
+                .createDecipher(canKey)
+                .let {
+                    BigInteger.fromByteArray(it.update(nonceZ), Sign.POSITIVE)
+                }
 
-        val (ephemeralPublicKey, ephemeralPrivateKey) = EcKeyPairSpec(paceInfo.curve).generateKeyPair()
+        val (_, pcdPrivateKey) = EcKeyPairSpec(paceInfo.curve).generateKeyPair()
+        val pcdSharedSecret = paceInfo.curve.g * pcdPrivateKey.s
 
         val piccPublicKey =
             EcPublicKey.decodeFromUncompressedFormat(
                 paceInfo.curve,
                 parseAsn1KeyObject(
                     HealthCardCommand
-                        .generalAuthenticate(true, ephemeralPublicKey.data, 1)
+                        .generalAuthenticate(true, pcdSharedSecret.uncompressed, 1)
                         .executeSuccessfulOn(this)
-                        .apdu.data
-                )
+                        .apdu.data,
+                ),
             )
 
-        piccPublicKey.data
+        val (_, epPrivateKey) = EcKeyPairSpec(paceInfo.curve).generateKeyPair()
+        val epSharedSecret = piccPublicKey.toEcPoint() * pcdPrivateKey.s
 
-        val keyAgreement = computeSharedSecret(ephemeralPrivateKey, piccPublicKey, paceInfo.curve)
+        val gsSharedSecret = paceInfo.curve.g * nonceS + epSharedSecret
 
-        val encryptionKey = deriveAESKey(keyAgreement, Mode.ENC)
-        val macKey = deriveAESKey(keyAgreement, Mode.MAC)
+        val epGsSharedSecret = gsSharedSecret * epPrivateKey.s
 
-        return Pair(PaceKey(encryptionKey, macKey), ephemeralPublicKey)
+        return Pair(epGsSharedSecret, epPrivateKey)
     }
 
     // Step 3: Mutual Authentication
     suspend fun performMutualAuthentication(
-        paceKey: PaceKey,
-        publicKey: EcPublicKey,
         paceInfo: PaceInfo,
+        epGsSharedSecret: EcPoint,
+        epPrivateKey: EcPrivateKey,
     ): PaceKey {
         val piccPublicKey =
             EcPublicKey.decodeFromUncompressedFormat(
                 paceInfo.curve,
                 parseAsn1KeyObject(
                     HealthCardCommand
-                        .generalAuthenticate(true, publicKey.data, 3)
+                        .generalAuthenticate(true, epGsSharedSecret.uncompressed, 3)
                         .executeSuccessfulOn(this)
                         .apdu.data,
-                )
+                ),
             )
-        val derivedMac = deriveMac(paceKey.mac, piccPublicKey, paceInfo.protocolId)
-        val mac = deriveMac(paceKey.mac, publicKey, paceInfo.protocolId)
+
+        val sharedSecret = piccPublicKey.toEcPoint() * epPrivateKey.s
+        val sharedSecretX =
+            sharedSecret.x!!.toByteArray().let {
+                // integer might be padded with 0 to make it positive; we don't require this here
+                if (it[0] == 0x00.toByte()) it.copyOfRange(1, it.size) else it
+            }
+
+        val encryptionKey = deriveAESKey(sharedSecretX, Mode.ENC)
+        val macKey = deriveAESKey(sharedSecretX, Mode.MAC)
+        val paceKey = PaceKey(encryptionKey, macKey)
+
+        val mac = deriveMac(paceKey.mac, piccPublicKey, paceInfo.protocolId)
+        val derivedMac =
+            deriveMac(paceKey.mac, epGsSharedSecret.toEcPublicKey(), paceInfo.protocolId)
+
+        println("derivedMac ${derivedMac.toHexString()} ${derivedMac.asList()}")
+        println("mac ${mac.toHexString()}")
 
         val piccMac =
             parseAsn1KeyObject(
@@ -189,6 +210,7 @@ suspend fun ICardChannel.establishTrustedChannel(cardAccessNumber: String): Pace
                     .executeSuccessfulOn(this)
                     .apdu.data,
             )
+
         check(piccMac.contentEquals(derivedMac)) { "Mutual authentication failed." }
 
         return paceKey
@@ -196,28 +218,17 @@ suspend fun ICardChannel.establishTrustedChannel(cardAccessNumber: String): Pace
 
     // Main PACE negotiation flow
     val paceInfo = initializePace()
-    val (paceKey, publicKey) = performKeyExchange(paceInfo)
-    return performMutualAuthentication(paceKey, publicKey, paceInfo)
+    val (epGsSharedSecret, epPrivateKey) = performKeyExchange(paceInfo)
+    return performMutualAuthentication(paceInfo, epGsSharedSecret, epPrivateKey)
 }
 
-// Compute shared secret using ECDH
-@OptIn(ExperimentalCryptoApi::class)
-suspend fun computeSharedSecret(
-    privateKey: EcPrivateKey,
-    publicKey: EcPublicKey,
-    curve: EcCurve,
-): ByteArray {
-    return EcdhSpec(curve).createKeyExchange(privateKey).computeSecret(publicKey)
-}
-
-fun parseAsn1KeyObject(asn1: ByteArray): ByteArray {
-    return Asn1Decoder(asn1).read {
-        advanceWithTag(28.applicationTag().constructedTag()) {
+fun parseAsn1KeyObject(asn1: ByteArray): ByteArray =
+    Asn1Decoder(asn1).read {
+        advanceWithTag(28, Asn1Tag.APPLICATION or Asn1Tag.CONSTRUCTED) {
             readTag()
             readBytes(readLength())
         }
     }
-}
 
 // Derive MAC from a key
 @OptIn(ExperimentalCryptoApi::class)
@@ -229,7 +240,7 @@ suspend fun deriveMac(
     val authToken = createAsn1AuthToken(publicKey, protocolID)
     return CmacSpec(CmacAlgorithm.Aes).createCmac(key).let {
         it.update(authToken)
-        it.final()
+        it.final().copyOfRange(0, 8)
     }
 }
 
@@ -238,13 +249,12 @@ suspend fun deriveMac(
 fun createAsn1AuthToken(
     publicKey: EcPublicKey,
     protocolId: String,
-): ByteArray {
-    return Asn1Encoder().write {
-        writeTaggedObject(0x49) {
+): ByteArray =
+    Asn1Encoder().write {
+        writeTaggedObject(0x49, Asn1Tag.APPLICATION or Asn1Tag.CONSTRUCTED) {
             writeObjectIdentifier(protocolId)
-            writeTaggedObject(0x06) {
+            writeTaggedObject(0x06, Asn1Tag.CONTEXT_SPECIFIC) {
                 write(publicKey.data)
             }
         }
     }
-}

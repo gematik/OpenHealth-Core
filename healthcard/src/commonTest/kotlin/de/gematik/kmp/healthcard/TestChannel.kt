@@ -18,27 +18,28 @@ package de.gematik.kmp.healthcard
 
 import de.gematik.kmp.healthcard.model.card.ICardChannel
 import de.gematik.kmp.healthcard.model.card.IHealthCard
-import de.gematik.kmp.healthcard.model.command.CommandApdu
+import de.gematik.kmp.healthcard.model.command.CardCommandApdu
+import de.gematik.kmp.healthcard.model.command.CardResponseApdu
 import de.gematik.kmp.healthcard.model.command.HealthCardCommand
-import de.gematik.kmp.healthcard.model.command.ResponseApdu
 
 class TestChannel : ICardChannel {
-    private var lastCommandAPDU: CommandApdu? = null
+    private var lastCardCommandAPDU: CardCommandApdu? = null
 
     val lastCommandAPDUBytes: ByteArray
-        get() = lastCommandAPDU?.bytes ?: ByteArray(0)
+        get() = lastCardCommandAPDU?.bytes ?: ByteArray(0)
 
-    override val card: IHealthCard = object : IHealthCard {
-        override fun transmit(apduCommand: CommandApdu): ResponseApdu {
-            TODO("Not yet implemented")
+    override val card: IHealthCard =
+        object : IHealthCard {
+            override fun transmit(apduCommand: CardCommandApdu): CardResponseApdu {
+                TODO("Not yet implemented")
+            }
         }
-    }
 
     override val maxTransceiveLength: Int = 261
 
-    override suspend fun transmit(command: CommandApdu): ResponseApdu {
-        lastCommandAPDU = command
-        return ResponseApdu(byteArrayOf(0x90.toByte(), 0x00))
+    override suspend fun transmit(command: CardCommandApdu): CardResponseApdu {
+        lastCardCommandAPDU = command
+        return CardResponseApdu(byteArrayOf(0x90.toByte(), 0x00))
     }
 
     override val isExtendedLengthSupported: Boolean = true

@@ -49,6 +49,4 @@ private class JvmCmac(
     }
 }
 
-actual fun CmacSpec.createCmac(
-    secret: SecretKey,
-): Cmac = JvmCmac(this, secret)
+actual fun CmacSpec.createCmac(secret: SecretKey): Cmac = JvmCmac(this, secret)

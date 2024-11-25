@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-
-
 package de.gematik.kmp.healthcard.model.command
 
 import de.gematik.kmp.healthcard.model.card.EncryptedPinFormat2
@@ -39,6 +37,5 @@ fun HealthCardCommand.Companion.changeReferenceData(
     ins = INS,
     p1 = MODE_VERIFICATION_DATA,
     p2 = passwordReference.calculateKeyReference(dfSpecific),
-    data =
-        oldSecret.bytes + newSecret.bytes,
+    data = oldSecret.bytes + newSecret.bytes,
 )

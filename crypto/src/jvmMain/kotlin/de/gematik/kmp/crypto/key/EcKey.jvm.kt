@@ -17,7 +17,6 @@
 package de.gematik.kmp.crypto.key
 
 import de.gematik.kmp.crypto.BCProvider
-import org.bouncycastle.jce.spec.ECNamedCurveGenParameterSpec
 import java.security.KeyPairGenerator
 import java.security.spec.ECGenParameterSpec
 
@@ -32,5 +31,6 @@ actual suspend fun EcKeyPairSpec.generateKeyPair(): Pair<EcPublicKey, EcPrivateK
     val keyPairGen = KeyPairGenerator.getInstance("EC", BCProvider)
     keyPairGen.initialize(ECGenParameterSpec(curve.curveName()))
     val keyPair = keyPairGen.generateKeyPair()
-    return EcPublicKey.decodeFromAsn1(keyPair.public.encoded) to EcPrivateKey.decodeFromAsn1(keyPair.private.encoded)
+    return EcPublicKey.decodeFromAsn1(keyPair.public.encoded) to
+        EcPrivateKey.decodeFromAsn1(keyPair.private.encoded)
 }

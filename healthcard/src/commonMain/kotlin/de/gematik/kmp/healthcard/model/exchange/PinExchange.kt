@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-
-
 package de.gematik.kmp.healthcard.model.exchange
 
 import de.gematik.kmp.healthcard.model.card.EncryptedPinFormat2

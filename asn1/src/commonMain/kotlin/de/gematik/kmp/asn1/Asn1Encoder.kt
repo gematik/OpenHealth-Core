@@ -16,6 +16,8 @@
 
 package de.gematik.kmp.asn1
 
+import kotlin.experimental.and
+import kotlin.experimental.or
 import kotlin.js.JsExport
 import kotlin.js.JsName
 
@@ -83,14 +85,49 @@ class Asn1Encoder {
 }
 
 /**
+ * Write the encoded tag directly, handling multi-byte encoding for large tags.
+ */
+fun Asn1Encoder.WriterScope.writeTag(
+    tagNumber: Int,
+    tagClass: Int = 0x00,
+) {
+    if (tagNumber < 0x1F) {
+        // Single-byte tag
+        write((tagNumber or tagClass).toByte())
+    } else {
+        // Multi-byte tag
+        write((tagClass or 0x1F).toByte())
+
+        // Collect encoded bytes in reverse order
+        val encodedBytes = mutableListOf<Byte>()
+        var value = tagNumber
+        do {
+            encodedBytes.add((value and 0x7F).toByte())
+            value = value ushr 7
+        } while (value > 0)
+
+        // Write bytes in big endian order
+        for (i in encodedBytes.size - 1 downTo 0) {
+            val byte = encodedBytes[i]
+            if (i > 0) {
+                write(byte or 0x80.toByte()) // Set high-order bit for all but the last byte
+            } else {
+                write(byte)
+            }
+        }
+    }
+}
+
+/**
  * Write an ASN.1 tagged object.
  */
 fun Asn1Encoder.WriterScope.writeTaggedObject(
-    tag: Int,
+    tagNumber: Int,
+    tagClass: Int = 0x00,
     block: Asn1Encoder.WriterScope.() -> Unit,
 ) {
     // tag
-    write(tag.toByte())
+    writeTag(tagNumber, tagClass)
     val scope = Asn1Encoder.WriterScope()
     block(scope)
     // length + value

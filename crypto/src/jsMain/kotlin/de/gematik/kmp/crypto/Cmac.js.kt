@@ -17,17 +17,19 @@
 package de.gematik.kmp.crypto
 
 import de.gematik.kmp.crypto.key.SecretKey
+import js.buffer.ArrayBuffer
+import js.typedarrays.Uint8Array
+import js.typedarrays.toUint8Array
 import kotlinx.coroutines.await
-import org.khronos.webgl.Uint8Array
 import kotlin.js.Promise
 
 @JsModule("aes-cmac")
 @JsNonModule
 external object aesCmac {
     class AesCmac(
-        key: Uint8Array,
+        key: Uint8Array<ArrayBuffer>,
     ) {
-        fun calculate(message: Uint8Array): Promise<Uint8Array>
+        fun calculate(message: Uint8Array<ArrayBuffer>): Promise<Uint8Array<ArrayBuffer>>
     }
 }
 
@@ -41,7 +43,7 @@ private class NodeCmac(
 
     private var final = false
 
-    private val cmac = runNodeCatching { aesCmac.AesCmac(js("Buffer").from(secret.data) as Uint8Array) }
+    private val cmac = runNodeCatching { aesCmac.AesCmac(secret.data.toUint8Array()) }
     private var data = byteArrayOf()
 
     override suspend fun update(data: ByteArray) {
@@ -50,17 +52,10 @@ private class NodeCmac(
 
     override suspend fun final(): ByteArray {
         if (final) throw CmacException("Final can only be called once")
-        return Promise { resolve, reject ->
-            try {
-                val result = cmac.calculate(js("Buffer").from(this.data) as Uint8Array)
-                resolve(result.unsafeCast<ByteArray>())
-            } catch (e: dynamic) {
-                reject(CmacException("Error during digest", NodeException(e)))
-            }
-        }.await().also { final = true }
+        val result = cmac.calculate(this.data.toUint8Array()).await()
+        final = true
+        return result.toByteArray()
     }
 }
 
-actual fun CmacSpec.createCmac(
-    secret: SecretKey,
-): Cmac = NodeCmac(this, secret)
+actual fun CmacSpec.createCmac(secret: SecretKey): Cmac = NodeCmac(this, secret)

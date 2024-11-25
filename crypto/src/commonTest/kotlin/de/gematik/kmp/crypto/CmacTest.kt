@@ -31,7 +31,8 @@ private val hexFormat =
     }
 
 class CmacTest {
-    private val secret = SecretKey("67 AD A7 BE 54 75 0C 47 44 D0 E3 46 66 33 64 05".hexToByteArray(hexFormat))
+    private val secret =
+        SecretKey("67 AD A7 BE 54 75 0C 47 44 D0 E3 46 66 33 64 05".hexToByteArray(hexFormat))
 
     @Test
     fun `cmac with valid data - expected`() =

@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-
-
 package de.gematik.kmp.healthcard.model.command
 
 import de.gematik.kmp.healthcard.model.card.ICardChannel
@@ -59,7 +57,7 @@ class HealthCardCommand(
         }
     }
 
-    private fun getCommandApdu(channel: ICardChannel): CommandApdu {
+    private fun getCommandApdu(channel: ICardChannel): CardCommandApdu {
         val expectedLength =
             if (ne != null && ne == EXPECT_ALL_WILDCARD) {
                 if (channel.isExtendedLengthSupported) {
@@ -71,14 +69,14 @@ class HealthCardCommand(
                 ne
             }
 
-        val commandAPDU = CommandApdu.ofOptions(cla, ins, p1, p2, data, expectedLength)
+        val cardCommandAPDU = CardCommandApdu.ofOptions(cla, ins, p1, p2, data, expectedLength)
 
-        val apduLength = commandAPDU.bytes.size
+        val apduLength = cardCommandAPDU.bytes.size
         require(apduLength <= channel.maxTransceiveLength) {
             "CommandApdu is too long to send. Limit for Reader is " + channel.maxTransceiveLength +
                 " but length of commandApdu is " + apduLength
         }
-        return commandAPDU
+        return cardCommandAPDU
     }
 
     // keep for extension functions
@@ -87,7 +85,7 @@ class HealthCardCommand(
 
 class HealthCardResponse(
     val status: ResponseStatus,
-    val apdu: ResponseApdu,
+    val apdu: CardResponseApdu,
 )
 
 suspend fun HealthCardCommand.executeSuccessfulOn(channel: ICardChannel): HealthCardResponse =

@@ -18,11 +18,17 @@ package de.gematik.kmp.healthcard
 
 import kotlinx.coroutines.test.runTest
 
-class ParametrizedTestScope(val parameter: Any, val message: String)
+class ParametrizedTestScope(
+    val parameter: Any,
+    val message: String,
+)
 
 inline fun <reified R> ParametrizedTestScope.parameter(): R = parameter as R
 
-fun runParametrizedTest(vararg parameters: Any, block: suspend ParametrizedTestScope.(Any) -> Unit) {
+fun runParametrizedTest(
+    vararg parameters: Any,
+    block: suspend ParametrizedTestScope.(Any) -> Unit,
+) {
     runTest {
         parameters.forEach {
             ParametrizedTestScope(it, "Test with parameter `$it`").block(it)

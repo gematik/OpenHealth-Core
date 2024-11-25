@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-
-
 package de.gematik.kmp.healthcard.model.identifier
 
 private const val MIN_VALUE = 1

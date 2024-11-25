@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-
-
 package de.gematik.kmp.healthcard.model.card
 
 import de.gematik.kmp.crypto.ExperimentalCryptoApi
-import de.gematik.kmp.crypto.Hash
 import de.gematik.kmp.crypto.HashAlgorithm
 import de.gematik.kmp.crypto.HashSpec
 import de.gematik.kmp.crypto.createHash
@@ -67,15 +64,18 @@ private const val PASSWORDLASTBYTE = 3
  * @return byte array with AES-128 key
  */
 @OptIn(ExperimentalCryptoApi::class)
-suspend fun getAES128Key(sharedSecretK: ByteArray, mode: Mode): ByteArray {
-    require(sharedSecretK.isNotEmpty()) { "Shared secret cannot be empty." }
-    val checksum = ByteArray(CHECKSUM_LENGTH)
+suspend fun getAES128Key(
+    sharedSecretK: ByteArray,
+    mode: Mode,
+): ByteArray {
+    require(sharedSecretK.isNotEmpty()) { "Shared secret cannot be empty" }
     val modifiedKey = appendModeByte(sharedSecretK, mode)
 
-    HashSpec(HashAlgorithm.Sha1).createHash().let {
-        it.update(modifiedKey)
-        it.digest()
-    }
+    val checksum =
+        HashSpec(HashAlgorithm.Sha1).createHash().let {
+            it.update(modifiedKey)
+            it.digest()
+        }
 
     return checksum.copyOf(AES128_LENGTH)
 }
@@ -87,12 +87,16 @@ suspend fun getAES128Key(sharedSecretK: ByteArray, mode: Mode): ByteArray {
  * @param mode The mode (ENC, MAC, or PASSWORD)
  * @return Modified key with mode byte appended
  */
-private fun appendModeByte(key: ByteArray, mode: Mode): ByteArray {
-    val modeByte = when (mode) {
-        Mode.ENC -> ENCLASTBYTE.toByte()
-        Mode.MAC -> MACLASTBYTE.toByte()
-        Mode.PASSWORD -> PASSWORDLASTBYTE.toByte()
-    }
+private fun appendModeByte(
+    key: ByteArray,
+    mode: Mode,
+): ByteArray {
+    val modeByte =
+        when (mode) {
+            Mode.ENC -> ENCLASTBYTE.toByte()
+            Mode.MAC -> MACLASTBYTE.toByte()
+            Mode.PASSWORD -> PASSWORDLASTBYTE.toByte()
+        }
     return ByteArray(key.size + OFFSET_LENGTH).apply {
         key.copyInto(this, 0, 0, key.size)
         this[this.size - 1] = modeByte
@@ -100,7 +104,7 @@ private fun appendModeByte(key: ByteArray, mode: Mode): ByteArray {
 }
 
 enum class Mode {
-    ENC,       // Key for encryption/decryption
-    MAC,       // Key for MAC
-    PASSWORD   // Key derived from password
+    ENC, // Key for encryption/decryption
+    MAC, // Key for MAC
+    PASSWORD, // Key derived from password
 }

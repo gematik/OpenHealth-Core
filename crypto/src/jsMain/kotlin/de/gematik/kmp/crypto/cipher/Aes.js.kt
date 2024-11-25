@@ -57,8 +57,9 @@ private class NodeAesCipher(
                 createCipheriv(
                     spec.algorithmName(key.length),
                     key.data.asInt8Array(),
-                    (spec as? AesGcmCipherSpec)?.iv?.asInt8Array(),
+                    ((spec as? AesGcmCipherSpec)?.iv ?: byteArrayOf()).asInt8Array(),
                 )
+            cipher.setAutoPadding(spec.autoPadding)
             if (spec is AesGcmCipherSpec) {
                 @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
                 (cipher as CipherGCM).setAAD(spec.aad.asInt8Array())
@@ -94,8 +95,9 @@ private class NodeAesDecipher(
                 createDecipheriv(
                     spec.algorithmName(key.length),
                     key.data.asInt8Array(),
-                    (spec as? AesGcmDecipherSpec)?.iv?.asInt8Array(),
+                    ((spec as? AesGcmDecipherSpec)?.iv ?: byteArrayOf()).asInt8Array(),
                 )
+            cipher.setAutoPadding(spec.autoPadding)
             if (spec is AesGcmDecipherSpec) {
                 @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
                 val cipherGcm = (cipher as DecipherGCM)

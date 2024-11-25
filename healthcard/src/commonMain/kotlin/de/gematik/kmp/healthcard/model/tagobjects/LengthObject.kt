@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-
-
 package de.gematik.kmp.healthcard.model.tagobjects
 
 import de.gematik.kmp.asn1.Asn1Encoder
@@ -34,20 +32,21 @@ private const val BYTE_VALUE = 8
 class LengthObject(
     le: Int,
 ) {
-    private val leData: ByteArray = when {
-        le == EXPECTED_LENGTH_WILDCARD_SHORT -> {
-            byteArrayOf(0x00)
+    private val leData: ByteArray =
+        when {
+            le == EXPECTED_LENGTH_WILDCARD_SHORT -> {
+                byteArrayOf(0x00)
+            }
+            le > EXPECTED_LENGTH_WILDCARD_SHORT -> {
+                byteArrayOf(
+                    (le shr BYTE_VALUE and BYTE_MASK).toByte(),
+                    (le and BYTE_MASK).toByte(),
+                )
+            }
+            else -> {
+                byteArrayOf(le.toByte())
+            }
         }
-        le > EXPECTED_LENGTH_WILDCARD_SHORT -> {
-            byteArrayOf(
-                (le shr BYTE_VALUE and BYTE_MASK).toByte(),
-                (le and BYTE_MASK).toByte(),
-            )
-        }
-        else -> {
-            byteArrayOf(le.toByte())
-        }
-    }
 
     val encoded: ByteArray
         get() {

@@ -34,16 +34,19 @@ class ManageSecurityEnvironmentCommandTest {
     private val parameters = arrayOf(true, false)
 
     @Test
-    fun shouldEqualManageSecurityEnvironmentCommandMseUseCaseKeyBooleanOid() = runParametrizedTest(*parameters) {
-        val dfSpecific = parameter<Boolean>()
-        val expectedAPDU = getExpectedApdu("MANAGESECURITYENVIRONMENTCOMMAND_APDU-3", dfSpecific)
-        val oid = getParameter("PARAMETER_BYTEARRAY_OID")
-        val command = HealthCardCommand.manageSecEnvWithoutCurves(
-            KEY_PRK_EGK_AUT_CVC_E256,
-            dfSpecific,
-            oid.hexToByteArray(hexSpaceFormat)
-        )
+    fun shouldEqualManageSecurityEnvironmentCommandMseUseCaseKeyBooleanOid() =
+        runParametrizedTest(*parameters) {
+            val dfSpecific = parameter<Boolean>()
+            val expectedAPDU =
+                getExpectedApdu("MANAGESECURITYENVIRONMENTCOMMAND_APDU-3", dfSpecific)
+            val oid = getParameter("PARAMETER_BYTEARRAY_OID")
+            val command =
+                HealthCardCommand.manageSecEnvWithoutCurves(
+                    KEY_PRK_EGK_AUT_CVC_E256,
+                    dfSpecific,
+                    oid.hexToByteArray(hexSpaceFormat),
+                )
 
-        assertEquals(expectedAPDU, TestChannel().test(command).toHexString(hexSpaceFormat))
-    }
+            assertEquals(expectedAPDU, TestChannel().test(command).toHexString(hexSpaceFormat))
+        }
 }

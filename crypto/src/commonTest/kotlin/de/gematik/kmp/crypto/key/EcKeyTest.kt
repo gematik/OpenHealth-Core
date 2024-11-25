@@ -23,11 +23,15 @@ import kotlin.test.assertEquals
 
 class EcKeyTest {
     @Test
-    fun `create ec key pair`() = runTest {
-        val (publicKeyResult, privateKeyResult) = EcKeyPairSpec(EcCurve.BrainpoolP256r1).generateKeyPair()
-        assertEquals(EcCurve.BrainpoolP256r1, publicKeyResult.curve)
-        assertEquals(EcCurve.BrainpoolP256r1, privateKeyResult.curve)
-    }
+    fun `create ec key pair`() =
+        runTest {
+            val (publicKeyResult, privateKeyResult) =
+                EcKeyPairSpec(
+                    EcCurve.BrainpoolP256r1,
+                ).generateKeyPair()
+            assertEquals(EcCurve.BrainpoolP256r1, publicKeyResult.curve)
+            assertEquals(EcCurve.BrainpoolP256r1, privateKeyResult.curve)
+        }
 
     @Test
     fun `encode and decode ec public key from pem`() {

@@ -17,10 +17,13 @@
 package de.gematik.kmp.crypto.key
 
 import com.ionspin.kotlin.bignum.integer.BigInteger
+import de.gematik.kmp.crypto.UnoptimizedCryptoApi
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class EcPointTest {
+@OptIn(UnoptimizedCryptoApi::class)
+@Suppress("ktlint:standard:max-line-length")
+class EcPointBrainpoolP256r1Test {
     private val curve = EcCurve.BrainpoolP256r1
 
     @Test
@@ -66,7 +69,6 @@ class EcPointTest {
         assertEquals(expected, point1 + point2)
     }
 
-
     @Test
     fun `add infinity to a point`() {
         val point1 = curve.point(BigInteger.parseString("8BD2AEB9CB7E57CB2C4B482FFC81B7AFB9DE27E1E3BD23C23A4453BD9ACE3262", 16), BigInteger.parseString("547EF835C3DAC4FD97F8461A14611DC9C27745132DED8E545C1D54C72F046997", 16))
@@ -74,7 +76,6 @@ class EcPointTest {
         val expected = curve.point(BigInteger.parseString("8BD2AEB9CB7E57CB2C4B482FFC81B7AFB9DE27E1E3BD23C23A4453BD9ACE3262", 16), BigInteger.parseString("547EF835C3DAC4FD97F8461A14611DC9C27745132DED8E545C1D54C72F046997", 16))
         assertEquals(expected, point1 + point2)
     }
-
 
     @Test
     fun `add point to its negation`() {
@@ -84,16 +85,12 @@ class EcPointTest {
         assertEquals(expected, point1 + point2)
     }
 
-
     @Test
     fun `double a point`() {
         val point1 = curve.point(BigInteger.parseString("8BD2AEB9CB7E57CB2C4B482FFC81B7AFB9DE27E1E3BD23C23A4453BD9ACE3262", 16), BigInteger.parseString("547EF835C3DAC4FD97F8461A14611DC9C27745132DED8E545C1D54C72F046997", 16))
-        val point2 = curve.point(BigInteger.parseString("8BD2AEB9CB7E57CB2C4B482FFC81B7AFB9DE27E1E3BD23C23A4453BD9ACE3262", 16), BigInteger.parseString("547EF835C3DAC4FD97F8461A14611DC9C27745132DED8E545C1D54C72F046997", 16))
         val expected = curve.point(BigInteger.parseString("743CF1B8B5CD4F2EB55F8AA369593AC436EF044166699E37D51A14C2CE13EA0E", 16), BigInteger.parseString("36ED163337DEBA9C946FE0BB776529DA38DF059F69249406892ADA097EEB7CD4", 16))
-        assertEquals(expected, point1.dbl())
+        assertEquals(expected, point1.double())
     }
-
-
 
     @Test
     fun `scalar multiplication by 0`() {
@@ -103,7 +100,6 @@ class EcPointTest {
         assertEquals(expected, result)
     }
 
-
     @Test
     fun `scalar multiplication by 1`() {
         val point = curve.point(BigInteger.parseString("8BD2AEB9CB7E57CB2C4B482FFC81B7AFB9DE27E1E3BD23C23A4453BD9ACE3262", 16), BigInteger.parseString("547EF835C3DAC4FD97F8461A14611DC9C27745132DED8E545C1D54C72F046997", 16))
@@ -111,7 +107,6 @@ class EcPointTest {
         val result = point * BigInteger.parseString("1", 16)
         assertEquals(expected, result)
     }
-
 
     @Test
     fun `scalar multiplication by 2`() {
@@ -121,7 +116,6 @@ class EcPointTest {
         assertEquals(expected, result)
     }
 
-
     @Test
     fun `scalar multiplication by 3`() {
         val point = curve.point(BigInteger.parseString("8BD2AEB9CB7E57CB2C4B482FFC81B7AFB9DE27E1E3BD23C23A4453BD9ACE3262", 16), BigInteger.parseString("547EF835C3DAC4FD97F8461A14611DC9C27745132DED8E545C1D54C72F046997", 16))
@@ -129,7 +123,6 @@ class EcPointTest {
         val result = point * BigInteger.parseString("3", 16)
         assertEquals(expected, result)
     }
-
 
     @Test
     fun `scalar multiplication by 4`() {
@@ -139,7 +132,6 @@ class EcPointTest {
         assertEquals(expected, result)
     }
 
-
     @Test
     fun `scalar multiplication by 5`() {
         val point = curve.point(BigInteger.parseString("8BD2AEB9CB7E57CB2C4B482FFC81B7AFB9DE27E1E3BD23C23A4453BD9ACE3262", 16), BigInteger.parseString("547EF835C3DAC4FD97F8461A14611DC9C27745132DED8E545C1D54C72F046997", 16))
@@ -147,7 +139,6 @@ class EcPointTest {
         val result = point * BigInteger.parseString("5", 16)
         assertEquals(expected, result)
     }
-
 
     @Test
     fun `scalar multiplication by 6`() {
@@ -157,7 +148,6 @@ class EcPointTest {
         assertEquals(expected, result)
     }
 
-
     @Test
     fun `scalar multiplication by 7`() {
         val point = curve.point(BigInteger.parseString("8BD2AEB9CB7E57CB2C4B482FFC81B7AFB9DE27E1E3BD23C23A4453BD9ACE3262", 16), BigInteger.parseString("547EF835C3DAC4FD97F8461A14611DC9C27745132DED8E545C1D54C72F046997", 16))
@@ -166,7 +156,6 @@ class EcPointTest {
         assertEquals(expected, result)
     }
 
-
     @Test
     fun `scalar multiplication by 8`() {
         val point = curve.point(BigInteger.parseString("8BD2AEB9CB7E57CB2C4B482FFC81B7AFB9DE27E1E3BD23C23A4453BD9ACE3262", 16), BigInteger.parseString("547EF835C3DAC4FD97F8461A14611DC9C27745132DED8E545C1D54C72F046997", 16))
@@ -174,7 +163,6 @@ class EcPointTest {
         val result = point * BigInteger.parseString("8", 16)
         assertEquals(expected, result)
     }
-
 
     @Test
     fun `scalar multiplication by 9`() {
@@ -192,8 +180,6 @@ class EcPointTest {
         assertEquals(expected, result)
     }
 
-
-
     @Test
     fun `scalar multiplication by 100`() {
         val point = curve.point(BigInteger.parseString("8BD2AEB9CB7E57CB2C4B482FFC81B7AFB9DE27E1E3BD23C23A4453BD9ACE3262", 16), BigInteger.parseString("547EF835C3DAC4FD97F8461A14611DC9C27745132DED8E545C1D54C72F046997", 16))
@@ -201,7 +187,6 @@ class EcPointTest {
         val result = point * BigInteger.parseString("64", 16)
         assertEquals(expected, result)
     }
-
 
     @Test
     fun `scalar multiplication by 1000`() {
@@ -211,7 +196,6 @@ class EcPointTest {
         assertEquals(expected, result)
     }
 
-
     @Test
     fun `scalar multiplication by 10000`() {
         val point = curve.point(BigInteger.parseString("8BD2AEB9CB7E57CB2C4B482FFC81B7AFB9DE27E1E3BD23C23A4453BD9ACE3262", 16), BigInteger.parseString("547EF835C3DAC4FD97F8461A14611DC9C27745132DED8E545C1D54C72F046997", 16))
@@ -219,7 +203,6 @@ class EcPointTest {
         val result = point * BigInteger.parseString("2710", 16)
         assertEquals(expected, result)
     }
-
 
     @Test
     fun `scalar multiplication with edge scalar 76884956397045344220809746629001649092737531784414529538755519063063536359078`() {
@@ -229,7 +212,6 @@ class EcPointTest {
         assertEquals(expected, result)
     }
 
-
     @Test
     fun `scalar multiplication with edge scalar 76884956397045344220809746629001649092737531784414529538755519063063536359079`() {
         val point = curve.point(BigInteger.parseString("8BD2AEB9CB7E57CB2C4B482FFC81B7AFB9DE27E1E3BD23C23A4453BD9ACE3262", 16), BigInteger.parseString("547EF835C3DAC4FD97F8461A14611DC9C27745132DED8E545C1D54C72F046997", 16))
@@ -237,7 +219,6 @@ class EcPointTest {
         val result = point * BigInteger.parseString("A9FB57DBA1EEA9BC3E660A909D838D718C397AA3B561A6F7901E0E82974856A7", 16)
         assertEquals(expected, result)
     }
-
 
     @Test
     fun `scalar multiplication with edge scalar 76884956397045344220809746629001649092737531784414529538755519063063536359080`() {
@@ -247,7 +228,6 @@ class EcPointTest {
         assertEquals(expected, result)
     }
 
-
     @Test
     fun `random point addition 1`() {
         val point1 = curve.point(BigInteger.parseString("8BD2AEB9CB7E57CB2C4B482FFC81B7AFB9DE27E1E3BD23C23A4453BD9ACE3262", 16), BigInteger.parseString("547EF835C3DAC4FD97F8461A14611DC9C27745132DED8E545C1D54C72F046997", 16))
@@ -256,7 +236,6 @@ class EcPointTest {
         assertEquals(expected, point1 + point2)
     }
 
-
     @Test
     fun `random point addition 2`() {
         val point1 = curve.point(BigInteger.parseString("A8F217B77338F1D4D6624C3AB4F6CC16D2AA843D0C0FCA016B91E2AD25CAE39D", 16), BigInteger.parseString("4B49CAFC7DAC26BB0AA2A6850A1B40F5FAC10E4589348FB77E65CC5602B74F9D", 16))
@@ -264,7 +243,6 @@ class EcPointTest {
         val expected = curve.point(BigInteger.parseString("6B8BB7F53E36B6824D3300AFBC27257BD432568E24E5FB5702295ECD04E9DE4C", 16), BigInteger.parseString("382F9AF51CE9A3D30965A09661223AF5646067C55B1A928F7252376BFC79EBF0", 16))
         assertEquals(expected, point1 + point2)
     }
-
 
     @Test
     fun `negate a point`() {

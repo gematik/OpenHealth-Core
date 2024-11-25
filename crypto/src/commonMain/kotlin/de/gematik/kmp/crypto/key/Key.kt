@@ -49,7 +49,5 @@ class SecretKey(
         return result
     }
 
-    override fun toString(): String {
-        return "SecretKey(data=${data.contentToString()})"
-    }
+    override fun toString(): String = "SecretKey(data=${data.contentToString()})"
 }

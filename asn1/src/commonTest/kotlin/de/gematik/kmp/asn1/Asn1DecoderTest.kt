@@ -22,7 +22,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-private val hexFormat =
+private val hexSpaceFormat =
     HexFormat {
         bytes.byteSeparator = " "
         upperCase = true
@@ -31,10 +31,11 @@ private val hexFormat =
 class Asn1DecoderTest {
     @Test
     fun `advance with tag`() {
-        val parser = Asn1Decoder("30 0A 04 03 66 6F 6F 04 03 62 61 72".hexToByteArray(hexFormat))
+        val parser =
+            Asn1Decoder("30 0A 04 03 66 6F 6F 04 03 62 61 72".hexToByteArray(hexSpaceFormat))
         val result =
             parser.read {
-                advanceWithTag(0x30) {
+                advanceWithTag(0x10, Asn1Tag.CONSTRUCTED) {
                     buildList {
                         advanceWithTag(0x04) { add(readBytes(3).decodeToString()) }
                         advanceWithTag(0x04) { add(readBytes(3).decodeToString()) }
@@ -47,10 +48,10 @@ class Asn1DecoderTest {
     @Test
     fun `advance with tag - infinite length`() {
         val parser =
-            Asn1Decoder("30 80 04 03 66 6F 6F 04 03 62 61 72 00 00".hexToByteArray(hexFormat))
+            Asn1Decoder("30 80 04 03 66 6F 6F 04 03 62 61 72 00 00".hexToByteArray(hexSpaceFormat))
         val result =
             parser.read {
-                advanceWithTag(0x30) {
+                advanceWithTag(0x10, Asn1Tag.CONSTRUCTED) {
                     buildList {
                         advanceWithTag(0x04) { add(readBytes(3).decodeToString()) }
                         advanceWithTag(0x04) { add(readBytes(3).decodeToString()) }
@@ -63,7 +64,7 @@ class Asn1DecoderTest {
     @Test
     fun `advance with tag - unfinished parsing`() {
         val parser =
-            Asn1Decoder("30 80 04 03 66 6F 6F 04 03 62 61 72 00 00".hexToByteArray(hexFormat))
+            Asn1Decoder("30 80 04 03 66 6F 6F 04 03 62 61 72 00 00".hexToByteArray(hexSpaceFormat))
         assertFailsWith<Asn1DecoderException> {
             parser.read {
                 advanceWithTag(0x30) {
@@ -76,7 +77,7 @@ class Asn1DecoderTest {
     @Test
     fun `advance with tag - skip infinite`() {
         val parser =
-            Asn1Decoder("30 80 04 03 66 6F 6F 04 03 62 61 72 00 00".hexToByteArray(hexFormat))
+            Asn1Decoder("30 80 04 03 66 6F 6F 04 03 62 61 72 00 00".hexToByteArray(hexSpaceFormat))
         assertFailsWith<Asn1DecoderException> {
             parser.read {
                 advanceWithTag(0x30) {
@@ -89,7 +90,7 @@ class Asn1DecoderTest {
 
     @Test
     fun `read boolean true`() {
-        val parser = Asn1Decoder("01 01 FF".hexToByteArray(hexFormat))
+        val parser = Asn1Decoder("01 01 FF".hexToByteArray(hexSpaceFormat))
         val result =
             parser.read {
                 readBoolean()
@@ -99,7 +100,7 @@ class Asn1DecoderTest {
 
     @Test
     fun `read boolean false`() {
-        val parser = Asn1Decoder("01 01 00".hexToByteArray(hexFormat))
+        val parser = Asn1Decoder("01 01 00".hexToByteArray(hexSpaceFormat))
         val result =
             parser.read {
                 readBoolean()
@@ -109,7 +110,7 @@ class Asn1DecoderTest {
 
     @Test
     fun `read integer`() {
-        val parser = Asn1Decoder("02 01 7F".hexToByteArray(hexFormat))
+        val parser = Asn1Decoder("02 01 7F".hexToByteArray(hexSpaceFormat))
         val result =
             parser.read {
                 readInt()
@@ -119,7 +120,7 @@ class Asn1DecoderTest {
 
     @Test
     fun `read integer - negative number`() {
-        val parser = Asn1Decoder("02 01 EC".hexToByteArray(hexFormat))
+        val parser = Asn1Decoder("02 01 EC".hexToByteArray(hexSpaceFormat))
         val result =
             parser.read {
                 readInt()
@@ -129,7 +130,7 @@ class Asn1DecoderTest {
 
     @Test
     fun `read integer - boundary case`() {
-        val parser = Asn1Decoder("02 01 80".hexToByteArray(hexFormat))
+        val parser = Asn1Decoder("02 01 80".hexToByteArray(hexSpaceFormat))
         val result =
             parser.read {
                 readInt()
@@ -139,7 +140,7 @@ class Asn1DecoderTest {
 
     @Test
     fun `read integer - multi-byte length`() {
-        val parser = Asn1Decoder("02 02 7F 7F".hexToByteArray(hexFormat))
+        val parser = Asn1Decoder("02 02 7F 7F".hexToByteArray(hexSpaceFormat))
         val result =
             parser.read {
                 readInt()
@@ -149,28 +150,28 @@ class Asn1DecoderTest {
 
     @Test
     fun `read bit string - no unused bits`() {
-        val parser = Asn1Decoder("03 05 00 FF AA BB CC".hexToByteArray(hexFormat))
-        val result = parser.read { readBitString() }.toHexString(hexFormat)
+        val parser = Asn1Decoder("03 05 00 FF AA BB CC".hexToByteArray(hexSpaceFormat))
+        val result = parser.read { readBitString() }.toHexString(hexSpaceFormat)
         assertEquals("FF AA BB CC", result)
     }
 
     @Test
     fun `read bit string - with unused bits`() {
-        val parser = Asn1Decoder("03 05 03 FF AA BB FF".hexToByteArray(hexFormat)) // Last 3 bits unused
-        val result = parser.read { readBitString() }.toHexString(hexFormat)
+        val parser = Asn1Decoder("03 05 03 FF AA BB FF".hexToByteArray(hexSpaceFormat)) // Last 3 bits unused
+        val result = parser.read { readBitString() }.toHexString(hexSpaceFormat)
         assertEquals("FF AA BB F8", result) // FF with last 3 bits unused becomes F8
     }
 
     @Test
     fun `read bit string - empty bit string`() {
-        val parser = Asn1Decoder("03 01 00".hexToByteArray(hexFormat)) // No bits, only unused bits byte
-        val result = parser.read { readBitString() }.toHexString(hexFormat)
+        val parser = Asn1Decoder("03 01 00".hexToByteArray(hexSpaceFormat)) // No bits, only unused bits byte
+        val result = parser.read { readBitString() }.toHexString(hexSpaceFormat)
         assertEquals("", result)
     }
 
     @Test
     fun `read bit string - invalid unused bits`() {
-        val parser = Asn1Decoder("03 04 08 FF AA BB CC".hexToByteArray(hexFormat)) // Invalid unused bits > 7
+        val parser = Asn1Decoder("03 04 08 FF AA BB CC".hexToByteArray(hexSpaceFormat)) // Invalid unused bits > 7
         assertFailsWith<Asn1DecoderException> {
             parser.read { readBitString() }
         }
@@ -179,13 +180,13 @@ class Asn1DecoderTest {
     @Test
     fun `read bit string - correct parsing within complex structure`() {
         val parser =
-            Asn1Decoder("30 0C 03 04 00 FF AA BB 03 04 01 CC DD 00".hexToByteArray(hexFormat))
+            Asn1Decoder("30 0C 03 04 00 FF AA BB 03 04 01 CC DD 00".hexToByteArray(hexSpaceFormat))
         val result =
             parser.read {
-                advanceWithTag(0x30) {
+                advanceWithTag(0x10, Asn1Tag.CONSTRUCTED) {
                     buildList {
-                        add(readBitString().toHexString(hexFormat)) // First BIT STRING
-                        add(readBitString().toHexString(hexFormat)) // Second BIT STRING
+                        add(readBitString().toHexString(hexSpaceFormat)) // First BIT STRING
+                        add(readBitString().toHexString(hexSpaceFormat)) // Second BIT STRING
                     }
                 }
             }
@@ -194,7 +195,7 @@ class Asn1DecoderTest {
 
     @Test
     fun `read utf8 string`() {
-        val parser = Asn1Decoder("04 05 48 65 6C 6C 6F".hexToByteArray(hexFormat))
+        val parser = Asn1Decoder("04 05 48 65 6C 6C 6F".hexToByteArray(hexSpaceFormat))
         val result =
             parser.read {
                 readUtf8String()
@@ -204,7 +205,7 @@ class Asn1DecoderTest {
 
     @Test
     fun `read utf8 string - empty`() {
-        val parser = Asn1Decoder("04 00".hexToByteArray(hexFormat))
+        val parser = Asn1Decoder("04 00".hexToByteArray(hexSpaceFormat))
         val result =
             parser.read {
                 readUtf8String()
@@ -214,7 +215,7 @@ class Asn1DecoderTest {
 
     @Test
     fun `read utf8 string - invalid data`() {
-        val parser = Asn1Decoder("04 03 C3 28".hexToByteArray(hexFormat)) // Invalid UTF-8 sequence
+        val parser = Asn1Decoder("04 03 C3 28".hexToByteArray(hexSpaceFormat)) // Invalid UTF-8 sequence
         assertFailsWith<Asn1DecoderException> {
             parser.read { readUtf8String() }
         }
@@ -222,7 +223,7 @@ class Asn1DecoderTest {
 
     @Test
     fun `read visible string`() {
-        val parser = Asn1Decoder("1A 05 57 6F 72 6C 64".hexToByteArray(hexFormat))
+        val parser = Asn1Decoder("1A 05 57 6F 72 6C 64".hexToByteArray(hexSpaceFormat))
         val result =
             parser.read {
                 readVisibleString()
@@ -232,7 +233,7 @@ class Asn1DecoderTest {
 
     @Test
     fun `read visible string - special characters`() {
-        val parser = Asn1Decoder("1A 06 41 42 20 21 40 23".hexToByteArray(hexFormat)) // Includes ASCII space and symbols
+        val parser = Asn1Decoder("1A 06 41 42 20 21 40 23".hexToByteArray(hexSpaceFormat)) // Includes ASCII space and symbols
         val result =
             parser.read {
                 readVisibleString()
@@ -243,7 +244,9 @@ class Asn1DecoderTest {
     @Test
     fun `read utc time`() {
         val parser =
-            Asn1Decoder("17 0D 32 33 30 35 31 32 31 34 33 39 34 35 5A".hexToByteArray(hexFormat))
+            Asn1Decoder(
+                "17 0D 32 33 30 35 31 32 31 34 33 39 34 35 5A".hexToByteArray(hexSpaceFormat),
+            )
         val result =
             parser.read {
                 readUtcTime()
@@ -256,7 +259,7 @@ class Asn1DecoderTest {
         val parser =
             Asn1Decoder(
                 "17 11 32 33 30 35 31 32 31 34 33 39 34 35 2D 30 35 30 30".hexToByteArray(
-                    hexFormat,
+                    hexSpaceFormat,
                 ),
             )
         val result =
@@ -268,7 +271,8 @@ class Asn1DecoderTest {
 
     @Test
     fun `read utc time - missing seconds`() {
-        val parser = Asn1Decoder("17 0B 32 33 30 35 31 32 31 34 33 39 5A".hexToByteArray(hexFormat))
+        val parser =
+            Asn1Decoder("17 0B 32 33 30 35 31 32 31 34 33 39 5A".hexToByteArray(hexSpaceFormat))
         val result =
             parser.read {
                 readUtcTime()
@@ -281,7 +285,7 @@ class Asn1DecoderTest {
         val parser =
             Asn1Decoder(
                 "18 12 32 30 32 33 30 35 31 32 31 34 33 39 34 35 2E 31 32 33 5A".hexToByteArray(
-                    hexFormat,
+                    hexSpaceFormat,
                 ),
             )
         val result =
@@ -294,7 +298,9 @@ class Asn1DecoderTest {
     @Test
     fun `read generalized time - no fraction`() {
         val parser =
-            Asn1Decoder("18 0D 32 30 32 33 30 35 31 32 31 34 33 39 5A".hexToByteArray(hexFormat))
+            Asn1Decoder(
+                "18 0D 32 30 32 33 30 35 31 32 31 34 33 39 5A".hexToByteArray(hexSpaceFormat),
+            )
         val result =
             parser.read {
                 readGeneralizedTime()
@@ -304,7 +310,7 @@ class Asn1DecoderTest {
 
     @Test
     fun `read valid simple oid`() {
-        val parser = Asn1Decoder("06 03 2A 03 04".hexToByteArray(hexFormat))
+        val parser = Asn1Decoder("06 03 2A 03 04".hexToByteArray(hexSpaceFormat))
         val result =
             parser.read {
                 readObjectIdentifier()
@@ -314,7 +320,7 @@ class Asn1DecoderTest {
 
     @Test
     fun `read valid complex oid`() {
-        val parser = Asn1Decoder("06 05 55 04 06 82 03".hexToByteArray(hexFormat))
+        val parser = Asn1Decoder("06 05 55 04 06 82 03".hexToByteArray(hexSpaceFormat))
         val result =
             parser.read {
                 readObjectIdentifier()
@@ -324,7 +330,7 @@ class Asn1DecoderTest {
 
     @Test
     fun `read empty oid - throws exception`() {
-        val parser = Asn1Decoder("06 00".hexToByteArray(hexFormat))
+        val parser = Asn1Decoder("06 00".hexToByteArray(hexSpaceFormat))
         assertFailsWith<Asn1DecoderException> {
             parser.read {
                 readObjectIdentifier()
@@ -334,7 +340,7 @@ class Asn1DecoderTest {
 
     @Test
     fun `read single-byte oid`() {
-        val parser = Asn1Decoder("06 01 06".hexToByteArray(hexFormat))
+        val parser = Asn1Decoder("06 01 06".hexToByteArray(hexSpaceFormat))
         val result =
             parser.read {
                 readObjectIdentifier()
@@ -344,7 +350,7 @@ class Asn1DecoderTest {
 
     @Test
     fun `read oid with high-value bytes`() {
-        val parser = Asn1Decoder("06 03 82 86 05".hexToByteArray(hexFormat))
+        val parser = Asn1Decoder("06 03 82 86 05".hexToByteArray(hexSpaceFormat))
         val result =
             parser.read {
                 readObjectIdentifier()
@@ -354,7 +360,7 @@ class Asn1DecoderTest {
 
     @Test
     fun `read oid with overflow in intermediate value`() {
-        val parser = Asn1Decoder("06 04 2B 81 80 02".hexToByteArray(hexFormat))
+        val parser = Asn1Decoder("06 04 2B 81 80 02".hexToByteArray(hexSpaceFormat))
         val result =
             parser.read {
                 readObjectIdentifier()
@@ -364,7 +370,7 @@ class Asn1DecoderTest {
 
     @Test
     fun `read oid with trailing continuation bit throws exception`() {
-        val parser = Asn1Decoder("06 02 2B 81".hexToByteArray(hexFormat))
+        val parser = Asn1Decoder("06 02 2B 81".hexToByteArray(hexSpaceFormat))
         assertFailsWith<Asn1DecoderException> {
             parser.read {
                 readObjectIdentifier()

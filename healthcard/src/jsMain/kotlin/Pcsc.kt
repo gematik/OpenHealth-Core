@@ -31,9 +31,13 @@ external interface Status {
 
 external class PCSCLite : EventEmitter {
     fun on(type: String /* "error" */, listener: (error: Any) -> Unit): PCSCLite
+
     fun once(type: String /* "error" */, listener: (error: Any) -> Unit): PCSCLite
+
     fun on(type: String /* "reader" */, listener: (reader: CardReader) -> Unit): PCSCLite
+
     fun once(type: String /* "reader" */, listener: (reader: CardReader) -> Unit): PCSCLite
+
     fun close()
 }
 
@@ -68,21 +72,49 @@ external class CardReader : EventEmitter {
     val connected: Boolean
 
     fun on(type: String /* "error" */, listener: (error: Any) -> Unit): CardReader
+
     fun once(type: String /* "error" */, listener: (error: Any) -> Unit): CardReader
+
     fun on(type: String /* "end" */, listener: () -> Unit): CardReader
+
     fun once(type: String /* "end" */, listener: () -> Unit): CardReader
+
     fun on(type: String /* "status" */, listener: (status: Status) -> Unit): CardReader
+
     fun once(type: String /* "status" */, listener: (status: Status) -> Unit): CardReader
 
     fun SCARD_CTL_CODE(code: Int): Int
 
     fun get_status(cb: (err: Any?, state: Int, atr: Buffer?) -> Unit)
+
     fun connect(callback: (err: Any?, protocol: Int) -> Unit)
-    fun connect(options: ConnectOptions, callback: (err: Any?, protocol: Int) -> Unit)
+
+    fun connect(
+        options: ConnectOptions,
+        callback: (err: Any?, protocol: Int) -> Unit,
+    )
+
     fun disconnect(callback: (err: Any?) -> Unit)
-    fun disconnect(disposition: Int, callback: (err: Any?) -> Unit)
-    fun transmit(data: Buffer, res_len: Int, protocol: Int, cb: (err: Any?, response: Buffer) -> Unit)
-    fun control(data: Buffer, control_code: Int, res_len: Int, cb: (err: Any?, response: Buffer) -> Unit)
+
+    fun disconnect(
+        disposition: Int,
+        callback: (err: Any?) -> Unit,
+    )
+
+    fun transmit(
+        data: Buffer,
+        res_len: Int,
+        protocol: Int,
+        cb: (err: Any?, response: Buffer) -> Unit,
+    )
+
+    fun control(
+        data: Buffer,
+        control_code: Int,
+        res_len: Int,
+        cb: (err: Any?, response: Buffer) -> Unit,
+    )
+
     fun close()
 }
 

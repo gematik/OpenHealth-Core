@@ -21,44 +21,44 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class HealthCardVersion2Test {
-
     @Test
     fun `parse version of health card`() {
-        val version2 = parseHealthCardVersion2(
-            "EF 2B C0 03 02 00 00 C1 03 04 03 02 C2 10 45 47 4B 47 32 20 20 20 20 20 20 20 20 01 03 04 C4 03 01 00 00 C5 03 02 00 00 C7 03 01 00 00"
-                .hexToByteArray(hexSpaceFormat)
-        )
+        val version2 =
+            parseHealthCardVersion2(
+                "EF 2B C0 03 02 00 00 C1 03 04 03 02 C2 10 45 47 4B 47 32 20 20 20 20 20 20 20 20 01 03 04 C4 03 01 00 00 C5 03 02 00 00 C7 03 01 00 00"
+                    .hexToByteArray(hexSpaceFormat),
+            )
         assertEquals(
             "02 00 00",
-            version2.fillingInstructionsEfAtrVersion.toHexString(hexSpaceFormat)
+            version2.fillingInstructionsEfAtrVersion.toHexString(hexSpaceFormat),
         ) // C5
         assertEquals(
             "",
-            version2.fillingInstructionsEfEnvironmentSettingsVersion.toHexString(hexSpaceFormat)
+            version2.fillingInstructionsEfEnvironmentSettingsVersion.toHexString(hexSpaceFormat),
         ) // C3
         assertEquals(
             "01 00 00",
-            version2.fillingInstructionsEfGdoVersion.toHexString(hexSpaceFormat)
+            version2.fillingInstructionsEfGdoVersion.toHexString(hexSpaceFormat),
         ) // C4
         assertEquals(
             "",
-            version2.fillingInstructionsEfKeyInfoVersion.toHexString(hexSpaceFormat)
+            version2.fillingInstructionsEfKeyInfoVersion.toHexString(hexSpaceFormat),
         ) // C6
         assertEquals(
             "01 00 00",
-            version2.fillingInstructionsEfLoggingVersion.toHexString(hexSpaceFormat)
+            version2.fillingInstructionsEfLoggingVersion.toHexString(hexSpaceFormat),
         ) // C7
         assertEquals(
             "02 00 00",
-            version2.fillingInstructionsVersion.toHexString(hexSpaceFormat)
+            version2.fillingInstructionsVersion.toHexString(hexSpaceFormat),
         ) // C0
         assertEquals(
             "04 03 02",
-            version2.objectSystemVersion.toHexString(hexSpaceFormat)
+            version2.objectSystemVersion.toHexString(hexSpaceFormat),
         ) // C1
         assertEquals(
             "45 47 4B 47 32 20 20 20 20 20 20 20 20 01 03 04",
-            version2.productIdentificationObjectSystemVersion.toHexString(hexSpaceFormat)
+            version2.productIdentificationObjectSystemVersion.toHexString(hexSpaceFormat),
         ) // C2
     }
 }

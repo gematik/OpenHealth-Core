@@ -19,7 +19,7 @@
 package de.gematik.kmp.healthcard.model.card
 
 import de.gematik.kmp.asn1.Asn1Decoder
-import de.gematik.kmp.asn1.readOctetString
+import de.gematik.kmp.asn1.Asn1Tag
 
 const val EGK21_MIN_VERSION = (4 shl 16) or (4 shl 8) or 0
 
@@ -31,43 +31,36 @@ class HealthCardVersion2(
      * Version information of C0: Filling instructions for Version 2.
      */
     val fillingInstructionsVersion: ByteArray, // C0
-
     /**
      * Version information of C1: Card object system.
      */
     val objectSystemVersion: ByteArray, // C1
-
     /**
      * Version information of C2: Product identification object system.
      */
     val productIdentificationObjectSystemVersion: ByteArray, // C2
-
     /**
      * Version information of C4: Filling instructions for EF.GDO.
      */
     val fillingInstructionsEfGdoVersion: ByteArray, // C4
-
     /**
      * Version information of C5: Filling instructions for EF.ATR.
      */
     val fillingInstructionsEfAtrVersion: ByteArray, // C5
-
     /**
      * Version information of C6: Filling instructions for EF.KeyInfo.
      * Applicable only for gSMC-K and gSMC-KT.
      */
     val fillingInstructionsEfKeyInfoVersion: ByteArray, // C6
-
     /**
      * Version information of C3: Filling instructions for Environment Settings.
      * Applicable only for gSMC-K.
      */
     val fillingInstructionsEfEnvironmentSettingsVersion: ByteArray, // C3
-
     /**
      * Version information of C7: Filling instructions for EF.Logging.
      */
-    val fillingInstructionsEfLoggingVersion: ByteArray // C7
+    val fillingInstructionsEfLoggingVersion: ByteArray, // C7
 )
 
 fun HealthCardVersion2.isEGK21(): Boolean {
@@ -77,14 +70,14 @@ fun HealthCardVersion2.isEGK21(): Boolean {
     return version >= EGK21_MIN_VERSION
 }
 
-fun parseHealthCardVersion2(asn1: ByteArray): HealthCardVersion2 {
-    return Asn1Decoder(asn1).read {
-        advanceWithTag(0xEF) {
+fun parseHealthCardVersion2(asn1: ByteArray): HealthCardVersion2 =
+    Asn1Decoder(asn1).read {
+        advanceWithTag(0x0F, Asn1Tag.APPLICATION or Asn1Tag.CONSTRUCTED) {
             val parsedData = mutableMapOf<Int, ByteArray>()
 
             while (remainingLength > 0) {
-                // TODO: More descriptive api fro private tag handling
-                val tag = readTag() - 0xC0
+                // TODO XXX-000: More descriptive api fro private tag handling
+                val tag = readTag().tagNumber
                 val length = readLength()
                 val value = readBytes(length)
                 parsedData[tag] = value
@@ -98,8 +91,7 @@ fun parseHealthCardVersion2(asn1: ByteArray): HealthCardVersion2 {
                 fillingInstructionsEfGdoVersion = parsedData[4] ?: byteArrayOf(),
                 fillingInstructionsEfAtrVersion = parsedData[5] ?: byteArrayOf(),
                 fillingInstructionsEfKeyInfoVersion = parsedData[6] ?: byteArrayOf(),
-                fillingInstructionsEfLoggingVersion = parsedData[7] ?: byteArrayOf()
+                fillingInstructionsEfLoggingVersion = parsedData[7] ?: byteArrayOf(),
             )
         }
     }
-}

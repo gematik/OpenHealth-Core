@@ -55,26 +55,22 @@ object Asn1Type {
     const val Duration = 0x22
 }
 
-/**
- * Marks a tag constructed.
- */
 @JsExport
-fun Int.constructedTag(): Int = this or 0x20
+data class Asn1Tag(
+    val tagClass: Int,
+    val tagNumber: Int,
+) {
+    @OptIn(ExperimentalStdlibApi::class)
+    override fun toString(): String =
+        "Asn1Tag(tagClass=${tagClass.toHexString(
+            hexDebugFormat,
+        )}, tagNumber=${tagNumber.toHexString(hexDebugFormat)})"
 
-/**
- * Marks a tag as application.
- */
-@JsExport
-fun Int.applicationTag(): Int = this or 0x40
+    companion object {
+        const val CONSTRUCTED = 0x20
 
-/**
- * Marks a tag as context specific.
- */
-@JsExport
-fun Int.contextSpecificTag(): Int = this or 0x80
-
-/**
- * Marks a tag private.
- */
-@JsExport
-fun Int.privateTag(): Int = this or 0xC0
+        const val APPLICATION = 0x40
+        const val CONTEXT_SPECIFIC = 0x80
+        const val PRIVATE = 0xC0
+    }
+}

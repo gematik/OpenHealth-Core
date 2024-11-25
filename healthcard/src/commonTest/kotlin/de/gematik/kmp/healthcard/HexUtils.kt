@@ -21,3 +21,8 @@ val hexSpaceFormat =
         bytes.byteSeparator = " "
         upperCase = true
     }
+
+val hexUppercaseFormat =
+    HexFormat {
+        upperCase = true
+    }

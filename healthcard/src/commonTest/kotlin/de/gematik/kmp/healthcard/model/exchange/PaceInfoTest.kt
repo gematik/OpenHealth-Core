@@ -21,7 +21,6 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-
 class PaceInfoTest {
     @Test
     fun `PACE info extraction - validate protocol ID and protocol bytes with spaces`() =
@@ -35,7 +34,7 @@ class PaceInfoTest {
             assertEquals(expectedProtocolId, paceInfo.protocolId)
             assertEquals(
                 expectedPaceInfoProtocolBytes,
-                paceInfo.protocolIdBytes.toHexString(hexSpaceFormat)
+                paceInfo.protocolIdBytes.toHexString(hexSpaceFormat),
             )
         }
 }

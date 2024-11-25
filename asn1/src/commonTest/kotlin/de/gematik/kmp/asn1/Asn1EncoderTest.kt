@@ -30,6 +30,54 @@ private val hexFormat =
 
 class Asn1EncoderTest {
     @Test
+    fun `write multi-byte tag - small value`() {
+        val encoder = Asn1Encoder()
+        val result =
+            encoder.write {
+                writeTaggedObject(33, Asn1Tag.APPLICATION) {
+                    write(0x05)
+                }
+            }
+        assertEquals("5F 21 01 05", result.toHexString(hexFormat))
+    }
+
+    @Test
+    fun `write multi-byte tag - larger value`() {
+        val encoder = Asn1Encoder()
+        val result =
+            encoder.write {
+                writeTaggedObject(128, Asn1Tag.APPLICATION) {
+                    write(0x05)
+                }
+            }
+        assertEquals("5F 81 00 01 05", result.toHexString(hexFormat))
+    }
+
+    @Test
+    fun `write multi-byte tag - very large value`() {
+        val encoder = Asn1Encoder()
+        val result =
+            encoder.write {
+                writeTaggedObject(16384, Asn1Tag.APPLICATION) {
+                    write(0x05)
+                }
+            }
+        assertEquals("5F 81 80 00 01 05", result.toHexString(hexFormat))
+    }
+
+    @Test
+    fun `write multi-byte tag - maximum single-byte tag`() {
+        val encoder = Asn1Encoder()
+        val result =
+            encoder.write {
+                writeTaggedObject(30, Asn1Tag.APPLICATION) {
+                    write(0x05)
+                }
+            }
+        assertEquals("5E 01 05", result.toHexString(hexFormat))
+    }
+
+    @Test
     fun `write int - expected`() {
         val encoder = Asn1Encoder()
         val result =
@@ -104,7 +152,7 @@ class Asn1EncoderTest {
         val encoder = Asn1Encoder()
         val result =
             encoder.write {
-                writeTaggedObject(0x30) {
+                writeTaggedObject(0x10, Asn1Tag.CONSTRUCTED) {
                     writeInt(42)
                     writeUtf8String("test")
                 }
