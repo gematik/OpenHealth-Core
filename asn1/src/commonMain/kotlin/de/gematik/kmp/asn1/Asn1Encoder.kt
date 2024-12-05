@@ -16,7 +16,6 @@
 
 package de.gematik.kmp.asn1
 
-import kotlin.experimental.and
 import kotlin.experimental.or
 import kotlin.js.JsExport
 import kotlin.js.JsName
@@ -126,6 +125,8 @@ fun Asn1Encoder.WriterScope.writeTaggedObject(
     tagClass: Int = 0x00,
     block: Asn1Encoder.WriterScope.() -> Unit,
 ) {
+    // TODO OPEN-2: Overload impl with Asn1Tag for a more convenient api
+
     // tag
     writeTag(tagNumber, tagClass)
     val scope = Asn1Encoder.WriterScope()
@@ -138,7 +139,7 @@ fun Asn1Encoder.WriterScope.writeTaggedObject(
  * Write an ASN.1 integer.
  */
 fun Asn1Encoder.WriterScope.writeInt(value: Int) {
-    writeTaggedObject(Asn1Type.Integer) {
+    writeTaggedObject(Asn1Type.INTEGER) {
         write(value)
     }
 }
@@ -147,7 +148,7 @@ fun Asn1Encoder.WriterScope.writeInt(value: Int) {
  * Write an ASN.1 boolean.
  */
 fun Asn1Encoder.WriterScope.writeBoolean(value: Boolean) {
-    writeTaggedObject(Asn1Type.Boolean) {
+    writeTaggedObject(Asn1Type.BOOLEAN) {
         write(if (value) 0xFF.toByte() else 0x00)
     }
 }
@@ -160,7 +161,7 @@ fun Asn1Encoder.WriterScope.writeBitString(
     unusedBits: Int = 0,
 ) {
     if (unusedBits !in 0..7) fail { "Invalid unused bit count: $unusedBits" }
-    writeTaggedObject(Asn1Type.BitString) {
+    writeTaggedObject(Asn1Type.BIT_STRING) {
         write(byteArrayOf(unusedBits.toByte()) + value)
     }
 }
@@ -169,7 +170,7 @@ fun Asn1Encoder.WriterScope.writeBitString(
  * Write an ASN.1 octet string.
  */
 fun Asn1Encoder.WriterScope.writeOctetString(value: ByteArray) {
-    writeTaggedObject(Asn1Type.OctetString) {
+    writeTaggedObject(Asn1Type.OCTET_STRING) {
         write(value)
     }
 }
@@ -178,7 +179,7 @@ fun Asn1Encoder.WriterScope.writeOctetString(value: ByteArray) {
  * Write an ASN.1 utf8 string.
  */
 fun Asn1Encoder.WriterScope.writeUtf8String(value: String) {
-    writeTaggedObject(Asn1Type.Utf8String) {
+    writeTaggedObject(Asn1Type.UTF8_STRING) {
         write(value.encodeToByteArray())
     }
 }

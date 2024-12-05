@@ -234,8 +234,8 @@ fun EcPublicKey.toEcPoint(): EcPoint =
 
 fun EcPublicKey.encodeToAsn1(): ByteArray =
     Asn1Encoder().write {
-        writeTaggedObject(Asn1Type.Sequence, Asn1Tag.CONSTRUCTED) {
-            writeTaggedObject(Asn1Type.Sequence, Asn1Tag.CONSTRUCTED) {
+        writeTaggedObject(Asn1Type.SEQUENCE, Asn1Tag.CONSTRUCTED) {
+            writeTaggedObject(Asn1Type.SEQUENCE, Asn1Tag.CONSTRUCTED) {
                 writeObjectIdentifier(EcPublicKey.oid)
                 writeObjectIdentifier(curve.oid)
             }
@@ -270,7 +270,7 @@ fun EcPublicKey.Companion.decodeFromUncompressedFormat(
  */
 fun EcPublicKey.Companion.decodeFromAsn1(data: ByteArray): EcPublicKey =
     Asn1Decoder(data).read {
-        advanceWithTag(Asn1Type.Sequence, Asn1Tag.CONSTRUCTED) {
+        advanceWithTag(Asn1Type.SEQUENCE, Asn1Tag.CONSTRUCTED) {
             val curve = readEcCurveFromAlgorithmIdentifier()
             val point = readBitString()
             skipToEnd()
@@ -324,14 +324,14 @@ fun EcPrivateKey.Companion.fromScalar(
 
 fun EcPrivateKey.encodeToAsn1(): ByteArray =
     Asn1Encoder().write {
-        writeTaggedObject(Asn1Type.Sequence, Asn1Tag.CONSTRUCTED) {
+        writeTaggedObject(Asn1Type.SEQUENCE, Asn1Tag.CONSTRUCTED) {
             writeInt(0)
-            writeTaggedObject(Asn1Type.Sequence, Asn1Tag.CONSTRUCTED) {
+            writeTaggedObject(Asn1Type.SEQUENCE, Asn1Tag.CONSTRUCTED) {
                 writeObjectIdentifier(EcPublicKey.oid)
                 writeObjectIdentifier(curve.oid)
             }
-            writeTaggedObject(Asn1Type.OctetString) {
-                writeTaggedObject(Asn1Type.Sequence, Asn1Tag.CONSTRUCTED) {
+            writeTaggedObject(Asn1Type.OCTET_STRING) {
+                writeTaggedObject(Asn1Type.SEQUENCE, Asn1Tag.CONSTRUCTED) {
                     writeInt(1)
                     writeOctetString(this@encodeToAsn1.data)
                 }
@@ -367,11 +367,11 @@ fun EcPrivateKey.encodeToPem(): String =
  */
 fun EcPrivateKey.Companion.decodeFromAsn1(data: ByteArray): EcPrivateKey =
     Asn1Decoder(data).read {
-        advanceWithTag(Asn1Type.Sequence, Asn1Tag.CONSTRUCTED) {
+        advanceWithTag(Asn1Type.SEQUENCE, Asn1Tag.CONSTRUCTED) {
             readInt()
             val curve = readEcCurveFromAlgorithmIdentifier()
-            advanceWithTag(Asn1Type.OctetString) {
-                advanceWithTag(Asn1Type.Sequence, Asn1Tag.CONSTRUCTED) {
+            advanceWithTag(Asn1Type.OCTET_STRING) {
+                advanceWithTag(Asn1Type.SEQUENCE, Asn1Tag.CONSTRUCTED) {
                     val version = readInt()
                     if (version != 1) fail { "Unsupported ec private key version" }
                     val privateKey = readOctetString()
@@ -400,7 +400,7 @@ fun EcPrivateKey.Companion.decodeFromPem(data: String): EcPrivateKey {
  * }
  */
 fun Asn1Decoder.ParserScope.readEcCurveFromAlgorithmIdentifier(): EcCurve =
-    advanceWithTag(Asn1Type.Sequence, Asn1Tag.CONSTRUCTED) {
+    advanceWithTag(Asn1Type.SEQUENCE, Asn1Tag.CONSTRUCTED) {
         val oid = readObjectIdentifier()
         require(oid == EcPublicKey.oid) { "Unexpected oid `$oid`. Expected `${EcPublicKey.oid}`" }
         val curveOid = readObjectIdentifier()

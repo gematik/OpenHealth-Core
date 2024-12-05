@@ -20,7 +20,7 @@ import kotlin.js.JsExport
 import kotlin.math.abs
 
 /**
- * Raw representation of an [Asn1Type.UtcTime]. If [offset] is `null` this indicates that the time is in UTC.
+ * Raw representation of an [Asn1Type.UTC_TIME]. If [offset] is `null` this indicates that the time is in UTC.
  */
 @JsExport
 data class Asn1UtcTime(
@@ -45,11 +45,11 @@ private val utcTimeRegex =
     Regex("""(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})?(Z|[+-]\d{2}\d{2})""")
 
 /**
- * Read [Asn1Type.UtcTime].
+ * Read [Asn1Type.UTC_TIME].
  */
 @JsExport
 fun Asn1Decoder.ParserScope.readUtcTime(): Asn1UtcTime =
-    advanceWithTag(Asn1Type.UtcTime) {
+    advanceWithTag(Asn1Type.UTC_TIME) {
         val value = readBytes(remainingLength).decodeToString()
         val match = utcTimeRegex.find(value)
         val (yy, mm, dd, hh, min, ss, offset) =
@@ -83,7 +83,7 @@ fun Asn1Decoder.ParserScope.readUtcTime(): Asn1UtcTime =
 
 @JsExport
 fun Asn1Encoder.WriterScope.writeUtcTime(value: Asn1UtcTime) {
-    writeTaggedObject(Asn1Type.UtcTime) {
+    writeTaggedObject(Asn1Type.UTC_TIME) {
         val formattedTime =
             buildString {
                 append(
@@ -115,7 +115,7 @@ fun Asn1Encoder.WriterScope.writeUtcTime(value: Asn1UtcTime) {
 }
 
 /**
- * Raw representation of an [Asn1Type.GeneralizedTime]. If [offset] is `null` this indicates that the time is in UTC.
+ * Raw representation of an [Asn1Type.GENERALIZED_TIME]. If [offset] is `null` this indicates that the time is in UTC.
  */
 @JsExport
 data class Asn1GeneralizedTime(
@@ -141,11 +141,11 @@ private val generalizedTimeRegex =
     Regex("""(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})?(\d{2})?(\.\d{1,3})?(Z|[+-]\d{2}\d{2})?""")
 
 /**
- * Read [Asn1Type.GeneralizedTime].
+ * Read [Asn1Type.GENERALIZED_TIME].
  */
 @JsExport
 fun Asn1Decoder.ParserScope.readGeneralizedTime(): Asn1GeneralizedTime =
-    advanceWithTag(Asn1Type.GeneralizedTime) {
+    advanceWithTag(Asn1Type.GENERALIZED_TIME) {
         val value = readBytes(remainingLength).decodeToString()
         val match = generalizedTimeRegex.find(value)
         val (yyyy, mm, dd, hh, min, ss, fff, offset) =
@@ -181,7 +181,7 @@ fun Asn1Decoder.ParserScope.readGeneralizedTime(): Asn1GeneralizedTime =
 
 @JsExport
 fun Asn1Encoder.WriterScope.writeGeneralizedTime(value: Asn1GeneralizedTime) {
-    writeTaggedObject(Asn1Type.GeneralizedTime) {
+    writeTaggedObject(Asn1Type.GENERALIZED_TIME) {
         val formattedTime =
             buildString {
                 append(value.year.toString().padStart(4, '0'))

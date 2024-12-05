@@ -20,39 +20,39 @@ import kotlin.js.JsExport
 
 @JsExport
 object Asn1Type {
-    const val Boolean = 0x01
-    const val Integer = 0x02
-    const val BitString = 0x03
-    const val OctetString = 0x04
-    const val Null = 0x05
-    const val ObjectIdentifier = 0x06
-    const val ObjectDescriptor = 0x07
-    const val External = 0x08
-    const val Real = 0x09
-    const val Enumerated = 0x0A
-    const val EmbeddedPdv = 0x0B
-    const val Utf8String = 0x0C
-    const val RelativeOid = 0x0D
-    const val Time = 0x0E
-    const val Sequence = 0x10
-    const val Set = 0x11
-    const val NumericString = 0x12
-    const val PrintableString = 0x13
-    const val TeletexString = 0x14
-    const val VideotexString = 0x15
-    const val Ia5String = 0x16
-    const val UtcTime = 0x17
-    const val GeneralizedTime = 0x18
-    const val GraphicString = 0x19
-    const val VisibleString = 0x1A
-    const val GeneralString = 0x1B
-    const val UniversalString = 0x1C
-    const val CharacterString = 0x1D
-    const val BmpString = 0x1E
-    const val Date = 0x1F
-    const val TimeOfDay = 0x20
-    const val DateTime = 0x21
-    const val Duration = 0x22
+    const val BOOLEAN = 0x01
+    const val INTEGER = 0x02
+    const val BIT_STRING = 0x03
+    const val OCTET_STRING = 0x04
+    const val NULL = 0x05
+    const val OBJECT_IDENTIFIER = 0x06
+    const val OBJECT_DESCRIPTOR = 0x07
+    const val EXTERNAL = 0x08
+    const val REAL = 0x09
+    const val ENUMERATED = 0x0A
+    const val EMBEDDED_PDV = 0x0B
+    const val UTF8_STRING = 0x0C
+    const val RELATIVE_OID = 0x0D
+    const val TIME = 0x0E
+    const val SEQUENCE = 0x10
+    const val SET = 0x11
+    const val NUMERIC_STRING = 0x12
+    const val PRINTABLE_STRING = 0x13
+    const val TELETEX_STRING = 0x14
+    const val VIDEOTEX_STRING = 0x15
+    const val IA5_STRING = 0x16
+    const val UTC_TIME = 0x17
+    const val GENERALIZED_TIME = 0x18
+    const val GRAPHIC_STRING = 0x19
+    const val VISIBLE_STRING = 0x1A
+    const val GENERAL_STRING = 0x1B
+    const val UNIVERSAL_STRING = 0x1C
+    const val CHARACTER_STRING = 0x1D
+    const val BMP_STRING = 0x1E
+    const val DATE = 0x1F
+    const val TIME_OF_DAY = 0x20
+    const val DATE_TIME = 0x21
+    const val DURATION = 0x22
 }
 
 @JsExport
@@ -62,9 +62,8 @@ data class Asn1Tag(
 ) {
     @OptIn(ExperimentalStdlibApi::class)
     override fun toString(): String =
-        "Asn1Tag(tagClass=${tagClass.toHexString(
-            hexDebugFormat,
-        )}, tagNumber=${tagNumber.toHexString(hexDebugFormat)})"
+        "Asn1Tag(tagClass=${tagClass.toHexString(hexDebugFormat)}, " +
+            "tagNumber=${tagNumber.toHexString(hexDebugFormat)})"
 
     companion object {
         const val CONSTRUCTED = 0x20

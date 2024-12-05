@@ -290,29 +290,29 @@ class Asn1Decoder(
 }
 
 /**
- * Read [Asn1Type.Boolean].
+ * Read [Asn1Type.BOOLEAN].
  */
 @JsExport
 fun Asn1Decoder.ParserScope.readBoolean(): Boolean =
-    advanceWithTag(Asn1Type.Boolean) {
+    advanceWithTag(Asn1Type.BOOLEAN) {
         readByte() == 0xFF.toByte()
     }
 
 /**
- * Read [Asn1Type.Integer].
+ * Read [Asn1Type.INTEGER].
  */
 @JsExport
 fun Asn1Decoder.ParserScope.readInt(): Int =
-    advanceWithTag(Asn1Type.Integer) {
+    advanceWithTag(Asn1Type.INTEGER) {
         readInt(remainingLength)
     }
 
 /**
- * Read [Asn1Type.BitString].
+ * Read [Asn1Type.BIT_STRING].
  */
 @JsExport
 fun Asn1Decoder.ParserScope.readBitString(): ByteArray =
-    advanceWithTag(Asn1Type.BitString) {
+    advanceWithTag(Asn1Type.BIT_STRING) {
         val unusedBits = readByte().toInt()
         if (unusedBits !in 0..7) fail { "Invalid unused bit count: $unusedBits" }
         val bitString = readBytes(remainingLength)
@@ -325,11 +325,11 @@ fun Asn1Decoder.ParserScope.readBitString(): ByteArray =
     }
 
 /**
- * Read [Asn1Type.Utf8String].
+ * Read [Asn1Type.UTF8_STRING].
  */
 @JsExport
 fun Asn1Decoder.ParserScope.readUtf8String(): String =
-    advanceWithTag(Asn1Type.OctetString) {
+    advanceWithTag(Asn1Type.OCTET_STRING) {
         try {
             readBytes(remainingLength).decodeToString()
         } catch (e: Exception) {
@@ -338,19 +338,19 @@ fun Asn1Decoder.ParserScope.readUtf8String(): String =
     }
 
 /**
- * Read [Asn1Type.VisibleString].
+ * Read [Asn1Type.VISIBLE_STRING].
  */
 @JsExport
 fun Asn1Decoder.ParserScope.readVisibleString(): String =
-    advanceWithTag(Asn1Type.VisibleString) {
+    advanceWithTag(Asn1Type.VISIBLE_STRING) {
         readBytes(remainingLength).decodeToString()
     }
 
 /**
- * Read [Asn1Type.OctetString].
+ * Read [Asn1Type.OCTET_STRING].
  */
 @JsExport
 fun Asn1Decoder.ParserScope.readOctetString(): ByteArray =
-    advanceWithTag(Asn1Type.OctetString) {
+    advanceWithTag(Asn1Type.OCTET_STRING) {
         readBytes(remainingLength)
     }

@@ -23,8 +23,8 @@ plugins {
     alias(libs.plugins.vanniktech.mavenPublish)
 }
 
-group = "de.gematik.kmp.crypto"
-version = "1.0.0"
+group = "${project.findProperty("gematik.baseGroup") as String}.crypto"
+version = project.findProperty("gematik.version") as String
 
 kotlin {
     jvm()
@@ -38,6 +38,7 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
     js {
+        this.browser()
         nodejs {}
         generateTypeScriptDefinitions()
         binaries.library()

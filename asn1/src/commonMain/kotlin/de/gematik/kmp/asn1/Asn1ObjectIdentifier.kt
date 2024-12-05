@@ -20,11 +20,11 @@ import kotlin.experimental.or
 import kotlin.js.JsExport
 
 /**
- * Read [Asn1Type.ObjectIdentifier].
+ * Read [Asn1Type.OBJECT_IDENTIFIER].
  */
 @JsExport
 fun Asn1Decoder.ParserScope.readObjectIdentifier(): String =
-    advanceWithTag(Asn1Type.ObjectIdentifier) {
+    advanceWithTag(Asn1Type.OBJECT_IDENTIFIER) {
         val bytes = readBytes(remainingLength)
 
         if (bytes.isEmpty()) fail { "Encoded OID cannot be empty" }
@@ -57,11 +57,11 @@ fun Asn1Decoder.ParserScope.readObjectIdentifier(): String =
     }
 
 /**
- * Write [Asn1Type.ObjectIdentifier].
+ * Write [Asn1Type.OBJECT_IDENTIFIER].
  */
 @JsExport
 fun Asn1Encoder.WriterScope.writeObjectIdentifier(oid: String) {
-    writeTaggedObject(Asn1Type.ObjectIdentifier) {
+    writeTaggedObject(Asn1Type.OBJECT_IDENTIFIER) {
         val parts = oid.split(".").map { it.toIntOrNull() ?: fail { "Invalid OID part: $it" } }
 
         if (parts.size < 2) fail { "OID must have at least two components" }

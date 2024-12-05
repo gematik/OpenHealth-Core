@@ -1,0 +1,17 @@
+diff --git a/Configurations/10-main.conf b/Configurations/10-main.conf
+index cba57b4127..b025a52712 100644
+--- a/Configurations/10-main.conf
++++ b/Configurations/10-main.conf
+@@ -1948,6 +1948,12 @@ my %targets = (
+         multilib         => "64",
+     },
+ 
++    "wasm32-wasi" => {
++        inherit_from     => [ "BASE_unix" ],
++        lib_cppflags     => add("-DL_ENDIAN"),
++        bn_ops           => "THIRTY_TWO_BIT",
++    },
++
+ ##### VxWorks for various targets
+     "vxworks-ppc60x" => {
+         inherit_from     => [ "BASE_unix" ],

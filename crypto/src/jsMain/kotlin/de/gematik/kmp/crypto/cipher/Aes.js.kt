@@ -21,6 +21,7 @@ import de.gematik.kmp.crypto.UnsafeCryptoApi
 import de.gematik.kmp.crypto.bits
 import de.gematik.kmp.crypto.key.SecretKey
 import de.gematik.kmp.crypto.runNodeCatching
+import js.memory.FinalizationRegistry
 import js.typedarrays.asInt8Array
 import node.crypto.Cipher
 import node.crypto.CipherGCM

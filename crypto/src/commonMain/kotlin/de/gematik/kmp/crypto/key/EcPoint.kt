@@ -137,7 +137,7 @@ data class EcPoint(
 
     @UnoptimizedCryptoApi(ticket = "XXX-000")
     operator fun times(k: BigInteger): EcPoint {
-        // TODO XXX-000: Use native provider
+        // TODO OPEN-1: Use native provider
 
         if (k == BigInteger.ZERO) return curve.point(null, null) // Point at infinity
         val absK = k.abs()

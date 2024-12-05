@@ -1,0 +1,12 @@
+{
+    "name": "gematik-openssl-ems",
+    "version": "1.0.0",
+    "private": true,
+    "description": "OpenSSL wrapper for usage with WebAssembly",
+    "main": "index.js",
+    "scripts": {
+        "build:openssl": "make -C  ./scripts/checkout.bash"
+    },
+    "author": "gematik GmbH",
+    "license": "Apache-2.0"
+}
