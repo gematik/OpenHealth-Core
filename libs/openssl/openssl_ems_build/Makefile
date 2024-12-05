@@ -21,12 +21,15 @@ checkout:
 	fi
 
 configure: .check_emscripten_installed
-	emconfigure bash $(MAKEFILE_DIR)/configure.sh $(SRC_DIR_OPENSSL)/Configure
+	cd $(SRC_DIR_OPENSSL) \
+	emconfigure bash $(MAKEFILE_DIR)/configure.sh
 
 build: .check_emscripten_installed
-	make -C $(SRC_DIR_OPENSSL) -j$(NPROCESSORS)
+	cd $(SRC_DIR_OPENSSL) \
+	make -j$(NPROCESSORS)
 
 install:
+	cd $(SRC_DIR_OPENSSL) \
 	make install
 
 clean:
