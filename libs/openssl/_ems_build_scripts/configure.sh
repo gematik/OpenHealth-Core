@@ -17,6 +17,7 @@
 #
 
 env \
+  # CROSS_COMPILE: until https://github.com/openssl/openssl/issues/24460 is fixed
   CROSS_COMPILE="" \
   CFLAGS="-O0" \
   ./Configure \

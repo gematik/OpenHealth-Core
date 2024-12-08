@@ -15,6 +15,7 @@
  */
 
 import com.vanniktech.maven.publish.SonatypeHost
+import okio.Path.Companion.toPath
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -38,7 +39,16 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
     js {
-        this.browser()
+        browser {
+            commonWebpackConfig {
+                experiments
+            }
+            webpackTask {
+//                inputFiles.matching {
+//                    setIncludes("${rootDir.path}/libs/openssl/npm")
+//                }
+            }
+        }
         nodejs {}
         generateTypeScriptDefinitions()
         binaries.library()
@@ -74,8 +84,9 @@ kotlin {
         }
         val jsMain by getting {
             dependencies {
+                implementation(npm("${rootDir.path}/libs/openssl/npm".toPath().toFile()))
                 implementation(npm("aes-cmac", "3.0.2"))
-                implementation(libs.kotlin.node)
+//                implementation(libs.kotlin.node)
             }
         }
         val jsTest by getting {

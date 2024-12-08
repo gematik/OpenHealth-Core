@@ -44,7 +44,6 @@ kotlin {
         generateTypeScriptDefinitions()
         binaries.library()
     }
-//    linuxX64()
 
     sourceSets {
         val commonMain by getting {
