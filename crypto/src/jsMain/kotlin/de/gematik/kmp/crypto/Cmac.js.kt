@@ -17,45 +17,45 @@
 package de.gematik.kmp.crypto
 
 import de.gematik.kmp.crypto.key.SecretKey
-import js.buffer.ArrayBuffer
-import js.typedarrays.Uint8Array
-import js.typedarrays.toUint8Array
+//import js.buffer.ArrayBuffer
+//import js.typedarrays.Uint8Array
+//import js.typedarrays.toUint8Array
 import kotlinx.coroutines.await
 import kotlin.js.Promise
 
-@JsModule("aes-cmac")
-@JsNonModule
-external object aesCmac {
-    class AesCmac(
-        key: Uint8Array<ArrayBuffer>,
-    ) {
-        fun calculate(message: Uint8Array<ArrayBuffer>): Promise<Uint8Array<ArrayBuffer>>
-    }
-}
+//@JsModule("aes-cmac")
+//@JsNonModule
+//external object aesCmac {
+//    class AesCmac(
+//        key: Uint8Array<ArrayBuffer>,
+//    ) {
+//        fun calculate(message: Uint8Array<ArrayBuffer>): Promise<Uint8Array<ArrayBuffer>>
+//    }
+//}
+//
+//private class NodeCmac(
+//    override val spec: CmacSpec,
+//    secret: SecretKey,
+//) : Cmac {
+//    init {
+//        require(spec.algorithm == CmacAlgorithm.Aes) { "Only AES is supported" }
+//    }
+//
+//    private var final = false
+//
+//    private val cmac = runNodeCatching { aesCmac.AesCmac(secret.data.toUint8Array()) }
+//    private var data = byteArrayOf()
+//
+//    override suspend fun update(data: ByteArray) {
+//        this.data += data
+//    }
+//
+//    override suspend fun final(): ByteArray {
+//        if (final) throw CmacException("Final can only be called once")
+//        val result = cmac.calculate(this.data.toUint8Array()).await()
+//        final = true
+//        return result.toByteArray()
+//    }
+//}
 
-private class NodeCmac(
-    override val spec: CmacSpec,
-    secret: SecretKey,
-) : Cmac {
-    init {
-        require(spec.algorithm == CmacAlgorithm.Aes) { "Only AES is supported" }
-    }
-
-    private var final = false
-
-    private val cmac = runNodeCatching { aesCmac.AesCmac(secret.data.toUint8Array()) }
-    private var data = byteArrayOf()
-
-    override suspend fun update(data: ByteArray) {
-        this.data += data
-    }
-
-    override suspend fun final(): ByteArray {
-        if (final) throw CmacException("Final can only be called once")
-        val result = cmac.calculate(this.data.toUint8Array()).await()
-        final = true
-        return result.toByteArray()
-    }
-}
-
-actual fun CmacSpec.createCmac(secret: SecretKey): Cmac = NodeCmac(this, secret)
+actual fun CmacSpec.createCmac(secret: SecretKey): Cmac = TODO() //NodeCmac(this, secret)

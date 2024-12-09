@@ -39,9 +39,10 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
     js {
+        useEsModules()
         browser {
             commonWebpackConfig {
-                experiments
+                experiments += "asyncWebAssembly"
             }
             webpackTask {
 //                inputFiles.matching {

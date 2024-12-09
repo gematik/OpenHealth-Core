@@ -16,19 +16,19 @@
 
 package de.gematik.kmp.crypto
 
-private class NodeHash(
-    override val spec: HashSpec,
-) : Hash {
-    private val hash = node.crypto.createHash(spec.algorithm.name)
+//private class NodeHash(
+//    override val spec: HashSpec,
+//) : Hash {
+//    private val hash = node.crypto.createHash(spec.algorithm.name)
+//
+//    override suspend fun update(data: ByteArray) {
+//        hash.update(data)
+//    }
+//
+//    override suspend fun digest(): ByteArray {
+//        val result = hash.digest()
+//        return result.toByteArray()
+//    }
+//}
 
-    override suspend fun update(data: ByteArray) {
-        hash.update(data)
-    }
-
-    override suspend fun digest(): ByteArray {
-        val result = hash.digest()
-        return result.toByteArray()
-    }
-}
-
-actual fun HashSpec.createHash(): Hash = NodeHash(this)
+actual fun HashSpec.createHash(): Hash = TODO()//NodeHash(this)

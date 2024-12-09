@@ -16,9 +16,9 @@
 
 package de.gematik.kmp.crypto.key
 
-import node.crypto.ECKeyPairDerDerOptions
-import node.crypto.KeyType
-import node.crypto.generateKeyPairSync
+//import node.crypto.ECKeyPairDerDerOptions
+//import node.crypto.KeyType
+//import node.crypto.generateKeyPairSync
 import kotlin.js.json
 
 private fun EcCurve.curveName() =
@@ -29,24 +29,25 @@ private fun EcCurve.curveName() =
     }
 
 actual suspend fun EcKeyPairSpec.generateKeyPair(): Pair<EcPublicKey, EcPrivateKey> {
-    val options =
-        json(
-            "namedCurve" to this@generateKeyPair.curve.curveName(),
-            "publicKeyEncoding" to
-                json(
-                    "type" to "spki",
-                    "format" to "der",
-                ),
-            "privateKeyEncoding" to
-                json(
-                    "type" to "pkcs8",
-                    "format" to "der",
-                ),
-        )
-
-    @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
-    val keyPair = generateKeyPairSync(KeyType.ec, options as ECKeyPairDerDerOptions)
-
-    return EcPublicKey.decodeFromAsn1(keyPair.publicKey.toByteArray()) to
-        EcPrivateKey.decodeFromAsn1(keyPair.privateKey.toByteArray())
+    TODO()
+//    val options =
+//        json(
+//            "namedCurve" to this@generateKeyPair.curve.curveName(),
+//            "publicKeyEncoding" to
+//                json(
+//                    "type" to "spki",
+//                    "format" to "der",
+//                ),
+//            "privateKeyEncoding" to
+//                json(
+//                    "type" to "pkcs8",
+//                    "format" to "der",
+//                ),
+//        )
+//
+//    @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
+//    val keyPair = generateKeyPairSync(KeyType.ec, options as ECKeyPairDerDerOptions)
+//
+//    return EcPublicKey.decodeFromAsn1(keyPair.publicKey.toByteArray()) to
+//        EcPrivateKey.decodeFromAsn1(keyPair.privateKey.toByteArray())
 }
