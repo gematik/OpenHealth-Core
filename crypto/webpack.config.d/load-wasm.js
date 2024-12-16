@@ -3,3 +3,5 @@ config.module.rules.push({
     type: 'asset/resource',
     include: /node_modules/,
 });
+
+config.externals = { ...config.externals, module: 'commonjs module' }

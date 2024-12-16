@@ -1,15 +1,24 @@
 {
-    "name": "gematik-openssl-ems",
+    "name": "gematik-ems-openssl",
     "version": "1.0.0",
     "private": true,
     "description": "OpenSSL wrapper for usage with WebAssembly",
-    "main": "dist/wasm_test.js",
+    "type": "module",
+    "main": "./lib/openssl.js",
+    "types": "./lib/openssl.d.ts",
+    "exports": {
+        ".": {
+            "default": "./lib/openssl.js",
+            "import": "./lib/openssl.js",
+            "types": "./lib/openssl.d.ts"
+        }
+    },
     "scripts": {
         "build:openssl": "make -C _ems_build_scripts/"
     },
     "author": "gematik GmbH",
     "license": "Apache-2.0",
     "files": [
-        "dist/"
+        "lib/"
     ]
 }

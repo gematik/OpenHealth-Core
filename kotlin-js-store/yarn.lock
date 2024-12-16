@@ -826,7 +826,7 @@ function-bind@^1.1.2:
   resolved "https://registry.yarnpkg.com/function-bind/-/function-bind-1.1.2.tgz#2c02d864d97f3ea6c8830c464cbd11ab6eab7a1c"
   integrity sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA==
 
-"gematik-openssl-ems@file:../../libs/openssl/npm":
+"gematik-ems-openssl@file:../../libs/openssl/npm":
   version "1.0.0"
 
 get-caller-file@^2.0.5:
