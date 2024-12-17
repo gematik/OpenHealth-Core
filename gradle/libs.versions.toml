@@ -3,6 +3,7 @@ agp = "8.5.0"
 bignum = "0.3.10"
 kotlin = "2.1.0-RC"
 kotlinNode = "22.5.5-pre.831"
+kotlinJs = "1.0.0-pre.852"
 kotlinx-coroutines = "1.9.0"
 android-minSdk = "24"
 android-compileSdk = "34"
@@ -12,6 +13,7 @@ bouncycastle = "1.79"
 [libraries]
 bignum = { module = "com.ionspin.kotlin:bignum", version.ref = "bignum" }
 kotlin-node = { module = "org.jetbrains.kotlin-wrappers:kotlin-node", version.ref = "kotlinNode" }
+kotlin-js = { module = "org.jetbrains.kotlin-wrappers:kotlin-js", version.ref = "kotlinJs" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }

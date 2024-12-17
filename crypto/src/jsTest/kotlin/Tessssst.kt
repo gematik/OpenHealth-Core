@@ -14,65 +14,54 @@
  * limitations under the License.
  */
 
-import de.gematik.kmp.crypto.CmacAlgorithm
-import de.gematik.kmp.crypto.CmacSpec
-import de.gematik.kmp.crypto.createCmac
+import de.gematik.openhealth.crypto.EmbindModule
+import de.gematik.openhealth.crypto.OpenSslModuleFactory
+import de.gematik.openhealth.crypto.new_Cmac
+import js.buffer.ArrayBuffer
+import js.typedarrays.Int8Array
+import js.typedarrays.Uint8Array
+import js.typedarrays.asInt8Array
+import js.typedarrays.toUint8Array
 import kotlinx.coroutines.await
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
 import kotlin.js.Promise
 import kotlin.test.Test
 import kotlin.test.assertEquals
-
-//@JsModule("gematik-ems-openssl")
-//external val module: dynamic
-
-external object RuntimeExports {
-    val HEAPF32: dynamic
-    val HEAPF64: dynamic
-    val HEAP_DATA_VIEW: dynamic
-    val HEAP8: dynamic
-    val HEAPU8: dynamic
-    val HEAP16: dynamic
-    val HEAPU16: dynamic
-    val HEAP32: dynamic
-    val HEAPU32: dynamic
-    val HEAP64: dynamic
-    val HEAPU64: dynamic
-}
-
-external interface WasmModule
-
-external class ems_EVP_CIPHER_CTX
-
-external class ems_EC_GROUP
-
-external class ems_EC_POINT
-
-external class ems_BIGNUM
-
-external class ems_BIGNUM_ref
-
-external interface EmbindModule {
-    fun ems_EVP_CIPHER_CTX_new(): ems_EVP_CIPHER_CTX
-    fun ems_EC_POINT_new(_0: ems_EC_GROUP): ems_EC_POINT
-    fun ems_EC_GROUP_new_by_curve_name(_0: Int): ems_EC_GROUP
-    fun ems_EC_POINT_mul(
-        _0: ems_EC_GROUP,
-        _1: ems_EC_POINT,
-        _2: ems_BIGNUM_ref?,
-        _3: ems_EC_POINT,
-        _4: ems_BIGNUM
-    ): Int
-
-    fun ems_ref(_0: Any?): Any?
-}
-
-external interface MainModule : WasmModule, EmbindModule
-
-@JsModule("gematik-ems-openssl")
-@JsNonModule
-external fun MainModuleFactory(options: dynamic = definedExternally): Promise<MainModule>
+//
+//fun calculateCmac(module: EmbindModule, key: Uint8Array<ArrayBuffer>, data: Uint8Array<ArrayBuffer>): Uint8Array<ArrayBuffer> {
+//    val mac = module.EVP_MAC_fetch(null, "CMAC", "")
+//    val macCtx = module.EVP_MAC_CTX_new(mac)
+//
+//    js("console.log(mac);")
+//    js("console.log(macCtx);")
+//
+//    // Construct parameters for cipher
+//    val cipherParam = module.OSSL_PARAM_construct_utf8_string("cipher", "AES-128-CBC")
+//    val params = module.new_OSSL_PARAM_vector()
+//    params.push_back(cipherParam)
+//    params.push_back(module.OSSL_PARAM_construct_end())
+//
+//    // Initialize MAC context with key and parameters
+//    val initStatus = module.EVP_MAC_init(macCtx, key, params)
+//    if (initStatus != 1) {
+//        console.error("Error initializing MAC context.")
+//    }
+//
+//    // Update MAC context with data
+//    val updateStatus = module.EVP_MAC_update(macCtx, data)
+//    if (updateStatus != 1) {
+//        console.error("Error updating MAC context.")
+//    }
+//
+//    // Finalize the MAC computation
+//    val macResult = module.EVP_MAC_final(macCtx)
+//    if (macResult == null) {
+//        console.error("Error finalizing MAC.")
+//    }
+//
+//    // Return the computed CMAC value
+//    return macResult!!
+//}
 
 class Tessssst {
     @Test
@@ -88,17 +77,40 @@ class Tessssst {
 //            val module = (moduleImport as Promise<dynamic>).await().default
 //            val module1 = module.default
 //            js("console.log(module)")
-            val module = MainModuleFactory().await()
+            val module = OpenSslModuleFactory().await()
+
+//            js("module.sadfasd()")
 //            js("console.log(module['ems_EC_GROUP_new_by_curve_name'](1));")
 
+            // Assume `module` is an instance of `EmbindModule`
 
+            val key = "0123456789abcdef".encodeToByteArray().toUint8Array()
+            val data = "This is a test  message.".encodeToByteArray().toUint8Array()
 
-            val curve = module.ems_EC_GROUP_new_by_curve_name(1)
+            val cmac = module.new_Cmac();
+//            js("console.log(module.fromTypedArray(key))")
+            cmac.initialize(module.fromTypedArray(key), "AES-128-CBC2")
+            cmac.update(module.fromTypedArray(data))
+//            js("cmac.initialize(new module.UChar_vector(key), 'AES-128-CBC')")
+            println(module.toTypedArray(cmac.finalize()).toByteArray().toHexString())
 
-            js("module.ems_Abc_new(module.ems_ref(curve));")
-            val point = module.ems_EC_POINT_new(curve)
-            js("console.log(module.ems_Abc_new());")
-            js("console.log(point)" )
+//            val cmacValue = calculateCmac(module, key, data)
+//            if (cmacValue != null) {
+//                console.log("CMAC: $cmacValue")
+//            } else {
+//                console.error("Failed to compute CMAC.")
+//            }
+
+            println(cmac)
+//
+//            val curve = module.ems_EC_GROUP_new_by_curve_name(1)
+//
+//            js("module.ems_Abc_new(module.ems_ref(curve));")
+//            val point = module.ems_EC_POINT_new(curve)
+//            js("console.log(module.ems_Abc_new());")
+//            js("console.log(point)" )
+//            EmbindModule.
+
 //            js("console.l og(curve.isDeleted())")
 //            js("curve.delete();")
 //            js("console.log(curve.isDeleted())")

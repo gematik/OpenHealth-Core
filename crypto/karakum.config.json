@@ -1,0 +1,14 @@
+{
+    "input": "<nodeModules>/gematik-ems-openssl/lib/openssl.d.ts",
+    "output": "src/jsMain/generated",
+    "libraryName": "de.gematik.openhealth.ems.openssl",
+    "moduleNameMapper": {
+        ".*": "gematik-ems-openssl"
+    },
+    "importInjector": {
+        "openssl.kt": [
+            "kotlin.js.Promise"
+        ]
+    },
+    "libraryNameOutputPrefix": true
+}

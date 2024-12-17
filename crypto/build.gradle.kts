@@ -27,6 +27,11 @@ plugins {
 group = "${project.findProperty("gematik.baseGroup") as String}.crypto"
 version = project.findProperty("gematik.version") as String
 
+// Currently useless since it lacks a lot of generation logic for the *.d.ts files
+// karakum {
+//     configFile.set(file("${projectDir.path}/karakum.config.json"))
+// }
+
 kotlin {
     jvm()
     androidTarget {
@@ -84,10 +89,12 @@ kotlin {
             dependsOn(jvmTest)
         }
         val jsMain by getting {
+//            kotlin.srcDir(file("${projectDir.path}/src/jsMain/generated"))
+
             dependencies {
                 implementation(npm("${rootDir.path}/libs/openssl/npm".toPath().toFile()))
                 implementation(npm("aes-cmac", "3.0.2"))
-//                implementation(libs.kotlin.node)
+                implementation(libs.kotlin.js)
             }
         }
         val jsTest by getting {
@@ -95,7 +102,7 @@ kotlin {
         all {
             languageSettings {
                 optIn("kotlin.js.ExperimentalJsExport")
-                optIn("de.gematik.kmp.crypto.ExperimentalCryptoApi")
+                optIn("de.gematik.openhealth.crypto.ExperimentalCryptoApi")
             }
 
             if (name.contains("Test")) {

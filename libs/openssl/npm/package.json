@@ -13,9 +13,6 @@
             "types": "./lib/openssl.d.ts"
         }
     },
-    "scripts": {
-        "build:openssl": "make -C _ems_build_scripts/"
-    },
     "author": "gematik GmbH",
     "license": "Apache-2.0",
     "files": [

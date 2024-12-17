@@ -12,10 +12,11 @@ target_link_libraries(openssl PRIVATE embind)
 
 #target_compile_options(openssl PRIVATE -DEMSCRIPTEN_HAS_UNBOUND_TYPE_NAMES=0 -fno-rtti)
 #target_link_options(openssl PRIVATE -fno-rtti)
+target_link_options(openssl PRIVATE -fwasm-exceptions)
 
 target_link_options(openssl PRIVATE -sINITIAL_MEMORY=33554432) # 32mb
 target_link_options(openssl PRIVATE -sALLOW_MEMORY_GROWTH=1)
-target_link_options(openssl PRIVATE -sABORT_ON_WASM_EXCEPTIONS=1)
+#target_link_options(openssl PRIVATE -sABORT_ON_WASM_EXCEPTIONS=1)
 target_link_options(openssl PRIVATE -sMODULARIZE=1)
 target_link_options(openssl PRIVATE -sENVIRONMENT=node,web)
 

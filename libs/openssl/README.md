@@ -8,7 +8,9 @@
 
 ## Build
 
-`make -C /PATH/TO/_ems_build_scripts/`
+`make -C /PATH/TO/_ems_build_scripts/ all`
+
+This command will finally copy the build output to the lib dir in `npm/lib`.
 
 ## Wrapper
 
