@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ private val hexFormat =
 class HashTest {
     @Test
     fun `hash with valid data - expected`() =
-        runTest {
+        runTestWithProvider {
             val hash = HashSpec(HashAlgorithm.Sha1).createHash()
             hash.update("Hello, World!".encodeToByteArray())
             val result = hash.digest()
@@ -44,7 +44,7 @@ class HashTest {
 
     @Test
     fun `hash with empty data`() =
-        runTest {
+        runTestWithProvider {
             val hash = HashSpec(HashAlgorithm.Sha1).createHash()
             hash.update(ByteArray(0))
             val result = hash.digest()
@@ -56,7 +56,7 @@ class HashTest {
 
     @Test
     fun `hash with multiple updates`() =
-        runTest {
+        runTestWithProvider {
             val hash = HashSpec(HashAlgorithm.Sha1).createHash()
             hash.update("Hello, ".encodeToByteArray())
             hash.update("World!".encodeToByteArray())
@@ -69,7 +69,7 @@ class HashTest {
 
     @Test
     fun `digest can only be called once`() =
-        runTest {
+        runTestWithProvider {
             val hash = HashSpec(HashAlgorithm.Sha1).createHash()
             hash.update("Test data".encodeToByteArray())
             hash.digest()

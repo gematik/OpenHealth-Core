@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ class CmacTest {
 
     @Test
     fun `cmac with valid data - expected`() =
-        runTest {
+        runTestWithProvider {
             val cmac = CmacSpec(CmacAlgorithm.Aes).createCmac(secret)
             cmac.update("Hello, World!".encodeToByteArray())
             val result = cmac.final()
@@ -48,7 +48,7 @@ class CmacTest {
 
     @Test
     fun `cmac with empty data`() =
-        runTest {
+        runTestWithProvider {
             val cmac = CmacSpec(CmacAlgorithm.Aes).createCmac(secret)
             cmac.update(ByteArray(0))
             val result = cmac.final()
@@ -60,7 +60,7 @@ class CmacTest {
 
     @Test
     fun `cmac with multiple updates`() =
-        runTest {
+        runTestWithProvider {
             val cmac = CmacSpec(CmacAlgorithm.Aes).createCmac(secret)
             cmac.update("Hello, ".encodeToByteArray())
             cmac.update("World!".encodeToByteArray())
@@ -73,7 +73,7 @@ class CmacTest {
 
     @Test
     fun `cmac final can only be called once`() =
-        runTest {
+        runTestWithProvider {
             val cmac = CmacSpec(CmacAlgorithm.Aes).createCmac(secret)
             cmac.update("Test data".encodeToByteArray())
             cmac.final()

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,28 @@
 
 package de.gematik.openhealth.crypto
 
-//private class NodeHash(
-//    override val spec: HashSpec,
-//) : Hash {
-//    private val hash = node.crypto.createHash(spec.algorithm.name)
-//
-//    override suspend fun update(data: ByteArray) {
-//        hash.update(data)
-//    }
-//
-//    override suspend fun digest(): ByteArray {
-//        val result = hash.digest()
-//        return result.toByteArray()
-//    }
-//}
+import de.gematik.openhealth.crypto.wrapper.lazyWithProvider
+import de.gematik.openhealth.crypto.wrapper.runWithProvider
+import js.typedarrays.toUint8Array
 
-actual fun HashSpec.createHash(): Hash = TODO()//NodeHash(this)
+private class JsHash(
+    override val spec: HashSpec,
+) : Hash {
+    private val hash by lazyWithProvider {
+        HashGenerator.create(spec.algorithm.name);
+    }
+
+    override fun update(data: ByteArray) {
+        runWithProvider {
+            hash.update(fromUint8Array(data.toUint8Array()))
+        }
+    }
+
+    override  fun digest(): ByteArray {
+        return runWithProvider {
+            toUint8Array(hash.final()).toByteArray()
+        }
+    }
+}
+
+actual fun HashSpec.createHash(): Hash = JsHash(this)

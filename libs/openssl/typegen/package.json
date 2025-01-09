@@ -1,0 +1,18 @@
+{
+    "name": "gematik-ems-openssl",
+    "version": "1.0.0",
+    "private": true,
+    "description": "OpenSSL wrapper for usage with WebAssembly",
+    "main": "./typegen.js",
+    "author": "gematik GmbH",
+    "license": "Apache-2.0",
+    "scripts": {
+        "typegen": "node typegen.js"
+    },
+    "dependencies": {
+        "typescript": "^5.7.2"
+    },
+    "devDependencies": {
+        "@types/node": "^22.10.2"
+    }
+}

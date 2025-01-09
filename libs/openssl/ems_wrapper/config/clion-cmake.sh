@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# Copyright (c) 2024 gematik GmbH
+# Copyright (c) 2025 gematik GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,10 +16,7 @@
 # limitations under the License.
 #
 
-# shellcheck disable=SC1090
-source "$EMSDK_ENV"
-
-if [[ ! $* =~ " --build " ]]; then
+if [[ ! " $* " =~ " --build " ]]; then
     emcmake cmake "$@"
 else
     # if `cmake` is called with build, we can't use `emcmake`

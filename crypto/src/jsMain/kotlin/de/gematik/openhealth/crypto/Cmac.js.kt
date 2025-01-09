@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,23 +17,11 @@
 package de.gematik.openhealth.crypto
 
 import de.gematik.openhealth.crypto.key.SecretKey
-import js.typedarrays.Uint8Array
-import js.buffer.ArrayBuffer
+import de.gematik.openhealth.crypto.wrapper.lazyWithProvider
+import de.gematik.openhealth.crypto.wrapper.runWithProvider
 import js.typedarrays.toUint8Array
-import kotlinx.coroutines.await
-import kotlin.js.Promise
 
-@JsModule("aes-cmac")
-@JsNonModule
-external object aesCmac {
-    class AesCmac(
-        key: Uint8Array<ArrayBuffer>,
-    ) {
-        fun calculate(message: Uint8Array<ArrayBuffer>): Promise<Uint8Array<ArrayBuffer>>
-    }
-}
-
-private class NodeCmac(
+private class JsCmac(
     override val spec: CmacSpec,
     secret: SecretKey,
 ) : Cmac {
@@ -41,21 +29,21 @@ private class NodeCmac(
         require(spec.algorithm == CmacAlgorithm.Aes) { "Only AES is supported" }
     }
 
-    private var final = false
-
-    private val cmac = runNodeCatching { aesCmac.AesCmac(secret.data.toUint8Array()) }
-    private var data = byteArrayOf()
-
-    override suspend fun update(data: ByteArray) {
-        this.data += data
+    private val cmac by lazyWithProvider {
+        CMAC.create(fromUint8Array(secret.data.toUint8Array()), "AES-${secret.length.bits}-CBC");
     }
 
-    override suspend fun final(): ByteArray {
-        if (final) throw CmacException("Final can only be called once")
-        val result = cmac.calculate(this.data.toUint8Array()).await()
-        final = true
-        return result.toByteArray()
+    override  fun update(data: ByteArray) {
+        runWithProvider {
+            cmac.update(fromUint8Array(data.toUint8Array()))
+        }
+    }
+
+    override  fun final(): ByteArray {
+        return runWithProvider {
+            toUint8Array(cmac.final()).toByteArray()
+        }
     }
 }
 
-actual fun CmacSpec.createCmac(secret: SecretKey): Cmac = TODO() //NodeCmac(this, secret)
+actual fun CmacSpec.createCmac(secret: SecretKey): Cmac = JsCmac(this, secret)

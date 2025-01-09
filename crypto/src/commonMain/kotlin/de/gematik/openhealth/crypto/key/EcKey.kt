@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -177,13 +177,13 @@ class EcKeyPairSpec(
     val curve: EcCurve,
 )
 
-expect suspend fun EcKeyPairSpec.generateKeyPair(): Pair<EcPublicKey, EcPrivateKey>
+expect  fun EcKeyPairSpec.generateKeyPair(): Pair<EcPublicKey, EcPrivateKey>
 
 // @ExperimentalCryptoApi
-// expect suspend fun EcCurve.generateKeyPair(): EcPublicKey
+// expect  fun EcCurve.generateKeyPair(): EcPublicKey
 //
 // @ExperimentalCryptoApi
-// expect suspend fun EcCurve.generateKeyPair(): Pair<EcPublicKey, EcPrivateKey>
+// expect  fun EcCurve.generateKeyPair(): Pair<EcPublicKey, EcPrivateKey>
 
 @ExperimentalCryptoApi
 class EcPublicKey internal constructor(

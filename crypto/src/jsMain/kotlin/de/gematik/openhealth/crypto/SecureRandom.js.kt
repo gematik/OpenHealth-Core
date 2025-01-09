@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,21 @@
 
 package de.gematik.openhealth.crypto
 
-//import node.crypto.randomBytes
+import de.gematik.openhealth.crypto.wrapper.runWithProvider
+import de.gematik.openhealth.crypto.wrapper.toByteArray
+import de.gematik.openhealth.crypto.wrapper.toUint8Vector
+import js.typedarrays.toUint8Array
 
-//private class NodeSecureRandom : SecureRandom() {
-//    override fun nextBits(bitCount: Int): Int {
-//        val bytes = randomBytes(bitCount / 8 + 1).toByteArray()
-//        var result = 0
-//        for (i in bytes.indices) {
-//            result = result shl 8 or (bytes[i].toInt() and 0xFF)
-//        }
-//        return result ushr (bytes.size * 8 - bitCount)
-//    }
-//}
+private class JsSecureRandom : SecureRandom() {
+    override fun nextBits(bitCount: Int): Int =
+        runWithProvider {
+            val bytes = cryptoRandom(bitCount / 8 + 1).toByteArray()
+            var result = 0
+            for (i in bytes.indices) {
+                result = result shl 8 or (bytes[i].toInt() and 0xFF)
+            }
+            result ushr (bytes.size * 8 - bitCount)
+        }
+}
 
-actual fun secureRandom(): SecureRandom = TODO()//NodeSecureRandom()
+actual fun secureRandom(): SecureRandom = JsSecureRandom()

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-import de.gematik.openhealth.crypto.EmbindModule
-import de.gematik.openhealth.crypto.OpenSslModuleFactory
-import de.gematik.openhealth.crypto.new_Cmac
-import js.buffer.ArrayBuffer
-import js.typedarrays.Int8Array
-import js.typedarrays.Uint8Array
-import js.typedarrays.asInt8Array
+import com.ionspin.kotlin.bignum.integer.BigInteger
+import de.gematik.openhealth.crypto.key.EcCurve
+import de.gematik.openhealth.crypto.key.EcPrivateKey
+import de.gematik.openhealth.crypto.key.decodeFromPem
+import de.gematik.openhealth.crypto.key.encodeToAsn1
+import de.gematik.openhealth.crypto.wrapper.OpenSslModuleFactory
+import de.gematik.openhealth.crypto.wrapper.Provider
+import de.gematik.openhealth.crypto.wrapper.Uint8Vector
+import de.gematik.openhealth.crypto.wrapper.toByteArray
+import de.gematik.openhealth.crypto.wrapper.toUint8Vector
 import js.typedarrays.toUint8Array
 import kotlinx.coroutines.await
 import kotlinx.coroutines.test.runTest
-import kotlin.js.Promise
 import kotlin.test.Test
-import kotlin.test.assertEquals
+
 //
 //fun calculateCmac(module: EmbindModule, key: Uint8Array<ArrayBuffer>, data: Uint8Array<ArrayBuffer>): Uint8Array<ArrayBuffer> {
 //    val mac = module.EVP_MAC_fetch(null, "CMAC", "")
@@ -63,69 +65,50 @@ import kotlin.test.assertEquals
 //    return macResult!!
 //}
 
+
+private const val ecPrivateKey = """
+-----BEGIN EC PRIVATE KEY-----
+MIGIAgEAMBQGByqGSM49AgEGCSskAwMCCAEBBwRtMGsCAQEEIBu09g2V3coZsiK7
+AUT8gHFehP7KK77g83GJH2aeYxJ1oUQDQgAEkGE1xAbpIAtwMDgA5SB/JKTgTSgs
+ZO36o/p2C/2pgy2iMgxVAo1Z9PXjFHstCehI8AFmUsmZaCHZxgrPdZulUw==
+-----END EC PRIVATE KEY-----
+"""
+
 class Tessssst {
     @Test
     fun `asdfasdf`() =
         runTest {
-//            val sdaf = js("new URL(\"wasm_test.wasm\",import.meta.url).href")
-//            println(sdaf)
-//            println(sdaf)
-//            val module = js("import('./wasm_test.js')")
-//            val moduleImport = js("require('gematik-openssl-ems')")
+            val module = Provider.get()
 
-//            js("console.log(vv)")
-//            val module = (moduleImport as Promise<dynamic>).await().default
-//            val module1 = module.default
-//            js("console.log(module)")
-            val module = OpenSslModuleFactory().await()
+            val alice = module.MlKemDecapsulation.create("ML-KEM-768")
+            val bob = module.MlKemEncapsulation.create("ML-KEM-768", alice.getEncapsulationKey())
 
-//            js("module.sadfasd()")
-//            js("console.log(module['ems_EC_GROUP_new_by_curve_name'](1));")
+            val data = bob.encapsulate()
 
-            // Assume `module` is an instance of `EmbindModule`
+            console.log(data.sharedSecret.toByteArray().toHexString())
 
-            val key = "0123456789abcdef".encodeToByteArray().toUint8Array()
-            val data = "This is a test  message.".encodeToByteArray().toUint8Array()
+            val sharedSecret = alice.decapsulate(data.wrappedKey)
 
-            val cmac = module.new_Cmac();
-//            js("console.log(module.fromTypedArray(key))")
-            cmac.initialize(module.fromTypedArray(key), "AES-128-CBC2")
-            cmac.update(module.fromTypedArray(data))
-//            js("cmac.initialize(new module.UChar_vector(key), 'AES-128-CBC')")
-            println(module.toTypedArray(cmac.finalize()).toByteArray().toHexString())
+            console.log(sharedSecret.toByteArray().toHexString())
 
-//            val cmacValue = calculateCmac(module, key, data)
-//            if (cmacValue != null) {
-//                console.log("CMAC: $cmacValue")
-//            } else {
-//                console.error("Failed to compute CMAC.")
-//            }
+//            println((js("module['abc']()") as Uint8Vector).toByteArray().toHexString())
 
-            println(cmac)
+//            fn(EcPrivateKey.decodeFromPem(ecPrivateKey).encodeToAsn1().toUint8Vector() )
+
+//            val kp = module.ECKeyPairGenerator.generateKeyPair("brainpoolP256r1")
+
+//            kp.getPrivateKeyDER()
+            //module.ECDH.create(kp.getPrivateKeyDER())
+
 //
-//            val curve = module.ems_EC_GROUP_new_by_curve_name(1)
 //
-//            js("module.ems_Abc_new(module.ems_ref(curve));")
-//            val point = module.ems_EC_POINT_new(curve)
-//            js("console.log(module.ems_Abc_new());")
-//            js("console.log(point)" )
-//            EmbindModule.
-
-//            js("console.l og(curve.isDeleted())")
-//            js("curve.delete();")
-//            js("console.log(curve.isDeleted())")
-
-
-//            module().then {
-//                println("asdfasdf")
-//            }.catch {
-//                println("asdfasdf")
-//            }
-//            js("console.log(mod)")
+//            val x_qA = BigInteger.parseString("78028496B5ECAAB3C8B6C12E45DB1E02C9E4D26B4113BC4F015F60C5CCC0D206",16)
+//            val y_qA = BigInteger.parseString("A2AE1762A3831C1D20F03F8D1E3C0C39AFE6F09B4D44BBE80CD100987B05F92B",16)
+//            val publicKey = EcCurve.BrainpoolP256r1.point(x_qA, y_qA).uncompressed.toUint8Vector()
 //
-//            val BN_new_hex = mod.cwrap("BN_new_hex", "number", arrayOf("string"))
-//            val BN_bn2hex = mod.cwrap("BN_bn2hex", "string", arrayOf("number"))
-//            val r = BN_new_hex("041EB8B1E2BC681BCE8E39963B2E9FC415B05283313DD1A8BCC055F11AE49699")
-//            println(BN_bn2hex(r))
+//            val a = js("module.ECPoint.create('brainpoolP256r1', publicKey)")
+//            val b = js("module.ECPoint.create('brainpoolP256r1', publicKey)")
+//            val c = js("a.add(b)")
+//            console.log(c)
         }
 }

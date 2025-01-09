@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package de.gematik.openhealth.crypto.key
 
+import de.gematik.openhealth.crypto.runTestWithProvider
 import kotlinx.coroutines.test.runTest
 import kotlin.random.Random
 import kotlin.test.Test
@@ -24,7 +25,7 @@ import kotlin.test.assertEquals
 class EcKeyTest {
     @Test
     fun `create ec key pair`() =
-        runTest {
+        runTestWithProvider {
             val (publicKeyResult, privateKeyResult) =
                 EcKeyPairSpec(
                     EcCurve.BrainpoolP256r1,
@@ -34,7 +35,7 @@ class EcKeyTest {
         }
 
     @Test
-    fun `encode and decode ec public key from pem`() {
+    fun `encode and decode ec public key from pem`() = runTestWithProvider {
         val ecPublicKey =
             EcPublicKey.decodeFromUncompressedFormat(
                 EcCurve.BrainpoolP256r1,
@@ -46,7 +47,7 @@ class EcKeyTest {
     }
 
     @Test
-    fun `encode and decode ec private key from pem`() {
+    fun `encode and decode ec private key from pem`() = runTestWithProvider {
         val ecPrivateKey = EcPrivateKey.fromScalar(EcCurve.BrainpoolP256r1, Random.nextBytes(32))
         val ecPrivateKeyResult = EcPrivateKey.decodeFromAsn1(ecPrivateKey.encodeToAsn1())
 

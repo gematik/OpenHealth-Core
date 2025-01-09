@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,92 +75,15 @@ data class EcPoint(
      */
     val isInfinity: Boolean get() = x == null && y == null
 
-    operator fun plus(other: EcPoint): EcPoint {
-        // O + P = P
-        if (this.isInfinity) return other
+    operator fun plus(other: EcPoint): EcPoint = nativePlus(other)
 
-        // P + O = P
-        if (other.isInfinity) return this
-
-        // P + P = 2P
-        if (this == other) return this.double()
-
-        // P + (-P) = O
-        if (this.negate() == other) return curve.point(null, null)
-
-        // P + Q where x1 = x2
-        if (x == other.x) return curve.point(null, null)
-
-        val dx = ((x!! - other.x!!) + curve.p).mod(curve.p)
-        val dy = ((y!! - other.y!!) + curve.p).mod(curve.p)
-        val lambda = (dy * dx.modInverse(curve.p)).mod(curve.p)
-        val newX = (lambda * lambda - x - other.x).mod(curve.p)
-        val newY = (lambda * (x - newX) - y).mod(curve.p)
-        return curve.point(newX, newY)
-    }
-
-    fun double(): EcPoint {
-        // Handle point at infinity
-        if (this.isInfinity) return this
-
-        // 2P = O when y = 0
-        if (y == BigInteger.ZERO) return curve.point(null, null)
-
-        val lambda =
-            (
-                (BigInteger.THREE * x!! * x + curve.a) *
-                    (BigInteger.TWO * y!!).modInverse(curve.p)
-            ).mod(curve.p)
-        val newX = (lambda * lambda - BigInteger.TWO * x).mod(curve.p)
-        val newY = (lambda * (x - newX) - y).mod(curve.p)
-        return curve.point(newX, newY)
-    }
-
-    //    operator fun times(k: BigInteger): EcPoint {
-    //        if (k == BigInteger.ZERO) return curve.point(null, null) // Point at infinity
-    //
-    //        var r0 = curve.point(null, null) // Point at infinity
-    //        var r1 = this
-    //
-    //        val binary = k.toString(2)
-    //        for (bit in binary) {
-    //            if (bit == '0') {
-    //                r1 += r0
-    //                r0 = r0.double()
-    //            } else {
-    //                r0 += r1
-    //                r1 = r1.double()
-    //            }
-    //        }
-    //        return r0
-    //    }
-
-    @UnoptimizedCryptoApi(ticket = "XXX-000")
-    operator fun times(k: BigInteger): EcPoint {
-        // TODO OPEN-1: Use native provider
-
-        if (k == BigInteger.ZERO) return curve.point(null, null) // Point at infinity
-        val absK = k.abs()
-        var current = this
-        var result = curve.point(null, null) // Point at infinity
-
-        var multiplier = absK
-        while (multiplier > BigInteger.ZERO) {
-            if (multiplier and BigInteger.ONE == BigInteger.ONE) {
-                result += current
-            }
-            current = current.double()
-            multiplier = multiplier.shr(1)
-        }
-
-        // If k is negative, return the negation of the result
-        return if (k < BigInteger.ZERO) result.negate() else result
-    }
+    operator fun times(k: BigInteger): EcPoint = nativeTimes(k)
 
     fun negate(): EcPoint = if (isInfinity) this else curve.point(x, (curve.p - y!!).mod(curve.p))
 }
 
-private val BigInteger.Companion.THREE by lazy { BigInteger.fromInt(3) }
+internal expect fun EcPoint.nativeTimes(k: BigInteger): EcPoint
+internal expect fun EcPoint.nativePlus(other: EcPoint): EcPoint
 
 @ExperimentalCryptoApi
 fun EcPoint.toEcPublicKey(): EcPublicKey = EcPublicKey(curve, uncompressed)

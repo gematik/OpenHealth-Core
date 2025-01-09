@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import de.gematik.openhealth.crypto.key.EcCurve
 import de.gematik.openhealth.crypto.key.EcPrivateKey
 import de.gematik.openhealth.crypto.key.EcPublicKey
 import de.gematik.openhealth.crypto.key.decodeFromPem
+import de.gematik.openhealth.crypto.key.encodeToAsn1
+import de.gematik.openhealth.crypto.runTestWithProvider
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -43,7 +45,7 @@ ZO36o/p2C/2pgy2iMgxVAo1Z9PXjFHstCehI8AFmUsmZaCHZxgrPdZulUw==
 class EcdhTest {
     @Test
     fun `compute secret`() =
-        runTest {
+        runTestWithProvider {
             val publicKey = EcPublicKey.decodeFromPem(ecPublicKey)
             val privateKey = EcPrivateKey.decodeFromPem(ecPrivateKey)
             val result =

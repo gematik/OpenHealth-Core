@@ -16,30 +16,8 @@
 
 package de.gematik.openhealth.crypto
 
-@ExperimentalCryptoApi
-class HashException(
-    override val message: String,
-    override val cause: Throwable? = null,
-) : Throwable(message, cause)
+import de.gematik.openhealth.crypto.wrapper.Provider
 
-@ExperimentalCryptoApi
-enum class HashAlgorithm {
-    Sha1,
+actual suspend fun initializeNativeProvider() {
+    Provider.get()
 }
-
-@ExperimentalCryptoApi
-interface Hash {
-    val spec: HashSpec
-
-    fun update(data: ByteArray)
-
-    fun digest(): ByteArray
-}
-
-@ExperimentalCryptoApi
-class HashSpec(
-    val algorithm: HashAlgorithm,
-)
-
-@ExperimentalCryptoApi
-expect fun HashSpec.createHash(): Hash

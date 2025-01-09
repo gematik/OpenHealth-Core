@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,8 @@
 
 package de.gematik.openhealth.crypto
 
-internal class NodeException(
-    nodeError: dynamic,
-) : Throwable(nodeError.message as String? ?: "Unknown error during digest")
-
-fun <T> runNodeCatching(block: () -> T): T {
-    try {
-        return block()
-    } catch (e: dynamic) {
-        when (e) {
-            is IllegalArgumentException -> throw e
-            is IllegalStateException -> throw e
-            else -> throw NodeException(e)
-        }
-    }
-}
+/**
+ * Initializes the underlying native provider. A call to this function is required before calling
+ * any other cryptographic operations.
+ */
+expect suspend fun initializeNativeProvider()

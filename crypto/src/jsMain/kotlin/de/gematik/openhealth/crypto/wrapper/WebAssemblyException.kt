@@ -14,32 +14,6 @@
  * limitations under the License.
  */
 
-package de.gematik.openhealth.crypto
+package de.gematik.openhealth.crypto.wrapper
 
-@ExperimentalCryptoApi
-class HashException(
-    override val message: String,
-    override val cause: Throwable? = null,
-) : Throwable(message, cause)
-
-@ExperimentalCryptoApi
-enum class HashAlgorithm {
-    Sha1,
-}
-
-@ExperimentalCryptoApi
-interface Hash {
-    val spec: HashSpec
-
-    fun update(data: ByteArray)
-
-    fun digest(): ByteArray
-}
-
-@ExperimentalCryptoApi
-class HashSpec(
-    val algorithm: HashAlgorithm,
-)
-
-@ExperimentalCryptoApi
-expect fun HashSpec.createHash(): Hash
+class WebAssemblyException(message: String?) : RuntimeException(message)

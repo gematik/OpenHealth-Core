@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,37 +16,21 @@
 
 package de.gematik.openhealth.crypto.key
 
-//import node.crypto.ECKeyPairDerDerOptions
-//import node.crypto.KeyType
-//import node.crypto.generateKeyPairSync
+import de.gematik.openhealth.crypto.wrapper.runWithProvider
+import de.gematik.openhealth.crypto.wrapper.toByteArray
 
-private fun EcCurve.curveName() =
+internal fun EcCurve.curveName() =
     when (this) {
         EcCurve.BrainpoolP256r1 -> "brainpoolP256r1"
         EcCurve.BrainpoolP384r1 -> "brainpoolP384r1"
         EcCurve.BrainpoolP512r1 -> "brainpoolP512r1"
     }
 
-actual suspend fun EcKeyPairSpec.generateKeyPair(): Pair<EcPublicKey, EcPrivateKey> {
-    TODO()
-//    val options =
-//        json(
-//            "namedCurve" to this@generateKeyPair.curve.curveName(),
-//            "publicKeyEncoding" to
-//                json(
-//                    "type" to "spki",
-//                    "format" to "der",
-//                ),
-//            "privateKeyEncoding" to
-//                json(
-//                    "type" to "pkcs8",
-//                    "format" to "der",
-//                ),
-//        )
-//
-//    @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
-//    val keyPair = generateKeyPairSync(KeyType.ec, options as ECKeyPairDerDerOptions)
-//
-//    return EcPublicKey.decodeFromAsn1(keyPair.publicKey.toByteArray()) to
-//        EcPrivateKey.decodeFromAsn1(keyPair.privateKey.toByteArray())
+actual  fun EcKeyPairSpec.generateKeyPair(): Pair<EcPublicKey, EcPrivateKey> {
+    return runWithProvider {
+        val keyPair = ECKeyPairGenerator.generateKeyPair(this@generateKeyPair.curve.curveName())
+
+        EcPublicKey.decodeFromAsn1(keyPair.getPublicKeyDER().toByteArray()) to
+            EcPrivateKey.decodeFromAsn1(keyPair.getPrivateKeyDER().toByteArray())
+    }
 }

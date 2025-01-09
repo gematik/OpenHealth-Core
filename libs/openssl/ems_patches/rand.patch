@@ -1,0 +1,37 @@
+diff --git a/crypto/rand/rand_lib.c b/crypto/rand/rand_lib.c
+index 5430290192..ba50440ce2 100644
+--- a/crypto/rand/rand_lib.c
++++ b/crypto/rand/rand_lib.c
+@@ -330,6 +330,10 @@ const RAND_METHOD *RAND_get_rand_method(void)
+ # endif
+ #endif /* !FIPS_MODULE */
+ 
++#ifdef __wasm__
++void ems_crypto_random_buf(unsigned char *buf, size_t num);
++#endif
++
+ /*
+  * This function is not part of RAND_METHOD, so if we're not using
+  * the default method, then just call RAND_bytes().  Otherwise make
+@@ -338,6 +342,10 @@ const RAND_METHOD *RAND_get_rand_method(void)
+ int RAND_priv_bytes_ex(OSSL_LIB_CTX *ctx, unsigned char *buf, size_t num,
+                        unsigned int strength)
+ {
++#ifdef __wasm__
++    ems_crypto_random_buf(buf, num);
++    return 1;
++#endif
+     EVP_RAND_CTX *rand;
+ #if !defined(OPENSSL_NO_DEPRECATED_3_0) && !defined(FIPS_MODULE)
+     const RAND_METHOD *meth = RAND_get_rand_method();
+@@ -367,6 +375,10 @@ int RAND_priv_bytes(unsigned char *buf, int num)
+ int RAND_bytes_ex(OSSL_LIB_CTX *ctx, unsigned char *buf, size_t num,
+                   unsigned int strength)
+ {
++#ifdef __wasm__
++    ems_crypto_random_buf(buf, num);
++    return 1;
++#endif
+     EVP_RAND_CTX *rand;
+ #if !defined(OPENSSL_NO_DEPRECATED_3_0) && !defined(FIPS_MODULE)
+     const RAND_METHOD *meth = RAND_get_rand_method();

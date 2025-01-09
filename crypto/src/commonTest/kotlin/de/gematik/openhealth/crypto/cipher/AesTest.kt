@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import de.gematik.openhealth.crypto.UnsafeCryptoApi
 import de.gematik.openhealth.crypto.bytes
 import de.gematik.openhealth.crypto.hexSpaceFormat
 import de.gematik.openhealth.crypto.key.SecretKey
+import de.gematik.openhealth.crypto.runTestWithProvider
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -28,7 +29,7 @@ class AesTest {
     @OptIn(UnsafeCryptoApi::class)
     @Test
     fun `aes ecb - 128 bit encryption`() =
-        runTest {
+        runTestWithProvider {
             val cipher =
                 AesEcbSpec(
                     16.bytes,
@@ -44,7 +45,7 @@ class AesTest {
     @OptIn(UnsafeCryptoApi::class)
     @Test
     fun `aes ecb - 128 bit decryption`() =
-        runTest {
+        runTestWithProvider {
             val cipher =
                 AesEcbSpec(
                     16.bytes,
@@ -61,7 +62,7 @@ class AesTest {
 
     @Test
     fun `aes gcm - 128 bit encryption`() =
-        runTest {
+        runTestWithProvider {
             val cipher =
                 AesGcmCipherSpec(
                     16.bytes,
@@ -81,15 +82,13 @@ class AesTest {
 
     @Test
     fun `aes gcm - 128 bit decryption`() =
-        runTest {
+        runTestWithProvider {
             val cipher =
                 AesGcmDecipherSpec(
                     16.bytes,
                     "1234567890123456".encodeToByteArray(),
                     byteArrayOf(),
-                    "0F 98 50 42 1A DA DC FF 64 5F 7E 79 79 E2 E6 8A".hexToByteArray(
-                        hexSpaceFormat,
-                    ),
+                    "0F 98 50 42 1A DA DC FF 64 5F 7E 79 79 E2 E6 8A".hexToByteArray(hexSpaceFormat),
                 ).createDecipher(
                     SecretKey("1234567890123456".encodeToByteArray()),
                 )

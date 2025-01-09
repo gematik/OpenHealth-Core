@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import de.gematik.openhealth.crypto.ExperimentalCryptoApi
 
 @ExperimentalCryptoApi
 interface Cipher {
-    suspend fun update(data: ByteArray): ByteArray
+     fun update(data: ByteArray): ByteArray
 
-    suspend fun final(): ByteArray
+     fun final(): ByteArray
 }
