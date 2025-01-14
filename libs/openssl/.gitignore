@@ -1,5 +1,5 @@
 node_modules
-ems_source_*
+ems_source_*/
 build
 build*
 
