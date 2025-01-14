@@ -1,5 +1,6 @@
 #include "mac.hpp"
 
+#include "capi.hpp"
 #include "errors.hpp"
 
 using namespace mac;
@@ -27,35 +28,23 @@ auto cmac::create(const uint8_vector &key, const std::string &algorithm) -> std:
                                                     const_cast<char *>(algorithm.c_str()), 0),
                    OSSL_PARAM_construct_end()};
 
-    if (EVP_MAC_init(cmac_instance->ctx.get(), key.data(), key.size(), params.data()) != 1)
-    {
-        throw_openssl_error("EVP_MAC_init failed");
-    }
+    ossl_check(EVP_MAC_init(cmac_instance->ctx.get(), key.data(), key.size(), params.data()), "EVP_MAC_init failed");
 
     return cmac_instance;
 }
 
 void cmac::update(const uint8_vector &data) const
 {
-    if (EVP_MAC_update(ctx.get(), data.data(), data.size()) != 1)
-    {
-        throw_openssl_error("EVP_MAC_update failed");
-    }
+    ossl_check(EVP_MAC_update(ctx.get(), data.data(), data.size()), "EVP_MAC_update failed");
 }
 
 auto cmac::final() const -> uint8_vector
 {
     size_t outl = 0;
-    if (EVP_MAC_final(ctx.get(), nullptr, &outl, 0) != 1)
-    {
-        throw_openssl_error("EVP_MAC_final failed to get output length");
-    }
+    ossl_check(EVP_MAC_final(ctx.get(), nullptr, &outl, 0), "EVP_MAC_final failed to get output length");
 
     uint8_vector data(outl);
-    if (EVP_MAC_final(ctx.get(), data.data(), &outl, outl) != 1)
-    {
-        throw_openssl_error("EVP_MAC_final failed to finalize");
-    }
+    ossl_check(EVP_MAC_final(ctx.get(), data.data(), &outl, outl), "EVP_MAC_final failed to finalize");
 
     return data;
 }

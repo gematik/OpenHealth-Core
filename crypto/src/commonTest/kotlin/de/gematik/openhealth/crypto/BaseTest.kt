@@ -16,6 +16,7 @@
 
 package de.gematik.openhealth.crypto
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
@@ -23,12 +24,27 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
 
+class TestProviderScope(val testScope: TestScope, val cryptoScope: CryptoScope) : CryptoScope(),
+    CoroutineScope by testScope {
+
+    override fun release() {
+        cryptoScope.release()
+    }
+
+    override fun defer(block: () -> Unit) {
+        cryptoScope.defer(block)
+    }
+}
+
+
 fun runTestWithProvider(
     context: CoroutineContext = EmptyCoroutineContext,
-    testBody: suspend TestScope.() -> Unit
+    testBody: suspend TestProviderScope.() -> Unit
 ): TestResult = runTest(
     context = context,
 ) {
-    initializeNativeProvider()
-    testBody()
+    useCryptoAsync {
+        initializeNativeProvider()
+        testBody(TestProviderScope(this@runTest, this@useCryptoAsync))
+    }
 }

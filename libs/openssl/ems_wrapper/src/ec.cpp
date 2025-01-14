@@ -22,20 +22,15 @@ auto bio_to_uint8(BIO *bio) -> uint8_vector
 auto ec::convert_private_key_to_der(const evp_pkey_ptr &private_key) -> uint8_vector
 {
     const auto bio = capi::make_unique(BIO_new(BIO_s_mem()), &BIO_free);
-    if (i2d_PKCS8PrivateKey_bio(bio.get(), private_key.get(), nullptr, nullptr, 0, nullptr, nullptr) != 1)
-    {
-        throw_openssl_error("Failed to convert private key to DER.");
-    }
+    ossl_check(i2d_PKCS8PrivateKey_bio(bio.get(), private_key.get(), nullptr, nullptr, 0, nullptr, nullptr),
+               "Failed to convert private key to DER.");
     return bio_to_uint8(bio.get());
 }
 
 auto ec::convert_public_key_to_der(const evp_pkey_ptr &public_key) -> uint8_vector
 {
     const auto bio = capi::make_unique(BIO_new(BIO_s_mem()), &BIO_free);
-    if (i2d_PUBKEY_bio(bio.get(), public_key.get()) != 1)
-    {
-        throw_openssl_error("Failed to convert public key to DER.");
-    }
+    ossl_check(i2d_PUBKEY_bio(bio.get(), public_key.get()), "Failed to convert public key to DER.");
     return bio_to_uint8(bio.get());
 }
 
@@ -95,20 +90,17 @@ auto ec_point::clone() const -> std::unique_ptr<ec_point>
 auto ec_point::create(const std::string &curve_name, const uint8_vector &public_key) -> std::unique_ptr<ec_point>
 {
     auto point = create_from_curve(curve_name);
-    if (EC_POINT_oct2point(point->group.get(), point->point.get(), public_key.data(), public_key.size(), nullptr) != 1)
-    {
-        throw_openssl_error("Failed to create ec point from uncompressed public key");
-    }
+    ossl_check(
+        EC_POINT_oct2point(point->group.get(), point->point.get(), public_key.data(), public_key.size(), nullptr),
+        "Failed to create ec point from uncompressed public key");
     return point;
 }
 
 auto ec_point::add(const ec_point &other) const -> std::unique_ptr<ec_point>
 {
     auto result = clone();
-    if (EC_POINT_add(group.get(), result->point.get(), point.get(), other.point.get(), nullptr) != 1)
-    {
-        throw_openssl_error("EC_POINT_add failed");
-    }
+    ossl_check(EC_POINT_add(group.get(), result->point.get(), point.get(), other.point.get(), nullptr),
+               "EC_POINT_add failed");
     return result;
 }
 
@@ -117,10 +109,8 @@ auto ec_point::times(const uint8_vector &signed_integer) const -> std::unique_pt
     const std::unique_ptr<BIGNUM, decltype(&BN_free)> times(
         BN_signed_bin2bn(signed_integer.data(), static_cast<int>(signed_integer.size()), nullptr), &BN_free);
     auto result = clone();
-    if (EC_POINT_mul(group.get(), result->point.get(), nullptr, point.get(), times.get(), nullptr) != 1)
-    {
-        throw_openssl_error("EC_POINT_mul failed");
-    }
+    ossl_check(EC_POINT_mul(group.get(), result->point.get(), nullptr, point.get(), times.get(), nullptr),
+               "EC_POINT_mul failed");
     return result;
 }
 
@@ -153,29 +143,19 @@ auto ec_keypair::get_public_key_der() const -> uint8_vector
 
 auto ec_keypair::generate_keypair(const std::string &curve_name) -> std::unique_ptr<ec_keypair>
 {
-    // TODO: check correct key type
-    const auto ctx = capi::make_unique(EVP_PKEY_CTX_new_from_name(nullptr, curve_name.c_str(), nullptr), &EVP_PKEY_CTX_free);
-    if (!ctx || EVP_PKEY_keygen_init(ctx.get()) != 1)
+    const auto ctx = capi::make_unique(EVP_PKEY_CTX_new_id(EVP_PKEY_EC, nullptr), &EVP_PKEY_CTX_free);
+    ossl_check(!ctx || EVP_PKEY_keygen_init(ctx.get()), "Failed to initialize key generation.");
+
+    const auto nid = OBJ_sn2nid(curve_name.c_str());
+    if (nid == NID_undef)
     {
-        throw_openssl_error("Failed to initialize key generation.");
+        throw_openssl_error("Invalid curve name: " + curve_name);
     }
-    //
-    // const auto nid = OBJ_sn2nid(curve_name.c_str());
-    // if (nid == NID_undef)
-    // {
-    //     throw_openssl_error("Invalid curve name: " + curve_name);
-    // }
-    //
-    // if (EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx.get(), nid) != 1)
-    // {
-    //     throw_openssl_error("Failed to set EC curve.");
-    // }
+
+    ossl_check(EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx.get(), nid), "Failed to set EC curve.");
 
     EVP_PKEY *raw_pkey = nullptr;
-    if (EVP_PKEY_keygen(ctx.get(), &raw_pkey) != 1)
-    {
-        throw_openssl_error("Key generation failed.");
-    }
+    ossl_check(EVP_PKEY_keygen(ctx.get(), &raw_pkey), "Key generation failed.");
     auto pkey = capi::make_unique(raw_pkey, &EVP_PKEY_free);
 
     return std::unique_ptr<ec_keypair>(new ec_keypair(std::move(pkey)));
@@ -194,10 +174,7 @@ auto ecdh::create(const uint8_vector &private_key_der) -> std::unique_ptr<ecdh>
     {
         throw_openssl_error("Failed to create ECDH context");
     }
-    if (EVP_PKEY_derive_init(ctx.get()) != 1)
-    {
-        throw_openssl_error("Failed to initialize ECDH context");
-    }
+    ossl_check(EVP_PKEY_derive_init(ctx.get()), "Failed to initialize ECDH context");
 
     return std::unique_ptr<ecdh>(new ecdh(std::move(ctx), std::move(pkey)));
 }
@@ -208,10 +185,7 @@ auto ecdh::compute_secret(const uint8_vector &public_key_der) const -> uint8_vec
     EVP_PKEY_derive_set_peer(ctx.get(), pkey.get());
     auto shared_secret = uint8_vector();
     size_t secret_len = 0;
-    if (EVP_PKEY_derive(ctx.get(), nullptr, &secret_len) != 1)
-    {
-        throw_openssl_error("Failed to compute secret");
-    }
+    ossl_check(EVP_PKEY_derive(ctx.get(), nullptr, &secret_len), "Failed to compute secret");
     shared_secret.resize(secret_len);
     EVP_PKEY_derive(ctx.get(), shared_secret.data(), &secret_len);
     return shared_secret;

@@ -1,5 +1,6 @@
 #include "cipher.hpp"
 
+#include "capi.hpp"
 #include "errors.hpp"
 
 #include <openssl/core_names.h>
@@ -37,10 +38,7 @@ auto aes_cipher::init_cipher(const std::string &algorithm, const uint8_vector &k
         throw_openssl_error("Failed to create AESCipher for algorithm: " + algorithm);
     }
 
-    if (init_fn(aes->ctx.get(), aes->cipher.get(), nullptr, nullptr, nullptr) != 1)
-    {
-        throw_openssl_error("Failed to initialize cipher");
-    }
+    ossl_check(init_fn(aes->ctx.get(), aes->cipher.get(), nullptr, nullptr, nullptr), "Failed to initialize cipher");
 
     if (const int cipher_type = EVP_CIPHER_CTX_get_mode(aes->ctx.get());
         cipher_type == EVP_CIPH_GCM_MODE || cipher_type == EVP_CIPH_CCM_MODE)
@@ -57,16 +55,12 @@ auto aes_cipher::init_cipher(const std::string &algorithm, const uint8_vector &k
     }
     else
     {
-        if (init_fn(aes->ctx.get(), aes->cipher.get(), key.data(), initialization_vector.data(), nullptr) != 1)
-        {
-            throw_openssl_error("Failed to initialize cipher");
-        }
+        ossl_check(init_fn(aes->ctx.get(), aes->cipher.get(), key.data(), initialization_vector.data(), nullptr),
+                   "Failed to initialize cipher");
     }
 
-    if (init_fn(aes->ctx.get(), nullptr, key.data(), initialization_vector.data(), nullptr) != 1)
-    {
-        throw_openssl_error("Failed to initialize cipher");
-    }
+    ossl_check(init_fn(aes->ctx.get(), nullptr, key.data(), initialization_vector.data(), nullptr),
+               "Failed to initialize cipher");
 
     return aes;
 }
@@ -91,10 +85,8 @@ void aes_cipher::set_auto_padding(bool enabled) const
 void aes_cipher::set_aad(const uint8_vector &aad) const
 {
     int len = 0;
-    if (EVP_EncryptUpdate(ctx.get(), nullptr, &len, aad.data(), static_cast<int>(aad.size())) != 1)
-    {
-        throw_openssl_error("Failed to set AAD");
-    }
+    ossl_check(EVP_EncryptUpdate(ctx.get(), nullptr, &len, aad.data(), static_cast<int>(aad.size())),
+               "Failed to set AAD");
 }
 
 void aes_cipher::set_auth_tag(const uint8_vector &auth_tag) const
@@ -110,10 +102,7 @@ void aes_cipher::set_auth_tag(const uint8_vector &auth_tag) const
                                                      const_cast<unsigned char *>(auth_tag.data()), auth_tag.size()),
                    OSSL_PARAM_construct_end()};
 
-    if (EVP_CIPHER_CTX_set_params(ctx.get(), params.data()) != 1)
-    {
-        throw_openssl_error("Failed to set authentication tag");
-    }
+    ossl_check(EVP_CIPHER_CTX_set_params(ctx.get(), params.data()), "Failed to set authentication tag");
 }
 
 auto aes_cipher::get_auth_tag(const size_t tag_len) const -> uint8_vector
@@ -123,10 +112,7 @@ auto aes_cipher::get_auth_tag(const size_t tag_len) const -> uint8_vector
     auto params = std::array{OSSL_PARAM_construct_octet_string(OSSL_CIPHER_PARAM_AEAD_TAG, auth_tag.data(), tag_len),
                              OSSL_PARAM_construct_end()};
 
-    if (EVP_CIPHER_CTX_get_params(ctx.get(), params.data()) != 1)
-    {
-        throw_openssl_error("Failed to get authentication tag");
-    }
+    ossl_check(EVP_CIPHER_CTX_get_params(ctx.get(), params.data()), "Failed to get authentication tag");
 
     return auth_tag;
 }
@@ -161,17 +147,11 @@ auto aes_cipher::final() const -> uint8_vector
     uint8_vector ciphertext(EVP_CIPHER_CTX_block_size(ctx.get()));
     if (is_encrypting())
     {
-        if (EVP_EncryptFinal_ex(ctx.get(), ciphertext.data(), &len) != 1)
-        {
-            throw_openssl_error("Encryption failed during finalization");
-        }
+        ossl_check(EVP_EncryptFinal_ex(ctx.get(), ciphertext.data(), &len), "Encryption failed during finalization");
     }
     else
     {
-        if (EVP_DecryptFinal_ex(ctx.get(), ciphertext.data(), &len) != 1)
-        {
-            throw_openssl_error("Decryption failed during finalization");
-        }
+        ossl_check(EVP_DecryptFinal_ex(ctx.get(), ciphertext.data(), &len), "Decryption failed during finalization");
     }
     ciphertext.resize(len);
     return ciphertext;

@@ -18,7 +18,6 @@
 
 package de.gematik.openhealth.crypto
 
-import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

@@ -16,31 +16,16 @@
 
 package de.gematik.openhealth.crypto
 
-import de.gematik.openhealth.crypto.key.SecretKey
+import de.gematik.openhealth.crypto.wrapper.deferScoped
+import de.gematik.openhealth.crypto.wrapper.runWithProvider
+import de.gematik.openhealth.crypto.wrapper.toUint8Vector
 
-@ExperimentalCryptoApi
-class CmacException(
-    override val message: String,
-    override val cause: Throwable? = null,
-) : Throwable(message, cause)
-
-@ExperimentalCryptoApi
-enum class CmacAlgorithm {
-    Aes,
-}
-
-@ExperimentalCryptoApi
-interface Cmac {
-    val spec: CmacSpec
-
-     fun update(data: ByteArray)
-
-     fun final(): ByteArray
-}
-
-@ExperimentalCryptoApi
-class CmacSpec(
-    val algorithm: CmacAlgorithm,
-)
-
-internal expect fun CmacSpec.nativeCreateCmac(scope: CryptoScope, secret: SecretKey): Cmac
+actual fun nativeConstantTimeEquals(
+    arrayA: ByteArray,
+    arrayB: ByteArray
+): Boolean =
+    runWithProvider {
+        deferScoped {
+            cryptoConstantTimeEquals(arrayA.toUint8Vector().alsoDefer(), arrayB.toUint8Vector().alsoDefer())
+        }
+    }

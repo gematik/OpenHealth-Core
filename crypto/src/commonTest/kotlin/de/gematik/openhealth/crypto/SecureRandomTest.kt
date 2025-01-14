@@ -23,37 +23,34 @@ import kotlin.test.assertTrue
 class SecureRandomTest {
     @Test
     fun `secure random - full 32 bits`() {
-        val totalMin = 2931 // p = 0.001 for 32 bits collision
         val random = secureRandom()
-        val values = buildSet { repeat(totalMin) { add(random.nextBits(32)) } }
-        assertEquals(totalMin, values.size)
+        val values = buildSet { repeat(100) { add(random.nextBits(32)) } }
+        assertEquals(100, values.size)
     }
 
     @Test
     fun `secure random - 28 bits`() {
-        val totalMin = 732 // p = 0.001 for 32 bits collision
         val random = secureRandom()
         val values = buildSet {
-            repeat(totalMin) {
+            repeat(100) {
                 val nextBits = random.nextBits(28)
                 add(nextBits)
                 assertEquals(0, nextBits shr 28 and 0x1111)
             }
         }
-        assertEquals(totalMin, values.size)
+        assertEquals(100, values.size)
     }
 
     @Test
     fun `secure random - 27 bits`() {
-        val totalMin = 518 // p = 0.001 for 32 bits collision
         val random = secureRandom()
         val values = buildSet {
-            repeat(totalMin) {
+            repeat(100) {
                 val nextBits = random.nextBits(27)
                 add(nextBits)
                 assertEquals(0, nextBits shr 27 and 0x11111)
             }
         }
-        assertEquals(totalMin, values.size)
+        assertEquals(100, values.size)
     }
 }

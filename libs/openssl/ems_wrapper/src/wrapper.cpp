@@ -66,6 +66,15 @@ auto crypto_random_n(const size_t n) -> uint8_vector
     return vector;
 }
 
+auto crypto_const_time_equals(const uint8_vector &vec_a, const uint8_vector &vec_b) -> bool
+{
+    if (vec_a.size() != vec_b.size())
+    {
+        return false;
+    }
+    return CRYPTO_memcmp(vec_a.data(), vec_b.data(), vec_a.size()) == 0;
+}
+
 extern "C"
 {
     EMSCRIPTEN_KEEPALIVE
@@ -90,6 +99,7 @@ EMSCRIPTEN_BINDINGS(OpenSSL)
     register_vector<unsigned char>("Uint8Vector");
 
     function("cryptoRandom", &crypto_random_n);
+    function("cryptoConstantTimeEquals", &crypto_const_time_equals);
 
     class_<ec::ec_point>("ECPoint")
         .class_function("create", &ec::ec_point::create, return_value_policy::take_ownership())
@@ -127,6 +137,7 @@ EMSCRIPTEN_BINDINGS(OpenSSL)
     class_<hash::hash_generator>("HashGenerator")
         .class_function("create", &hash::hash_generator::create)
         .function("update", &hash::hash_generator::update)
+        .function("setFinalOutputLength", &hash::hash_generator::set_final_output_length)
         .function("final", &hash::hash_generator::final);
 
     class_<cipher::aes_cipher>("AESCipher")

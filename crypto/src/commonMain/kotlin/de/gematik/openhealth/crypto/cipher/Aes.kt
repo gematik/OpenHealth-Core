@@ -17,6 +17,7 @@
 package de.gematik.openhealth.crypto.cipher
 
 import de.gematik.openhealth.crypto.ByteUnit
+import de.gematik.openhealth.crypto.CryptoScope
 import de.gematik.openhealth.crypto.ExperimentalCryptoApi
 import de.gematik.openhealth.crypto.UnsafeCryptoApi
 import de.gematik.openhealth.crypto.key.SecretKey
@@ -25,7 +26,7 @@ import de.gematik.openhealth.crypto.key.SecretKey
 interface AesCipher : Cipher {
     val spec: AesCipherSpec
 
-     fun authTag(): ByteArray
+    fun authTag(): ByteArray
 }
 
 @ExperimentalCryptoApi
@@ -78,8 +79,5 @@ class AesGcmDecipherSpec(
     }
 }
 
-@ExperimentalCryptoApi
-expect fun AesCipherSpec.createCipher(key: SecretKey): AesCipher
-
-@ExperimentalCryptoApi
-expect fun AesDecipherSpec.createDecipher(key: SecretKey): AesDecipher
+internal expect fun AesCipherSpec.nativeCreateCipher(scope: CryptoScope, key: SecretKey): AesCipher
+internal expect fun AesDecipherSpec.nativeCreateDecipher(scope: CryptoScope, key: SecretKey): AesDecipher

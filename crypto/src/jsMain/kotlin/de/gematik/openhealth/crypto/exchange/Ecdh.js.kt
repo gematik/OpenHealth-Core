@@ -16,12 +16,15 @@
 
 package de.gematik.openhealth.crypto.exchange
 
+import de.gematik.openhealth.crypto.CryptoScope
 import de.gematik.openhealth.crypto.ExperimentalCryptoApi
 import de.gematik.openhealth.crypto.key.EcCurve
 import de.gematik.openhealth.crypto.key.EcPrivateKey
 import de.gematik.openhealth.crypto.key.EcPublicKey
 import de.gematik.openhealth.crypto.key.encodeToAsn1
-import de.gematik.openhealth.crypto.wrapper.lazyWithProvider
+import de.gematik.openhealth.crypto.wrapper.DeferScope
+import de.gematik.openhealth.crypto.wrapper.lazyDeferred
+import de.gematik.openhealth.crypto.wrapper.deferred
 import de.gematik.openhealth.crypto.wrapper.runWithProvider
 import de.gematik.openhealth.crypto.wrapper.toByteArray
 import de.gematik.openhealth.crypto.wrapper.toUint8Vector
@@ -34,15 +37,16 @@ private fun EcCurve.curveName() =
     }
 
 private class JsEcdh(
-    val spec: EcdhSpec,
-    val privateKey: EcPrivateKey,
-) : Ecdh {
+    override val spec: EcdhSpec,
+    private val privateKey: EcPrivateKey,
+    scope: CryptoScope
+) : Ecdh, DeferScope by deferred(scope) {
     init {
         require(spec.curve == privateKey.curve) { "Spec curve and private key curve must match." }
     }
 
     private val ecdh by
-        lazyWithProvider {
+        lazyDeferred {
             ECDH.create(privateKey.encodeToAsn1().toUint8Vector())
         }
 
@@ -53,4 +57,4 @@ private class JsEcdh(
 }
 
 @ExperimentalCryptoApi
-actual fun EcdhSpec.createKeyExchange(privateKey: EcPrivateKey): Ecdh = JsEcdh(this, privateKey)
+internal actual fun EcdhSpec.nativeCreateKeyExchange(scope: CryptoScope, privateKey: EcPrivateKey): Ecdh = JsEcdh(this, privateKey, scope)

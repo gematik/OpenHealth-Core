@@ -16,7 +16,10 @@
 
 package de.gematik.openhealth.crypto.wrapper
 
+import de.gematik.openhealth.crypto.CryptoScope
+import de.gematik.openhealth.crypto.JsCryptoScope
 import de.gematik.openhealth.crypto.LazySuspend
+import de.gematik.openhealth.crypto.useCrypto
 import js.atomic.Atomics
 import js.buffer.SharedArrayBuffer
 import js.typedarrays.Int32Array
@@ -35,11 +38,10 @@ import kotlinx.coroutines.promise
 
 val Provider = LazySuspend { OpenSslModuleFactory().await() }
 
-fun <T : Any> lazyWithProvider(initializer: OpenSslModule.() -> T) = lazy { initializer(Provider.tryGet()) }
 
-fun <T : Any> runWithProvider(block: OpenSslModule.() -> T): T {
+fun <T : Any> runWithProvider(block: OpenSslModule.() -> T): T =
     try {
-        return block(Provider.tryGet())
+        block(Provider.tryGet())
     } catch (error: dynamic) {
         if (js("error instanceof WebAssembly.Exception") == true) {
             throw WebAssemblyException((error.message as Array<String>).joinToString())
@@ -47,4 +49,3 @@ fun <T : Any> runWithProvider(block: OpenSslModule.() -> T): T {
             throw error as Throwable
         }
     }
-}

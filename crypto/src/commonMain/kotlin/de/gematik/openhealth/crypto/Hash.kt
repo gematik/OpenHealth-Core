@@ -25,6 +25,11 @@ class HashException(
 @ExperimentalCryptoApi
 enum class HashAlgorithm {
     Sha1,
+    Sha256,
+    Sha384,
+    Sha512,
+    Shake128,
+    Shake256,
 }
 
 @ExperimentalCryptoApi
@@ -42,4 +47,4 @@ class HashSpec(
 )
 
 @ExperimentalCryptoApi
-expect fun HashSpec.createHash(): Hash
+internal expect fun HashSpec.nativeCreateHash(scope: CryptoScope): Hash

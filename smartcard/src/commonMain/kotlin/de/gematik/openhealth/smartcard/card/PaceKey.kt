@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package de.gematik.openhealth.smartcard.card
 import de.gematik.openhealth.crypto.ExperimentalCryptoApi
 import de.gematik.openhealth.crypto.HashAlgorithm
 import de.gematik.openhealth.crypto.HashSpec
-import de.gematik.openhealth.crypto.createHash
+import de.gematik.openhealth.crypto.nativeCreateHash
 import de.gematik.openhealth.crypto.key.SecretKey
 
 /**
@@ -72,7 +72,7 @@ suspend fun getAES128Key(
     val modifiedKey = appendModeByte(sharedSecretK, mode)
 
     val checksum =
-        HashSpec(HashAlgorithm.Sha1).createHash().let {
+        HashSpec(HashAlgorithm.Sha1).nativeCreateHash().let {
             it.update(modifiedKey)
             it.digest()
         }

@@ -102,6 +102,7 @@ external interface ECDH : ClassHandle {
 
 external interface HashGenerator : ClassHandle {
     fun update(vector: Uint8Vector)
+    fun setFinalOutputLength(length: Int)
     fun final(): Uint8Vector
 }
 
@@ -128,6 +129,7 @@ external interface EmbindModule {
     fun fromInt8Array(data: Int8Array<ArrayBuffer>): Int8Vector
     fun fromUint8Array(data: Uint8Array<ArrayBuffer>): Uint8Vector
     fun cryptoRandom(n: Int): Uint8Vector
+    fun cryptoConstantTimeEquals(vecA: Uint8Vector, vecB: Uint8Vector): Boolean
 }
 
 external interface CMACFactory {

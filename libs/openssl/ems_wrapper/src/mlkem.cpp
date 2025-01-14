@@ -48,10 +48,7 @@ auto kem::mlkem_decapsulation::create(const std::string &algorithm) -> std::uniq
     // TODO: check correct key type
     const auto ctx =
         capi::make_unique(EVP_PKEY_CTX_new_from_name(nullptr, algorithm.c_str(), nullptr), &EVP_PKEY_CTX_free);
-    if (!ctx || EVP_PKEY_keygen_init(ctx.get()) != 1)
-    {
-        throw_openssl_error("Failed to initialize key.");
-    }
+    ossl_check(!ctx || EVP_PKEY_keygen_init(ctx.get()), "Failed to initialize key.");
 
     EVP_PKEY *raw_pkey = nullptr;
     EVP_PKEY_keygen(ctx.get(), &raw_pkey);
@@ -64,10 +61,9 @@ auto kem::mlkem_decapsulation::create_from_private_key(const std::string &algori
     -> std::unique_ptr<mlkem_decapsulation>
 {
     // TODO: check correct key type
-    auto pkey =
-        capi::make_unique_checked(EVP_PKEY_new_raw_private_key_ex(nullptr, algorithm.c_str(), nullptr,
-                                                                 private_key.data(), private_key.size()),
-                                  &EVP_PKEY_free, "Key initialization from encapsulation key failed");
+    auto pkey = capi::make_unique_checked(
+        EVP_PKEY_new_raw_private_key_ex(nullptr, algorithm.c_str(), nullptr, private_key.data(), private_key.size()),
+        &EVP_PKEY_free, "Key initialization from encapsulation key failed");
 
     return std::unique_ptr<mlkem_decapsulation>(new mlkem_decapsulation(std::move(pkey)));
 }

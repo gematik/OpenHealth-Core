@@ -16,6 +16,7 @@
 
 package de.gematik.openhealth.crypto.exchange
 
+import de.gematik.openhealth.crypto.CryptoScope
 import de.gematik.openhealth.crypto.ExperimentalCryptoApi
 import de.gematik.openhealth.crypto.key.EcCurve
 import de.gematik.openhealth.crypto.key.EcPrivateKey
@@ -23,7 +24,9 @@ import de.gematik.openhealth.crypto.key.EcPublicKey
 
 @ExperimentalCryptoApi
 interface Ecdh {
-     fun computeSecret(otherPublicKey: EcPublicKey): ByteArray
+    val spec: EcdhSpec
+
+    fun computeSecret(otherPublicKey: EcPublicKey): ByteArray
 }
 
 @ExperimentalCryptoApi
@@ -31,5 +34,4 @@ class EcdhSpec(
     val curve: EcCurve,
 )
 
-@ExperimentalCryptoApi
-expect fun EcdhSpec.createKeyExchange(privateKey: EcPrivateKey): Ecdh
+internal expect fun EcdhSpec.nativeCreateKeyExchange(scope: CryptoScope, privateKey: EcPrivateKey): Ecdh

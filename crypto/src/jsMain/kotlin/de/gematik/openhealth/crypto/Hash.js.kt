@@ -16,28 +16,33 @@
 
 package de.gematik.openhealth.crypto
 
-import de.gematik.openhealth.crypto.wrapper.lazyWithProvider
+import de.gematik.openhealth.crypto.wrapper.DeferScope
+import de.gematik.openhealth.crypto.wrapper.deferScoped
+import de.gematik.openhealth.crypto.wrapper.lazyDeferred
+import de.gematik.openhealth.crypto.wrapper.deferred
 import de.gematik.openhealth.crypto.wrapper.runWithProvider
+import de.gematik.openhealth.crypto.wrapper.toByteArray
+import de.gematik.openhealth.crypto.wrapper.toUint8Vector
 import js.typedarrays.toUint8Array
 
 private class JsHash(
+    scope: CryptoScope,
     override val spec: HashSpec,
-) : Hash {
-    private val hash by lazyWithProvider {
-        HashGenerator.create(spec.algorithm.name);
+) : Hash, DeferScope by deferred(scope) {
+    private val hash by lazyDeferred {
+        HashGenerator.create(spec.algorithm.name.uppercase())
     }
 
     override fun update(data: ByteArray) {
         runWithProvider {
-            hash.update(fromUint8Array(data.toUint8Array()))
+            deferScoped { hash.update(data.toUint8Vector().alsoDefer()) }
         }
     }
 
-    override  fun digest(): ByteArray {
-        return runWithProvider {
-            toUint8Array(hash.final()).toByteArray()
+    override  fun digest(): ByteArray =
+        runWithProvider {
+            deferScoped { hash.final().alsoDefer().toByteArray() }
         }
-    }
 }
 
-actual fun HashSpec.createHash(): Hash = JsHash(this)
+actual fun HashSpec.nativeCreateHash(scope: CryptoScope): Hash = JsHash(scope, this)

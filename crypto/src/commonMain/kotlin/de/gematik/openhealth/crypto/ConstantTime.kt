@@ -16,31 +16,11 @@
 
 package de.gematik.openhealth.crypto
 
-import de.gematik.openhealth.crypto.key.SecretKey
-
-@ExperimentalCryptoApi
-class CmacException(
-    override val message: String,
-    override val cause: Throwable? = null,
-) : Throwable(message, cause)
-
-@ExperimentalCryptoApi
-enum class CmacAlgorithm {
-    Aes,
+/**
+ * Constant time equals for byte arrays.
+ */
+fun ByteArray.contentConstantTimeEquals(other: ByteArray): Boolean {
+    return nativeConstantTimeEquals(this, other)
 }
 
-@ExperimentalCryptoApi
-interface Cmac {
-    val spec: CmacSpec
-
-     fun update(data: ByteArray)
-
-     fun final(): ByteArray
-}
-
-@ExperimentalCryptoApi
-class CmacSpec(
-    val algorithm: CmacAlgorithm,
-)
-
-internal expect fun CmacSpec.nativeCreateCmac(scope: CryptoScope, secret: SecretKey): Cmac
+internal expect fun nativeConstantTimeEquals(arrayA: ByteArray, arrayB: ByteArray): Boolean

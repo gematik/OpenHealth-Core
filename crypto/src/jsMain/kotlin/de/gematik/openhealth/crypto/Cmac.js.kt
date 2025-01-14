@@ -17,19 +17,22 @@
 package de.gematik.openhealth.crypto
 
 import de.gematik.openhealth.crypto.key.SecretKey
-import de.gematik.openhealth.crypto.wrapper.lazyWithProvider
+import de.gematik.openhealth.crypto.wrapper.DeferScope
+import de.gematik.openhealth.crypto.wrapper.deferred
+import de.gematik.openhealth.crypto.wrapper.lazyDeferred
 import de.gematik.openhealth.crypto.wrapper.runWithProvider
 import js.typedarrays.toUint8Array
 
 private class JsCmac(
     override val spec: CmacSpec,
+    scope: CryptoScope,
     secret: SecretKey,
-) : Cmac {
+) : Cmac, DeferScope by deferred(scope) {
     init {
         require(spec.algorithm == CmacAlgorithm.Aes) { "Only AES is supported" }
     }
 
-    private val cmac by lazyWithProvider {
+    private val cmac by lazyDeferred {
         CMAC.create(fromUint8Array(secret.data.toUint8Array()), "AES-${secret.length.bits}-CBC");
     }
 
@@ -46,4 +49,4 @@ private class JsCmac(
     }
 }
 
-actual fun CmacSpec.createCmac(secret: SecretKey): Cmac = JsCmac(this, secret)
+actual fun CmacSpec.nativeCreateCmac(scope: CryptoScope, secret: SecretKey): Cmac = JsCmac(this, scope, secret)
