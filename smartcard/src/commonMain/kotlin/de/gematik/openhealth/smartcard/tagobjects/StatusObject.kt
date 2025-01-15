@@ -34,7 +34,7 @@ class StatusObject(
             val encoder = Asn1Encoder()
             return encoder.write {
                 writeTaggedObject(DO_99_TAG) {
-                    write(statusBytes) // Write the status bytes as an octet string
+                    write(statusBytes)
                 }
             }
         }

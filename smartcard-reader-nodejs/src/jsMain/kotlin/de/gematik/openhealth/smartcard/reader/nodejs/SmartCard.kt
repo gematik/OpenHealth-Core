@@ -30,7 +30,9 @@ import kotlin.coroutines.resume
 
 private const val MAX_APDU_LENGTH = 65536 // extended length in bytes
 
-class NodeSmartCardException(error: Any?) : Exception(error?.toString())
+class NodeSmartCardException(
+    error: Any?,
+) : Exception(error?.toString())
 
 private class NodeSmartCard : SmartCard() {
     class NodeCommunicationScope(
@@ -56,8 +58,8 @@ private class NodeSmartCard : SmartCard() {
         }
     }
 
-    override suspend fun <T> connect(block: suspend CommunicationScope.() -> T): T {
-        return callbackFlow {
+    override suspend fun <T> connect(block: suspend CommunicationScope.() -> T): T =
+        callbackFlow {
             val pcsc = pcsc()
 
             pcsc.on("reader") { reader: CardReader ->
@@ -101,9 +103,12 @@ private class NodeSmartCard : SmartCard() {
                 }
 
                 @Suppress("USELESS_CAST")
-                reader.on("end", {
-                    cancel("PCSC communication ended")
-                } as () -> Unit) // requires cast
+                reader.on(
+                    "end",
+                    {
+                        cancel("PCSC communication ended")
+                    } as () -> Unit,
+                ) // requires cast
             }
 
             pcsc.on("error") { err ->
@@ -113,12 +118,9 @@ private class NodeSmartCard : SmartCard() {
             awaitClose {
                 pcsc.close()
             }
-        }
-            .map { scope ->
-                block(scope).also { scope.reader.close() }
-            }
-            .single()
-    }
+        }.map { scope ->
+            block(scope).also { scope.reader.close() }
+        }.single()
 }
 
 @JsExport

@@ -21,9 +21,9 @@ import de.gematik.openhealth.crypto.key.EcCurve
 import de.gematik.openhealth.crypto.key.toEcPublicKey
 import de.gematik.openhealth.smartcard.card.Mode
 import de.gematik.openhealth.smartcard.card.getAES128Key
-import de.gematik.openhealth.smartcard.hexUppercaseFormat
 import de.gematik.openhealth.smartcard.exchange.createAsn1AuthToken
-import kotlinx.coroutines.test.runTest
+import de.gematik.openhealth.smartcard.hexUppercaseFormat
+import de.gematik.openhealth.smartcard.runTestWithProvider
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -34,7 +34,7 @@ class PaceKeyTest {
 
     @Test
     fun shouldReturnValidAES128KeyModeEnc() =
-        runTest {
+        runTestWithProvider {
             val aes128Key = getAES128Key(secretK, Mode.ENC)
             assertEquals(
                 "AB5541629D18E5F33EE2B13DBDCDBE84",
@@ -44,7 +44,7 @@ class PaceKeyTest {
 
     @Test
     fun shouldReturnValidAES128KeyModeMac() =
-        runTest {
+        runTestWithProvider {
             val aes128Key = getAES128Key(secretK, Mode.MAC)
             assertEquals(
                 "E13D3757C7D9073794A3D7CA94B22D30",
@@ -54,7 +54,7 @@ class PaceKeyTest {
 
     @Test
     fun shouldReturnValidAES128KeyModePassword() =
-        runTest {
+        runTestWithProvider {
             val aes128Key = getAES128Key(secretK, Mode.PASSWORD)
             assertEquals(
                 "74C1F5E712B53BAAA3B02B182E0961B9",
@@ -65,7 +65,7 @@ class PaceKeyTest {
     @OptIn(ExperimentalCryptoApi::class)
     @Test
     fun `create asn1 auth token`() =
-        runTest {
+        runTestWithProvider {
             val point =
                 EcCurve.BrainpoolP256r1.point(
                     EcCurve.BrainpoolP256r1.x,

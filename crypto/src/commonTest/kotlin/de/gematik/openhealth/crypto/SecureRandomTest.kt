@@ -18,7 +18,6 @@ package de.gematik.openhealth.crypto
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class SecureRandomTest {
     @Test
@@ -31,26 +30,28 @@ class SecureRandomTest {
     @Test
     fun `secure random - 28 bits`() {
         val random = secureRandom()
-        val values = buildSet {
-            repeat(100) {
-                val nextBits = random.nextBits(28)
-                add(nextBits)
-                assertEquals(0, nextBits shr 28 and 0x1111)
+        val values =
+            buildSet {
+                repeat(100) {
+                    val nextBits = random.nextBits(28)
+                    add(nextBits)
+                    assertEquals(0, nextBits shr 28 and 0x1111)
+                }
             }
-        }
         assertEquals(100, values.size)
     }
 
     @Test
     fun `secure random - 27 bits`() {
         val random = secureRandom()
-        val values = buildSet {
-            repeat(100) {
-                val nextBits = random.nextBits(27)
-                add(nextBits)
-                assertEquals(0, nextBits shr 27 and 0x11111)
+        val values =
+            buildSet {
+                repeat(100) {
+                    val nextBits = random.nextBits(27)
+                    add(nextBits)
+                    assertEquals(0, nextBits shr 27 and 0x11111)
+                }
             }
-        }
         assertEquals(100, values.size)
     }
 }

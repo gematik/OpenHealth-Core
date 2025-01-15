@@ -19,7 +19,6 @@
 package de.gematik.openhealth.crypto
 
 import de.gematik.openhealth.crypto.key.SecretKey
-import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

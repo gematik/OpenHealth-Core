@@ -27,7 +27,8 @@ private const val INS = 0x20
 private const val NO_MEANING = 0x00
 
 /**
- * Use case Get Pin Status gemSpec_COS#14.6.4.1
+ * Creates a [HealthCardCommand] to get the pin status.
+ * Use case gemSpec_COS#14.6.4.1
  *
  * @param password the arguments for the Get Pin Status command
  * @param dfSpecific whether or not the password object specifies a Global or DF-specific.

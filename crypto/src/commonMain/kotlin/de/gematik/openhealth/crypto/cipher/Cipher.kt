@@ -20,7 +20,7 @@ import de.gematik.openhealth.crypto.ExperimentalCryptoApi
 
 @ExperimentalCryptoApi
 interface Cipher {
-     fun update(data: ByteArray): ByteArray
+    fun update(data: ByteArray): ByteArray
 
-     fun final(): ByteArray
+    fun final(): ByteArray
 }

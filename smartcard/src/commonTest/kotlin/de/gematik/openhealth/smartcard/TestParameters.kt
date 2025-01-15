@@ -16,6 +16,7 @@
 
 package de.gematik.openhealth.smartcard
 
+import de.gematik.openhealth.crypto.initializeNativeProvider
 import kotlinx.coroutines.test.runTest
 
 class ParametrizedTestScope(
@@ -30,8 +31,16 @@ fun runParametrizedTest(
     block: suspend ParametrizedTestScope.(Any) -> Unit,
 ) {
     runTest {
+        initializeNativeProvider()
         parameters.forEach {
             ParametrizedTestScope(it, "Test with parameter `$it`").block(it)
         }
+    }
+}
+
+fun runTestWithProvider(block: suspend () -> Unit) {
+    runTest {
+        initializeNativeProvider()
+        block()
     }
 }

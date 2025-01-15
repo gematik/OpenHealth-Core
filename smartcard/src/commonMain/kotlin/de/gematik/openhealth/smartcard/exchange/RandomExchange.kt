@@ -17,7 +17,7 @@
 package de.gematik.openhealth.smartcard.exchange
 
 import de.gematik.openhealth.smartcard.Requirement
-import de.gematik.openhealth.smartcard.card.ICardChannel
+import de.gematik.openhealth.smartcard.card.SmartCard
 import de.gematik.openhealth.smartcard.command.HealthCardCommand
 import de.gematik.openhealth.smartcard.command.ResponseStatus
 import de.gematik.openhealth.smartcard.command.executeSuccessfulOn
@@ -32,7 +32,7 @@ import de.gematik.openhealth.smartcard.command.select
         "Random numbers are generated using the RNG of the health card." +
             "This generator fulfills BSI-TR-03116#3.4 PTG.2 required by gemSpec_COS#14.9.5.1",
 )
-suspend fun ICardChannel.getRandom(length: Int): ByteArray {
+fun SmartCard.CommunicationScope.getRandom(length: Int): ByteArray {
     HealthCardCommand
         .select(selectParentElseRoot = false, readFirst = false)
         .executeSuccessfulOn(this)

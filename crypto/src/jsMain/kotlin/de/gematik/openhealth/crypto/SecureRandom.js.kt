@@ -18,8 +18,6 @@ package de.gematik.openhealth.crypto
 
 import de.gematik.openhealth.crypto.wrapper.runWithProvider
 import de.gematik.openhealth.crypto.wrapper.toByteArray
-import de.gematik.openhealth.crypto.wrapper.toUint8Vector
-import js.typedarrays.toUint8Array
 
 private class JsSecureRandom : SecureRandom() {
     override fun nextBits(bitCount: Int): Int =

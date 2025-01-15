@@ -49,20 +49,21 @@ private class JsAesCipher(
     override val spec: AesCipherSpec,
     scope: CryptoScope,
     key: SecretKey,
-) : AesCipher, DeferScope by deferred(scope) {
+) : AesCipher,
+    DeferScope by deferred(scope) {
     init {
         require(spec.tagLength == key.length) { "Key must be ${spec.tagLength.bits} bits" }
     }
 
     private val cipher by lazyDeferred<AESCipher> {
         deferScoped {
-
         }
-        val cipher = AESCipher.createEncryptor(
-            spec.algorithmName(key.length),
-            key.data.toUint8Vector().alsoDefer(),
-            ((spec as? AesGcmCipherSpec)?.iv ?: byteArrayOf()).toUint8Vector().alsoDefer()
-        )
+        val cipher =
+            AESCipher.createEncryptor(
+                spec.algorithmName(key.length),
+                key.data.toUint8Vector().alsoDefer(),
+                ((spec as? AesGcmCipherSpec)?.iv ?: byteArrayOf()).toUint8Vector().alsoDefer(),
+            )
         cipher.setAutoPadding(spec.autoPadding)
         if (spec is AesGcmCipherSpec) {
             if (spec.aad.isNotEmpty()) cipher.setAAD(spec.aad.toUint8Vector())
@@ -94,25 +95,27 @@ private class JsAesDecipher(
     override val spec: AesDecipherSpec,
     scope: CryptoScope,
     key: SecretKey,
-) : AesDecipher, DeferScope by deferred(scope) {
+) : AesDecipher,
+    DeferScope by deferred(scope) {
     init {
         require(spec.tagLength == key.length) { "Key must be ${spec.tagLength.bits} bits" }
     }
 
     private val cipher by
-    lazyDeferred {
-        val cipher = AESCipher.createDecryptor(
-            spec.algorithmName(key.length),
-            key.data.toUint8Vector(),
-            ((spec as? AesGcmDecipherSpec)?.iv ?: byteArrayOf()).toUint8Vector()
-        )
-        cipher.setAutoPadding(spec.autoPadding)
-        if (spec is AesGcmDecipherSpec) {
-            if (spec.authTag.isNotEmpty()) cipher.setAuthTag(spec.authTag.toUint8Vector())
-            if (spec.aad.isNotEmpty()) cipher.setAAD(spec.aad.toUint8Vector())
+        lazyDeferred {
+            val cipher =
+                AESCipher.createDecryptor(
+                    spec.algorithmName(key.length),
+                    key.data.toUint8Vector(),
+                    ((spec as? AesGcmDecipherSpec)?.iv ?: byteArrayOf()).toUint8Vector(),
+                )
+            cipher.setAutoPadding(spec.autoPadding)
+            if (spec is AesGcmDecipherSpec) {
+                if (spec.authTag.isNotEmpty()) cipher.setAuthTag(spec.authTag.toUint8Vector())
+                if (spec.aad.isNotEmpty()) cipher.setAAD(spec.aad.toUint8Vector())
+            }
+            cipher
         }
-        cipher
-    }
 
     override fun update(data: ByteArray): ByteArray =
         runWithProvider {
@@ -127,10 +130,10 @@ private class JsAesDecipher(
 
 internal actual fun AesCipherSpec.nativeCreateCipher(
     scope: CryptoScope,
-    key: SecretKey
+    key: SecretKey,
 ): AesCipher = JsAesCipher(this, scope, key)
 
 internal actual fun AesDecipherSpec.nativeCreateDecipher(
     scope: CryptoScope,
-    key: SecretKey
+    key: SecretKey,
 ): AesDecipher = JsAesDecipher(this, scope, key)

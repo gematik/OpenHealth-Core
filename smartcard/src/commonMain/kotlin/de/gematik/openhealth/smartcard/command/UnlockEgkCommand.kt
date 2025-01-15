@@ -32,7 +32,14 @@ enum class UnlockMethod {
 }
 
 /**
- * Use case unlock eGK with/without Secret (Pin) gemSpec_COS#14.6.5.1 und gemSpec_COS#14.6.5.2
+ * Creates a [HealthCardCommand] for the UNLOCK eGK command.
+ * (gemSpec_COS#14.6.5.1, gemSpec_COS#14.6.5.2)
+ *
+ * @param unlockMethod The method used to unlock the eGK.
+ * @param passwordReference The password reference for the unlock operation.
+ * @param dfSpecific Indicates if the operation is DF-specific.
+ * @param puk The PUK (Personal Unblocking Key) in encrypted format.
+ * @param newSecret The new secret (PIN) in encrypted format, if applicable.
  */
 fun HealthCardCommand.Companion.unlockEgk(
     unlockMethod: String,

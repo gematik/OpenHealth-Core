@@ -26,11 +26,10 @@ internal fun EcCurve.curveName() =
         EcCurve.BrainpoolP512r1 -> "brainpoolP512r1"
     }
 
-actual  fun EcKeyPairSpec.generateKeyPair(): Pair<EcPublicKey, EcPrivateKey> {
-    return runWithProvider {
+actual fun EcKeyPairSpec.generateKeyPair(): Pair<EcPublicKey, EcPrivateKey> =
+    runWithProvider {
         val keyPair = ECKeyPairGenerator.generateKeyPair(this@generateKeyPair.curve.curveName())
 
         EcPublicKey.decodeFromAsn1(keyPair.getPublicKeyDER().toByteArray()) to
             EcPrivateKey.decodeFromAsn1(keyPair.getPrivateKeyDER().toByteArray())
     }
-}

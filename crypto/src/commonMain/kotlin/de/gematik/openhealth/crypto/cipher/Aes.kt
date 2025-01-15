@@ -79,5 +79,12 @@ class AesGcmDecipherSpec(
     }
 }
 
-internal expect fun AesCipherSpec.nativeCreateCipher(scope: CryptoScope, key: SecretKey): AesCipher
-internal expect fun AesDecipherSpec.nativeCreateDecipher(scope: CryptoScope, key: SecretKey): AesDecipher
+internal expect fun AesCipherSpec.nativeCreateCipher(
+    scope: CryptoScope,
+    key: SecretKey,
+): AesCipher
+
+internal expect fun AesDecipherSpec.nativeCreateDecipher(
+    scope: CryptoScope,
+    key: SecretKey,
+): AesDecipher

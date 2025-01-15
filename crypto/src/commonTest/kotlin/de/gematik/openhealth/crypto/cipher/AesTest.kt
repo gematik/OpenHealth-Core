@@ -21,7 +21,6 @@ import de.gematik.openhealth.crypto.bytes
 import de.gematik.openhealth.crypto.hexSpaceFormat
 import de.gematik.openhealth.crypto.key.SecretKey
 import de.gematik.openhealth.crypto.runTestWithProvider
-import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -88,7 +87,9 @@ class AesTest {
                     16.bytes,
                     "1234567890123456".encodeToByteArray(),
                     byteArrayOf(),
-                    "0F 98 50 42 1A DA DC FF 64 5F 7E 79 79 E2 E6 8A".hexToByteArray(hexSpaceFormat),
+                    "0F 98 50 42 1A DA DC FF 64 5F 7E 79 79 E2 E6 8A".hexToByteArray(
+                        hexSpaceFormat,
+                    ),
                 ).createDecipher(
                     SecretKey("1234567890123456".encodeToByteArray()),
                 )

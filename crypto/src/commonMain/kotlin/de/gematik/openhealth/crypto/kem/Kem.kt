@@ -19,13 +19,10 @@ package de.gematik.openhealth.crypto.kem
 import de.gematik.openhealth.crypto.CryptoScope
 import de.gematik.openhealth.crypto.ExperimentalCryptoApi
 import de.gematik.openhealth.crypto.contentConstantTimeEquals
-import de.gematik.openhealth.crypto.key.EcPrivateKey
-import de.gematik.openhealth.crypto.key.EcPublicKey
-import de.gematik.openhealth.crypto.key.SecretKey
 
 enum class KemAlgorithm {
     MlKem768,
-    Kyber768
+    Kyber768,
 }
 
 @ExperimentalCryptoApi
@@ -50,7 +47,6 @@ data class KemEncapsulationResult(
         result = 31 * result + wrappedKey.contentHashCode()
         return result
     }
-
 }
 
 @ExperimentalCryptoApi
@@ -61,7 +57,8 @@ data class KemDecapsulationResult(
      * Returns `true` if both secrets are equal.
      */
     fun isValid(encapsulation: KemEncapsulationResult): Boolean =
-        sharedSecret.isNotEmpty() && encapsulation.sharedSecret.isNotEmpty() &&
+        sharedSecret.isNotEmpty() &&
+            encapsulation.sharedSecret.isNotEmpty() &&
             sharedSecret.contentConstantTimeEquals(encapsulation.sharedSecret)
 
     override fun equals(other: Any?): Boolean {
@@ -73,9 +70,7 @@ data class KemDecapsulationResult(
         return sharedSecret.contentConstantTimeEquals(other.sharedSecret)
     }
 
-    override fun hashCode(): Int {
-        return sharedSecret.contentHashCode()
-    }
+    override fun hashCode(): Int = sharedSecret.contentHashCode()
 }
 
 @ExperimentalCryptoApi
@@ -101,7 +96,7 @@ class KemSpec(
 
 internal expect fun KemSpec.nativeCreateEncapsulation(
     scope: CryptoScope,
-    encapsulationKey: ByteArray
+    encapsulationKey: ByteArray,
 ): KemEncapsulation
 
 internal expect fun KemSpec.nativeCreateDecapsulation(scope: CryptoScope): KemDecapsulation

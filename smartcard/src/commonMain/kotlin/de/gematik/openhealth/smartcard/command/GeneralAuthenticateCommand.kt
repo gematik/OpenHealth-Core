@@ -28,10 +28,7 @@ private const val INS = 0x86
 private const val NO_MEANING = 0x00
 
 /**
- * Commands representing the General Authenticate commands in gemSpec_COS#14.7.2
- */
-
-/**
+ * Creates a [HealthCardCommand] for the GENERAL AUTHENTICATE command
  * UseCase: gemSpec_COS#14.7.2.1.1 PACE for end-user cards, Step 1 a
  *
  * @param commandChaining true for command chaining false if not
@@ -53,6 +50,7 @@ fun HealthCardCommand.Companion.generalAuthenticate(commandChaining: Boolean) =
     )
 
 /**
+ * Creates a [HealthCardCommand] for the GENERAL AUTHENTICATE command
  * UseCase: gemSpec_COS#14.7.2.1.1 PACE for end-user cards, Step 2a (tagNo 1), 3a (3) , 5a (5)
  *
  * @param commandChaining true for command chaining false if not

@@ -18,36 +18,35 @@ package de.gematik.openhealth.crypto.kem
 
 import de.gematik.openhealth.crypto.runTestWithProvider
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-
 class KemTest {
+    @Test
+    fun `ml-kem-768 round trip`() =
+        runTestWithProvider {
+            val alice = KemSpec(KemAlgorithm.MlKem768).createDecapsulation()
+
+            val bob = KemSpec(KemAlgorithm.MlKem768).createEncapsulation(alice.encapsulationKey())
+            val bobEncapsulationResult = bob.encapsulate()
+
+            val aliceDecapsulationResult = alice.decapsulate(bobEncapsulationResult.wrappedKey)
+
+            assertTrue(aliceDecapsulationResult.isValid(bobEncapsulationResult))
+        }
 
     @Test
-    fun `ml-kem-768 round trip`() = runTestWithProvider {
-        val alice = KemSpec(KemAlgorithm.MlKem768).createDecapsulation()
+    fun `kyber-768 round trip`() =
+        runTestWithProvider {
+            val alice = KemSpec(KemAlgorithm.Kyber768).createDecapsulation()
 
-        val bob = KemSpec(KemAlgorithm.MlKem768).createEncapsulation(alice.encapsulationKey())
-        val bobEncapsulationResult = bob.encapsulate()
+            val bob = KemSpec(KemAlgorithm.Kyber768).createEncapsulation(alice.encapsulationKey())
+            val bobEncapsulationResult = bob.encapsulate()
 
-        val aliceDecapsulationResult = alice.decapsulate(bobEncapsulationResult.wrappedKey)
+            val aliceDecapsulationResult = alice.decapsulate(bobEncapsulationResult.wrappedKey)
 
-        assertTrue(aliceDecapsulationResult.isValid(bobEncapsulationResult))
-    }
+            println(aliceDecapsulationResult.sharedSecret.toHexString())
+            println(bobEncapsulationResult.sharedSecret.toHexString())
 
-    @Test
-    fun `kyber-768 round trip`() = runTestWithProvider {
-        val alice = KemSpec(KemAlgorithm.Kyber768).createDecapsulation()
-
-        val bob = KemSpec(KemAlgorithm.Kyber768).createEncapsulation(alice.encapsulationKey())
-        val bobEncapsulationResult = bob.encapsulate()
-
-        val aliceDecapsulationResult = alice.decapsulate(bobEncapsulationResult.wrappedKey)
-
-        println(aliceDecapsulationResult.sharedSecret.toHexString())
-        println(bobEncapsulationResult.sharedSecret.toHexString())
-
-        assertTrue(aliceDecapsulationResult.isValid(bobEncapsulationResult))
-    }
+            assertTrue(aliceDecapsulationResult.isValid(bobEncapsulationResult))
+        }
 }

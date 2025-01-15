@@ -34,4 +34,7 @@ class EcdhSpec(
     val curve: EcCurve,
 )
 
-internal expect fun EcdhSpec.nativeCreateKeyExchange(scope: CryptoScope, privateKey: EcPrivateKey): Ecdh
+internal expect fun EcdhSpec.nativeCreateKeyExchange(
+    scope: CryptoScope,
+    privateKey: EcPrivateKey,
+): Ecdh

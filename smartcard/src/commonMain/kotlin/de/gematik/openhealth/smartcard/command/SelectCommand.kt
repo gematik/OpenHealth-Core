@@ -32,8 +32,6 @@ private const val FILE_OCCURRENCE_NEXT = 0x02
 private const val P2_FCP = 0x04
 private const val P2 = 0x0C
 
-// Note: Left out use case Select parent folder requesting File Control Parameter gemSpec_Cos#14.2.6.12
-// Note: Left out use case Select parent folder requesting File Control Parameter gemSpec_Cos#14.2.6.14
 private fun calculateP2(
     requestFCP: Boolean,
     nextOccurrence: Boolean,
@@ -54,11 +52,12 @@ private fun calculateP2(
  */
 
 /**
- * Use case Select root of object system gemSpec_Cos#14.2.6.1 + use case Select parent folder gemSpec_Cos#14.2.6.11
- * Use case Select root of object system requesting File Control Parameter gemSpec_Cos#14.2.6.2 with Parameter readFirst true
+ * Creates a [HealthCardCommand] for the SELECT command to select the root
+ * of the object system or the parent folder.
+ * (gemSpec_COS#14.2.6.1, gemSpec_COS#14.2.6.11, gemSpec_COS#14.2.6.2)
  *
- * @param selectParentElseRoot if true SELECTION_MODE_PARENT else SELECTION_MODE_AID
- * @param readFirst if true read FCP else only select
+ * @param selectParentElseRoot If true, selects the parent folder; otherwise, selects the root of the object system.
+ * @param readFirst If true, requests the File Control Parameter (FCP); otherwise, only selects.
  */
 fun HealthCardCommand.Companion.select(
     selectParentElseRoot: Boolean,
@@ -72,12 +71,12 @@ fun HealthCardCommand.Companion.select(
     ne = if (readFirst) EXPECT_ALL_WILDCARD else null,
 )
 
-// Note: Left out use cases Select without Application Identifier, next gemSpec_Cos#14.2.6.3 - 14.2.6.4
-
 /**
- * Use case Select file with Application Identifier, first occurrence, no File Control Parameter gemSpec_Cos#14.2.6.5
+ * Creates a [HealthCardCommand] for the SELECT command to select a file with an
+ * Application Identifier (AID), first occurrence, without File Control Parameter.
+ * (gemSpec_COS#14.2.6.5)
  *
- * @param aid
+ * @param aid The Application Identifier.
  */
 fun HealthCardCommand.Companion.select(aid: ApplicationIdentifier) =
     HealthCardCommand.select(
@@ -88,9 +87,16 @@ fun HealthCardCommand.Companion.select(aid: ApplicationIdentifier) =
     )
 
 /**
- * Use cases Select file with Application Identifier gemSpec_Cos#14.2.6.5 - 14.2.6.8
+ * Creates a [HealthCardCommand] for the SELECT command to select a file with an
+ * Application Identifier (AID).
+ * (gemSpec_COS#14.2.6.5 - 14.2.6.8)
  *
- * @param fcpLength determine expected size of response if File Control Parameter requested
+ * @param aid The Application Identifier.
+ * @param selectNextElseFirstOccurrence If true, selects the next occurrence;
+ * otherwise, selects the first occurrence.
+ * @param requestFcp If true, requests the File Control Parameter (FCP).
+ * @param fcpLength Determines the expected size of the response if
+ * the File Control Parameter is requested.
  */
 fun HealthCardCommand.Companion.select(
     aid: ApplicationIdentifier,
@@ -108,8 +114,13 @@ fun HealthCardCommand.Companion.select(
 )
 
 /**
- * Use case Select DF with File Identifier gemSpec_Cos#14.2.6.9 and
- * use case Select EF with File Identifier gemSpec_Cos#14.2.6.13
+ * Creates a [HealthCardCommand] for the SELECT command to select a DF or EF with a
+ * File Identifier (FID).
+ * (gemSpec_COS#14.2.6.9, gemSpec_COS#14.2.6.13)
+ *
+ * @param fid The File Identifier.
+ * @param selectDfElseEf If true, selects a Dedicated File (DF);
+ * otherwise, selects an Elementary File (EF).
  */
 fun HealthCardCommand.Companion.select(
     fid: FileIdentifier,
@@ -117,11 +128,16 @@ fun HealthCardCommand.Companion.select(
 ) = HealthCardCommand.select(fid, selectDfElseEf, false, 0)
 
 /**
- * Use cases Select DF with File Identifier gemSpec_Cos#14.2.6.9 - 14.2.6.10 and
- * use cases Select EF with File Identifier gemSpec_Cos#14.2.6.13 - 14.2.6.14
+ * Creates a [HealthCardCommand] for the SELECT command to select a DF or EF with a
+ * File Identifier (FID).
+ * (gemSpec_COS#14.2.6.9 - 14.2.6.10, gemSpec_COS#14.2.6.13 - 14.2.6.14)
  *
- * @param selectDfElseEf true if Dedicated File shall be selected, false if Elementary File shall be selected
- * @param fcpLength determine expected size of response if File Control Parameter requested
+ * @param fid The File Identifier.
+ * @param selectDfElseEf If true, selects a Dedicated File (DF);
+ * otherwise, selects an Elementary File (EF).
+ * @param requestFcp If true, requests the File Control Parameter (FCP).
+ * @param fcpLength Determines the expected size of the response if
+ * the File Control Parameter is requested.
  */
 fun HealthCardCommand.Companion.select(
     fid: FileIdentifier,

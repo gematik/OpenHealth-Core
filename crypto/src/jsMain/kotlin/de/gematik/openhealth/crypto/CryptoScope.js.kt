@@ -19,11 +19,16 @@ package de.gematik.openhealth.crypto
 import de.gematik.openhealth.crypto.wrapper.DeferScope
 import de.gematik.openhealth.crypto.wrapper.deferred
 
-internal class JsCryptoScope : CryptoScope(), DeferScope by deferred() {
+internal class JsCryptoScope :
+    CryptoScope(),
+    DeferScope by deferred() {
     override fun release() {
         executeAllDeferred()
     }
 }
 
-internal actual fun <R : Any?> nativeUseCrypto(block: CryptoScope.() -> R): R = block(JsCryptoScope())
-internal actual suspend fun <R : Any?> nativeUseCrypto(block: suspend CryptoScope.() -> R): R = block(JsCryptoScope())
+internal actual fun <R : Any?> nativeUseCrypto(block: CryptoScope.() -> R): R =
+    block(JsCryptoScope())
+
+internal actual suspend fun <R : Any?> nativeUseCrypto(block: suspend CryptoScope.() -> R): R =
+    block(JsCryptoScope())

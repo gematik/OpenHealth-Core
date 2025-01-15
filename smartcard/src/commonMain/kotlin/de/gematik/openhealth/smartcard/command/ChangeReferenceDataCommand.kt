@@ -24,7 +24,17 @@ private const val INS = 0x24
 private const val MODE_VERIFICATION_DATA = 0x00
 
 /**
+ * Creates a [HealthCardCommand] to change a secret.
+ *
  * Use case change reference data  gemSpec_COS#14.6.1.1
+ * @param passwordReference The [PasswordReference] to change.
+ * @param dfSpecific `true` if the reference is DF-specific, `false` otherwise.
+ * @param oldSecret The current secret.
+ * @param newSecret The new secret.
+ * @return A [HealthCardCommand] for changing the reference data.
+ * @see PasswordReference
+ * @see EncryptedPinFormat2
+ *
  */
 fun HealthCardCommand.Companion.changeReferenceData(
     passwordReference: PasswordReference,

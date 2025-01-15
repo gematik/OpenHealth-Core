@@ -17,8 +17,8 @@
 package de.gematik.openhealth.smartcard.exchange
 
 import de.gematik.openhealth.smartcard.card.EncryptedPinFormat2
-import de.gematik.openhealth.smartcard.card.ICardChannel
 import de.gematik.openhealth.smartcard.card.PasswordReference
+import de.gematik.openhealth.smartcard.card.SmartCard
 import de.gematik.openhealth.smartcard.cardobjects.Mf
 import de.gematik.openhealth.smartcard.command.HealthCardCommand
 import de.gematik.openhealth.smartcard.command.ResponseStatus
@@ -29,7 +29,7 @@ import de.gematik.openhealth.smartcard.command.select
 import de.gematik.openhealth.smartcard.command.unlockEgk
 import de.gematik.openhealth.smartcard.command.verifyPin
 
-suspend fun ICardChannel.verifyPin(pin: String): ResponseStatus {
+fun SmartCard.CommunicationScope.verifyPin(pin: String): ResponseStatus {
     HealthCardCommand
         .select(selectParentElseRoot = false, readFirst = false)
         .executeSuccessfulOn(this)
@@ -61,7 +61,7 @@ suspend fun ICardChannel.verifyPin(pin: String): ResponseStatus {
     return response.status
 }
 
-suspend fun ICardChannel.unlockEgk(
+suspend fun SmartCard.CommunicationScope.unlockEgk(
     unlockMethod: String,
     puk: String,
     oldSecret: String,
