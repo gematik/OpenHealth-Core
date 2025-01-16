@@ -21,12 +21,36 @@ import de.gematik.openhealth.smartcard.hexUppercaseFormat
 
 fun getExpectedApdu(
     command: String,
-    value: Boolean?,
+    vararg values: Boolean?,
+): String = getExpectedApdu(command, values.toList())
+
+fun getExpectedApdu(
+    command: String,
+    values: List<Boolean?>,
+): String {
+    val keySuffix = values.joinToString(separator = "-")
+    return getExpectedApduInternal(command, keySuffix)
+}
+
+fun getExpectedApdu(
+    command: String,
+    values: Map<String, Boolean?>,
+): String {
+    val keySuffix =
+        values.entries
+            .sortedBy { it.key }
+            .joinToString(separator = "-") { "${it.value?.toString()}" }
+    return getExpectedApduInternal(command, keySuffix)
+}
+
+private fun getExpectedApduInternal(
+    command: String,
+    keySuffix: String,
 ): String =
     EXPECTED_APDU
         .find { command in it }!!
         .getValue(command)
-        .getValue("apdu${if (value == null) "" else "-$value"}")
+        .getValue("apdu${if (keySuffix.isNotEmpty()) "-$keySuffix" else ""}")
         .hexToByteArray(hexUppercaseFormat)
         .toHexString(hexSpaceFormat)
 
@@ -237,7 +261,10 @@ private val EXPECTED_APDU =
         ),
         // ------------------------------------------------------------------------------------------------------------------------------------------
         // GetRandomCommand(int numberOfExpectedOctetsInResponse)
-        mapOf("GETRANDOMCOMMAND_APDU" to mapOf("apdu" to "8084000000")),
+        mapOf("GETRANDOMCOMMAND_APDU-1" to mapOf("apdu" to "8084000000")), // 0
+        mapOf("GETRANDOMCOMMAND_APDU-2" to mapOf("apdu" to "8084000008")), // 8
+        mapOf("GETRANDOMCOMMAND_APDU-3" to mapOf("apdu" to "8084000010")), // 16
+        mapOf("GETRANDOMCOMMAND_APDU-3" to mapOf("apdu" to "8084000020")), // 32
         // ------------------------------------------------------------------------------------------------------------------------------------------
         // InternalAuthenticateCommand(PsoAlgorithm psoAlgorithm, byte[] token)
         mapOf("INTERNALAUTHENTICATECOMMAND_APDU" to mapOf("apdu" to "00880000000001000000")),
