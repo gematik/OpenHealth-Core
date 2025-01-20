@@ -15,7 +15,6 @@
  */
 
 import com.vanniktech.maven.publish.SonatypeHost
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -25,11 +24,13 @@ plugins {
 group = "${project.findProperty("gematik.baseGroup") as String}.smartcard.reader.nodejs"
 version = project.findProperty("gematik.version") as String
 
-//val platformAttribute = Attribute.of("${project.findProperty("gematik.baseGroup") as String}.smartcard.platform", String::class.java)
+// val platformAttribute = Attribute.of("${project.findProperty("gematik.baseGroup") as String}.smartcard.platform", String::class.java)
 
 kotlin {
     js {
-        nodejs {}
+        nodejs {
+            useEsModules()
+        }
         generateTypeScriptDefinitions()
         binaries.library()
     }

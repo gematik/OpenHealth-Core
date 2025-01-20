@@ -33,9 +33,9 @@ enum class CmacAlgorithm {
 interface Cmac {
     val spec: CmacSpec
 
-     fun update(data: ByteArray)
+    fun update(data: ByteArray)
 
-     fun final(): ByteArray
+    fun final(): ByteArray
 }
 
 @ExperimentalCryptoApi
@@ -43,4 +43,7 @@ class CmacSpec(
     val algorithm: CmacAlgorithm,
 )
 
-internal expect fun CmacSpec.nativeCreateCmac(scope: CryptoScope, secret: SecretKey): Cmac
+internal expect fun CmacSpec.nativeCreateCmac(
+    scope: CryptoScope,
+    secret: SecretKey,
+): Cmac

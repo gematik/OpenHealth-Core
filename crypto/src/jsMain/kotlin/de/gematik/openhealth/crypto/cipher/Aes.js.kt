@@ -51,7 +51,8 @@ private class JsAesCipher(
     override val spec: AesCipherSpec,
     scope: CryptoScope,
     key: SecretKey,
-) : AesCipher, DeferScope by deferred(scope) {
+) : AesCipher,
+    DeferScope by deferred(scope) {
     init {
         require(spec.tagLength == key.length) { "Key must be ${spec.tagLength.bits} bits" }
     }
@@ -95,7 +96,8 @@ private class JsAesDecipher(
     override val spec: AesDecipherSpec,
     scope: CryptoScope,
     key: SecretKey,
-) : AesDecipher, DeferScope by deferred(scope) {
+) : AesDecipher,
+    DeferScope by deferred(scope) {
     init {
         require(spec.tagLength == key.length) { "Key must be ${spec.tagLength.bits} bits" }
     }
@@ -129,10 +131,10 @@ private class JsAesDecipher(
 
 internal actual fun AesCipherSpec.nativeCreateCipher(
     scope: CryptoScope,
-    key: SecretKey
+    key: SecretKey,
 ): AesCipher = JsAesCipher(this, scope, key)
 
 internal actual fun AesDecipherSpec.nativeCreateDecipher(
     scope: CryptoScope,
-    key: SecretKey
+    key: SecretKey,
 ): AesDecipher = JsAesDecipher(this, scope, key)

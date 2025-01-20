@@ -18,5 +18,12 @@ package de.gematik.openhealth.crypto.wrapper
 
 import js.typedarrays.toUint8Array
 
-fun Uint8Vector.toByteArray(): ByteArray = runWithProvider { toUint8Array(this@toByteArray).toByteArray() }
-fun ByteArray.toUint8Vector(): Uint8Vector = runWithProvider { fromUint8Array(this@toUint8Vector.toUint8Array()) }
+fun Uint8Vector.toByteArray(): ByteArray =
+    runWithProvider {
+        toUint8Array(this@toByteArray).toByteArray()
+    }
+
+fun ByteArray.toUint8Vector(): Uint8Vector =
+    runWithProvider {
+        fromUint8Array(this@toUint8Vector.toUint8Array())
+    }

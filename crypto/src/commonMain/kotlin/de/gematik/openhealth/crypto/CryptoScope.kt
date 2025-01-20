@@ -44,6 +44,7 @@ abstract class CryptoScope {
      * Releases any resources associated with this scope.
      */
     internal abstract fun release()
+
     internal abstract fun defer(block: () -> Unit)
 
     /**
@@ -57,15 +58,23 @@ abstract class CryptoScope {
      * Creates an Elliptic-curve Diffie–Hellman key agreement instance with the
      * specified [privateKey].
      */
-    fun EcdhSpec.createKeyExchange(privateKey: EcPrivateKey): Ecdh = nativeCreateKeyExchange(this@CryptoScope, privateKey)
+    fun EcdhSpec.createKeyExchange(privateKey: EcPrivateKey): Ecdh =
+        nativeCreateKeyExchange(this@CryptoScope, privateKey)
 
     /**
      * Creates a Key Encapsulation instance with the specified [privateKey].
      */
-    fun KemSpec.createEncapsulation(encapsulationKey: ByteArray): KemEncapsulation = nativeCreateEncapsulation(this@CryptoScope, encapsulationKey)
-    fun KemSpec.createDecapsulation(): KemDecapsulation = nativeCreateDecapsulation(this@CryptoScope)
-    fun AesCipherSpec.createCipher(key: SecretKey): AesCipher = nativeCreateCipher(this@CryptoScope, key)
-    fun AesDecipherSpec.createDecipher(key: SecretKey): AesDecipher= nativeCreateDecipher(this@CryptoScope, key)
+    fun KemSpec.createEncapsulation(encapsulationKey: ByteArray): KemEncapsulation =
+        nativeCreateEncapsulation(this@CryptoScope, encapsulationKey)
+
+    fun KemSpec.createDecapsulation(): KemDecapsulation =
+        nativeCreateDecapsulation(this@CryptoScope)
+
+    fun AesCipherSpec.createCipher(key: SecretKey): AesCipher =
+        nativeCreateCipher(this@CryptoScope, key)
+
+    fun AesDecipherSpec.createDecipher(key: SecretKey): AesDecipher =
+        nativeCreateDecipher(this@CryptoScope, key)
 }
 
 /**
@@ -77,7 +86,9 @@ abstract class CryptoScope {
 @ExperimentalCryptoApi
 fun <R : Any?> useCrypto(block: CryptoScope.() -> R): R = nativeUseCrypto(block)
 
-suspend fun <R : Any?> useCryptoAsync(block: suspend CryptoScope.() -> R): R = nativeUseCrypto(block)
+suspend fun <R : Any?> useCryptoAsync(block: suspend CryptoScope.() -> R): R =
+    nativeUseCrypto(block)
 
 internal expect fun <R : Any?> nativeUseCrypto(block: CryptoScope.() -> R): R
+
 internal expect suspend fun <R : Any?> nativeUseCrypto(block: suspend CryptoScope.() -> R): R

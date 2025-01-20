@@ -27,26 +27,29 @@ private class JsCmac(
     override val spec: CmacSpec,
     scope: CryptoScope,
     secret: SecretKey,
-) : Cmac, DeferScope by deferred(scope) {
+) : Cmac,
+    DeferScope by deferred(scope) {
     init {
         require(spec.algorithm == CmacAlgorithm.Aes) { "Only AES is supported" }
     }
 
     private val cmac by lazyDeferred {
-        CMAC.create(fromUint8Array(secret.data.toUint8Array()), "AES-${secret.length.bits}-CBC");
+        CMAC.create(fromUint8Array(secret.data.toUint8Array()), "AES-${secret.length.bits}-CBC")
     }
 
-    override  fun update(data: ByteArray) {
+    override fun update(data: ByteArray) {
         runWithProvider {
             cmac.update(fromUint8Array(data.toUint8Array()))
         }
     }
 
-    override  fun final(): ByteArray {
-        return runWithProvider {
+    override fun final(): ByteArray =
+        runWithProvider {
             toUint8Array(cmac.final()).toByteArray()
         }
-    }
 }
 
-actual fun CmacSpec.nativeCreateCmac(scope: CryptoScope, secret: SecretKey): Cmac = JsCmac(this, scope, secret)
+actual fun CmacSpec.nativeCreateCmac(
+    scope: CryptoScope,
+    secret: SecretKey,
+): Cmac = JsCmac(this, scope, secret)

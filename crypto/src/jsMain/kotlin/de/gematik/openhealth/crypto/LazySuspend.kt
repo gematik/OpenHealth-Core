@@ -16,13 +16,12 @@
 
 package de.gematik.openhealth.crypto
 
-import de.gematik.openhealth.crypto.wrapper.WebAssemblyException
-import de.gematik.openhealth.crypto.wrapper.OpenSslModule
-import de.gematik.openhealth.crypto.wrapper.Provider
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-class LazySuspend<T : Any>(private val initializer: suspend () -> T) {
+class LazySuspend<T : Any>(
+    private val initializer: suspend () -> T,
+) {
     private var value: T? = null
     private var mutex = Mutex()
 
@@ -33,7 +32,7 @@ class LazySuspend<T : Any>(private val initializer: suspend () -> T) {
         }
     }
 
-    fun tryGet(): T {
-        return value ?: throw IllegalStateException("Value must be initialized before calling tryGet()")
-    }
+    fun tryGet(): T =
+        value
+            ?: throw IllegalStateException("Value must be initialized before calling tryGet()")
 }

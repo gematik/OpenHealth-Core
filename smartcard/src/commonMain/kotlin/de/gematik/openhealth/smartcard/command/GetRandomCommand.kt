@@ -27,7 +27,10 @@ private const val INS = 0x84
 private const val NO_MEANING = 0x00
 
 /**
- * Use case Get Random gemSpec_COS#14.9.5.1
+ * Creates a [HealthCardCommand] to request random values from the card.
+ *
+ * @param length The number of random bytes to request.
+ * @return A [HealthCardCommand] for requesting random values.
  */
 @Requirement(
     "GS-A_4367#6",

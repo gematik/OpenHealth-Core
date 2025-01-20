@@ -22,10 +22,13 @@ import de.gematik.openhealth.crypto.wrapper.toUint8Vector
 
 actual fun nativeConstantTimeEquals(
     arrayA: ByteArray,
-    arrayB: ByteArray
+    arrayB: ByteArray,
 ): Boolean =
     runWithProvider {
         deferScoped {
-            cryptoConstantTimeEquals(arrayA.toUint8Vector().alsoDefer(), arrayB.toUint8Vector().alsoDefer())
+            cryptoConstantTimeEquals(
+                arrayA.toUint8Vector().alsoDefer(),
+                arrayB.toUint8Vector().alsoDefer(),
+            )
         }
     }

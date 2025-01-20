@@ -15,7 +15,6 @@
  */
 
 import com.vanniktech.maven.publish.SonatypeHost
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -25,19 +24,20 @@ plugins {
 group = "${project.findProperty("gematik.baseGroup") as String}.smartcard"
 version = project.findProperty("gematik.version") as String
 
-//val platformAttribute = Attribute.of("$group.platform", String::class.java)
+// val platformAttribute = Attribute.of("$group.platform", String::class.java)
 
 kotlin {
     js("jsNode") {
 //        attributes.attribute(platformAttribute, "jsnode")
         nodejs {
+            useEsModules()
 //            testTask {
 //                useMocha {
 //                    timeout = "10s"
 //                }
 //            }
         }
-        browser {  }
+        browser { }
         generateTypeScriptDefinitions()
         binaries.library()
     }
@@ -45,7 +45,7 @@ kotlin {
 //        attributes.attribute(platformAttribute, "jsbrowser")
 //        browser()
 //        generateTypeScriptDefinitions()
-////        binaries.executable()
+// //        binaries.executable()
 //    }
 //    iosX64()
 //    iosArm64()
@@ -70,7 +70,6 @@ kotlin {
             }
         }
         val jsCommonMain by creating {
-
         }
         val jsNodeMain by getting {
             dependencies {

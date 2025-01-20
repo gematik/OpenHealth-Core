@@ -14,23 +14,13 @@
  * limitations under the License.
  */
 
-import com.ionspin.kotlin.bignum.integer.BigInteger
-import de.gematik.openhealth.crypto.key.EcCurve
-import de.gematik.openhealth.crypto.key.EcPrivateKey
-import de.gematik.openhealth.crypto.key.decodeFromPem
-import de.gematik.openhealth.crypto.key.encodeToAsn1
-import de.gematik.openhealth.crypto.wrapper.OpenSslModuleFactory
 import de.gematik.openhealth.crypto.wrapper.Provider
-import de.gematik.openhealth.crypto.wrapper.Uint8Vector
 import de.gematik.openhealth.crypto.wrapper.toByteArray
-import de.gematik.openhealth.crypto.wrapper.toUint8Vector
-import js.typedarrays.toUint8Array
-import kotlinx.coroutines.await
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 
 //
-//fun calculateCmac(module: EmbindModule, key: Uint8Array<ArrayBuffer>, data: Uint8Array<ArrayBuffer>): Uint8Array<ArrayBuffer> {
+// fun calculateCmac(module: EmbindModule, key: Uint8Array<ArrayBuffer>, data: Uint8Array<ArrayBuffer>): Uint8Array<ArrayBuffer> {
 //    val mac = module.EVP_MAC_fetch(null, "CMAC", "")
 //    val macCtx = module.EVP_MAC_CTX_new(mac)
 //
@@ -63,8 +53,7 @@ import kotlin.test.Test
 //
 //    // Return the computed CMAC value
 //    return macResult!!
-//}
-
+// }
 
 private const val ecPrivateKey = """
 -----BEGIN EC PRIVATE KEY-----
@@ -98,7 +87,7 @@ class Tessssst {
 //            val kp = module.ECKeyPairGenerator.generateKeyPair("brainpoolP256r1")
 
 //            kp.getPrivateKeyDER()
-            //module.ECDH.create(kp.getPrivateKeyDER())
+            // module.ECDH.create(kp.getPrivateKeyDER())
 
 //
 //

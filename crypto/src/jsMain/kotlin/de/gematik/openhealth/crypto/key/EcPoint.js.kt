@@ -17,22 +17,26 @@
 package de.gematik.openhealth.crypto.key
 
 import com.ionspin.kotlin.bignum.integer.BigInteger
-import de.gematik.openhealth.crypto.wrapper.Provider
 import de.gematik.openhealth.crypto.wrapper.runWithProvider
 import de.gematik.openhealth.crypto.wrapper.toByteArray
 import de.gematik.openhealth.crypto.wrapper.toUint8Vector
 
 internal actual fun EcPoint.nativeTimes(k: BigInteger): EcPoint =
     runWithProvider {
-        val uncompressedEcPoint = ECPoint.create(curve.curveName(), uncompressed.toUint8Vector())
-            .times(k.toByteArray().toUint8Vector()).uncompressed()
+        val uncompressedEcPoint =
+            ECPoint
+                .create(curve.curveName(), uncompressed.toUint8Vector())
+                .times(k.toByteArray().toUint8Vector())
+                .uncompressed()
         EcPublicKey(curve, uncompressedEcPoint.toByteArray()).toEcPoint()
     }
 
 internal actual fun EcPoint.nativePlus(other: EcPoint): EcPoint =
     runWithProvider {
-        val uncompressedEcPoint = ECPoint.create(curve.curveName(), uncompressed.toUint8Vector())
-            .plus(ECPoint.create(curve.curveName(), other.uncompressed.toUint8Vector()))
-            .uncompressed()
+        val uncompressedEcPoint =
+            ECPoint
+                .create(curve.curveName(), uncompressed.toUint8Vector())
+                .plus(ECPoint.create(curve.curveName(), other.uncompressed.toUint8Vector()))
+                .uncompressed()
         EcPublicKey(curve, uncompressedEcPoint.toByteArray()).toEcPoint()
     }

@@ -24,7 +24,12 @@ private const val VERIFY_SECRET_INS = 0x20
 private const val MODE_VERIFICATION_DATA = 0x00
 
 /**
- * Command representing Verify Secret Command gemSpec_COS#14.6.6
+ * Creates a [HealthCardCommand] for the VERIFY SECRET command.
+ * (gemSpec_COS#14.6.6)
+ *
+ * @param passwordReference The password reference for the verification.
+ * @param dfSpecific Indicates if the verification is DF-specific.
+ * @param pin The PIN (Personal Identification Number) in encrypted format.
  */
 fun HealthCardCommand.Companion.verifyPin(
     passwordReference: PasswordReference,

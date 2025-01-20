@@ -21,9 +21,7 @@ import de.gematik.openhealth.crypto.key.EcCurve
 import de.gematik.openhealth.crypto.key.EcPrivateKey
 import de.gematik.openhealth.crypto.key.EcPublicKey
 import de.gematik.openhealth.crypto.key.decodeFromPem
-import de.gematik.openhealth.crypto.key.encodeToAsn1
 import de.gematik.openhealth.crypto.runTestWithProvider
-import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

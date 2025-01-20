@@ -16,7 +16,7 @@
 
 package de.gematik.openhealth.smartcard.exchange
 
-import de.gematik.openhealth.smartcard.card.ICardChannel
+import de.gematik.openhealth.smartcard.card.SmartCard
 import de.gematik.openhealth.smartcard.cardobjects.Df
 import de.gematik.openhealth.smartcard.cardobjects.Mf
 import de.gematik.openhealth.smartcard.command.EXPECTED_LENGTH_WILDCARD_EXTENDED
@@ -28,7 +28,7 @@ import de.gematik.openhealth.smartcard.command.select
 import de.gematik.openhealth.smartcard.identifier.ApplicationIdentifier
 import de.gematik.openhealth.smartcard.identifier.FileIdentifier
 
-suspend fun ICardChannel.retrieveCertificate(): ByteArray {
+fun SmartCard.CommunicationScope.retrieveCertificate(): ByteArray {
     HealthCardCommand
         .select(
             ApplicationIdentifier(Df.Esign.AID),

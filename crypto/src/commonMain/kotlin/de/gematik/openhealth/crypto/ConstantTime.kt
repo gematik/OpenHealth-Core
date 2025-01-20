@@ -19,8 +19,10 @@ package de.gematik.openhealth.crypto
 /**
  * Constant time equals for byte arrays.
  */
-fun ByteArray.contentConstantTimeEquals(other: ByteArray): Boolean {
-    return nativeConstantTimeEquals(this, other)
-}
+fun ByteArray.contentConstantTimeEquals(other: ByteArray): Boolean =
+    nativeConstantTimeEquals(this, other)
 
-internal expect fun nativeConstantTimeEquals(arrayA: ByteArray, arrayB: ByteArray): Boolean
+internal expect fun nativeConstantTimeEquals(
+    arrayA: ByteArray,
+    arrayB: ByteArray,
+): Boolean

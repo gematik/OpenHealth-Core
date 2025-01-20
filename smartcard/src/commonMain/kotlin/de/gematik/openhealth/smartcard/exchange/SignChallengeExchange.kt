@@ -18,7 +18,8 @@ package de.gematik.openhealth.smartcard.exchange
 
 import de.gematik.openhealth.smartcard.Requirement
 import de.gematik.openhealth.smartcard.card.CardKey
-import de.gematik.openhealth.smartcard.card.ICardChannel
+import de.gematik.openhealth.smartcard.card.PsoAlgorithm
+import de.gematik.openhealth.smartcard.card.SmartCard
 import de.gematik.openhealth.smartcard.cardobjects.Df
 import de.gematik.openhealth.smartcard.cardobjects.Mf
 import de.gematik.openhealth.smartcard.command.HealthCardCommand
@@ -44,7 +45,7 @@ import de.gematik.openhealth.smartcard.identifier.ApplicationIdentifier
     sourceSpecification = "BSI-eRp-ePA",
     rationale = "Signature via ecdh ephemeral-static (one time usage)",
 )
-suspend fun ICardChannel.signChallenge(challenge: ByteArray): ByteArray {
+fun SmartCard.CommunicationScope.signChallenge(challenge: ByteArray): ByteArray {
     HealthCardCommand
         .select(
             ApplicationIdentifier(Df.Esign.AID),
@@ -52,7 +53,7 @@ suspend fun ICardChannel.signChallenge(challenge: ByteArray): ByteArray {
 
     HealthCardCommand
         .manageSecEnvForSigning(
-            de.gematik.kmp.smartcard.card.PsoAlgorithm.SIGN_VERIFY_ECDSA,
+            PsoAlgorithm.SIGN_VERIFY_ECDSA,
             CardKey(Mf.Df.Esign.PrK.ChAutE256.KID),
             true,
         ).executeSuccessfulOn(this)

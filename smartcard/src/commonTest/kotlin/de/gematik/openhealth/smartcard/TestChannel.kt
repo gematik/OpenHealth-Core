@@ -16,35 +16,26 @@
 
 package de.gematik.openhealth.smartcard
 
-import de.gematik.openhealth.smartcard.card.ICardChannel
-import de.gematik.openhealth.smartcard.card.IHealthCard
+import de.gematik.openhealth.smartcard.card.SmartCard
 import de.gematik.openhealth.smartcard.command.CardCommandApdu
 import de.gematik.openhealth.smartcard.command.CardResponseApdu
 import de.gematik.openhealth.smartcard.command.HealthCardCommand
 
-class TestChannel : ICardChannel {
+class TestChannel(
+    override val cardIdentifier: String = "",
+    override val supportsExtendedLength: Boolean = true,
+) : SmartCard.CommunicationScope {
     private var lastCardCommandAPDU: CardCommandApdu? = null
 
     val lastCommandAPDUBytes: ByteArray
         get() = lastCardCommandAPDU?.bytes ?: ByteArray(0)
 
-    override val card: IHealthCard =
-        object : IHealthCard {
-            override fun transmit(apduCommand: CardCommandApdu): CardResponseApdu {
-                TODO("Not yet implemented")
-            }
-        }
-
-    override val maxTransceiveLength: Int = 261
-
-    override suspend fun transmit(command: CardCommandApdu): CardResponseApdu {
+    override fun transmit(command: CardCommandApdu): CardResponseApdu {
         lastCardCommandAPDU = command
         return CardResponseApdu(byteArrayOf(0x90.toByte(), 0x00))
     }
 
-    override val isExtendedLengthSupported: Boolean = true
-
-    suspend fun test(cmd: HealthCardCommand): ByteArray {
+    fun test(cmd: HealthCardCommand): ByteArray {
         cmd.executeOn(this@TestChannel)
         return lastCommandAPDUBytes
     }

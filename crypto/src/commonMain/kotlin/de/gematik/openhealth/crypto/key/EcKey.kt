@@ -177,7 +177,7 @@ class EcKeyPairSpec(
     val curve: EcCurve,
 )
 
-expect  fun EcKeyPairSpec.generateKeyPair(): Pair<EcPublicKey, EcPrivateKey>
+expect fun EcKeyPairSpec.generateKeyPair(): Pair<EcPublicKey, EcPrivateKey>
 
 // @ExperimentalCryptoApi
 // expect  fun EcCurve.generateKeyPair(): EcPublicKey

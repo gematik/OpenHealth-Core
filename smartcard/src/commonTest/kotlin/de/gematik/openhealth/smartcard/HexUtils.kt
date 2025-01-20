@@ -26,3 +26,13 @@ val hexUppercaseFormat =
     HexFormat {
         upperCase = true
     }
+
+fun hexStringToByteArray(hex: String): ByteArray {
+    val cleanedHex = hex.replace(" ", "").replace("\n", "")
+    val byteArray = ByteArray(cleanedHex.length / 2)
+    for (i in cleanedHex.indices step 2) {
+        val hexPair = cleanedHex.substring(i, i + 2)
+        byteArray[i / 2] = hexPair.toInt(16).toByte()
+    }
+    return byteArray
+}

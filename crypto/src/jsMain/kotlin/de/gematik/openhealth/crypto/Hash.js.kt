@@ -18,17 +18,17 @@ package de.gematik.openhealth.crypto
 
 import de.gematik.openhealth.crypto.wrapper.DeferScope
 import de.gematik.openhealth.crypto.wrapper.deferScoped
-import de.gematik.openhealth.crypto.wrapper.lazyDeferred
 import de.gematik.openhealth.crypto.wrapper.deferred
+import de.gematik.openhealth.crypto.wrapper.lazyDeferred
 import de.gematik.openhealth.crypto.wrapper.runWithProvider
 import de.gematik.openhealth.crypto.wrapper.toByteArray
 import de.gematik.openhealth.crypto.wrapper.toUint8Vector
-import js.typedarrays.toUint8Array
 
 private class JsHash(
     scope: CryptoScope,
     override val spec: HashSpec,
-) : Hash, DeferScope by deferred(scope) {
+) : Hash,
+    DeferScope by deferred(scope) {
     private val hash by lazyDeferred {
         HashGenerator.create(spec.algorithm.name.uppercase())
     }
@@ -39,7 +39,7 @@ private class JsHash(
         }
     }
 
-    override  fun digest(): ByteArray =
+    override fun digest(): ByteArray =
         runWithProvider {
             deferScoped { hash.final().alsoDefer().toByteArray() }
         }

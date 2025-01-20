@@ -16,4 +16,6 @@
 
 package de.gematik.openhealth.crypto.wrapper
 
-class WebAssemblyException(message: String?) : RuntimeException(message)
+class WebAssemblyException(
+    message: String?,
+) : RuntimeException(message)

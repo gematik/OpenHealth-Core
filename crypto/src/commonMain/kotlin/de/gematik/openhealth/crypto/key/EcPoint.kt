@@ -18,7 +18,6 @@ package de.gematik.openhealth.crypto.key
 
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import de.gematik.openhealth.crypto.ExperimentalCryptoApi
-import de.gematik.openhealth.crypto.UnoptimizedCryptoApi
 
 /**
  * Represents a point on an elliptic curve.
@@ -83,6 +82,7 @@ data class EcPoint(
 }
 
 internal expect fun EcPoint.nativeTimes(k: BigInteger): EcPoint
+
 internal expect fun EcPoint.nativePlus(other: EcPoint): EcPoint
 
 @ExperimentalCryptoApi

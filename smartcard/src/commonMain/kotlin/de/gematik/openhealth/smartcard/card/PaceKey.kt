@@ -19,8 +19,8 @@ package de.gematik.openhealth.smartcard.card
 import de.gematik.openhealth.crypto.ExperimentalCryptoApi
 import de.gematik.openhealth.crypto.HashAlgorithm
 import de.gematik.openhealth.crypto.HashSpec
-import de.gematik.openhealth.crypto.nativeCreateHash
 import de.gematik.openhealth.crypto.key.SecretKey
+import de.gematik.openhealth.crypto.useCrypto
 
 /**
  * Pace Key for TrustedChannel with Session key for encoding and Session key for message authentication
@@ -64,7 +64,7 @@ private const val PASSWORDLASTBYTE = 3
  * @return byte array with AES-128 key
  */
 @OptIn(ExperimentalCryptoApi::class)
-suspend fun getAES128Key(
+fun getAES128Key(
     sharedSecretK: ByteArray,
     mode: Mode,
 ): ByteArray {
@@ -72,11 +72,12 @@ suspend fun getAES128Key(
     val modifiedKey = appendModeByte(sharedSecretK, mode)
 
     val checksum =
-        HashSpec(HashAlgorithm.Sha1).nativeCreateHash().let {
-            it.update(modifiedKey)
-            it.digest()
+        useCrypto {
+            HashSpec(HashAlgorithm.Sha1).createHash().let {
+                it.update(modifiedKey)
+                it.digest()
+            }
         }
-
     return checksum.copyOf(AES128_LENGTH)
 }
 

@@ -21,12 +21,36 @@ import de.gematik.openhealth.smartcard.hexUppercaseFormat
 
 fun getExpectedApdu(
     command: String,
-    value: Boolean?,
+    vararg values: Boolean?,
+): String = getExpectedApdu(command, values.toList())
+
+fun getExpectedApdu(
+    command: String,
+    values: List<Boolean?>,
+): String {
+    val keySuffix = values.joinToString(separator = "-")
+    return getExpectedApduInternal(command, keySuffix)
+}
+
+fun getExpectedApdu(
+    command: String,
+    values: Map<String, Boolean?>,
+): String {
+    val keySuffix =
+        values.entries
+            .sortedBy { it.key }
+            .joinToString(separator = "-") { "${it.value?.toString()}" }
+    return getExpectedApduInternal(command, keySuffix)
+}
+
+private fun getExpectedApduInternal(
+    command: String,
+    keySuffix: String,
 ): String =
     EXPECTED_APDU
         .find { command in it }!!
         .getValue(command)
-        .getValue("apdu${if (value == null) "" else "-$value"}")
+        .getValue("apdu${if (keySuffix.isNotEmpty()) "-$keySuffix" else ""}")
         .hexToByteArray(hexUppercaseFormat)
         .toHexString(hexSpaceFormat)
 
@@ -39,17 +63,19 @@ private val EXPECTED_APDU =
         mapOf("ACTIVATECOMMAND_APDU-2" to mapOf("apdu" to "0044210003830100")),
         // ActivateCommand(Key key, boolean dfSpecific)
         mapOf(
-            "ACTIVATECOMMAND_APDU-3" to mapOf(
-                "apdu-true" to "00442089",
-                "apdu-false" to "00442009",
-            ),
+            "ACTIVATECOMMAND_APDU-3" to
+                mapOf(
+                    "apdu-true" to "00442089",
+                    "apdu-false" to "00442009",
+                ),
         ),
         // ActivateCommand(Password password, boolean dfSpecific)
         mapOf(
-            "ACTIVATECOMMAND_APDU-4" to mapOf(
-                "apdu-true" to "00441081",
-                "apdu-false" to "00441001",
-            ),
+            "ACTIVATECOMMAND_APDU-4" to
+                mapOf(
+                    "apdu-true" to "00441081",
+                    "apdu-false" to "00441001",
+                ),
         ),
         // ------------------------------------------------------------------------------------------------------------------------------------------
         // ActivateRecordCommand(int recordNumber, boolean activateAllRecordsStartingFromRecordNumber)
@@ -235,7 +261,10 @@ private val EXPECTED_APDU =
         ),
         // ------------------------------------------------------------------------------------------------------------------------------------------
         // GetRandomCommand(int numberOfExpectedOctetsInResponse)
-        mapOf("GETRANDOMCOMMAND_APDU" to mapOf("apdu" to "8084000000")),
+        mapOf("GETRANDOMCOMMAND_APDU-1" to mapOf("apdu" to "8084000000")), // 0
+        mapOf("GETRANDOMCOMMAND_APDU-2" to mapOf("apdu" to "8084000008")), // 8
+        mapOf("GETRANDOMCOMMAND_APDU-3" to mapOf("apdu" to "8084000010")), // 16
+        mapOf("GETRANDOMCOMMAND_APDU-3" to mapOf("apdu" to "8084000020")), // 32
         // ------------------------------------------------------------------------------------------------------------------------------------------
         // InternalAuthenticateCommand(PsoAlgorithm psoAlgorithm, byte[] token)
         mapOf("INTERNALAUTHENTICATECOMMAND_APDU" to mapOf("apdu" to "00880000000001000000")),
@@ -476,6 +505,21 @@ private val EXPECTED_APDU =
         // TerminateDfCommand
         mapOf("TERMINATEDFCOMMAND_APDU" to mapOf("apdu" to "00E60000")),
         // ------------------------------------------------------------------------------------------------------------------------------------------
+        // UnlockEgkCommand(String unlockMethod, Password password, boolean dfSpecific, EncryptedPinFormat2 puk, EncryptedPinFormat2 newSecret)
+        mapOf(
+            "UNLOCKEGKCOMMAND_APDU-1" to
+                mapOf(
+                    "apdu-true" to "002C01810812345678FFFFFFFF",
+                    "apdu-false" to "002C01010812345678FFFFFFFF",
+                ),
+        ),
+        mapOf(
+            "UNLOCKEGKCOMMAND_APDU-2" to
+                mapOf(
+                    "apdu-true" to "002C00811012345678FFFFFFFF87654321FFFFFFFF",
+                    "apdu-false" to "002C00011012345678FFFFFFFF87654321FFFFFFFF",
+                ),
+        ),
         // UpdateCommand(byte[])
         mapOf("UPDATECOMMAND_APDU-1" to mapOf("apdu" to "00D600000100")),
         // UpdateCommand(int,byte[])
@@ -492,7 +536,7 @@ private val EXPECTED_APDU =
         // ------------------------------------------------------------------------------------------------------------------------------------------
         // Password,boolean,Format2Pin
         mapOf(
-            "VERITYCOMMAND_APDU" to
+            "VERITYPINCOMMAND_APDU" to
                 mapOf(
                     "apdu-true" to "002000810826123456FFFFFFFF",
                     "apdu-false" to "002000010826123456FFFFFFFF",

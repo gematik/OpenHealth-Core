@@ -16,7 +16,6 @@
 
 package de.gematik.openhealth.crypto.wrapper
 
-import de.gematik.openhealth.crypto.key.EcPublicKey
 import js.buffer.ArrayBuffer
 import js.typedarrays.Int8Array
 import js.typedarrays.Uint8Array
@@ -38,61 +37,90 @@ external interface RuntimeExports {
 
 external interface WasmModule
 
-typealias EmbindString = Any /* ArrayBuffer | Uint8Array | Uint8ClampedArray | Int8Array | String */
+typealias EmbindString = Any // ArrayBuffer | Uint8Array | Uint8ClampedArray | Int8Array | String
 
 external interface ClassHandle {
     fun isAliasOf(other: ClassHandle): Boolean
+
     fun delete()
+
     fun deleteLater(): ClassHandle
+
     fun isDeleted(): Boolean
+
     fun clone(): ClassHandle
 }
 
 external interface Int8Vector : ClassHandle {
     fun push_back(value: Number)
-    fun resize(size: Number, value: Number)
+
+    fun resize(
+        size: Number,
+        value: Number,
+    )
+
     fun size(): Number
+
     fun get(index: Number): Number?
-    fun set(index: Number, value: Number): Boolean
+
+    fun set(
+        index: Number,
+        value: Number,
+    ): Boolean
 }
 
 external interface Uint8Vector : ClassHandle {
     fun push_back(value: Number)
-    fun resize(size: Number, value: Number)
+
+    fun resize(
+        size: Number,
+        value: Number,
+    )
+
     fun size(): Number
+
     fun get(index: Number): Number?
-    fun set(index: Number, value: Number): Boolean
+
+    fun set(
+        index: Number,
+        value: Number,
+    ): Boolean
+
     fun create(value: EmbindString): CMAC
 }
 
 external interface CMAC : ClassHandle {
     fun final(): Uint8Vector
+
     fun update(vector: Uint8Vector)
 }
 
 external interface ECPoint : ClassHandle {
     fun times(signedInteger: Uint8Vector): ECPoint
+
     fun plus(point: ECPoint): ECPoint
+
     fun uncompressed(): Uint8Vector
 }
-
 
 external interface MlKemEncapsulationData : ClassHandle {
     val wrappedKey: Uint8Vector
     val sharedSecret: Uint8Vector
 }
 
-external interface MlKemEncapsulation :  ClassHandle {
+external interface MlKemEncapsulation : ClassHandle {
     fun encapsulate(): MlKemEncapsulationData
 }
 
-external interface MlKemDecapsulation :  ClassHandle {
+external interface MlKemDecapsulation : ClassHandle {
     fun decapsulate(_0: Uint8Vector): Uint8Vector
+
     fun getEncapsulationKey(): Uint8Vector
 }
 
 external interface ECKeyPairGenerator : ClassHandle {
     fun getPublicKeyDER(): Uint8Vector
+
     fun getPrivateKeyDER(): Uint8Vector
 }
 
@@ -102,16 +130,23 @@ external interface ECDH : ClassHandle {
 
 external interface HashGenerator : ClassHandle {
     fun update(vector: Uint8Vector)
+
     fun setFinalOutputLength(length: Int)
+
     fun final(): Uint8Vector
 }
 
 external interface AESCipher : ClassHandle {
     fun update(vector: Uint8Vector): Uint8Vector
+
     fun final(): Uint8Vector
+
     fun setAutoPadding(value: Boolean)
+
     fun setAAD(vector: Uint8Vector)
+
     fun setAuthTag(authTag: Uint8Vector): Uint8Vector
+
     fun getAuthTag(tagLength: Number): Uint8Vector
 }
 
@@ -124,24 +159,42 @@ external interface EmbindModule {
     val ECDH: ECDHFactory
     val HashGenerator: HashGeneratorFactory
     val AESCipher: AESCipherFactory
+
     fun toInt8Array(vector: Int8Vector): Int8Array<ArrayBuffer>
+
     fun toUint8Array(vector: Uint8Vector): Uint8Array<ArrayBuffer>
+
     fun fromInt8Array(data: Int8Array<ArrayBuffer>): Int8Vector
+
     fun fromUint8Array(data: Uint8Array<ArrayBuffer>): Uint8Vector
+
     fun cryptoRandom(n: Int): Uint8Vector
-    fun cryptoConstantTimeEquals(vecA: Uint8Vector, vecB: Uint8Vector): Boolean
+
+    fun cryptoConstantTimeEquals(
+        vecA: Uint8Vector,
+        vecB: Uint8Vector,
+    ): Boolean
 }
 
 external interface CMACFactory {
-    fun create(key: Uint8Vector, algorithm: EmbindString): CMAC
+    fun create(
+        key: Uint8Vector,
+        algorithm: EmbindString,
+    ): CMAC
 }
 
 external interface ECPointFactory {
-    fun create(curveName: EmbindString, publicKey: Uint8Vector): ECPoint
+    fun create(
+        curveName: EmbindString,
+        publicKey: Uint8Vector,
+    ): ECPoint
 }
 
 external interface MlKemEncapsulationFactory {
-    fun create(algorithm: EmbindString, encapsulationKey: Uint8Vector): MlKemEncapsulation
+    fun create(
+        algorithm: EmbindString,
+        encapsulationKey: Uint8Vector,
+    ): MlKemEncapsulation
 }
 
 external interface MlKemDecapsulationFactory {
@@ -161,11 +214,23 @@ external interface HashGeneratorFactory {
 }
 
 external interface AESCipherFactory {
-    fun createEncryptor(algorithm: EmbindString, key: Uint8Vector, iv: Uint8Vector): AESCipher
-    fun createDecryptor(algorithm: EmbindString, key: Uint8Vector, iv: Uint8Vector): AESCipher
+    fun createEncryptor(
+        algorithm: EmbindString,
+        key: Uint8Vector,
+        iv: Uint8Vector,
+    ): AESCipher
+
+    fun createDecryptor(
+        algorithm: EmbindString,
+        key: Uint8Vector,
+        iv: Uint8Vector,
+    ): AESCipher
 }
 
-external interface OpenSslModule : WasmModule, EmbindModule, RuntimeExports
+external interface OpenSslModule :
+    WasmModule,
+    EmbindModule,
+    RuntimeExports
 
 @JsModule("gematik-ems-openssl")
 @JsNonModule

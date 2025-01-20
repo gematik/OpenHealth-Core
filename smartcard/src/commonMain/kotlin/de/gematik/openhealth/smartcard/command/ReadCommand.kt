@@ -31,18 +31,28 @@ private const val MAX_OFFSET_WITH_SFI_RANGE = 255
  */
 
 /**
- * Calls ReadCommand(0x00, EXPECT_ALL_WILDCARD)
+ * Creates a [HealthCardCommand] for the READ BINARY command without offset.
+ * (gemSpec_COS#14.3.2)
  */
-fun HealthCardCommand.Companion.read() = HealthCardCommand.read(0x00, EXPECT_ALL_WILDCARD)
+@Suppress("ktlint:standard:no-consecutive-comments")
+fun HealthCardCommand.Companion.read(): HealthCardCommand =
+    HealthCardCommand.read(0x00, EXPECT_ALL_WILDCARD)
 
 /**
- * Calls ReadCommand(offset, EXPECT_ALL_WILDCARD)
+ * Creates a[HealthCardCommand] for the READ BINARY command.
+ * (gemSpec_COS#14.3.2)
+ *
+ * @param offset The offset from which to read.
  */
 fun HealthCardCommand.Companion.read(offset: Int) =
     HealthCardCommand.read(offset, EXPECT_ALL_WILDCARD)
 
 /**
- * Use case Read Binary without ShortFileIdentifier gemSpec_COS#14.3.2.1
+ * Creates a [HealthCardCommand] for the READ BINARY command without ShortFileIdentifier.
+ * (gemSpec_COS#14.3.2.1)
+ *
+ * @param offset The offset from which to read.
+ * @param ne The maximum number of bytes to read.
  */
 fun HealthCardCommand.Companion.read(
     offset: Int,
@@ -64,13 +74,20 @@ fun HealthCardCommand.Companion.read(
 }
 
 /**
- * Calls ReadCommand(sfi, 0x00, EXPECT_ALL_WILDCARD)
+ * Creates a [HealthCardCommand] for the READ BINARY command with ShortFileIdentifier.
+ * (gemSpec_COS#14.3.2.2)
+ *
+ * @param sfi The ShortFileIdentifier.
  */
 fun HealthCardCommand.Companion.read(sfi: ShortFileIdentifier) =
     HealthCardCommand.read(sfi, 0x00, EXPECT_ALL_WILDCARD)
 
 /**
- * Calls ReadCommand(sfi, offset, EXPECT_ALL_WILDCARD)
+ * Creates a [HealthCardCommand] for the READ BINARY command with ShortFileIdentifier.
+ * (gemSpec_COS#14.3.2.2)
+ *
+ * @param sfi The ShortFileIdentifier.
+ * @param offset The offset from which to read.
  */
 fun HealthCardCommand.Companion.read(
     sfi: ShortFileIdentifier,
@@ -78,7 +95,12 @@ fun HealthCardCommand.Companion.read(
 ) = HealthCardCommand.read(sfi, offset, EXPECT_ALL_WILDCARD)
 
 /**
- * Use case Read Binary with ShortFileIdentifier gemSpec_COS#14.3.2.2
+ * Creates a [HealthCardCommand] for the READ BINARY command with ShortFileIdentifier.
+ * (gemSpec_COS#14.3.2.2)
+ *
+ * @param sfi The ShortFileIdentifier.
+ * @param offset The offset from which to read.
+ * @param ne The maximum number of bytes to read.
  */
 fun HealthCardCommand.Companion.read(
     sfi: ShortFileIdentifier,

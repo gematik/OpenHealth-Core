@@ -17,12 +17,12 @@
 package de.gematik.openhealth.crypto.wrapper
 
 import de.gematik.openhealth.crypto.CryptoScope
-import de.gematik.openhealth.crypto.JsCryptoScope
 
 private typealias Deferred = () -> Unit
 
 internal interface DeferScope {
     fun executeAllDeferred()
+
     fun defer(block: () -> Unit)
 
     fun <T : ClassHandle> T.alsoDefer(): T = also { defer { delete() } }
@@ -52,12 +52,16 @@ internal class DeferScopeImpl : DeferScope {
 
 private fun Any.isClassHandle(): Boolean {
     val v = this.asDynamic()
-    return v.isAliasOf != undefined && v.delete != undefined && v.deleteLater != undefined && v.isDeleted != undefined && v.clone != undefined
+    return v.isAliasOf != undefined &&
+        v.delete != undefined &&
+        v.deleteLater != undefined &&
+        v.isDeleted != undefined &&
+        v.clone != undefined
 }
 
 internal fun <R> deferScoped(
     allowReturnClassHandle: Boolean = false,
-    block: DeferScope.() -> R
+    block: DeferScope.() -> R,
 ): R {
     val scope = DeferScopeImpl()
     try {
@@ -71,15 +75,16 @@ internal fun <R> deferScoped(
     }
 }
 
-internal fun <T : ClassHandle> DeferScope.lazyDeferred(initializer: OpenSslModule.() -> T): Lazy<T> =
+internal fun <T : ClassHandle> DeferScope.lazyDeferred(
+    initializer: OpenSslModule.() -> T,
+): Lazy<T> =
     lazy {
         initializer(Provider.tryGet()).alsoDefer()
     }
 
-internal fun deferred(): DeferScope {
-    return DeferScopeImpl()
-}
+internal fun deferred(): DeferScope = DeferScopeImpl()
 
-internal fun deferred(scope: CryptoScope): DeferScope {
-    return DeferScopeImpl().also { scope.defer { it.executeAllDeferred() } }
-}
+internal fun deferred(scope: CryptoScope): DeferScope =
+    DeferScopeImpl().also {
+        scope.defer { it.executeAllDeferred() }
+    }

@@ -28,12 +28,9 @@ import de.gematik.openhealth.asn1.writeTaggedObject
 import de.gematik.openhealth.crypto.CmacAlgorithm
 import de.gematik.openhealth.crypto.CmacSpec
 import de.gematik.openhealth.crypto.ExperimentalCryptoApi
-import de.gematik.openhealth.crypto.UnoptimizedCryptoApi
 import de.gematik.openhealth.crypto.UnsafeCryptoApi
 import de.gematik.openhealth.crypto.bytes
 import de.gematik.openhealth.crypto.cipher.AesEcbSpec
-import de.gematik.openhealth.crypto.cipher.createDecipher
-import de.gematik.openhealth.crypto.createCmac
 import de.gematik.openhealth.crypto.key.EcKeyPairSpec
 import de.gematik.openhealth.crypto.key.EcPoint
 import de.gematik.openhealth.crypto.key.EcPrivateKey
@@ -44,11 +41,13 @@ import de.gematik.openhealth.crypto.key.generateKeyPair
 import de.gematik.openhealth.crypto.key.toEcPoint
 import de.gematik.openhealth.crypto.key.toEcPublicKey
 import de.gematik.openhealth.crypto.secureRandom
+import de.gematik.openhealth.crypto.useCrypto
 import de.gematik.openhealth.smartcard.card.CardKey
 import de.gematik.openhealth.smartcard.card.Mode
 import de.gematik.openhealth.smartcard.card.PaceKey
+import de.gematik.openhealth.smartcard.card.SmartCard
 import de.gematik.openhealth.smartcard.card.getAES128Key
-import de.gematik.openhealth.smartcard.card.isEGK21
+import de.gematik.openhealth.smartcard.card.isHealthCardVersion21
 import de.gematik.openhealth.smartcard.card.parseHealthCardVersion2
 import de.gematik.openhealth.smartcard.cardobjects.Ef
 import de.gematik.openhealth.smartcard.command.HealthCardCommand
@@ -77,13 +76,13 @@ private const val TAG_49 = 0x49
     ExperimentalCryptoApi::class,
     UnsafeCryptoApi::class,
     ExperimentalStdlibApi::class,
-    UnoptimizedCryptoApi::class,
 )
-suspend fun ICardChannel.establishTrustedChannel(cardAccessNumber: String): PaceKey {
+fun SmartCard.CommunicationScope.establishTrustedChannel(cardAccessNumber: String): PaceKey {
+    // TODO check why it is not used
     val random = secureRandom()
 
     // Helper to derive AES keys
-    suspend fun deriveAESKey(
+    fun deriveAESKey(
         sharedSecret: ByteArray,
         mode: Mode,
     ): SecretKey {
@@ -92,7 +91,7 @@ suspend fun ICardChannel.establishTrustedChannel(cardAccessNumber: String): Pace
     }
 
     // Step 1: Read and configure supported PACE parameters
-    suspend fun initializePace(): PaceInfo {
+    fun initializePace(): PaceInfo {
         HealthCardCommand
             .select(
                 selectParentElseRoot = false,
@@ -104,7 +103,9 @@ suspend fun ICardChannel.establishTrustedChannel(cardAccessNumber: String): Pace
                 0,
             ).executeSuccessfulOn(this)
             .let {
-                check(parseHealthCardVersion2(it.apdu.data).isEGK21()) { "Invalid eGK Version." }
+                check(
+                    parseHealthCardVersion2(it.apdu.data).isHealthCardVersion21(),
+                ) { "Invalid eGK Version." }
             }
 
         HealthCardCommand.select(FileIdentifier(Ef.CardAccess.FID), false).executeSuccessfulOn(this)
@@ -127,7 +128,7 @@ suspend fun ICardChannel.establishTrustedChannel(cardAccessNumber: String): Pace
     }
 
     // Step 2: Perform Ephemeral Key Exchange
-    suspend fun performKeyExchange(paceInfo: PaceInfo): Pair<EcPoint, EcPrivateKey> {
+    fun performKeyExchange(paceInfo: PaceInfo): Pair<EcPoint, EcPrivateKey> {
         val nonceZ =
             parseAsn1KeyObject(
                 HealthCardCommand
@@ -135,13 +136,15 @@ suspend fun ICardChannel.establishTrustedChannel(cardAccessNumber: String): Pace
                     .executeSuccessfulOn(this)
                     .apdu.data,
             )
-        val canKey = deriveAESKey(cardAccessNumber.encodeToByteArray(), de.gematik.kmp.smartcard.card.Mode.PASSWORD)
+        val canKey = deriveAESKey(cardAccessNumber.encodeToByteArray(), Mode.PASSWORD)
         val nonceS =
-            AesEcbSpec(16.bytes, autoPadding = false)
-                .createDecipher(canKey)
-                .let {
-                    BigInteger.fromByteArray(it.update(nonceZ), Sign.POSITIVE)
-                }
+            useCrypto {
+                AesEcbSpec(16.bytes, autoPadding = false)
+                    .createDecipher(canKey)
+                    .let {
+                        BigInteger.fromByteArray(it.update(nonceZ), Sign.POSITIVE)
+                    }
+            }
 
         val (_, pcdPrivateKey) = EcKeyPairSpec(paceInfo.curve).generateKeyPair()
         val pcdSharedSecret = paceInfo.curve.g * pcdPrivateKey.s
@@ -168,7 +171,7 @@ suspend fun ICardChannel.establishTrustedChannel(cardAccessNumber: String): Pace
     }
 
     // Step 3: Mutual Authentication
-    suspend fun performMutualAuthentication(
+    fun performMutualAuthentication(
         paceInfo: PaceInfo,
         epGsSharedSecret: EcPoint,
         epPrivateKey: EcPrivateKey,
@@ -191,8 +194,8 @@ suspend fun ICardChannel.establishTrustedChannel(cardAccessNumber: String): Pace
                 if (it[0] == 0x00.toByte()) it.copyOfRange(1, it.size) else it
             }
 
-        val encryptionKey = deriveAESKey(sharedSecretX, de.gematik.kmp.smartcard.card.Mode.ENC)
-        val macKey = deriveAESKey(sharedSecretX, de.gematik.kmp.smartcard.card.Mode.MAC)
+        val encryptionKey = deriveAESKey(sharedSecretX, Mode.ENC)
+        val macKey = deriveAESKey(sharedSecretX, Mode.MAC)
         val paceKey = PaceKey(encryptionKey, macKey)
 
         val mac = deriveMac(paceKey.mac, piccPublicKey, paceInfo.protocolId)
@@ -231,15 +234,17 @@ fun parseAsn1KeyObject(asn1: ByteArray): ByteArray =
 
 // Derive MAC from a key
 @OptIn(ExperimentalCryptoApi::class)
-suspend fun deriveMac(
+fun deriveMac(
     key: SecretKey,
     publicKey: EcPublicKey,
     protocolID: String,
 ): ByteArray {
     val authToken = createAsn1AuthToken(publicKey, protocolID)
-    return CmacSpec(CmacAlgorithm.Aes).createCmac(key).let {
-        it.update(authToken)
-        it.final().copyOfRange(0, 8)
+    return useCrypto {
+        CmacSpec(CmacAlgorithm.Aes).createCmac(key).let {
+            it.update(authToken)
+            it.final().copyOfRange(0, 8)
+        }
     }
 }
 

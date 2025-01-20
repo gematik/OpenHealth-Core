@@ -16,28 +16,10 @@
 
 package de.gematik.openhealth.crypto.wrapper
 
-import de.gematik.openhealth.crypto.CryptoScope
-import de.gematik.openhealth.crypto.JsCryptoScope
 import de.gematik.openhealth.crypto.LazySuspend
-import de.gematik.openhealth.crypto.useCrypto
-import js.atomic.Atomics
-import js.buffer.SharedArrayBuffer
-import js.typedarrays.Int32Array
-import js.typedarrays.Int8Array
-import js.typedarrays.asInt8Array
-import kotlinx.atomicfu.AtomicRef
-import kotlinx.atomicfu.atomic
-import kotlinx.atomicfu.loop
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import kotlinx.coroutines.await
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.promise
 
 val Provider = LazySuspend { OpenSslModuleFactory().await() }
-
 
 fun <T : Any> runWithProvider(block: OpenSslModule.() -> T): T =
     try {
