@@ -13,3 +13,57 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+private const val DO_8E_TAG = 0x0E
+private const val MAC_SIZE = 8
+private const val BLOCK_SIZE = 16
+
+/**
+ * Mac object with TAG 8E (cryptographic checksum)
+ *
+ *
+ * @param header byte array with extracted header from plain CommandApdu
+ * @param commandDataOutput ByteArrayOutputStream with extracted data and expected length from plain CommandApdu
+ * @param kMac byte array with Session key for message authentication
+ * @param ssc byte array with send sequence counter
+ */
+@OptIn(ExperimentalCryptoApi::class)
+class MacObject(
+    private val header: ByteArray? = null,
+    private val commandOutput: ByteArray,
+    private val kMac: SecretKey,
+    private val ssc: ByteArray
+) {
+    private var _mac: ByteArray = ByteArray(BLOCK_SIZE)
+    val mac: ByteArray
+        get() = _mac.copyOf()
+
+    val encoded: ByteArray
+        get() =
+            Asn1Encoder().write {
+                writeTaggedObject(0x0E, Asn1Tag.CONTEXT_SPECIFIC) {
+                    write(_mac)
+                }
+            }
+
+    init {
+        calculateMac()
+    }
+
+    private fun calculateMac() {
+        useCrypto {
+            val cbcMac = CmacSpec(CmacAlgorithm.Aes).createCmac(kMac)
+            cbcMac.update(ssc)
+
+            if (header != null) {
+                val paddedHeader = padData(header, BLOCK_SIZE)
+                cbcMac.update(paddedHeader)
+            }
+            if (commandOutput.isNotEmpty()) {
+                val paddedData = padData(commandOutput, BLOCK_SIZE)
+                cbcMac.update(paddedData)
+            }
+            _mac = cbcMac.final().copyOfRange(0, MAC_SIZE)
+        }
+    }
+}

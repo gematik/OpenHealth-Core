@@ -60,36 +60,15 @@ import de.gematik.openhealth.smartcard.identifier.FileIdentifier
 import de.gematik.openhealth.smartcard.identifier.ShortFileIdentifier
 
 private const val SECRET_KEY_REFERENCE = 2 // Reference of secret key for PACE (CAN)
-private const val AES_BLOCK_SIZE = 16
-private const val BYTE_LENGTH = 8
-private const val MAX = 64
-private const val TAG_6 = 6
-private const val TAG_49 = 0x49
 
-/**
- * Opens a secure PACE Channel for secure messaging
- *
- * picc = card
- * pcd = smartphone
- */
 @OptIn(
     ExperimentalCryptoApi::class,
     UnsafeCryptoApi::class,
     ExperimentalStdlibApi::class,
 )
+
+// todo comment
 fun SmartCard.CommunicationScope.establishTrustedChannel(cardAccessNumber: String): PaceKey {
-    // TODO check why it is not used
-    val random = secureRandom()
-
-    // Helper to derive AES keys
-    fun deriveAESKey(
-        sharedSecret: ByteArray,
-        mode: Mode,
-    ): SecretKey {
-        val keyBytes = getAES128Key(sharedSecret, mode)
-        return SecretKey(keyBytes)
-    }
-
     // Step 1: Read and configure supported PACE parameters
     fun initializePace(): PaceInfo {
         HealthCardCommand

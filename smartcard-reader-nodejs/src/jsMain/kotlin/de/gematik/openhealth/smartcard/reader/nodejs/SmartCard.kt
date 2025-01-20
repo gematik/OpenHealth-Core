@@ -35,7 +35,7 @@ class NodeSmartCardException(
 ) : Exception(error?.toString())
 
 private class NodeSmartCard : SmartCard() {
-    class NodeCommunicationScope(
+    cardclass NodeCommunicationScope(
         internal val reader: CardReader,
         private val protocol: Int,
     ) : CommunicationScope {
