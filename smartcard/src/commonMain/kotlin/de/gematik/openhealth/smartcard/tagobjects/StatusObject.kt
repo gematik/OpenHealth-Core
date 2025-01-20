@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package de.gematik.openhealth.smartcard.tagobjects
 
 import de.gematik.openhealth.asn1.Asn1Encoder
+import de.gematik.openhealth.asn1.Asn1Tag
 import de.gematik.openhealth.asn1.writeTaggedObject
 
 private const val DO_99_TAG = 0x19
@@ -30,12 +31,9 @@ class StatusObject(
     private val statusBytes: ByteArray,
 ) {
     val encoded: ByteArray
-        get() {
-            val encoder = Asn1Encoder()
-            return encoder.write {
-                writeTaggedObject(DO_99_TAG) {
-                    write(statusBytes)
-                }
+        get() = Asn1Encoder().write {
+            writeTaggedObject(0x19, Asn1Tag.CONTEXT_SPECIFIC) {
+                write(statusBytes)
             }
         }
 }

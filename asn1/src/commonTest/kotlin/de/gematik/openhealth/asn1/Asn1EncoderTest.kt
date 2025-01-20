@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package de.gematik.openhealth.asn1
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
 import kotlin.test.assertFailsWith
 
 private val hexFormat =
@@ -75,6 +76,26 @@ class Asn1EncoderTest {
                 }
             }
         assertEquals("5E 01 05", result.toHexString(hexFormat))
+    }
+
+    @Test
+    fun `write multi-byte length`() {
+        val encoder = Asn1Encoder()
+        val result =
+            encoder.write {
+                writeLength(123456789)
+            }
+        assertEquals("84 07 5B CD 15", result.toHexString(hexFormat))
+    }
+
+    @Test
+    fun `write multi-byte length - negative value`() {
+        val encoder = Asn1Encoder()
+        assertFails {
+            encoder.write {
+                writeLength(-123456789)
+            }
+        }
     }
 
     @Test

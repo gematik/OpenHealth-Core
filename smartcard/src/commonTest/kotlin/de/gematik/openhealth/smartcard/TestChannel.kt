@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ class TestChannel(
     private var lastCardCommandAPDU: CardCommandApdu? = null
 
     val lastCommandAPDUBytes: ByteArray
-        get() = lastCardCommandAPDU?.bytes ?: ByteArray(0)
+        get() = lastCardCommandAPDU?.apdu ?: ByteArray(0)
 
     override fun transmit(command: CardCommandApdu): CardResponseApdu {
         lastCardCommandAPDU = command

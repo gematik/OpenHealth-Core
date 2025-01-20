@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ class Asn1EncoderException(
 @JsExport
 class Asn1Encoder {
     class WriterScope {
-        var data = ByteArray(0)
+        var buffer = ByteArray(0)
             private set
 
         /**
@@ -43,12 +43,12 @@ class Asn1Encoder {
 
         @JsName("writeByte")
         fun write(byte: Byte) {
-            data += byte
+            buffer += byte
         }
 
         @JsName("writeBytes")
         fun write(bytes: ByteArray) {
-            data += bytes
+            buffer += bytes
         }
 
         @JsName("writeInt")
@@ -67,19 +67,41 @@ class Asn1Encoder {
             }
         }
 
+        @JsName("writeLength")
+        fun writeLength(length: Int) {
+            require(length >= 0) { "Length must be positive" }
+            if (length < 0x80) {
+                // Single byte length
+                write(length.toByte())
+            } else {
+                // Multibyte length
+                val lengthBytes = mutableListOf<Byte>()
+                var value = length
+                while (value != 0) {
+                    lengthBytes.add((value and 0xFF).toByte())
+                    value = value ushr 8
+                }
+                // Prepend the length of the length in the first byte
+                write((0x80 or lengthBytes.size).toByte())
+                for (byte in lengthBytes.reversed()) {
+                    write(byte)
+                }
+            }
+        }
+
         @JsName("writeScope")
         fun write(other: WriterScope) {
             // length
-            write(other.data.size)
+            writeLength(other.buffer.size)
             // value
-            write(other.data)
+            write(other.buffer)
         }
     }
 
     fun write(block: WriterScope.() -> Unit): ByteArray {
         val scope = WriterScope()
         block(scope)
-        return scope.data
+        return scope.buffer
     }
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@ fun HealthCardVersion2.isHealthCardVersion21(): Boolean {
  */
 fun parseHealthCardVersion2(asn1: ByteArray): HealthCardVersion2 =
     Asn1Decoder(asn1).read {
-        advanceWithTag(0x0F, Asn1Tag.APPLICATION or Asn1Tag.CONSTRUCTED) {
+        advanceWithTag(0x0F, Asn1Tag.PRIVATE or Asn1Tag.CONSTRUCTED) {
             val parsedData = mutableMapOf<Int, ByteArray>()
 
             while (remainingLength > 0) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package de.gematik.openhealth.smartcard.tagobjects
 
 import de.gematik.openhealth.asn1.Asn1Encoder
+import de.gematik.openhealth.asn1.Asn1Tag
 import de.gematik.openhealth.asn1.writeTaggedObject
 import de.gematik.openhealth.smartcard.command.EXPECTED_LENGTH_WILDCARD_SHORT
 
@@ -52,7 +53,7 @@ class LengthObject(
         get() {
             val encoder = Asn1Encoder()
             return encoder.write {
-                writeTaggedObject(DO_97_TAG) {
+                writeTaggedObject(0x17, Asn1Tag.CONTEXT_SPECIFIC) {
                     write(leData) // Write the length data as an octet string
                 }
             }

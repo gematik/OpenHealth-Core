@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -145,13 +145,13 @@ class Asn1Decoder(
          * Advance with the given [tag] and return the resulting [Asn1Object]. Throws an [ParserException] if the [tag] doesn't match.
          * @param tag the tag to advance with.
          */
-        fun <T> Asn1Decoder.ParserScope.advanceWithTag(
+        fun <T> advanceWithTag(
             tagNumber: Int,
             tagClass: Int = 0x00,
-            block: Asn1Decoder.ParserScope.() -> T,
+            block: ParserScope.() -> T,
         ): T {
             val tag = readTag()
-            if (tag.tagNumber != tagNumber && tag.tagClass != tagClass) {
+            if (tag.tagNumber != tagNumber || tag.tagClass != tagClass) {
                 fail {
                     "Expected tag `${Asn1Tag(tagClass, tagNumber)}` but got `$tag`"
                 }

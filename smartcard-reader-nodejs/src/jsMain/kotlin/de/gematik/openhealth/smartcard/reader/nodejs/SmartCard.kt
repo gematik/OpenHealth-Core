@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ private class NodeSmartCard : SmartCard() {
         override val supportsExtendedLength: Boolean = true
 
         override suspend fun transmit(apdu: CardCommandApdu): CardResponseApdu {
-            val commandBuffer = Buffer.from(apdu.bytes)
+            val commandBuffer = Buffer.from(apdu.apdu)
             val responseBuffer =
                 suspendCancellableCoroutine { continuation ->
                     reader.transmit(commandBuffer, MAX_APDU_LENGTH, protocol) { err, response ->
