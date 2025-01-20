@@ -32,6 +32,7 @@ import de.gematik.openhealth.crypto.kem.nativeCreateDecapsulation
 import de.gematik.openhealth.crypto.kem.nativeCreateEncapsulation
 import de.gematik.openhealth.crypto.key.EcPrivateKey
 import de.gematik.openhealth.crypto.key.SecretKey
+import kotlin.experimental.ExperimentalNativeApi
 
 /**
  * Defines a scope for cryptographic operations that manage resources requiring explicit release or

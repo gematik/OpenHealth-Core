@@ -41,9 +41,19 @@ sealed interface AesCipherSpec {
 }
 
 @ExperimentalCryptoApi
+sealed interface AesCipherIvSpec : AesCipherSpec {
+    val iv: ByteArray
+}
+
+@ExperimentalCryptoApi
 sealed interface AesDecipherSpec {
     val tagLength: ByteUnit
     val autoPadding: Boolean
+}
+
+@ExperimentalCryptoApi
+sealed interface AesDecipherIvSpec : AesDecipherSpec {
+    val iv: ByteArray
 }
 
 @ExperimentalCryptoApi
@@ -55,12 +65,21 @@ class AesEcbSpec(
     AesDecipherSpec
 
 @ExperimentalCryptoApi
+@UnsafeCryptoApi
+class AesCbcSpec(
+    override val tagLength: ByteUnit,
+    override val iv: ByteArray,
+    override val autoPadding: Boolean = true,
+) : AesCipherIvSpec,
+    AesDecipherIvSpec
+
+@ExperimentalCryptoApi
 class AesGcmCipherSpec(
     override val tagLength: ByteUnit,
-    val iv: ByteArray,
+    override val iv: ByteArray,
     val aad: ByteArray,
     override val autoPadding: Boolean = true,
-) : AesCipherSpec {
+) : AesCipherIvSpec {
     init {
         require(iv.isNotEmpty()) { "IV must not be empty" }
     }
@@ -69,11 +88,11 @@ class AesGcmCipherSpec(
 @ExperimentalCryptoApi
 class AesGcmDecipherSpec(
     override val tagLength: ByteUnit,
-    val iv: ByteArray,
+    override val iv: ByteArray,
     val aad: ByteArray,
     val authTag: ByteArray,
     override val autoPadding: Boolean = true,
-) : AesDecipherSpec {
+) : AesDecipherIvSpec {
     init {
         require(iv.isNotEmpty()) { "IV must not be empty" }
     }

@@ -60,6 +60,42 @@ class AesTest {
             assertEquals("Hello World", result.decodeToString())
         }
 
+    @OptIn(UnsafeCryptoApi::class)
+    @Test
+    fun `aes cbc - 128 bit encryption`() =
+        runTestWithProvider {
+            val cipher =
+                AesCbcSpec(
+                    16.bytes,
+                    "1234567890123456".encodeToByteArray(),
+                ).createCipher(SecretKey("1234567890123456".encodeToByteArray()))
+            var result = cipher.update("Hello World".encodeToByteArray())
+            result += cipher.final()
+            assertEquals(
+                "67 23 83 A2 43 37 DC 8A 35 64 A2 00 F2 1E E8 C0",
+                result.toHexString(hexSpaceFormat),
+            )
+        }
+
+    @OptIn(UnsafeCryptoApi::class)
+    @Test
+    fun `aes cbc - 128 bit decryption`() =
+        runTestWithProvider {
+            val cipher =
+                AesCbcSpec(
+                    16.bytes,
+                    "1234567890123456".encodeToByteArray(),
+                ).createDecipher(SecretKey("1234567890123456".encodeToByteArray()))
+            var result =
+                cipher.update(
+                    "67 23 83 A2 43 37 DC 8A 35 64 A2 00 F2 1E E8 C0".hexToByteArray(
+                        hexSpaceFormat,
+                    ),
+                )
+            result += cipher.final()
+            assertEquals("Hello World", result.decodeToString())
+        }
+
     @Test
     fun `aes gcm - 128 bit encryption`() =
         runTestWithProvider {

@@ -36,7 +36,6 @@ class TestProviderScope(val testScope: TestScope, val cryptoScope: CryptoScope) 
     }
 }
 
-
 fun runTestWithProvider(
     context: CoroutineContext = EmptyCoroutineContext,
     testBody: suspend TestProviderScope.() -> Unit
