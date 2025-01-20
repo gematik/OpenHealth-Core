@@ -17,11 +17,8 @@
 package de.gematik.openhealth.smartcard.tagobjects
 
 import de.gematik.openhealth.asn1.Asn1Encoder
+import de.gematik.openhealth.asn1.Asn1Tag
 import de.gematik.openhealth.asn1.writeTaggedObject
-
-private const val DO_87_TAG = 0x07
-private const val DO_81_EXTRACTED_TAG = 0x81
-private const val DO_81_TAG = 0x01
 
 /**
  * Data object with TAG 87
@@ -31,16 +28,23 @@ private const val DO_81_TAG = 0x01
  */
 class DataObject(
     val data: ByteArray,
-    val tag: Byte = 0,
+    val tag: Asn1Tag,
 ) {
+    init {
+        require(tag.tagClass == Asn1Tag.CONTEXT_SPECIFIC)
+        require(tag.tagNumber == 0x07 || tag.tagNumber == 0x01)
+    }
+
+    val isEncrypted: Boolean = tag.tagNumber == 0x07
+
     val encoded: ByteArray
-        get() {
-            val encoder = Asn1Encoder()
-            return encoder.write {
-                val actualTag = if (tag == DO_81_EXTRACTED_TAG.toByte()) DO_81_TAG else DO_87_TAG
-                writeTaggedObject(actualTag) {
-                    write(data) // Write the raw data as an octet string
-                }
+        get() = Asn1Encoder().write {
+            writeTaggedObject(tagNumber = tag.tagNumber, tagClass = tag.tagClass) {
+                write(data)
             }
         }
+
+    companion object {
+        fun encrypted(data: ByteArray) = DataObject(data, Asn1Tag(tagClass = Asn1Tag.CONTEXT_SPECIFIC, tagNumber = 0x07))
+    }
 }

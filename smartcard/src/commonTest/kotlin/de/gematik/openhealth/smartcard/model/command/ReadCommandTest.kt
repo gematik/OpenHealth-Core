@@ -12,8 +12,7 @@ import kotlin.test.assertEquals
 
 class ReadCommandTest {
     @Test
-    fun shouldEqualReadCommand_WithoutOffset() {
-        runTest {
+    fun shouldEqualReadCommand_WithoutOffset() = runTest {
             val expectedAPDU = getExpectedApdu("READCOMMAND_APDU-1")
             val command = HealthCardCommand.read()
 
@@ -22,7 +21,6 @@ class ReadCommandTest {
                 TestChannel().test(command).toHexString(hexSpaceFormat),
             )
         }
-    }
 
     @Test
     fun shouldEqualReadCommand_WithOffset() {

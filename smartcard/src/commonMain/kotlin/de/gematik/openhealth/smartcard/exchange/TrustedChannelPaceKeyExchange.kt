@@ -203,7 +203,7 @@ fun SmartCard.CommunicationScope.establishTrustedChannel(cardAccessNumber: Strin
     return performMutualAuthentication(paceInfo, epGsSharedSecret, epPrivateKey)
 }
 
-fun parseAsn1KeyObject(asn1: ByteArray): ByteArray =
+private fun parseAsn1KeyObject(asn1: ByteArray): ByteArray =
     Asn1Decoder(asn1).read {
         advanceWithTag(28, Asn1Tag.APPLICATION or Asn1Tag.CONSTRUCTED) {
             readTag()
@@ -211,9 +211,19 @@ fun parseAsn1KeyObject(asn1: ByteArray): ByteArray =
         }
     }
 
+// Helper to derive AES keys
+@OptIn(ExperimentalCryptoApi::class)
+private fun deriveAESKey(
+    sharedSecret: ByteArray,
+    mode: Mode,
+): SecretKey {
+    val keyBytes = getAES128Key(sharedSecret, mode)
+    return SecretKey(keyBytes)
+}
+
 // Derive MAC from a key
 @OptIn(ExperimentalCryptoApi::class)
-fun deriveMac(
+private fun deriveMac(
     key: SecretKey,
     publicKey: EcPublicKey,
     protocolID: String,
@@ -229,7 +239,7 @@ fun deriveMac(
 
 // Create ASN.1 Authentication Token
 @OptIn(ExperimentalCryptoApi::class)
-fun createAsn1AuthToken(
+internal fun createAsn1AuthToken(
     publicKey: EcPublicKey,
     protocolId: String,
 ): ByteArray =

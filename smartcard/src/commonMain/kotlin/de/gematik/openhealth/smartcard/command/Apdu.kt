@@ -159,66 +159,165 @@ class CardCommandApdu(
          * @throws IllegalArgumentException if any of the APDU header fields are out of range,
          *                                  if the data length is out of range, or if the expected length is out of range.
          */
+//        fun ofOptions(
+//            cla: Int,
+//            ins: Int,
+//            p1: Int,
+//            p2: Int,
+//            data: ByteArray?,
+//            ne: Int?,
+//        ): CardCommandApdu {
+//            // Validate header fields
+//            require(cla in 0..0xFF && ins in 0..0xFF && p1 in 0..0xFF && p2 in 0..0xFF) {
+//                "APDU header fields must be in range [0, 255]"
+//            }
+//
+//            // Validate expected length
+//            ne?.let {
+//                require(it in 0..EXPECTED_LENGTH_WILDCARD_EXTENDED) {
+//                    "APDU response length is out of bounds [0, $EXPECTED_LENGTH_WILDCARD_EXTENDED]"
+//                }
+//            }
+//
+//            val header = byteArrayOf(cla.toByte(), ins.toByte(), p1.toByte(), p2.toByte())
+//            return when {
+//                data != null -> {
+//                    val nc = data.size
+//                    require(nc <= 65535) { "APDU command data length must not exceed 65535 bytes" }
+//
+//                    val (lcBytes, dataOffset) =
+//                        when {
+//                            nc <= 255 -> encodeDataLengthShort(nc) to 5 // Case 3s or 4s
+//                            else -> encodeDataLengthExtended(nc) to 7 // Case 3e or 4e
+//                        }
+//
+//                    val leBytes =
+//                        if (ne != null) {
+//                            when {
+//                                nc <= 255 && ne <= EXPECTED_LENGTH_WILDCARD_SHORT
+//                                -> encodeExpectedLengthShort(ne) // Case 4s
+//                                else -> encodeExpectedLengthExtended(ne) // Case 4e
+//                            }
+//                        } else {
+//                            byteArrayOf()
+//                        }
+//
+//                    val apduBytes = header + lcBytes + data + leBytes
+//                    CardCommandApdu(apduBytes, nc, ne, dataOffset)
+//                }
+//
+//                ne != null -> {
+//                    val leBytes =
+//                        when {
+//                            ne <= EXPECTED_LENGTH_WILDCARD_SHORT -> encodeExpectedLengthShort(ne) // Case 2s
+//                            else -> byteArrayOf(0x0) + encodeExpectedLengthExtended(ne) // Case 2e
+//                        }
+//                    val apduBytes = header + leBytes
+//                    CardCommandApdu(apduBytes, 0, ne, 0)
+//                }
+//
+//                else -> {
+//                    // Case 1
+//                    CardCommandApdu(header, 0, null, 0)
+//                }
+//            }
+//        }
+        @Suppress("CyclomaticComplexMethod")
         fun ofOptions(
             cla: Int,
             ins: Int,
             p1: Int,
             p2: Int,
             data: ByteArray?,
-            ne: Int?,
+            ne: Int?
         ): CardCommandApdu {
-            // Validate header fields
-            require(cla in 0..0xFF && ins in 0..0xFF && p1 in 0..0xFF && p2 in 0..0xFF) {
-                "APDU header fields must be in range [0, 255]"
+            require(!(cla < 0 || ins < 0 || p1 < 0 || p2 < 0)) {
+                "APDU header fields must not be less than 0"
             }
-
-            // Validate expected length
+            require(!(cla > 0xFF || ins > 0xFF || p1 > 0xFF || p2 > 0xFF)) {
+                "APDU header fields must not be greater than 255 (0xFF)"
+            }
             ne?.let {
-                require(it in 0..EXPECTED_LENGTH_WILDCARD_EXTENDED) {
-                    "APDU response length is out of bounds [0, $EXPECTED_LENGTH_WILDCARD_EXTENDED]"
+                require(ne <= EXPECTED_LENGTH_WILDCARD_EXTENDED || ne >= 0) {
+                    "APDU response length is out of bounds [0, 65536]"
                 }
             }
 
-            val header = byteArrayOf(cla.toByte(), ins.toByte(), p1.toByte(), p2.toByte())
-            return when {
-                data != null -> {
-                    val nc = data.size
-                    require(nc <= 65535) { "APDU command data length must not exceed 65535 bytes" }
+            var bytes = byteArrayOf()
+            // write header |CLA|INS|P1 |P2 |
+                bytes += byteArrayOf(cla.toByte(), ins.toByte(), p1.toByte(), p2.toByte())
 
-                    val (lcBytes, dataOffset) =
-                        when {
-                            nc <= 255 -> encodeDataLengthShort(nc) to 5 // Case 3s or 4s
-                            else -> encodeDataLengthExtended(nc) to 7 // Case 3e or 4e
-                        }
+            return if (data != null) {
+                val nc = data.size
+                require(nc <= 65535) { "ADPU cmd data length must not exceed 65535 bytes" }
 
-                    val leBytes =
-                        if (ne != null) {
-                            when {
-                                nc <= 255 && ne <= EXPECTED_LENGTH_WILDCARD_SHORT
-                                -> encodeExpectedLengthShort(ne) // Case 4s
-                                else -> encodeExpectedLengthExtended(ne) // Case 4e
-                            }
-                        } else {
-                            byteArrayOf()
-                        }
-
-                    val apduBytes = header + lcBytes + data + leBytes
-                    CardCommandApdu(apduBytes, nc, ne, dataOffset)
+                var dataOffset: Int
+                var le: Int? // le1, le2
+                if (ne != null) {
+                    le = ne
+                    // case 4s or 4e
+                    if (nc <= 255 && ne <= EXPECTED_LENGTH_WILDCARD_SHORT) {
+                        // case 4s
+                        dataOffset = 5
+                        bytes += encodeDataLengthShort(nc)
+                        bytes += data
+                        bytes += encodeExpectedLengthShort(ne)
+                    } else {
+                        // case 4e
+                        dataOffset = 7
+                        bytes += encodeDataLengthExtended(nc)
+                        bytes += data
+                        bytes += encodeExpectedLengthExtended(ne)
+                    }
+                } else {
+                    // case 3s or 3e
+                    le = null
+                    if (nc <= 255) {
+                        // case 3s
+                        dataOffset = 5
+                        bytes += encodeDataLengthShort(nc)
+                    } else {
+                        // case 3e
+                        dataOffset = 7
+                        bytes += encodeDataLengthExtended(nc)
+                    }
+                    bytes += data
                 }
 
-                ne != null -> {
-                    val leBytes =
-                        when {
-                            ne <= EXPECTED_LENGTH_WILDCARD_SHORT -> encodeExpectedLengthShort(ne) // Case 2s
-                            else -> byteArrayOf(0x0) + encodeExpectedLengthExtended(ne) // Case 2e
-                        }
-                    val apduBytes = header + leBytes
-                    CardCommandApdu(apduBytes, 0, ne, 0)
-                }
+                CardCommandApdu(
+                    apduBytes = bytes,
+                    rawNc = nc,
+                    rawNe = le,
+                    dataOffset = dataOffset
+                )
+            } else {
+                // data empty
+                if (ne != null) {
+                    // case 2s or 2e
+                    if (ne <= EXPECTED_LENGTH_WILDCARD_SHORT) {
+                        // case 2s
+                        // 256 is encoded 0x0
+                        bytes += encodeExpectedLengthShort(ne)
+                    } else {
+                        // case 2e
+                        bytes += 0x0
+                        bytes += encodeExpectedLengthExtended(ne)
+                    }
 
-                else -> {
-                    // Case 1
-                    CardCommandApdu(header, 0, null, 0)
+                    CardCommandApdu(
+                        apduBytes = bytes,
+                        rawNc = 0,
+                        rawNe = ne,
+                        dataOffset = 0
+                    )
+                } else {
+                    // case 1
+                    CardCommandApdu(
+                        apduBytes = bytes,
+                        rawNc = 0,
+                        rawNe = null,
+                        dataOffset = 0
+                    )
                 }
             }
         }

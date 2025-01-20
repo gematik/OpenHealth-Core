@@ -1,3 +1,10 @@
+import de.gematik.openhealth.asn1.Asn1Encoder
+import de.gematik.openhealth.asn1.Asn1Tag
+import de.gematik.openhealth.asn1.writeTaggedObject
+import de.gematik.openhealth.crypto.*
+import de.gematik.openhealth.crypto.key.SecretKey
+import de.gematik.openhealth.smartcard.utils.Bytes.padData
+
 /*
  * Copyright (c) 2024 gematik GmbH
  *
