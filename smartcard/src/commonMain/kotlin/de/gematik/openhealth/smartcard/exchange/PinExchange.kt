@@ -25,6 +25,7 @@ import de.gematik.openhealth.smartcard.command.HealthCardResponse
 import de.gematik.openhealth.smartcard.command.HealthCardResponseStatus
 import de.gematik.openhealth.smartcard.command.UnlockMethod
 import de.gematik.openhealth.smartcard.command.changeReferenceData
+import de.gematik.openhealth.smartcard.command.getPinStatus
 import de.gematik.openhealth.smartcard.command.select
 import de.gematik.openhealth.smartcard.command.unlockEgk
 import de.gematik.openhealth.smartcard.command.verifyPin
@@ -42,21 +43,28 @@ suspend fun TrustedChannelScope.verifyPin(pin: String): HealthCardVerifyPinResul
 
     val passwordReference = PasswordReference(Mf.MrPinHome.PWID)
 
-    val response =
-        HealthCardCommand
-            .verifyPin(
-                passwordReference = passwordReference,
-                dfSpecific = false,
-                pin = EncryptedPinFormat2(pin),
-            ).transmit()
+    val pinStatus = HealthCardCommand.getPinStatus(passwordReference, dfSpecific = false).transmit()
 
-   return when (response.status) {
-        HealthCardResponseStatus.SUCCESS ->  HealthCardVerifyPinResult.Success(response)
-        HealthCardResponseStatus.WRONG_SECRET_WARNING_COUNT_01 ->  HealthCardVerifyPinResult.WrongSecretWarning(response, 1)
-        HealthCardResponseStatus.WRONG_SECRET_WARNING_COUNT_02 ->  HealthCardVerifyPinResult.WrongSecretWarning(response, 2)
-        HealthCardResponseStatus.WRONG_SECRET_WARNING_COUNT_03 ->  HealthCardVerifyPinResult.WrongSecretWarning(response, 3)
-        HealthCardResponseStatus.PASSWORD_BLOCKED ->  HealthCardVerifyPinResult.CardBlocked(response)
-        else -> error("Verify pin command failed with status: ${response.status}")
+    return if (pinStatus.status == HealthCardResponseStatus.SUCCESS) {
+        HealthCardVerifyPinResult.Success(pinStatus)
+    } else {
+        val response = HealthCardCommand.verifyPin(
+            passwordReference = passwordReference,
+            dfSpecific = false,
+            pin = EncryptedPinFormat2(pin)
+        ).transmit()
+        response.toVerifyPinResult()
+    }
+}
+
+private fun HealthCardResponse.toVerifyPinResult(): HealthCardVerifyPinResult {
+    return when (this.status) {
+        HealthCardResponseStatus.SUCCESS -> HealthCardVerifyPinResult.Success(this)
+        HealthCardResponseStatus.WRONG_SECRET_WARNING_COUNT_01 -> HealthCardVerifyPinResult.WrongSecretWarning(this, 1)
+        HealthCardResponseStatus.WRONG_SECRET_WARNING_COUNT_02 -> HealthCardVerifyPinResult.WrongSecretWarning(this, 2)
+        HealthCardResponseStatus.WRONG_SECRET_WARNING_COUNT_03 -> HealthCardVerifyPinResult.WrongSecretWarning(this, 3)
+        HealthCardResponseStatus.PASSWORD_BLOCKED -> HealthCardVerifyPinResult.CardBlocked(this)
+        else -> error("Verify pin command failed with status: ${this.status}")
     }
 }
 
