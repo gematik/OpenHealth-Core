@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,23 +16,19 @@
 
 package de.gematik.openhealth.smartcard.exchange
 
-import de.gematik.openhealth.smartcard.card.SmartCard
+import de.gematik.openhealth.smartcard.card.TrustedChannelScope
 import de.gematik.openhealth.smartcard.cardobjects.Df
 import de.gematik.openhealth.smartcard.cardobjects.Mf
 import de.gematik.openhealth.smartcard.command.EXPECTED_LENGTH_WILDCARD_EXTENDED
 import de.gematik.openhealth.smartcard.command.HealthCardCommand
-import de.gematik.openhealth.smartcard.command.ResponseStatus
-import de.gematik.openhealth.smartcard.command.executeSuccessfulOn
+import de.gematik.openhealth.smartcard.command.HealthCardResponseStatus
 import de.gematik.openhealth.smartcard.command.read
 import de.gematik.openhealth.smartcard.command.select
 import de.gematik.openhealth.smartcard.identifier.ApplicationIdentifier
 import de.gematik.openhealth.smartcard.identifier.FileIdentifier
 
-fun SmartCard.CommunicationScope.retrieveCertificate(): ByteArray {
-    HealthCardCommand
-        .select(
-            ApplicationIdentifier(Df.Esign.AID),
-        ).executeSuccessfulOn(this)
+suspend fun TrustedChannelScope.retrieveCertificate(): ByteArray {
+    HealthCardCommand.select(ApplicationIdentifier(Df.Esign.AID)).transmitSuccessfully()
     HealthCardCommand
         .select(
             FileIdentifier(
@@ -41,7 +37,7 @@ fun SmartCard.CommunicationScope.retrieveCertificate(): ByteArray {
             selectDfElseEf = false,
             requestFcp = true,
             fcpLength = EXPECTED_LENGTH_WILDCARD_EXTENDED,
-        ).executeSuccessfulOn(this)
+        ).transmitSuccessfully()
 
     var buffer = byteArrayOf()
     var offset = 0
@@ -49,7 +45,7 @@ fun SmartCard.CommunicationScope.retrieveCertificate(): ByteArray {
         val response =
             HealthCardCommand
                 .read(offset)
-                .executeOn(this)
+                .transmit()
 
         val data = response.apdu.data
 
@@ -59,10 +55,11 @@ fun SmartCard.CommunicationScope.retrieveCertificate(): ByteArray {
         }
 
         when (response.status) {
-            ResponseStatus.SUCCESS -> { }
-            ResponseStatus.END_OF_FILE_WARNING,
-            ResponseStatus.OFFSET_TOO_BIG,
-            -> break
+            HealthCardResponseStatus.SUCCESS -> {}
+            HealthCardResponseStatus.END_OF_FILE_WARNING,
+            HealthCardResponseStatus.OFFSET_TOO_BIG,
+                -> break
+
             else -> error("Couldn't read certificate: ${response.status}")
         }
     }

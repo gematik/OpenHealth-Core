@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,19 @@ plugins {
 
 kotlin {
     js {
-        nodejs {}
+        nodejs {
+            useEsModules()
+        }
         binaries.executable()
     }
 
     sourceSets {
+        val commonMain by getting {
+            dependencies {
+                implementation(project(":smartcard"))
+                implementation(project(":crypto"))
+            }
+        }
         val jsMain by getting {
             dependencies {
                 implementation(project(":smartcard-reader-nodejs"))

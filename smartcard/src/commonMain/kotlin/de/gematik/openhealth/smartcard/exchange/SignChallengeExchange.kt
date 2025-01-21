@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,13 @@ package de.gematik.openhealth.smartcard.exchange
 
 import de.gematik.openhealth.smartcard.Requirement
 import de.gematik.openhealth.smartcard.card.CardKey
+import de.gematik.openhealth.smartcard.card.HealthCardScope
 import de.gematik.openhealth.smartcard.card.PsoAlgorithm
 import de.gematik.openhealth.smartcard.card.SmartCard
+import de.gematik.openhealth.smartcard.card.TrustedChannelScope
 import de.gematik.openhealth.smartcard.cardobjects.Df
 import de.gematik.openhealth.smartcard.cardobjects.Mf
 import de.gematik.openhealth.smartcard.command.HealthCardCommand
-import de.gematik.openhealth.smartcard.command.executeSuccessfulOn
 import de.gematik.openhealth.smartcard.command.manageSecEnvForSigning
 import de.gematik.openhealth.smartcard.command.psoComputeDigitalSignature
 import de.gematik.openhealth.smartcard.command.select
@@ -45,21 +46,21 @@ import de.gematik.openhealth.smartcard.identifier.ApplicationIdentifier
     sourceSpecification = "BSI-eRp-ePA",
     rationale = "Signature via ecdh ephemeral-static (one time usage)",
 )
-fun SmartCard.CommunicationScope.signChallenge(challenge: ByteArray): ByteArray {
+suspend fun TrustedChannelScope.signChallenge(challenge: ByteArray): ByteArray {
     HealthCardCommand
         .select(
             ApplicationIdentifier(Df.Esign.AID),
-        ).executeSuccessfulOn(this)
+        ).transmitSuccessfully()
 
     HealthCardCommand
         .manageSecEnvForSigning(
             PsoAlgorithm.SIGN_VERIFY_ECDSA,
             CardKey(Mf.Df.Esign.PrK.ChAutE256.KID),
             true,
-        ).executeSuccessfulOn(this)
+        ).transmitSuccessfully()
 
     return HealthCardCommand
         .psoComputeDigitalSignature(challenge)
-        .executeSuccessfulOn(this)
+        .transmitSuccessfully()
         .apdu.data
 }

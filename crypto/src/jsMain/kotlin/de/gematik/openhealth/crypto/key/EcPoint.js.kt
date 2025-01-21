@@ -36,7 +36,7 @@ internal actual fun EcPoint.nativePlus(other: EcPoint): EcPoint =
         val uncompressedEcPoint =
             ECPoint
                 .create(curve.curveName(), uncompressed.toUint8Vector())
-                .plus(ECPoint.create(curve.curveName(), other.uncompressed.toUint8Vector()))
+                .add(ECPoint.create(curve.curveName(), other.uncompressed.toUint8Vector()))
                 .uncompressed()
         EcPublicKey(curve, uncompressedEcPoint.toByteArray()).toEcPoint()
     }

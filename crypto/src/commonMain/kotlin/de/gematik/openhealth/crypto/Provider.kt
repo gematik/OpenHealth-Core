@@ -20,4 +20,4 @@ package de.gematik.openhealth.crypto
  * Initializes the underlying native provider. A call to this function is required before calling
  * any other cryptographic operations.
  */
-expect suspend fun initializeNativeProvider()
+expect suspend fun initializeNativeCryptoProvider()

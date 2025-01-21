@@ -45,7 +45,7 @@ fun runTestWithProvider(
         context = context,
     ) {
         useCryptoAsync {
-            initializeNativeProvider()
+            initializeNativeCryptoProvider()
             testBody(TestProviderScope(this@runTest, this@useCryptoAsync))
         }
     }

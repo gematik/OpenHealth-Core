@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+package de.gematik.openhealth.smartcard.card
+
+import MacObject
 import de.gematik.openhealth.asn1.Asn1Decoder
 import de.gematik.openhealth.asn1.Asn1Tag
 import de.gematik.openhealth.crypto.ExperimentalCryptoApi
@@ -22,74 +25,64 @@ import de.gematik.openhealth.crypto.bytes
 import de.gematik.openhealth.crypto.cipher.AesCbcSpec
 import de.gematik.openhealth.crypto.cipher.AesEcbSpec
 import de.gematik.openhealth.crypto.useCrypto
-import de.gematik.openhealth.smartcard.card.PaceKey
-import de.gematik.openhealth.smartcard.card.SmartCard
 import de.gematik.openhealth.smartcard.command.CardCommandApdu
 import de.gematik.openhealth.smartcard.command.CardResponseApdu
 import de.gematik.openhealth.smartcard.command.EXPECTED_LENGTH_WILDCARD_EXTENDED
 import de.gematik.openhealth.smartcard.command.EXPECTED_LENGTH_WILDCARD_SHORT
 import de.gematik.openhealth.smartcard.tagobjects.DataObject
-import de.gematik.openhealth.smartcard.tagobjects.StatusObject
 import de.gematik.openhealth.smartcard.tagobjects.LengthObject
-
-import de.gematik.openhealth.smartcard.utils.Bytes.padData
-import de.gematik.openhealth.smartcard.utils.Bytes.unPadData
+import de.gematik.openhealth.smartcard.tagobjects.StatusObject
+import de.gematik.openhealth.smartcard.utils.padData
+import de.gematik.openhealth.smartcard.utils.unpadData
+import kotlin.collections.plus
 import kotlin.experimental.or
-
 
 private const val SECURE_MESSAGING_COMMAND = 0x0C.toByte()
 private val PADDING_INDICATOR = byteArrayOf(0x01.toByte())
-private const val BLOCK_SIZE = 16
-private const val MAC_SIZE = 8
-private const val STATUS_SIZE: Int = 0x02
-private const val MIN_RESPONSE_SIZE = 12
-private const val HEADER_SIZE = 4
+private const val CIPHER_BLOCK_SIZE_BYTES = 16
+private const val APDU_RESPONSE_MAC_SIZE_BYTES = 8
+private const val APDU_RESPONSE_STATUS_SIZE_BYTES = 2
+private const val APDU_MIN_RESPONSE_SIZE_BYTES = 12
+private const val APDU_HEADER_SIZE_BYTES = 4
 
-private const val DO_81_TAG = 0x81
-private const val DO_87_TAG = 0x87
-private const val DO_99_TAG = 0x99
-private const val DO_8E_TAG = 0x8E
-private const val LENGTH_TAG = 0x80
-private const val BYTE_MASK = 0x0F
-private const val MALFORMED_SECURE_MESSAGING_APDU = "Malformed Secure Messaging APDU"
-
-interface SecureMessagingScope : SmartCard.CommunicationScope {
-
+interface TrustedChannelScope : HealthCardScope {
+    val paceKey: PaceKey
 }
 
 @OptIn(ExperimentalCryptoApi::class)
-class SecureMessaging(private val scope: SmartCard.CommunicationScope, private val paceKey: PaceKey): SecureMessagingScope {
-    private val secureMessagingSSC: ByteArray = ByteArray(BLOCK_SIZE)
-
+internal class TrustedChannelScopeImpl(private val scope: HealthCardScope, override val paceKey: PaceKey): TrustedChannelScope, HealthCardScope {
     override val cardIdentifier: String = scope.cardIdentifier
     override val supportsExtendedLength: Boolean = scope.supportsExtendedLength
 
-    override fun transmit(apdu: CardCommandApdu): CardResponseApdu {
-        TODO("Not yet implemented")
+    private val secureMessagingSequenceCounter: ByteArray = ByteArray(CIPHER_BLOCK_SIZE_BYTES)
+
+    override suspend fun transmit(commandApdu: CardCommandApdu): CardResponseApdu {
+        val encryptedCommandApdu = encrypt(commandApdu)
+        val encryptedResponseApdu = scope.transmit(encryptedCommandApdu)
+        return decrypt(encryptedResponseApdu)
     }
 
-    private fun incrementSSC() {
-        for (i in secureMessagingSSC.indices.reversed()) {
-            secureMessagingSSC[i]++
-            if (secureMessagingSSC[i] != 0.toByte()) {
+    private fun incrementMsgSeqCounter() {
+        for (i in secureMessagingSequenceCounter.indices.reversed()) {
+            secureMessagingSequenceCounter[i]++
+            if (secureMessagingSequenceCounter[i] != 0.toByte()) {
                 break
             }
         }
     }
 
-    /**
-     * Encrypts a plain APDU
-     */
     @OptIn(ExperimentalStdlibApi::class)
     fun encrypt(commandApdu: CardCommandApdu): CardCommandApdu {
-        val apduToEncrypt = commandApdu.apdu // copy
+        val apduToEncrypt = commandApdu.apdu
 
-        incrementSSC()
+        incrementMsgSeqCounter()
 
-        require(apduToEncrypt.size >= HEADER_SIZE) { "APDU must be at least 4 bytes long" }
+        require(apduToEncrypt.size >= APDU_HEADER_SIZE_BYTES) { "APDU must be at least $APDU_HEADER_SIZE_BYTES bytes long" }
 
-        val header = apduToEncrypt.copyOfRange(0, HEADER_SIZE)
-        setSecureMessagingCommand(header)
+        val header = apduToEncrypt.copyOfRange(0, APDU_HEADER_SIZE_BYTES)
+        require(header[0] != (header[0] or SECURE_MESSAGING_COMMAND)) { "Secure Messaging command already set" }
+        // set secure messaging command on first header byte
+        header[0] = header[0] or SECURE_MESSAGING_COMMAND
 
         var commandDataOutput = byteArrayOf()
 
@@ -100,7 +93,7 @@ class SecureMessaging(private val scope: SmartCard.CommunicationScope, private v
             .takeIf { it.isNotEmpty() }
             ?.let {
                 var data = it
-                data = padData(data, BLOCK_SIZE)
+                data = padData(data, CIPHER_BLOCK_SIZE_BYTES)
                 data = encryptData(data)
                 data = PADDING_INDICATOR + data
 
@@ -114,18 +107,13 @@ class SecureMessaging(private val scope: SmartCard.CommunicationScope, private v
             commandDataOutput += LengthObject(it).encoded
         } ?: -1
 
-        val commandMacObject = MacObject(header, commandDataOutput, paceKey.mac, secureMessagingSSC)
+        val commandMacObject = MacObject(header, commandDataOutput, paceKey.mac, secureMessagingSequenceCounter)
         commandDataOutput += commandMacObject.encoded
         return createEncryptedCommand(
             le = le,
             data = commandDataOutput,
             header = header
         )
-    }
-
-    private fun setSecureMessagingCommand(header: ByteArray) {
-        require(header[0] != (header[0] or SECURE_MESSAGING_COMMAND)) { MALFORMED_SECURE_MESSAGING_APDU }
-        header[0] = (header[0] or SECURE_MESSAGING_COMMAND)
     }
 
     @OptIn(UnsafeCryptoApi::class, ExperimentalStdlibApi::class)
@@ -176,9 +164,9 @@ class SecureMessaging(private val scope: SmartCard.CommunicationScope, private v
 
         var responseDataOutput = byteArrayOf()
 
-        require(apduResponseBytes.size >= MIN_RESPONSE_SIZE) { MALFORMED_SECURE_MESSAGING_APDU }
+        require(apduResponseBytes.size >= APDU_MIN_RESPONSE_SIZE_BYTES) { "Apdu response is too short" }
 
-        incrementSSC()
+        incrementMsgSeqCounter()
 
         val responseObject = responseApdu.readResponseObject()
         // write data object to output
@@ -190,7 +178,7 @@ class SecureMessaging(private val scope: SmartCard.CommunicationScope, private v
         val responseMacObject = MacObject(
             commandOutput = responseDataOutput,
             kMac = paceKey.mac,
-            ssc = secureMessagingSSC
+            ssc = secureMessagingSequenceCounter
         )
         checkMac(responseMacObject.mac, responseObject.macBytes)
 
@@ -209,8 +197,11 @@ class SecureMessaging(private val scope: SmartCard.CommunicationScope, private v
 
     /**
      * Concatenated asn1 of the following structure:
+     *
      * DO81...||DO99...||DO8E...||SW1SW2
      * DO87...||DO99...||DO8E...||SW1SW2
+     *
+     * while DO81 or DO87 can be optional.
      */
     @OptIn(ExperimentalStdlibApi::class)
     private fun CardResponseApdu.readResponseObject(): ResponseObject =
@@ -241,12 +232,12 @@ class SecureMessaging(private val scope: SmartCard.CommunicationScope, private v
             val statusBytes = advanceWithTag(0x19, Asn1Tag.CONTEXT_SPECIFIC) {
                 readBytes(remainingLength)
             }
-            require(statusBytes.size == 2) { "Status must be 2 bytes long" }
+            require(statusBytes.size == APDU_RESPONSE_STATUS_SIZE_BYTES) { "Status must be $APDU_RESPONSE_STATUS_SIZE_BYTES bytes long" }
             // Case DO8E
             val macBytes = advanceWithTag(0x0E, Asn1Tag.CONTEXT_SPECIFIC) {
                 readBytes(remainingLength)
             }
-            require(macBytes.size == 8) { "Status must be 8 bytes long" }
+            require(macBytes.size == APDU_RESPONSE_MAC_SIZE_BYTES) { "Status must be $APDU_RESPONSE_MAC_SIZE_BYTES bytes long" }
             ResponseObject(
                 dataObject = data?.let { (tag, data) -> DataObject(data, tag) },
                 statusBytes = statusBytes,
@@ -263,16 +254,16 @@ class SecureMessaging(private val scope: SmartCard.CommunicationScope, private v
         if (dataObject != null) {
             if (dataObject.isEncrypted) {
                 val dataDecrypted = removePaddingIndicator(dataObject.data).let {
-                        useCrypto {
-                            val cbc = AesCbcSpec(
-                                tagLength = 16.bytes,
-                                iv = createIvWithEcb(),
-                                autoPadding = false,
-                            ).createDecipher(paceKey.enc)
-                            cbc.update(it) + cbc.final()
-                        }
+                    useCrypto {
+                        val cbc = AesCbcSpec(
+                            tagLength = 16.bytes,
+                            iv = createIvWithEcb(),
+                            autoPadding = false,
+                        ).createDecipher(paceKey.enc)
+                        cbc.update(it) + cbc.final()
+                    }
                 }
-                outputStream += unPadData(dataDecrypted)
+                outputStream += unpadData(dataDecrypted)
             } else {
                 outputStream += dataObject.data
             }
@@ -292,6 +283,6 @@ class SecureMessaging(private val scope: SmartCard.CommunicationScope, private v
                 tagLength = 16.bytes,
                 autoPadding = false,
             ).createCipher(paceKey.enc)
-            ecb.update(secureMessagingSSC) + ecb.final()
+            ecb.update(secureMessagingSequenceCounter) + ecb.final()
         }
 }

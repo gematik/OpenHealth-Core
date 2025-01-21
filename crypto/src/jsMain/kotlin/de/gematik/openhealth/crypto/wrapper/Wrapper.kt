@@ -98,7 +98,7 @@ external interface CMAC : ClassHandle {
 external interface ECPoint : ClassHandle {
     fun times(signedInteger: Uint8Vector): ECPoint
 
-    fun plus(point: ECPoint): ECPoint
+    fun add(point: ECPoint): ECPoint
 
     fun uncompressed(): Uint8Vector
 }

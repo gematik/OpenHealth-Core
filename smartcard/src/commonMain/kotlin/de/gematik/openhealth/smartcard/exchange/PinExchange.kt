@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,21 +18,27 @@ package de.gematik.openhealth.smartcard.exchange
 
 import de.gematik.openhealth.smartcard.card.EncryptedPinFormat2
 import de.gematik.openhealth.smartcard.card.PasswordReference
-import de.gematik.openhealth.smartcard.card.SmartCard
+import de.gematik.openhealth.smartcard.card.TrustedChannelScope
 import de.gematik.openhealth.smartcard.cardobjects.Mf
 import de.gematik.openhealth.smartcard.command.HealthCardCommand
-import de.gematik.openhealth.smartcard.command.ResponseStatus
+import de.gematik.openhealth.smartcard.command.HealthCardResponse
+import de.gematik.openhealth.smartcard.command.HealthCardResponseStatus
 import de.gematik.openhealth.smartcard.command.UnlockMethod
 import de.gematik.openhealth.smartcard.command.changeReferenceData
-import de.gematik.openhealth.smartcard.command.executeSuccessfulOn
 import de.gematik.openhealth.smartcard.command.select
 import de.gematik.openhealth.smartcard.command.unlockEgk
 import de.gematik.openhealth.smartcard.command.verifyPin
 
-fun SmartCard.CommunicationScope.verifyPin(pin: String): ResponseStatus {
+sealed class HealthCardVerifyPinResult(val response: HealthCardResponse) {
+    class Success(response: HealthCardResponse) : HealthCardVerifyPinResult(response)
+    class WrongSecretWarning(response: HealthCardResponse, val retriesLeft: Int) : HealthCardVerifyPinResult(response)
+    class CardBlocked(response: HealthCardResponse) : HealthCardVerifyPinResult(response)
+}
+
+suspend fun TrustedChannelScope.verifyPin(pin: String): HealthCardVerifyPinResult {
     HealthCardCommand
         .select(selectParentElseRoot = false, readFirst = false)
-        .executeSuccessfulOn(this)
+        .transmitSuccessfully()
 
     val passwordReference = PasswordReference(Mf.MrPinHome.PWID)
 
@@ -42,34 +48,27 @@ fun SmartCard.CommunicationScope.verifyPin(pin: String): ResponseStatus {
                 passwordReference = passwordReference,
                 dfSpecific = false,
                 pin = EncryptedPinFormat2(pin),
-            ).executeOn(this)
+            ).transmit()
 
-    require(
-        when (response.status) {
-            ResponseStatus.SUCCESS,
-            ResponseStatus.WRONG_SECRET_WARNING_COUNT_01,
-            ResponseStatus.WRONG_SECRET_WARNING_COUNT_02,
-            ResponseStatus.WRONG_SECRET_WARNING_COUNT_03,
-            ResponseStatus.PASSWORD_BLOCKED,
-            ->
-                true
-            else ->
-                false
-        },
-    ) { "Verify pin command failed with status: ${response.status}" }
-
-    return response.status
+   return when (response.status) {
+        HealthCardResponseStatus.SUCCESS ->  HealthCardVerifyPinResult.Success(response)
+        HealthCardResponseStatus.WRONG_SECRET_WARNING_COUNT_01 ->  HealthCardVerifyPinResult.WrongSecretWarning(response, 1)
+        HealthCardResponseStatus.WRONG_SECRET_WARNING_COUNT_02 ->  HealthCardVerifyPinResult.WrongSecretWarning(response, 2)
+        HealthCardResponseStatus.WRONG_SECRET_WARNING_COUNT_03 ->  HealthCardVerifyPinResult.WrongSecretWarning(response, 3)
+        HealthCardResponseStatus.PASSWORD_BLOCKED ->  HealthCardVerifyPinResult.CardBlocked(response)
+        else -> error("Verify pin command failed with status: ${response.status}")
+    }
 }
 
-suspend fun SmartCard.CommunicationScope.unlockEgk(
+suspend fun TrustedChannelScope.unlockEgk(
     unlockMethod: String,
     puk: String,
     oldSecret: String,
     newSecret: String,
-): ResponseStatus {
+): HealthCardResponseStatus {
     HealthCardCommand
         .select(selectParentElseRoot = false, readFirst = false)
-        .executeSuccessfulOn(this)
+        .transmitSuccessfully()
 
     val passwordReference = PasswordReference(Mf.MrPinHome.PWID)
 
@@ -83,7 +82,7 @@ suspend fun SmartCard.CommunicationScope.unlockEgk(
                     dfSpecific = false,
                     oldSecret = EncryptedPinFormat2(oldSecret),
                     newSecret = EncryptedPinFormat2(newSecret),
-                ).executeSuccessfulOn(this)
+                ).transmitSuccessfully()
         } else {
             HealthCardCommand
                 .unlockEgk(
@@ -99,12 +98,12 @@ suspend fun SmartCard.CommunicationScope.unlockEgk(
                         } else {
                             null
                         },
-                ).executeSuccessfulOn(this)
+                ).transmitSuccessfully()
         }
 
     require(
         when (response.status) {
-            ResponseStatus.SUCCESS ->
+            HealthCardResponseStatus.SUCCESS ->
                 true
             else ->
                 false

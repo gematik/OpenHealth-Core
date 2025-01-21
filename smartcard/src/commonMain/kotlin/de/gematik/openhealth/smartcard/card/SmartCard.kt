@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,11 +41,9 @@ abstract class SmartCard {
 
         /**
          * Transmits a command APDU to the smart card and receives the corresponding response APDU.
-         *
-         * @param apdu command to be transmitted.
          */
         @JsExport.Ignore
-        fun transmit(apdu: CardCommandApdu): CardResponseApdu
+        suspend fun transmit(apdu: CardCommandApdu): CardResponseApdu
 
         /**
          * Ensures extensibility for specific APDU commands.

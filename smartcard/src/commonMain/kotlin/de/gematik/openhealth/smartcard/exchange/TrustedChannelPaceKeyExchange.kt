@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,59 +40,58 @@ import de.gematik.openhealth.crypto.key.decodeFromUncompressedFormat
 import de.gematik.openhealth.crypto.key.generateKeyPair
 import de.gematik.openhealth.crypto.key.toEcPoint
 import de.gematik.openhealth.crypto.key.toEcPublicKey
-import de.gematik.openhealth.crypto.secureRandom
 import de.gematik.openhealth.crypto.useCrypto
 import de.gematik.openhealth.smartcard.card.CardKey
+import de.gematik.openhealth.smartcard.card.HealthCardScope
 import de.gematik.openhealth.smartcard.card.Mode
 import de.gematik.openhealth.smartcard.card.PaceKey
-import de.gematik.openhealth.smartcard.card.SmartCard
+import de.gematik.openhealth.smartcard.card.TrustedChannelScope
+import de.gematik.openhealth.smartcard.card.TrustedChannelScopeImpl
 import de.gematik.openhealth.smartcard.card.getAES128Key
 import de.gematik.openhealth.smartcard.card.isHealthCardVersion21
 import de.gematik.openhealth.smartcard.card.parseHealthCardVersion2
 import de.gematik.openhealth.smartcard.cardobjects.Ef
 import de.gematik.openhealth.smartcard.command.HealthCardCommand
-import de.gematik.openhealth.smartcard.command.executeSuccessfulOn
+import de.gematik.openhealth.smartcard.command.HealthCardResponseStatus
 import de.gematik.openhealth.smartcard.command.generalAuthenticate
 import de.gematik.openhealth.smartcard.command.manageSecEnvWithoutCurves
 import de.gematik.openhealth.smartcard.command.read
 import de.gematik.openhealth.smartcard.command.select
 import de.gematik.openhealth.smartcard.identifier.FileIdentifier
 import de.gematik.openhealth.smartcard.identifier.ShortFileIdentifier
+import kotlinx.coroutines.channels.consumeEach
 
 private const val SECRET_KEY_REFERENCE = 2 // Reference of secret key for PACE (CAN)
 
 @OptIn(
     ExperimentalCryptoApi::class,
     UnsafeCryptoApi::class,
-    ExperimentalStdlibApi::class,
-)
-
-// todo comment
-fun SmartCard.CommunicationScope.establishTrustedChannel(cardAccessNumber: String): PaceKey {
+    )
+suspend fun HealthCardScope.establishTrustedChannel(cardAccessNumber: String): TrustedChannelScope {
     // Step 1: Read and configure supported PACE parameters
-    fun initializePace(): PaceInfo {
+    suspend fun initializePace(): PaceInfo {
         HealthCardCommand
             .select(
                 selectParentElseRoot = false,
                 readFirst = true,
-            ).executeSuccessfulOn(this)
+            ).transmitSuccessfully()
         HealthCardCommand
             .read(
                 ShortFileIdentifier(Ef.Version2.SFID),
                 0,
-            ).executeSuccessfulOn(this)
+            ).transmitSuccessfully()
             .let {
                 check(
                     parseHealthCardVersion2(it.apdu.data).isHealthCardVersion21(),
                 ) { "Invalid eGK Version." }
             }
 
-        HealthCardCommand.select(FileIdentifier(Ef.CardAccess.FID), false).executeSuccessfulOn(this)
+        HealthCardCommand.select(FileIdentifier(Ef.CardAccess.FID), false).transmitSuccessfully()
         val paceInfo =
             parsePaceInfo(
                 HealthCardCommand
                     .read()
-                    .executeOn(this)
+                    .transmit()
                     .apdu.data,
             )
 
@@ -101,18 +100,18 @@ fun SmartCard.CommunicationScope.establishTrustedChannel(cardAccessNumber: Strin
                 CardKey(SECRET_KEY_REFERENCE),
                 false,
                 paceInfo.protocolIdBytes,
-            ).executeSuccessfulOn(this)
+            ).transmitSuccessfully()
 
         return paceInfo
     }
 
     // Step 2: Perform Ephemeral Key Exchange
-    fun performKeyExchange(paceInfo: PaceInfo): Pair<EcPoint, EcPrivateKey> {
+    suspend fun performKeyExchange(paceInfo: PaceInfo): Pair<EcPoint, EcPrivateKey> {
         val nonceZ =
             parseAsn1KeyObject(
                 HealthCardCommand
                     .generalAuthenticate(true)
-                    .executeSuccessfulOn(this)
+                    .transmitSuccessfully()
                     .apdu.data,
             )
         val canKey = deriveAESKey(cardAccessNumber.encodeToByteArray(), Mode.PASSWORD)
@@ -134,7 +133,7 @@ fun SmartCard.CommunicationScope.establishTrustedChannel(cardAccessNumber: Strin
                 parseAsn1KeyObject(
                     HealthCardCommand
                         .generalAuthenticate(true, pcdSharedSecret.uncompressed, 1)
-                        .executeSuccessfulOn(this)
+                        .transmitSuccessfully()
                         .apdu.data,
                 ),
             )
@@ -150,7 +149,7 @@ fun SmartCard.CommunicationScope.establishTrustedChannel(cardAccessNumber: Strin
     }
 
     // Step 3: Mutual Authentication
-    fun performMutualAuthentication(
+    suspend fun performMutualAuthentication(
         paceInfo: PaceInfo,
         epGsSharedSecret: EcPoint,
         epPrivateKey: EcPrivateKey,
@@ -161,17 +160,13 @@ fun SmartCard.CommunicationScope.establishTrustedChannel(cardAccessNumber: Strin
                 parseAsn1KeyObject(
                     HealthCardCommand
                         .generalAuthenticate(true, epGsSharedSecret.uncompressed, 3)
-                        .executeSuccessfulOn(this)
+                        .transmitSuccessfully()
                         .apdu.data,
                 ),
             )
 
         val sharedSecret = piccPublicKey.toEcPoint() * epPrivateKey.s
-        val sharedSecretX =
-            sharedSecret.x!!.toByteArray().let {
-                // integer might be padded with 0 to make it positive; we don't require this here
-                if (it[0] == 0x00.toByte()) it.copyOfRange(1, it.size) else it
-            }
+        val sharedSecretX = sharedSecret.uncompressed.copyOfRange(1, 33)
 
         val encryptionKey = deriveAESKey(sharedSecretX, Mode.ENC)
         val macKey = deriveAESKey(sharedSecretX, Mode.MAC)
@@ -181,14 +176,11 @@ fun SmartCard.CommunicationScope.establishTrustedChannel(cardAccessNumber: Strin
         val derivedMac =
             deriveMac(paceKey.mac, epGsSharedSecret.toEcPublicKey(), paceInfo.protocolId)
 
-        println("derivedMac ${derivedMac.toHexString()} ${derivedMac.asList()}")
-        println("mac ${mac.toHexString()}")
-
         val piccMac =
             parseAsn1KeyObject(
                 HealthCardCommand
                     .generalAuthenticate(false, mac, 5)
-                    .executeSuccessfulOn(this)
+                    .transmitSuccessfully()
                     .apdu.data,
             )
 
@@ -200,7 +192,8 @@ fun SmartCard.CommunicationScope.establishTrustedChannel(cardAccessNumber: Strin
     // Main PACE negotiation flow
     val paceInfo = initializePace()
     val (epGsSharedSecret, epPrivateKey) = performKeyExchange(paceInfo)
-    return performMutualAuthentication(paceInfo, epGsSharedSecret, epPrivateKey)
+    val paceKey = performMutualAuthentication(paceInfo, epGsSharedSecret, epPrivateKey)
+    return TrustedChannelScopeImpl(this, paceKey)
 }
 
 private fun parseAsn1KeyObject(asn1: ByteArray): ByteArray =

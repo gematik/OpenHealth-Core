@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package de.gematik.openhealth.smartcard
 
-import de.gematik.openhealth.crypto.initializeNativeProvider
+import de.gematik.openhealth.crypto.initializeNativeCryptoProvider
 import kotlinx.coroutines.test.runTest
 
 class ParametrizedTestScope(
@@ -31,7 +31,7 @@ fun runParametrizedTest(
     block: suspend ParametrizedTestScope.(Any) -> Unit,
 ) {
     runTest {
-        initializeNativeProvider()
+        initializeNativeCryptoProvider()
         parameters.forEach {
             ParametrizedTestScope(it, "Test with parameter `$it`").block(it)
         }
@@ -40,7 +40,7 @@ fun runParametrizedTest(
 
 fun runTestWithProvider(block: suspend () -> Unit) {
     runTest {
-        initializeNativeProvider()
+        initializeNativeCryptoProvider()
         block()
     }
 }

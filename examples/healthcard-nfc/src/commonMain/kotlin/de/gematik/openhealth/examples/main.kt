@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,30 @@
 
 package de.gematik.openhealth.examples
 
-fun main() {
-    println()
+import de.gematik.openhealth.crypto.initializeNativeCryptoProvider
+import de.gematik.openhealth.smartcard.card.SmartCard
+import de.gematik.openhealth.smartcard.card.useHealthCard
+import de.gematik.openhealth.smartcard.exchange.establishTrustedChannel
+import de.gematik.openhealth.smartcard.exchange.verifyPin
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+
+expect fun provideSmartCard(): SmartCard
+
+suspend fun main() {
+    initializeNativeCryptoProvider()
+    provideSmartCard().connect {
+        useHealthCard {
+            try {
+                with(establishTrustedChannel("123123")) {
+                    val verifyPinResult = verifyPin("123456")
+                    println(verifyPinResult.response.status)
+                }
+            } catch (err: Exception) {
+                println(err.stackTraceToString())
+            }
+        }
+    }
 }

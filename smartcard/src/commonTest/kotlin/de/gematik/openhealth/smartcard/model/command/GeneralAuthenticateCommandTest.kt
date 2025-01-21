@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package de.gematik.openhealth.smartcard.model.command
 
-import de.gematik.openhealth.smartcard.TestChannel
+import de.gematik.openhealth.smartcard.HealthCardTestScope
 import de.gematik.openhealth.smartcard.command.HealthCardCommand
 import de.gematik.openhealth.smartcard.command.generalAuthenticate
 import de.gematik.openhealth.smartcard.data.getExpectedApdu
@@ -38,7 +38,7 @@ class GeneralAuthenticateCommandTest {
 
             assertEquals(
                 expectedAPDU,
-                TestChannel().test(command).toHexString(hexSpaceFormat),
+                HealthCardTestScope().test(command).toHexString(hexSpaceFormat),
                 message,
             )
         }
@@ -52,7 +52,7 @@ class GeneralAuthenticateCommandTest {
 
             assertEquals(
                 expectedAPDU,
-                TestChannel().test(command).toHexString(hexSpaceFormat),
+                HealthCardTestScope().test(command).toHexString(hexSpaceFormat),
                 message,
             )
         }
@@ -66,7 +66,7 @@ class GeneralAuthenticateCommandTest {
 
             assertEquals(
                 expectedAPDU,
-                TestChannel().test(command).toHexString(hexSpaceFormat),
+                HealthCardTestScope().test(command).toHexString(hexSpaceFormat),
                 message,
             )
         }

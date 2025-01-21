@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,9 @@
 package de.gematik.openhealth.smartcard.exchange
 
 import de.gematik.openhealth.smartcard.Requirement
-import de.gematik.openhealth.smartcard.card.SmartCard
+import de.gematik.openhealth.smartcard.card.HealthCardScope
 import de.gematik.openhealth.smartcard.command.HealthCardCommand
-import de.gematik.openhealth.smartcard.command.ResponseStatus
-import de.gematik.openhealth.smartcard.command.executeSuccessfulOn
+import de.gematik.openhealth.smartcard.command.HealthCardResponseStatus
 import de.gematik.openhealth.smartcard.command.getRandomValues
 import de.gematik.openhealth.smartcard.command.select
 
@@ -32,24 +31,23 @@ import de.gematik.openhealth.smartcard.command.select
         "Random numbers are generated using the RNG of the health card." +
             "This generator fulfills BSI-TR-03116#3.4 PTG.2 required by gemSpec_COS#14.9.5.1",
 )
-fun SmartCard.CommunicationScope.getRandom(length: Int): ByteArray {
+suspend fun HealthCardScope.getRandom(length: Int): ByteArray {
     HealthCardCommand
         .select(selectParentElseRoot = false, readFirst = false)
-        .executeSuccessfulOn(this)
+        .transmitSuccessfully()
 
     while (true) {
         val response =
             HealthCardCommand
                 .getRandomValues(
                     length = length,
-                ).executeOn(this)
+                ).transmit()
 
         require(
             when (response.status) {
-                ResponseStatus.SUCCESS,
-                ResponseStatus.SECURITY_STATUS_NOT_SATISFIED,
-                ->
-                    true
+                HealthCardResponseStatus.SUCCESS,
+                HealthCardResponseStatus.SECURITY_STATUS_NOT_SATISFIED,
+                -> true
                 else ->
                     false
             },

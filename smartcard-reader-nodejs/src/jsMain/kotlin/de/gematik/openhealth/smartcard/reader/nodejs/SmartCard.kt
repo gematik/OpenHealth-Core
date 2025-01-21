@@ -22,6 +22,8 @@ import de.gematik.openhealth.smartcard.command.CardResponseApdu
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -35,7 +37,7 @@ class NodeSmartCardException(
 ) : Exception(error?.toString())
 
 private class NodeSmartCard : SmartCard() {
-    cardclass NodeCommunicationScope(
+    class NodeCommunicationScope(
         internal val reader: CardReader,
         private val protocol: Int,
     ) : CommunicationScope {
@@ -64,7 +66,7 @@ private class NodeSmartCard : SmartCard() {
 
             pcsc.on("reader") { reader: CardReader ->
                 reader.on("error") { err ->
-                    cancel(err.toString())
+                    throw NodeSmartCardException(err)
                 }
 
                 reader.on("status") { status: Status ->
@@ -77,7 +79,7 @@ private class NodeSmartCard : SmartCard() {
                                 // card removed
                                 reader.disconnect(reader.SCARD_LEAVE_CARD) { err ->
                                     if (err != null) {
-                                        cancel(err.toString())
+                                        throw NodeSmartCardException(err)
                                     }
                                 }
                             }
@@ -92,7 +94,7 @@ private class NodeSmartCard : SmartCard() {
                                     },
                                 ) { err, protocol ->
                                     if (err != null) {
-                                        cancel(err.toString())
+                                        throw NodeSmartCardException(err)
                                     } else {
                                         trySend(NodeCommunicationScope(reader, protocol))
                                     }
@@ -112,7 +114,7 @@ private class NodeSmartCard : SmartCard() {
             }
 
             pcsc.on("error") { err ->
-                cancel(err.toString())
+                throw NodeSmartCardException(err)
             }
 
             awaitClose {

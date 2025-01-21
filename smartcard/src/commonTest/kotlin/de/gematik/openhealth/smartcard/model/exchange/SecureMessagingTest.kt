@@ -17,11 +17,12 @@
 
 package de.gematik.openhealth.smartcard.model.exchange
 
-import SecureMessaging
 import de.gematik.openhealth.crypto.ExperimentalCryptoApi
 import de.gematik.openhealth.crypto.key.SecretKey
-import de.gematik.openhealth.smartcard.TestChannel
+import de.gematik.openhealth.smartcard.HealthCardTestScope
 import de.gematik.openhealth.smartcard.card.PaceKey
+import de.gematik.openhealth.smartcard.card.TrustedChannelScope
+import de.gematik.openhealth.smartcard.card.TrustedChannelScopeImpl
 import de.gematik.openhealth.smartcard.command.CardCommandApdu
 import de.gematik.openhealth.smartcard.command.CardResponseApdu
 import de.gematik.openhealth.smartcard.hexUppercaseFormat
@@ -34,18 +35,15 @@ class SecureMessagingTest {
     private val keyEnc: ByteArray = "68406B4162100563D9C901A6154D2901".hexToByteArray(hexUppercaseFormat)
     private val keyMac: ByteArray = "73FF268784F72AF833FDC9464049AFC9".hexToByteArray(hexUppercaseFormat)
     private val paceKey = PaceKey(SecretKey(keyEnc), SecretKey(keyMac))
-    private val testChannel = TestChannel()
+    private val healthCardTestScope = HealthCardTestScope()
 
-    private fun createSecureMessaging(): SecureMessaging =
-        SecureMessaging(
-            scope = testChannel,
-            paceKey = paceKey,
-        )
+    private fun createTrustedChannel(): TrustedChannelScopeImpl =
+        TrustedChannelScopeImpl(scope = healthCardTestScope, paceKey = paceKey)
 
     // test Case 1: |CLA|INS|P1|P2|
     @Test
     fun testEncryptionCase1() {
-        val secureMessaging = createSecureMessaging()
+        val secureMessaging = createTrustedChannel()
         val commandApdu = CardCommandApdu.ofOptions(0x01, 0x02, 0x03, 0x04, null)
         val expectedEncryptedApdu = "0D0203040A8E08D92B4FDDC2BBED8C00"
         val encryptedCommandApdu = secureMessaging.encrypt(commandApdu)
@@ -61,7 +59,7 @@ class SecureMessagingTest {
     // test Case 2s: |CLA|INS|P1|P2|LE|
     @Test
     fun testEncryptionCase2s() {
-        val secureMessaging = createSecureMessaging()
+        val secureMessaging = createTrustedChannel()
         val commandApdu = CardCommandApdu.ofOptions(0x01, 0x02, 0x03, 0x04, 127)
         val expectedEncryptedApdu = "0D02030400000D97017F8E0871D8E0418DAE20F30000"
         val encryptedCommandApdu = secureMessaging.encrypt(commandApdu)
@@ -74,7 +72,7 @@ class SecureMessagingTest {
     // test Case 2e: |CLA|INS|P1|P2|EXTLE|
     @Test
     fun testEncryptionCase2e() {
-        val secureMessaging = createSecureMessaging()
+        val secureMessaging = createTrustedChannel()
         val commandApdu = CardCommandApdu.ofOptions(0x01, 0x02, 0x03, 0x04, 257)
         val expectedEncryptedApdu = "0D02030400000E970201018E089F3EDDFBB1D3971D0000"
         val encryptedCommandApdu = secureMessaging.encrypt(commandApdu)
@@ -88,7 +86,7 @@ class SecureMessagingTest {
     @Test
     fun testEncryptionCase3s() {
         val cmdData = byteArrayOf(0x05, 0x06, 0x07, 0x08, 0x09, 0x0a)
-        val secureMessaging = createSecureMessaging()
+        val secureMessaging = createTrustedChannel()
         val commandApdu = CardCommandApdu.ofOptions(0x01, 0x02, 0x03, 0x04, cmdData, null)
         val expectedEncryptedApdu =
             "0D0203041D871101496C26D36306679609665A385C54DB378E08E7AAD918F260D8EF00"
@@ -102,7 +100,7 @@ class SecureMessagingTest {
     // test Case 4s. : |CLA|INS|P1|P2|LC|DATA|LE|
     @Test
     fun testEncryptionCase4s() {
-        val secureMessaging = createSecureMessaging()
+        val secureMessaging = createTrustedChannel()
         val cmdData = byteArrayOf(0x05, 0x06, 0x07, 0x08, 0x09, 0x0a)
         val commandApdu = CardCommandApdu.ofOptions(0x01, 0x02, 0x03, 0x04, cmdData, 127)
         val expectedEncryptedApdu =
@@ -117,7 +115,7 @@ class SecureMessagingTest {
     // test Case 4e: |CLA|INS|P1|P2|EXT('00')|LC|DATA|LE|
     @Test
     fun testEncryptionCase4e() {
-        val secureMessaging = createSecureMessaging()
+        val secureMessaging = createTrustedChannel()
         val cmdData = ByteArray(256)
         val commandApdu = CardCommandApdu.ofOptions(0x01, 0x02, 0x03, 0x04, cmdData, 127)
         val expectedEncryptedApdu =
@@ -140,10 +138,7 @@ class SecureMessagingTest {
     // test Case 1: DO99|DO8E|SW1SW2
     @Test
     fun shouldDecryptDo99Apdu() {
-        val secureMessaging = SecureMessaging(
-            scope = testChannel,
-            paceKey
-        )
+        val secureMessaging = createTrustedChannel()
         val apduToDecrypt = CardResponseApdu("990290008E08087631D746F872729000".hexToByteArray(hexUppercaseFormat))
         val decryptedApdu : CardResponseApdu = secureMessaging.decrypt(apduToDecrypt)
         val expectedDecryptedApdu = CardResponseApdu(byteArrayOf(0x90.toByte(), 0x00))
@@ -156,7 +151,7 @@ class SecureMessagingTest {
     // test Case 2: DO87|DO99|DO8E|SW1SW2
     @Test
     fun shouldDecryptDo87Apdu() {
-        val secureMessaging = createSecureMessaging()
+        val secureMessaging = createTrustedChannel()
         val apduToDecrypt =
             CardResponseApdu("871101496c26d36306679609665a385c54db37990290008E08B7E9ED2A0C89FB3A9000".hexToByteArray(hexUppercaseFormat))
         val decryptedApdu: CardResponseApdu = secureMessaging.decrypt(apduToDecrypt)
@@ -169,7 +164,7 @@ class SecureMessagingTest {
 
     @Test
     fun decryptShouldFailWithMissingStatusBytes() {
-        val secureMessaging = createSecureMessaging()
+        val secureMessaging = createTrustedChannel()
         val apduToDecrypt =
             CardResponseApdu("871101496c26d36306679609665a385c54db378E08B7E9ED2A0C89FB3A9000".hexToByteArray(hexUppercaseFormat))
 
@@ -180,7 +175,7 @@ class SecureMessagingTest {
 
     @Test
     fun decryptShouldFailWithMissingStatus() {
-        val secureMessaging = createSecureMessaging()
+        val secureMessaging = createTrustedChannel()
         val apduToDecrypt =
             CardResponseApdu("871101496c26d36306679609665a385c54db37990290008E08B7E9ED2A0C89FB3A".hexToByteArray(hexUppercaseFormat))
 
@@ -191,7 +186,7 @@ class SecureMessagingTest {
 
     @Test
     fun decryptShouldFailWithWrongCCS() {
-        val secureMessaging = createSecureMessaging()
+        val secureMessaging = createTrustedChannel()
         val apduToDecrypt =
             CardResponseApdu("871101496c26d36306679609665a385c54db37990290008E08A7E9ED2A0C89FB3A9000".hexToByteArray(hexUppercaseFormat))
 
@@ -202,7 +197,7 @@ class SecureMessagingTest {
 
     @Test
     fun decryptShouldFailWithMissingCCS() {
-        val secureMessaging = createSecureMessaging()
+        val secureMessaging = createTrustedChannel()
         val apduToDecrypt =
             CardResponseApdu("871101496c26d36306679609665a385c54db37990290009000".hexToByteArray(hexUppercaseFormat))
 
@@ -213,7 +208,7 @@ class SecureMessagingTest {
 
     @Test
     fun decryptShouldFailWithNotEncryptedApdu() {
-        val secureMessaging = createSecureMessaging()
+        val secureMessaging = createTrustedChannel()
         val apduToDecrypt = CardResponseApdu(byteArrayOf(0x90.toByte(), 0x00))
 
         assertFails {

@@ -1,12 +1,5 @@
-import de.gematik.openhealth.asn1.Asn1Encoder
-import de.gematik.openhealth.asn1.Asn1Tag
-import de.gematik.openhealth.asn1.writeTaggedObject
-import de.gematik.openhealth.crypto.*
-import de.gematik.openhealth.crypto.key.SecretKey
-import de.gematik.openhealth.smartcard.utils.Bytes.padData
-
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright (c) 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +13,16 @@ import de.gematik.openhealth.smartcard.utils.Bytes.padData
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import de.gematik.openhealth.asn1.Asn1Encoder
+import de.gematik.openhealth.asn1.Asn1Tag
+import de.gematik.openhealth.asn1.writeTaggedObject
+import de.gematik.openhealth.crypto.CmacAlgorithm
+import de.gematik.openhealth.crypto.CmacSpec
+import de.gematik.openhealth.crypto.ExperimentalCryptoApi
+import de.gematik.openhealth.crypto.key.SecretKey
+import de.gematik.openhealth.crypto.useCrypto
+import de.gematik.openhealth.smartcard.utils.padData
 
 private const val DO_8E_TAG = 0x0E
 private const val MAC_SIZE = 8

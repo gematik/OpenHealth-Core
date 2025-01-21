@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package de.gematik.openhealth.crypto
+package de.gematik.openhealth.examples
 
-import de.gematik.openhealth.crypto.wrapper.Provider
+import de.gematik.openhealth.smartcard.card.SmartCard
+import de.gematik.openhealth.smartcard.reader.nodejs.createPcscSmartCard
 
-actual suspend fun initializeNativeCryptoProvider() {
-    Provider.get()
-}
+actual fun provideSmartCard(): SmartCard = createPcscSmartCard()

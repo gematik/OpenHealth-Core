@@ -16,27 +16,27 @@
 
 package de.gematik.openhealth.smartcard
 
-import de.gematik.openhealth.smartcard.card.SmartCard
+import de.gematik.openhealth.smartcard.card.HealthCardScope
 import de.gematik.openhealth.smartcard.command.CardCommandApdu
 import de.gematik.openhealth.smartcard.command.CardResponseApdu
 import de.gematik.openhealth.smartcard.command.HealthCardCommand
 
-class TestChannel(
+class HealthCardTestScope(
     override val cardIdentifier: String = "",
     override val supportsExtendedLength: Boolean = true,
-) : SmartCard.CommunicationScope {
+) : HealthCardScope {
     private var lastCardCommandAPDU: CardCommandApdu? = null
 
     val lastCommandAPDUBytes: ByteArray
         get() = lastCardCommandAPDU?.apdu ?: ByteArray(0)
 
-    override fun transmit(command: CardCommandApdu): CardResponseApdu {
+    override suspend fun transmit(command: CardCommandApdu): CardResponseApdu {
         lastCardCommandAPDU = command
         return CardResponseApdu(byteArrayOf(0x90.toByte(), 0x00))
     }
 
-    fun test(cmd: HealthCardCommand): ByteArray {
-        cmd.executeOn(this@TestChannel)
+    suspend fun test(cmd: HealthCardCommand): ByteArray {
+        cmd.transmit()
         return lastCommandAPDUBytes
     }
 }

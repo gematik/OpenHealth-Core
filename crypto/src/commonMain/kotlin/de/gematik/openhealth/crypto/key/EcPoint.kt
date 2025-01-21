@@ -64,8 +64,10 @@ data class EcPoint(
             require(
                 !isInfinity,
             ) { "Can't encode infinite ec point to its uncompressed representation" }
-            y!!.toByteArray().copyInto(this, 33)
-            x!!.toByteArray().copyInto(this, 1)
+            val xb = x!!.toByteArray()
+            val yb = y!!.toByteArray()
+            yb.copyInto(this, 1 + 32 + 32 - yb.size)
+            xb.copyInto(this, 1 + 32 - xb.size)
             this[0] = 0x04
         }
 
