@@ -20,7 +20,6 @@ import de.gematik.openhealth.asn1.Asn1Encoder
 import de.gematik.openhealth.asn1.Asn1Tag
 import de.gematik.openhealth.asn1.writeTaggedObject
 
-private const val DO_99_TAG = 0x19
 
 /**
  * Status object with TAG 99

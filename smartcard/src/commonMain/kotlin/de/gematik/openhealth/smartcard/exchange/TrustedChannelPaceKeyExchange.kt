@@ -41,6 +41,7 @@ import de.gematik.openhealth.crypto.key.generateKeyPair
 import de.gematik.openhealth.crypto.key.toEcPoint
 import de.gematik.openhealth.crypto.key.toEcPublicKey
 import de.gematik.openhealth.crypto.useCrypto
+import de.gematik.openhealth.smartcard.Requirement
 import de.gematik.openhealth.smartcard.card.CardKey
 import de.gematik.openhealth.smartcard.card.HealthCardScope
 import de.gematik.openhealth.smartcard.card.Mode
@@ -127,6 +128,11 @@ suspend fun HealthCardScope.establishTrustedChannel(cardAccessNumber: String): T
                     .transmitSuccessfully()
                     .apdu.data,
             )
+        @Requirement(
+            "O.Cryp_3#2", "O.Cryp_4#2",
+            sourceSpecification = "BSI-eRp-ePA",
+            rationale = "AES Key-Generation and one time usage"
+        )
         val canKey = deriveAESKey(cardAccessNumber.encodeToByteArray(), Mode.PASSWORD)
         val nonceS =
             useCrypto {
