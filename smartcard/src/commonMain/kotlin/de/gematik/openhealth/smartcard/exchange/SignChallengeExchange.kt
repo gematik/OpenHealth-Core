@@ -18,11 +18,8 @@ package de.gematik.openhealth.smartcard.exchange
 
 import de.gematik.openhealth.smartcard.Requirement
 import de.gematik.openhealth.smartcard.card.CardKey
-import de.gematik.openhealth.smartcard.card.HealthCardScope
 import de.gematik.openhealth.smartcard.card.PsoAlgorithm
-import de.gematik.openhealth.smartcard.card.SmartCard
 import de.gematik.openhealth.smartcard.card.TrustedChannelScope
-import de.gematik.openhealth.smartcard.cardobjects.Df
 import de.gematik.openhealth.smartcard.cardobjects.Mf
 import de.gematik.openhealth.smartcard.command.HealthCardCommand
 import de.gematik.openhealth.smartcard.command.manageSecEnvForSigning
@@ -46,10 +43,25 @@ import de.gematik.openhealth.smartcard.identifier.ApplicationIdentifier
     sourceSpecification = "BSI-eRp-ePA",
     rationale = "Signature via ecdh ephemeral-static (one time usage)",
 )
+/**
+ * Signs the given challenge using the card's private key for authentication.
+ *
+ * Relevant specifications:
+ * - gemSpecObjSys: Section 5.3.5 (eSign application and signing process).
+ * - gemSpecCos: Sections 10.4.4 and 10.4.5 (PSO: COMPUTE DIGITAL SIGNATURE command and security environment configuration).
+ *
+ * Steps:
+ * 1. Select the eSign application (DF.eSign).
+ * 2. Configure the security environment for ECDSA signing.
+ * 3. Perform the signing operation using the `PSO: COMPUTE DIGITAL SIGNATURE` command.
+ *
+ * @param challenge The challenge to be signed.
+ * @return The computed digital signature.
+ */
 suspend fun TrustedChannelScope.signChallenge(challenge: ByteArray): ByteArray {
     HealthCardCommand
         .select(
-            ApplicationIdentifier(Df.Esign.AID),
+            ApplicationIdentifier(Mf.Df.Esign.AID),
         ).transmitSuccessfully()
 
     HealthCardCommand

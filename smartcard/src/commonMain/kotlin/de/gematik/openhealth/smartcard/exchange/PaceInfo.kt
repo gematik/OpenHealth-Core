@@ -37,26 +37,50 @@ class PaceInfo(
             .let { it.copyOfRange(2, it.size) }
 }
 
+/**
+ * Parses the PACE information from an ASN.1 encoded byte array.
+ *
+ * This function extracts:
+ * 1. The protocol identifier (OID).
+ * 2. The parameter ID, which determines the elliptic curve.
+ *
+ * References:
+ * - gemSpec_COS#14.8.2.2: PACE Protocol Details
+ *
+ * @param asn1 The ASN.1 encoded PACE information.
+ * @return A [PaceInfo] object containing the protocol ID and curve.
+ * @throws IllegalArgumentException If the parameter ID is not supported.
+ */
 @OptIn(ExperimentalCryptoApi::class)
 fun parsePaceInfo(asn1: ByteArray): PaceInfo =
     Asn1Decoder(asn1).read {
         advanceWithTag(Asn1Type.SET, Asn1Tag.CONSTRUCTED) {
             advanceWithTag(Asn1Type.SEQUENCE, Asn1Tag.CONSTRUCTED) {
+                // Step 1: Read protocol identifier (OID)
                 val protocolId = readObjectIdentifier()
+
+                // Step 2: Read and ignore the first integer
                 readInt()
+
+                // Step 3: Read the parameter ID and map to an elliptic curve
                 val parameterId = readInt()
 
-                val curve =
-                    when (parameterId) {
-                        13 -> EcCurve.BrainpoolP256r1
-                        16 -> EcCurve.BrainpoolP384r1
-                        17 -> EcCurve.BrainpoolP512r1
-                        else -> fail { "Unsupported parameter ID: $parameterId" }
-                    }
+                val curve = supportedCurves[parameterId]
+                    ?: fail { "Unsupported parameter ID: $parameterId" }
 
+                // Ensure no unexpected data exists
                 skipToEnd()
 
+                // Step 4: Create and return the PACE info
                 PaceInfo(protocolId, curve)
             }
         }
     }
+
+// Mapping of parameter IDs to supported elliptic curves
+@OptIn(ExperimentalCryptoApi::class)
+private val supportedCurves = mapOf(
+    13 to EcCurve.BrainpoolP256r1,
+    16 to EcCurve.BrainpoolP384r1,
+    17 to EcCurve.BrainpoolP512r1,
+)

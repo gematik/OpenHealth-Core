@@ -36,27 +36,44 @@ sealed class HealthCardVerifyPinResult(val response: HealthCardResponse) {
     class CardBlocked(response: HealthCardResponse) : HealthCardVerifyPinResult(response)
 }
 
+/**
+ * Verifies the PIN of the eGK.
+ *
+ * Steps:
+ * 1. Select the appropriate file (gemSpec_COS#14.2.3.1).
+ * 2. Get the PIN status (gemSpec_COS#14.7.3.2).
+ * 3. Perform PIN verification (gemSpec_COS#14.7.3.3).
+ *
+ * @param pin The PIN entered by the user.
+ * @return A result object indicating success, wrong PIN with retry count, or a blocked card.
+ */
 suspend fun TrustedChannelScope.verifyPin(pin: String): HealthCardVerifyPinResult {
+    // Step 1: Select the appropriate context (e.g., root or parent file).
     HealthCardCommand
         .select(selectParentElseRoot = false, readFirst = false)
         .transmitSuccessfully()
 
     val passwordReference = PasswordReference(Mf.MrPinHome.PWID)
 
+    // Step 2: Check the current PIN status.
     val pinStatus = HealthCardCommand.getPinStatus(passwordReference, dfSpecific = false).transmit()
 
+    // Step 3: Perform the VERIFY PIN command if the status is not successful.
     return if (pinStatus.status == HealthCardResponseStatus.SUCCESS) {
         HealthCardVerifyPinResult.Success(pinStatus)
     } else {
         val response = HealthCardCommand.verifyPin(
             passwordReference = passwordReference,
             dfSpecific = false,
-            pin = EncryptedPinFormat2(pin)
+            pin = EncryptedPinFormat2(pin) // Encrypt PIN using Format 2.
         ).transmit()
         response.toVerifyPinResult()
     }
 }
 
+/**
+ * Maps the response of a VERIFY PIN command to the appropriate result object.
+ */
 private fun HealthCardResponse.toVerifyPinResult(): HealthCardVerifyPinResult {
     return when (this.status) {
         HealthCardResponseStatus.SUCCESS -> HealthCardVerifyPinResult.Success(this)
@@ -64,26 +81,40 @@ private fun HealthCardResponse.toVerifyPinResult(): HealthCardVerifyPinResult {
         HealthCardResponseStatus.WRONG_SECRET_WARNING_COUNT_02 -> HealthCardVerifyPinResult.WrongSecretWarning(this, 2)
         HealthCardResponseStatus.WRONG_SECRET_WARNING_COUNT_03 -> HealthCardVerifyPinResult.WrongSecretWarning(this, 3)
         HealthCardResponseStatus.PASSWORD_BLOCKED -> HealthCardVerifyPinResult.CardBlocked(this)
-        else -> error("Verify pin command failed with status: ${this.status}")
+        else -> error("VERIFY PIN command failed with status: ${this.status}")
     }
 }
 
+/**
+ * Unlocks the eGK using PUK or by changing the reference data.
+ *
+ * Steps:
+ * 1. Select the appropriate file (gemSpec_COS#14.2.3.1).
+ * 2. Perform the CHANGE REFERENCE DATA or UNBLOCK PIN command (gemSpec_COS#14.7.3.4).
+ *
+ * @param unlockMethod The method used to unlock the eGK.
+ * @param puk The PUK code (required for certain unlock methods).
+ * @param oldSecret The current PIN (for change reference data).
+ * @param newSecret The new PIN (for reset or change reference data).
+ * @return The status of the unlock operation.
+ */
 suspend fun TrustedChannelScope.unlockEgk(
     unlockMethod: String,
     puk: String,
     oldSecret: String,
     newSecret: String,
 ): HealthCardResponseStatus {
+    // Step 1: Select the appropriate context.
     HealthCardCommand
         .select(selectParentElseRoot = false, readFirst = false)
         .transmitSuccessfully()
 
     val passwordReference = PasswordReference(Mf.MrPinHome.PWID)
 
+    // Step 2: Execute the appropriate unlock method.
     val response =
-        if (unlockMethod ==
-            UnlockMethod.ChangeReferenceData.name
-        ) {
+        if (unlockMethod == UnlockMethod.ChangeReferenceData.name) {
+            // Change the reference data (gemSpec_COS#14.7.3.4).
             HealthCardCommand
                 .changeReferenceData(
                     passwordReference = passwordReference,
@@ -92,6 +123,7 @@ suspend fun TrustedChannelScope.unlockEgk(
                     newSecret = EncryptedPinFormat2(newSecret),
                 ).transmitSuccessfully()
         } else {
+            // Unblock PIN or reset retry counter (gemSpec_COS#14.7.3.5).
             HealthCardCommand
                 .unlockEgk(
                     unlockMethod = unlockMethod,
@@ -99,9 +131,7 @@ suspend fun TrustedChannelScope.unlockEgk(
                     dfSpecific = false,
                     puk = EncryptedPinFormat2(puk),
                     newSecret =
-                        if (unlockMethod ==
-                            UnlockMethod.ResetRetryCounterWithNewSecret.name
-                        ) {
+                        if (unlockMethod == UnlockMethod.ResetRetryCounterWithNewSecret.name) {
                             EncryptedPinFormat2(newSecret)
                         } else {
                             null
@@ -109,14 +139,10 @@ suspend fun TrustedChannelScope.unlockEgk(
                 ).transmitSuccessfully()
         }
 
-    require(
-        when (response.status) {
-            HealthCardResponseStatus.SUCCESS ->
-                true
-            else ->
-                false
-        },
-    ) { "Change secret command failed with status: ${response.status}" }
+    // Validate the response status.
+    require(response.status == HealthCardResponseStatus.SUCCESS) {
+        "Unlock eGK command failed with status: ${response.status}"
+    }
 
     return response.status
 }
