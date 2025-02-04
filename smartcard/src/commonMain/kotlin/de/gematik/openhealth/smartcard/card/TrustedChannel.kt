@@ -45,6 +45,7 @@ private const val APDU_RESPONSE_STATUS_SIZE_BYTES = 2
 private const val APDU_MIN_RESPONSE_SIZE_BYTES = 12
 private const val APDU_HEADER_SIZE_BYTES = 4
 
+@JsExport
 interface TrustedChannelScope : HealthCardScope {
     val paceKey: PaceKey
 }

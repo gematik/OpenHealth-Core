@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+@theme {
+    --color-gem-primary: #000E52;
+    --color-gem-secondary: #00FF64;
+
+    --color-gem-neutral-025: #fcfcfd;
+    --color-gem-neutral-050: #f9fafb;
+    --color-gem-neutral-100: #f2f4f7;
+    --color-gem-neutral-200: #e4e7ec;
+    --color-gem-neutral-300: #d0d5dd;
+    --color-gem-neutral-400: #98a2b3;
+    --color-gem-neutral-500: #667085;
+    --color-gem-neutral-600: #475467;
+    --color-gem-neutral-700: #344054;
+    --color-gem-neutral-800: #1d2939;
+    --color-gem-neutral-900: #101828;
+
+    --color-gem-primary-025: #fcfcfd;
+    --color-gem-primary-050: #f8f9fc;
+    --color-gem-primary-100: #eaecf5;
+    --color-gem-primary-200: #c8cce5;
+    --color-gem-primary-300: #9ea5d1;
+    --color-gem-primary-400: #717bbc;
+    --color-gem-primary-500: #4e5ba6;
+    --color-gem-primary-600: #3e4784;
+    --color-gem-primary-700: #363f72;
+    --color-gem-primary-800: #293056;
+    --color-gem-primary-900: #101323;
+
+    --color-gem-error-025: #fffbfa;
+    --color-gem-error-050: #fef3f2;
+    --color-gem-error-100: #fee4e2;
+    --color-gem-error-200: #fecdca;
+    --color-gem-error-300: #fda29b;
+    --color-gem-error-400: #f97066;
+    --color-gem-error-500: #f04438;
+    --color-gem-error-600: #d92d20;
+    --color-gem-error-700: #b42318;
+    --color-gem-error-800: #912018;
+    --color-gem-error-900: #7a271a;
+
+    --color-gem-warning-025: #fffcf5;
+    --color-gem-warning-050: #fffaeb;
+    --color-gem-warning-100: #fef0c7;
+    --color-gem-warning-200: #fedf89;
+    --color-gem-warning-300: #fec84b;
+    --color-gem-warning-400: #fdb022;
+    --color-gem-warning-500: #f79009;
+    --color-gem-warning-600: #dc6803;
+    --color-gem-warning-700: #b54708;
+    --color-gem-warning-800: #93370d;
+    --color-gem-warning-900: #7a2e0e;
+
+    --color-gem-success-025: #f6fef9;
+    --color-gem-success-050: #ecfdf3;
+    --color-gem-success-100: #d1fadf;
+    --color-gem-success-200: #a6f4c5;
+    --color-gem-success-300: #6ce9a6;
+    --color-gem-success-400: #32d583;
+    --color-gem-success-500: #12b76a;
+    --color-gem-success-600: #039855;
+    --color-gem-success-700: #027a48;
+    --color-gem-success-800: #05603a;
+    --color-gem-success-900: #054f31;
+}

@@ -20,6 +20,7 @@ package de.gematik.openhealth.smartcard.exchange
 
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import com.ionspin.kotlin.bignum.integer.Sign
+import com.ionspin.kotlin.bignum.integer.util.fromTwosComplementByteArray
 import de.gematik.openhealth.asn1.Asn1Decoder
 import de.gematik.openhealth.asn1.Asn1Encoder
 import de.gematik.openhealth.asn1.Asn1Tag
@@ -30,6 +31,7 @@ import de.gematik.openhealth.crypto.CmacSpec
 import de.gematik.openhealth.crypto.ExperimentalCryptoApi
 import de.gematik.openhealth.crypto.UnsafeCryptoApi
 import de.gematik.openhealth.crypto.bytes
+import de.gematik.openhealth.crypto.cipher.AesCbcSpec
 import de.gematik.openhealth.crypto.cipher.AesEcbSpec
 import de.gematik.openhealth.crypto.key.EcKeyPairSpec
 import de.gematik.openhealth.crypto.key.EcPoint
@@ -65,7 +67,7 @@ private const val SECRET_KEY_REFERENCE = 2 // Reference of secret key for PACE (
 
 @OptIn(
     ExperimentalCryptoApi::class,
-    UnsafeCryptoApi::class,
+    UnsafeCryptoApi::class, ExperimentalStdlibApi::class,
     )
 suspend fun HealthCardScope.establishTrustedChannel(cardAccessNumber: String): TrustedChannelScope {
     // Step 1: Read and configure supported PACE parameters
@@ -117,7 +119,7 @@ suspend fun HealthCardScope.establishTrustedChannel(cardAccessNumber: String): T
         val canKey = deriveAESKey(cardAccessNumber.encodeToByteArray(), Mode.PASSWORD)
         val nonceS =
             useCrypto {
-                AesEcbSpec(16.bytes, autoPadding = false)
+                AesCbcSpec(16.bytes, iv = byteArrayOf(), autoPadding = false)
                     .createDecipher(canKey)
                     .let {
                         BigInteger.fromByteArray(it.update(nonceZ), Sign.POSITIVE)

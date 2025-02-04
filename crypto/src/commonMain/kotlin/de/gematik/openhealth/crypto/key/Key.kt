@@ -19,12 +19,15 @@ package de.gematik.openhealth.crypto.key
 import de.gematik.openhealth.crypto.ByteUnit
 import de.gematik.openhealth.crypto.ExperimentalCryptoApi
 import de.gematik.openhealth.crypto.bytes
+import kotlin.js.JsExport
 
+@JsExport
 @ExperimentalCryptoApi
 interface Key {
     val data: ByteArray
 }
 
+@JsExport
 @ExperimentalCryptoApi
 class SecretKey(
     override val data: ByteArray,

@@ -43,7 +43,7 @@ abstract class SmartCard {
          * Transmits a command APDU to the smart card and receives the corresponding response APDU.
          */
         @JsExport.Ignore
-        suspend fun transmit(apdu: CardCommandApdu): CardResponseApdu
+        suspend fun transmit(commandApdu: CardCommandApdu): CardResponseApdu
 
         /**
          * Ensures extensibility for specific APDU commands.

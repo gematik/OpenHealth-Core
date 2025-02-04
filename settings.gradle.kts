@@ -30,4 +30,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "kmp-gematik-common"
-include(":asn1", ":crypto", ":smartcard", ":smartcard-reader-nodejs", ":examples:healthcard-nfc")
+include(":asn1", ":crypto", ":smartcard", ":smartcard-reader-nodejs", ":examples:healthcard-nfc", ":examples:showcase-healthcard-nfc")

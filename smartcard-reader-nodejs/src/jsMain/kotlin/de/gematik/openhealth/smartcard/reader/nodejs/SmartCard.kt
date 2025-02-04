@@ -22,8 +22,6 @@ import de.gematik.openhealth.smartcard.command.CardResponseApdu
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -44,8 +42,8 @@ private class NodeSmartCard : SmartCard() {
         override val cardIdentifier: String = reader.name
         override val supportsExtendedLength: Boolean = true
 
-        override suspend fun transmit(apdu: CardCommandApdu): CardResponseApdu {
-            val commandBuffer = Buffer.from(apdu.apdu)
+        override suspend fun transmit(commandApdu: CardCommandApdu): CardResponseApdu {
+            val commandBuffer = Buffer.from(commandApdu.apdu)
             val responseBuffer =
                 suspendCancellableCoroutine { continuation ->
                     reader.transmit(commandBuffer, MAX_APDU_LENGTH, protocol) { err, response ->

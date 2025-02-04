@@ -25,6 +25,7 @@ import de.gematik.openhealth.crypto.useCrypto
 /**
  * Pace Key for TrustedChannel with Session key for encoding and Session key for message authentication
  */
+@JsExport
 @OptIn(ExperimentalCryptoApi::class)
 class PaceKey(
     val enc: SecretKey,
