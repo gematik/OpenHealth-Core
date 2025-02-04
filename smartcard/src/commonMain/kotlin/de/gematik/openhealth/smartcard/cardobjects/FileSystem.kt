@@ -17,84 +17,43 @@
 package de.gematik.openhealth.smartcard.cardobjects
 
 /**
- * Defines the file system structure and identifiers for the eGK(elektronische Gesundheitskarte) 2.1.
+ * eGK 2.1 file system objects as specified in the
+ * "Spezifikation der eGK Objektsystem G2.1" (gemSpec_eGK_ObjSys_G2_1_4.7.1).
  *
- * This object contains constants representing File Identifiers (FIDs), Short File Identifiers (SFIDs),
- * Application Identifiers (AIDs), and Password Identifiers (PWIDs) as specified in the
- * "Spezifikation dereGK Objektsystem G2.1" (gemSpec_eGK_ObjSys_G2_1_V4_0_0).
- *
- * @see <a href="https://www.gematik.de/fileadmin/user_upload/Dokumente/eHealth-Konnektoren/Spezifikationen/gemSpec_eGK_ObjSys_G2_1_V4_0_0.pdf">gemSpec_eGK_ObjSys_G2_1_V4_0_0</a>
- */
-object Ef {
-    /**
-     * Elementary Files (EFs) related to Card Access.
-     */
-    object CardAccess {
-        /**
-         * The File Identifier (FID) for the Card Access EF.
-         *
-         * This EF contains information related to the card access conditions.
-         */
-        const val FID = 0x011C
-
-        /**
-         * The Short File Identifier (SFID) for the Card Access EF.
-         *
-         * This is a shorter identifier used for faster access to the file.
-         */
-        const val SFID = 0x1C
-    }
-
-    /**
-     * Elementary Files (EFs) related to Version 2 information.
-     */
-    object Version2 {
-        /**
-         * The File Identifier (FID) for the Version 2 EF.
-         *
-         * This EF contains information about the eGK version.
-         */
-        const val FID = 0x2F11
-
-        /**
-         * The Short File Identifier (SFID) for the Version 2 EF.
-         *
-         * This is a shorter identifier used for faster access to the file.
-         */
-        const val SFID = 0x11
-    }
-}
-
-/**
- * Defines the Dedicated Files (DFs) for the eGK 2.1.
- */
-object Df {
-    /**
-     * Dedicated Files (DFs) related to electronic signatures (eSign).
-     */
-    object Esign {
-        /**
-         * The Application Identifier (AID) for the eSign DF.
-         *
-         * This AID is used to select the eSign application on the card.
-         */
-        const val AID = "A000000167455349474E"
-    }
-}
-
-/**
- * Defines the Master File (MF) and its subdirectories for the eGK 2.1.
+ * @see <a href="https://gemspec.gematik.de/docs/gemSpec/gemSpec_eGK_ObjSys_G2_1/latest/">gemSpec_eGK_ObjSys_G2_1</a>
  */
 object Mf {
     /**
-     * Objects related to the MrPinHome.
+     * Elementary Files (EFs) within the Master File (MF).
+     */
+    object Ef {
+        /**
+         * MF / EF.CardAccess is necessary for secure contactless communication using the PACE protocol.
+         *
+         * @see gemSpec_eGK_ObjSys_G2_1 Section 5.3.2
+         */
+        object CardAccess {
+            const val FID = 0x011C
+            const val SFID = 0x1C
+        }
+
+        /**
+         * MF / EF.Version2 contains the version numbers as well as product identifiers.
+         *
+         * @see gemSpec_eGK_ObjSys_G2_1 Section 5.3.8
+         */
+        object Version2 {
+            const val FID = 0x2F11
+            const val SFID = 0x11
+        }
+    }
+
+    /**
+     * MF / MRPIN.home is a multi-reference password object for unlocking keys and content of the eGK.
+     *
+     * @see gemSpec_eGK_ObjSys_G2_1 Section 5.3.10
      */
     object MrPinHome {
-        /**
-         * The Password Identifier (PWID) for the MrPinHome.
-         *
-         * This identifier is used to reference the password for the MrPinHome.
-         */
         const val PWID = 0x02
     }
 
@@ -103,46 +62,85 @@ object Mf {
      */
     object Df {
         /**
-         * Dedicated Files (DFs) related to electronic signatures (eSign) within the Master File (MF).
+         * DF.ESIGN contains eSign-related objects.
+         *
+         * @see gemSpec_eGK_ObjSys_G2_1 Section 5.5
          */
         object Esign {
+            const val AID = "A000000167455349474E"
+
             /**
              * Elementary Files (EFs) within the eSign DF.
              */
             object Ef {
                 /**
-                 * Elementary File (EF) for CchAutE256.
+                 * MF / DF.ESIGN / EF.C.CH.AUT.E256 contains the X.509 authentication certificate
+                 * for elliptic curve cryptography with the public key PuK.CH.AUT.E256.
+                 *
+                 * @see gemSpec_eGK_ObjSys_G2_1 Section 5.5.9
                  */
                 object CchAutE256 {
-                    /**
-                     * The File Identifier (FID) for the CchAutE256 EF.
-                     *
-                     * This EF is used for the CchAutE256 functionality.
-                     */
                     const val FID = 0xC504
-
-                    /**
-                     * The Short File Identifier (SFID) for the CchAutE256 EF.
-                     *
-                     * This is a shorter identifier used for faster access to the file.
-                     */
                     const val SFID = 0x04
                 }
             }
 
-            /*** Private Keys (PrK) within the eSign DF.
+            /**
+             * Private Keys (PrK) within the eSign DF.
              */
             object PrK {
                 /**
-                 * Private Key (PrK) for ChAutE256.
+                 * MF / DF.ESIGN / PrK.CH.AUT.E256 references the private key for elliptic curve cryptography.
+                 * The public part corresponding to this private key is located in EF.C.CH.AUT.E256.
+                 *
+                 * @see gemSpec_eGK_ObjSys_G2_1 Section 5.5.13
                  */
                 object ChAutE256 {
-                    /**
-                     * The Key Identifier (KID) for the ChAutE256 PrK.
-                     *
-                     * This identifier is used to reference the ChAutE256 private key.
-                     */
                     const val KID = 0x04
+                }
+            }
+        }
+
+        /**
+         * DF.HCA contains health card application-related files.
+         *
+         * @see gemSpec_eGK_ObjSys_G2_1 Section 5.4
+         */
+        object HCA {
+            const val AID = "D27600000102"
+
+            /**
+             * Elementary Files (EFs) within the HCA DF.
+             */
+            object Ef {
+                /**
+                 * MF / DF.HCA / EF.PD contains the personal data of the cardholder.
+                 *
+                 * @see gemSpec_eGK_ObjSys_G2_1 Section 5.4.4
+                 */
+                object Pd {
+                    const val FID = 0xD001
+                    const val SFID = 0x01
+                }
+
+                /**
+                 * MF / DF.HCA / EF.StatusVD contains the status of VD and PD.
+                 *
+                 * @see gemSpec_eGK_ObjSys_G2_1 Section 5.4.7
+                 */
+                object StatusVD {
+                    const val FID = 0xD00C
+                    const val SFID = 0x0C
+                }
+
+                /**
+                 * MF / DF.HCA / EF.VD contains the VD of the cardholder.
+                 *
+                 * @see gemSpec_eGK_ObjSys_G2_1 Section 5.4.9
+                 */
+                object Vd {
+                    const val FID = 0xD002
+                    const val SFID = 0x02
                 }
             }
         }

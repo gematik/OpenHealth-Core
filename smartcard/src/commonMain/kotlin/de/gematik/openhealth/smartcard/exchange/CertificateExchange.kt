@@ -17,7 +17,6 @@
 package de.gematik.openhealth.smartcard.exchange
 
 import de.gematik.openhealth.smartcard.card.TrustedChannelScope
-import de.gematik.openhealth.smartcard.cardobjects.Df
 import de.gematik.openhealth.smartcard.cardobjects.Mf
 import de.gematik.openhealth.smartcard.command.EXPECTED_LENGTH_WILDCARD_EXTENDED
 import de.gematik.openhealth.smartcard.command.HealthCardCommand
@@ -27,8 +26,18 @@ import de.gematik.openhealth.smartcard.command.select
 import de.gematik.openhealth.smartcard.identifier.ApplicationIdentifier
 import de.gematik.openhealth.smartcard.identifier.FileIdentifier
 
+/**
+ * Retrieves the X.509 certificate stored in the EF.C.CH.AUT.E256 file on the eGK.
+ *
+ * The process follows these steps:
+ * 1. Selects the DF.ESIGN application using its AID (gemSpecObjSys, Section 5.5).
+ * 2. Selects the EF.C.CH.AUT.E256 file using its FID (gemSpecObjSys, Section 5.5.9).
+ * 3. Reads the certificate data incrementally from the file (gemSpecCos, Sections 10.3.3 and 10.4.2).
+ *
+ * @return The complete X.509 certificate as a byte array.
+ */
 suspend fun TrustedChannelScope.retrieveCertificate(): ByteArray {
-    HealthCardCommand.select(ApplicationIdentifier(Df.Esign.AID)).transmitSuccessfully()
+    HealthCardCommand.select(ApplicationIdentifier(Mf.Df.Esign.AID)).transmitSuccessfully()
     HealthCardCommand
         .select(
             FileIdentifier(

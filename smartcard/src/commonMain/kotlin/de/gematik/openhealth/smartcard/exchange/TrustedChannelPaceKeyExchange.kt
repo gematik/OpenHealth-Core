@@ -43,6 +43,7 @@ import de.gematik.openhealth.crypto.key.generateKeyPair
 import de.gematik.openhealth.crypto.key.toEcPoint
 import de.gematik.openhealth.crypto.key.toEcPublicKey
 import de.gematik.openhealth.crypto.useCrypto
+import de.gematik.openhealth.smartcard.Requirement
 import de.gematik.openhealth.smartcard.card.CardKey
 import de.gematik.openhealth.smartcard.card.HealthCardScope
 import de.gematik.openhealth.smartcard.card.Mode
@@ -52,16 +53,14 @@ import de.gematik.openhealth.smartcard.card.TrustedChannelScopeImpl
 import de.gematik.openhealth.smartcard.card.getAES128Key
 import de.gematik.openhealth.smartcard.card.isHealthCardVersion21
 import de.gematik.openhealth.smartcard.card.parseHealthCardVersion2
-import de.gematik.openhealth.smartcard.cardobjects.Ef
+import de.gematik.openhealth.smartcard.cardobjects.Mf
 import de.gematik.openhealth.smartcard.command.HealthCardCommand
-import de.gematik.openhealth.smartcard.command.HealthCardResponseStatus
 import de.gematik.openhealth.smartcard.command.generalAuthenticate
 import de.gematik.openhealth.smartcard.command.manageSecEnvWithoutCurves
 import de.gematik.openhealth.smartcard.command.read
 import de.gematik.openhealth.smartcard.command.select
 import de.gematik.openhealth.smartcard.identifier.FileIdentifier
 import de.gematik.openhealth.smartcard.identifier.ShortFileIdentifier
-import kotlinx.coroutines.channels.consumeEach
 
 private const val SECRET_KEY_REFERENCE = 2 // Reference of secret key for PACE (CAN)
 
@@ -69,6 +68,21 @@ private const val SECRET_KEY_REFERENCE = 2 // Reference of secret key for PACE (
     ExperimentalCryptoApi::class,
     UnsafeCryptoApi::class, ExperimentalStdlibApi::class,
     )
+/**
+ * Establishes a trusted channel using the PACE protocol as specified in gemSpecObjSys and gemSpecCos.
+ *
+ * Steps:
+ * 1. Read and configure PACE parameters from EF.CardAccess.
+ * 2. Perform Ephemeral Key Exchange with the card.
+ * 3. Complete Mutual Authentication to establish shared keys.
+ *
+ * Relevant specifications:
+ * - gemSpecObjSys: Section 5.3.2 (PACE protocol and EF.CardAccess).
+ * - gemSpecCos: Sections 10.3.3 and 10.4.2 (command execution and response handling).
+ *
+ * @param cardAccessNumber The Card Access Number (CAN) for PACE initialization.
+ * @return A trusted channel scope to communicate securely with the card.
+ */
 suspend fun HealthCardScope.establishTrustedChannel(cardAccessNumber: String): TrustedChannelScope {
     // Step 1: Read and configure supported PACE parameters
     suspend fun initializePace(): PaceInfo {
@@ -79,7 +93,7 @@ suspend fun HealthCardScope.establishTrustedChannel(cardAccessNumber: String): T
             ).transmitSuccessfully()
         HealthCardCommand
             .read(
-                ShortFileIdentifier(Ef.Version2.SFID),
+                ShortFileIdentifier(Mf.Ef.Version2.SFID),
                 0,
             ).transmitSuccessfully()
             .let {
@@ -88,7 +102,7 @@ suspend fun HealthCardScope.establishTrustedChannel(cardAccessNumber: String): T
                 ) { "Invalid eGK Version." }
             }
 
-        HealthCardCommand.select(FileIdentifier(Ef.CardAccess.FID), false).transmitSuccessfully()
+        HealthCardCommand.select(FileIdentifier(Mf.Ef.CardAccess.FID), false).transmitSuccessfully()
         val paceInfo =
             parsePaceInfo(
                 HealthCardCommand
@@ -116,6 +130,11 @@ suspend fun HealthCardScope.establishTrustedChannel(cardAccessNumber: String): T
                     .transmitSuccessfully()
                     .apdu.data,
             )
+        @Requirement(
+            "O.Cryp_3#2", "O.Cryp_4#2",
+            sourceSpecification = "BSI-eRp-ePA",
+            rationale = "AES Key-Generation and one time usage"
+        )
         val canKey = deriveAESKey(cardAccessNumber.encodeToByteArray(), Mode.PASSWORD)
         val nonceS =
             useCrypto {

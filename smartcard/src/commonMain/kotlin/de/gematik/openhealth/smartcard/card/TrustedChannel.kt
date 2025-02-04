@@ -72,7 +72,6 @@ internal class TrustedChannelScopeImpl(private val scope: HealthCardScope, overr
         }
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     fun encrypt(commandApdu: CardCommandApdu): CardCommandApdu {
         val apduToEncrypt = commandApdu.apdu
 
@@ -204,7 +203,6 @@ internal class TrustedChannelScopeImpl(private val scope: HealthCardScope, overr
      *
      * while DO81 or DO87 can be optional.
      */
-    @OptIn(ExperimentalStdlibApi::class)
     private fun CardResponseApdu.readResponseObject(): ResponseObject =
         Asn1Decoder(this.data).read {
             val data = optional {
