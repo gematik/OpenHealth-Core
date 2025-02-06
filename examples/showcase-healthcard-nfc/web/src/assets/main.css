@@ -1,8 +1,8 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
-    --color-gem-primary: #000E52;
-    --color-gem-secondary: #00FF64;
+    --color-gem-primary: #000e52;
+    --color-gem-secondary: #00ff64;
 
     --color-gem-neutral-025: #fcfcfd;
     --color-gem-neutral-050: #f9fafb;

@@ -9,8 +9,10 @@
         "preview": "vite preview",
         "build-only": "vite build",
         "type-check": "vue-tsc --build",
-        "lint": "eslint . --fix",
-        "format": "prettier --write src/"
+        "lint:check": "eslint .",
+        "lint:fix": "eslint . --fix",
+        "fmt:check": "prettier --check src/",
+        "fmt:fix": "prettier --write src/"
     },
     "dependencies": {
         "@fontsource/ibm-plex-sans": "^5.1.1",

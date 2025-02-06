@@ -1,21 +1,12 @@
-import { Handler, Context, Config } from '@netlify/functions'
+import { Config } from '@netlify/functions'
 import * as Ably from 'ably';
-
-function generateRandomString(length: number, chars: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'): string {
-  let result = '';
-  const charactersLength = chars.length;
-  for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-}
 
 export default async () => {
   try {
     const ably = new Ably.Rest(process.env.ABLY_API_KEY as string);
 
-    const c2wChannelName = generateRandomString(12);
-    const w2cChannelName = generateRandomString(12);
+    const c2wChannelName = crypto.randomUUID();
+    const w2cChannelName = crypto.randomUUID();
     const webTokenRequest = await ably.auth.createTokenRequest({
       capability: {
         [c2wChannelName]: ['subscribe'],
@@ -31,7 +22,9 @@ export default async () => {
 
     const result = {
       webTokenRequest,
-      clientTokenRequest
+      clientTokenRequest,
+      clientToWebChannel: c2wChannelName,
+      webToClientChannel: w2cChannelName
     }
 
     return new Response(JSON.stringify(result), {
