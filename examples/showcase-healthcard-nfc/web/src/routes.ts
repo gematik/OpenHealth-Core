@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import Main from '@/pages/Main.vue'
 import Authentication from '@/pages/Authentication.vue'
+import Credentials from '@/pages/Credentials.vue'
 
 const routes = [
   { path: '/', component: Main },

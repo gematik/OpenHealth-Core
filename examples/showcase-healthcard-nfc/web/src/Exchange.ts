@@ -1,6 +1,12 @@
 import * as Ably from 'ably'
 import { type Message } from 'ably'
-import { computed, onUnmounted, type Ref, ref } from 'vue'
+import { computed, type ComputedRef, onUnmounted, type Ref, ref } from 'vue'
+
+export enum UseCase {
+  AUTHENTICATION = 1,
+  CHANGE_PASSWORD = 2,
+  UNLOCK_HC = 3
+}
 
 export type Command = CommandVerify | CommandApdu | CommandFinish
 
@@ -25,7 +31,17 @@ export type ExchangeToken = {
   webToClientChannel: string
 }
 
-export function useExchange() {
+export type UseExchangeReturn = {
+  connect: () => Promise<void>
+  finish: () => Promise<void>
+  ttlUntil: ComputedRef<number>
+  requestAsync: (request: Command,
+                 expectResponse: boolean) => Promise<Command>
+  responseAsync: () => Promise<Command>
+  token: ComputedRef<string | null>
+}
+
+export function useExchange(useCase: UseCase): UseExchangeReturn {
   const state: Ref<{
     token: ExchangeToken
     ably: Ably.Realtime
@@ -40,6 +56,7 @@ export function useExchange() {
         token: JSON.stringify(tok.clientTokenRequest),
         c2w: tok.clientToWebChannel,
         w2c: tok.webToClientChannel,
+        uc: useCase,
       })
     } else {
       return null
@@ -49,9 +66,9 @@ export function useExchange() {
   const responseAsync = async (): Promise<Command> => {
     return new Promise((resolve, reject) => {
       if (state.value) {
-        state.value.webToClientChannel.subscribe((message: Message) => {
+        state.value.clientToWebChannel.subscribe((message: Message) => {
           resolve(message.data as Command)
-          state.value?.webToClientChannel?.unsubscribe()
+          state.value?.clientToWebChannel?.unsubscribe()
         })
       } else {
         reject('Not connected')
@@ -65,7 +82,7 @@ export function useExchange() {
   ): Promise<Command> => {
     return new Promise((resolve, reject) => {
       if (state.value) {
-        state.value.webToClientChannel.publish('request', request)
+        state.value.webToClientChannel.publish('w2c', request)
         if (expectResponse) {
           state.value.clientToWebChannel.subscribe((message: Message) => {
             resolve(message.data as Command)
@@ -110,6 +127,12 @@ export function useExchange() {
 
   return {
     token,
+    ttlUntil: computed(() => {
+      console.log(state.value?.token.clientTokenRequest)
+      const tm = state.value?.token.clientTokenRequest.timestamp ?? 0;
+      const ttl = state.value?.token.clientTokenRequest.ttl ?? 0;
+      return tm + ttl;
+    }),
     responseAsync,
     requestAsync,
     connect,

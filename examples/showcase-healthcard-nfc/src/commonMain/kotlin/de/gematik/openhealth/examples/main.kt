@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 gematik GmbH
+ * Copyright 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,19 @@
 
 package de.gematik.openhealth.examples
 
+import de.gematik.openhealth.asn1.Asn1Decoder
 import de.gematik.openhealth.crypto.initializeNativeCryptoProvider
 import de.gematik.openhealth.smartcard.card.SmartCard
 import de.gematik.openhealth.smartcard.card.useHealthCard
 import de.gematik.openhealth.smartcard.command.CardCommandApdu
 import de.gematik.openhealth.smartcard.command.CardResponseApdu
+import de.gematik.openhealth.smartcard.command.HealthCardCommand
+import de.gematik.openhealth.smartcard.exchange.HealthCardVerifyPinResult
 import de.gematik.openhealth.smartcard.exchange.establishTrustedChannel
+import de.gematik.openhealth.smartcard.exchange.retrieveCertificate
 import de.gematik.openhealth.smartcard.exchange.verifyPin
-import kotlin.js.Promise
 
-class CallbackSmartCard(val connect: () -> Unit, val disconnect: () -> Unit, val transmit: suspend (apdu: ByteArray) -> ByteArray) : SmartCard() {
+class CallbackSmartCard(val transmit: suspend (apdu: ByteArray) -> ByteArray) : SmartCard() {
     inner class CommunicationScope : SmartCard.CommunicationScope {
         override val cardIdentifier: String
             get() = "WebSocket Card"
@@ -38,27 +41,31 @@ class CallbackSmartCard(val connect: () -> Unit, val disconnect: () -> Unit, val
     }
 
     override suspend fun <T> connect(block: suspend SmartCard.CommunicationScope.() -> T): T {
-        try {
-            connect()
-            return block(CommunicationScope())
-        } finally {
-            disconnect()
+        return block(CommunicationScope())
+    }
+}
+
+@OptIn(ExperimentalStdlibApi::class)
+suspend fun readHealthCard(
+    can: String,
+    pin: String,
+    transmit: suspend (apdu: ByteArray) -> ByteArray
+): String {
+    initializeNativeCryptoProvider()
+    return CallbackSmartCard(transmit).connect {
+        useHealthCard {
+            with(establishTrustedChannel(can)) {
+                val verifyPinResult = verifyPin(pin)
+                when (verifyPinResult) {
+                    is HealthCardVerifyPinResult.CardBlocked -> error("Card blocked")
+                    is HealthCardVerifyPinResult.WrongSecretWarning -> error("Wrong secret - ${verifyPinResult.retriesLeft} retries left")
+                    else -> retrieveCertificate().readSubject()
+                }
+            }
         }
     }
 }
 
-suspend fun readHealthCard( connect: () -> Unit,  disconnect: () -> Unit,  transmit: suspend (apdu: ByteArray) -> ByteArray) {
-    initializeNativeCryptoProvider()
-    CallbackSmartCard(connect, disconnect, transmit).connect {
-        useHealthCard {
-            try {
-                with(establishTrustedChannel("123123")) {
-                    val verifyPinResult = verifyPin("123456")
-                    println(verifyPinResult.response.status)
-                }
-            } catch (err: Exception) {
-                println(err.stackTraceToString())
-            }
-        }
-    }
+private fun ByteArray.readSubject(): String {
+    return "TODO"
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 gematik GmbH
+ * Copyright 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +34,9 @@ suspend fun main() {
         useHealthCard {
             try {
                 with(establishTrustedChannel("123123")) {
-                    val verifyPinResult = verifyPin("123456")
-                    println(verifyPinResult.response.status)
+                    println("SUCCESS")
+//                    val verifyPinResult = verifyPin("123456")
+//                    println(verifyPinResult.response.status)
                 }
             } catch (err: Exception) {
                 println(err.stackTraceToString())

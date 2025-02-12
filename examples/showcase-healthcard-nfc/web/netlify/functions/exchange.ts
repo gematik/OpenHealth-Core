@@ -1,9 +1,11 @@
-import { Config } from '@netlify/functions'
+import { Config } from '@netlify/functions';
+import crypto from "crypto";
 import * as Ably from 'ably';
 
 export default async () => {
   try {
-    const ably = new Ably.Rest(process.env.ABLY_API_KEY as string);
+    const apiKey = Netlify.env.get("ABLY_API_KEY");
+    const ably = new Ably.Rest(apiKey);
 
     const c2wChannelName = crypto.randomUUID();
     const w2cChannelName = crypto.randomUUID();
@@ -12,12 +14,14 @@ export default async () => {
         [c2wChannelName]: ['subscribe'],
         [w2cChannelName]: ['publish'],
       },
+      ttl: 15 * 60000,
     });
     const clientTokenRequest = await ably.auth.createTokenRequest({
       capability: {
         [c2wChannelName]: ['publish'],
         [w2cChannelName]: ['subscribe'],
       },
+      ttl: 15 * 60000,
     });
 
     const result = {

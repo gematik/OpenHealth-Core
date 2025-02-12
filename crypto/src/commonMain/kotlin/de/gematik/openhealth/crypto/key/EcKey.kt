@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 gematik GmbH
+ * Copyright 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -223,10 +223,10 @@ class EcPublicKey internal constructor(
 fun EcPublicKey.toEcPoint(): EcPoint =
     EcPoint(
         curve,
-        BigInteger.fromByteArray(data.sliceArray(1..32), Sign.POSITIVE),
+        BigInteger.fromByteArray(data.sliceArray(1 until 33), Sign.POSITIVE),
         BigInteger.fromByteArray(
             data.sliceArray(
-                33..64,
+                33 until 65,
             ),
             Sign.POSITIVE,
         ),

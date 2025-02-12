@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 gematik GmbH
+ * Copyright 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,10 +30,10 @@ import kotlin.js.Promise
 @OptIn(DelicateCoroutinesApi::class, ExperimentalJsExport::class)
 @JsExport
 fun readHealthCardAsync(
-    connect: () -> Unit,
-    disconnect: () -> Unit,
+    can: String,
+    pin: String,
     transmit: (apdu: ByteArray) -> Promise<ByteArray>
 ) =
     GlobalScope.promise {
-        readHealthCard(connect, disconnect, { apdu -> transmit(apdu).await() })
+        readHealthCard(can, pin, { apdu -> transmit(apdu).await() })
     }
