@@ -3,13 +3,11 @@ import StepsScaffold from '@/pages/StepsScaffold.vue'
 import Button from '@/components/Button.vue'
 import Input from '@/components/Input.vue'
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
 
-defineProps<{onNext: ({can, pin}: { can: string, pin: string }) => void}>()
+defineProps<{ onNext: ({ can, pin }: { can: string; pin: string }) => void }>()
 
-const canInput = ref("")
-const pinInput = ref("")
-
+const canInput = ref('')
+const pinInput = ref('')
 </script>
 
 <template>
@@ -22,9 +20,24 @@ const pinInput = ref("")
     </template>
     <template #body>
       <div class="flex flex-col items-start gap-4 w-full">
-        <Input label="Zugangsnummer (CAN)" class="w-full" :v-model="canInput" inputmode="numeric" pattern="^[0-9]{0,6}$" error-message="Die CAN muss genau 6 Ziffern lang sein."/>
-        <Input label="Persönlicher Code (PIN)" class="w-full" :v-model="pinInput" type="password" inputmode="numeric" pattern="^[0-9]{0,6}$" error-message="Die PIN muss zwischen 6 und 8 Ziffern lang sein."/>
-        <Button class="place-self-end" @click="onNext({can: canInput, pin: pinInput})">Weiter</Button>
+        <Input
+          label="Zugangsnummer (CAN)"
+          class="w-full"
+          v-model="canInput"
+          inputmode="numeric"
+          pattern="^[0-9]{0,6}$"
+          error-message="Die CAN muss genau 6 Ziffern lang sein."
+        />
+        <Input
+          label="Persönlicher Code (PIN)"
+          class="w-full"
+          v-model="pinInput"
+          type="password"
+          inputmode="numeric"
+          pattern="^[0-9]{0,6}$"
+          error-message="Die PIN muss zwischen 6 und 8 Ziffern lang sein."
+        />
+        <Button class="place-self-end" @click="onNext({ can: canInput, pin: pinInput })">Weiter </Button>
       </div>
     </template>
     <template #image>

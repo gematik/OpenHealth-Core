@@ -15,34 +15,44 @@ const { responseAsync, requestAsync, finish } = props.exchange
 
 const certificateSubject = ref<string | null>(null)
 
+class TagLost extends Error {}
+
 onMounted(async () => {
   try {
-    const verifyCommand = await responseAsync()
-    if (verifyCommand.type === 'verif') {
-      while (true) {
-        try {
-          certificateSubject.value = await readHealthCardAsync(
-            props.can,
-            props.pin,
-            async (apdu: Int8Array): Promise<Int8Array> => {
-              console.log('Command:', int8ArrayToHex(apdu))
-              const response = await requestAsync({ type: 'cmd', apdu: int8ArrayToHex(apdu) }, true)
-              if (response.type === 'cmd') {
-                console.log('Data received:', response.apdu)
-                return hexToInt8Array(response.apdu)
-              } else if (response.type === 'verif') {
-                throw new Error('Retry - Tag Lost')
-              } else {
-                throw new Error('Unknown Command')
-              }
-            },
-          )
-        } catch (err) {
-          console.error(err)
+    while (true) {
+      try {
+        certificateSubject.value = await readHealthCardAsync(
+          props.can,
+          props.pin,
+          async (apdu: Int8Array): Promise<Int8Array> => {
+            console.log('Command:', int8ArrayToHex(apdu))
+            const response = await requestAsync({ type: 'cmd', apdu: int8ArrayToHex(apdu) }, true)
+            if (response.type === 'cmd') {
+              console.log('Data received:', response.apdu)
+              return hexToInt8Array(response.apdu)
+            } else if (response.type === 'verif') {
+              throw new TagLost()
+            } else {
+              throw new Error('Unknown Command')
+            }
+          },
+        )
+      } catch (err) {
+        console.error(err)
+
+        if (err instanceof TagLost) {
+          // we already received verif
           continue
+        } else {
+          const verifyCommand = await responseAsync()
+          if (verifyCommand.type === 'verif') {
+            continue
+          } else {
+            break
+          }
         }
-        break
       }
+      break
     }
     await requestAsync({ type: 'finish' }, false)
   } catch (e) {
@@ -60,7 +70,8 @@ onMounted(async () => {
         <div class="max-lg:text-4xl font-['Verdana'] text-6xl font-bold tracking-tight text-[#000e52] text-center">
           Befolge die Anweisungen in der OpenHealth App
         </div>
-        <LoadingSpinner class="size-[120px]" />
+        <LoadingSpinner class="size-[120px]" v-if="!certificateSubject" />
+        <div v-else>{{ certificateSubject }}</div>
       </div>
     </main>
   </div>

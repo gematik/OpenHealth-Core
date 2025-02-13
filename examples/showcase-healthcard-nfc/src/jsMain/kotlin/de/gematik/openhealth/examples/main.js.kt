@@ -35,5 +35,5 @@ fun readHealthCardAsync(
     transmit: (apdu: ByteArray) -> Promise<ByteArray>
 ) =
     GlobalScope.promise {
-        readHealthCard(can, pin, { apdu -> transmit(apdu).await() })
+        readHealthCard(can, pin) { apdu -> transmit(apdu).await() }
     }

@@ -46,9 +46,6 @@ onMounted(async () => {
   }
 })
 
-onUnmounted(async () => {
-  await finish()
-})
 </script>
 
 <template>
