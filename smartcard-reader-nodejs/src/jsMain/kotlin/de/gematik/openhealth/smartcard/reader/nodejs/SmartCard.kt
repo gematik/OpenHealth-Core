@@ -85,6 +85,7 @@ private class NodeSmartCard : SmartCard() {
                             (changes and reader.SCARD_STATE_PRESENT != 0) &&
                                 (status.state and reader.SCARD_STATE_PRESENT != 0) -> {
                                 // card inserted
+                                @Suppress("ktlint")
                                 reader.connect(
                                     object : ConnectOptions {
                                         override var share_mode: Int? = reader.SCARD_SHARE_SHARED

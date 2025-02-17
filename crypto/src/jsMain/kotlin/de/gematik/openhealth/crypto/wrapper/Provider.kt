@@ -21,6 +21,7 @@ import kotlinx.coroutines.await
 
 val Provider = LazySuspend { OpenSslModuleFactory().await() }
 
+@Suppress("detekt.SwallowedException", "detekt.InstanceOfCheckForException")
 fun <T : Any> runWithProvider(block: OpenSslModule.() -> T): T =
     try {
         block(Provider.tryGet())

@@ -28,7 +28,8 @@ import kotlin.test.assertEquals
 
 class ReadCommandTest {
     @Test
-    fun shouldEqualReadCommand_WithoutOffset() = runTest {
+    fun shouldEqualReadCommand_WithoutOffset() =
+        runTest {
             val expectedAPDU = getExpectedApdu("READCOMMAND_APDU-1")
             val command = HealthCardCommand.read()
 

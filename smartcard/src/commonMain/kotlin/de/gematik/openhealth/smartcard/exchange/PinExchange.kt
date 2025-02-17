@@ -30,10 +30,21 @@ import de.gematik.openhealth.smartcard.command.select
 import de.gematik.openhealth.smartcard.command.unlockEgk
 import de.gematik.openhealth.smartcard.command.verifyPin
 
-sealed class HealthCardVerifyPinResult(val response: HealthCardResponse) {
-    class Success(response: HealthCardResponse) : HealthCardVerifyPinResult(response)
-    class WrongSecretWarning(response: HealthCardResponse, val retriesLeft: Int) : HealthCardVerifyPinResult(response)
-    class CardBlocked(response: HealthCardResponse) : HealthCardVerifyPinResult(response)
+sealed class HealthCardVerifyPinResult(
+    val response: HealthCardResponse,
+) {
+    class Success(
+        response: HealthCardResponse,
+    ) : HealthCardVerifyPinResult(response)
+
+    class WrongSecretWarning(
+        response: HealthCardResponse,
+        val retriesLeft: Int,
+    ) : HealthCardVerifyPinResult(response)
+
+    class CardBlocked(
+        response: HealthCardResponse,
+    ) : HealthCardVerifyPinResult(response)
 }
 
 /**
@@ -62,11 +73,13 @@ suspend fun TrustedChannelScope.verifyPin(pin: String): HealthCardVerifyPinResul
     return if (pinStatus.status == HealthCardResponseStatus.SUCCESS) {
         HealthCardVerifyPinResult.Success(pinStatus)
     } else {
-        val response = HealthCardCommand.verifyPin(
-            passwordReference = passwordReference,
-            dfSpecific = false,
-            pin = EncryptedPinFormat2(pin) // Encrypt PIN using Format 2.
-        ).transmit()
+        val response =
+            HealthCardCommand
+                .verifyPin(
+                    passwordReference = passwordReference,
+                    dfSpecific = false,
+                    pin = EncryptedPinFormat2(pin), // Encrypt PIN using Format 2.
+                ).transmit()
         response.toVerifyPinResult()
     }
 }
@@ -74,16 +87,30 @@ suspend fun TrustedChannelScope.verifyPin(pin: String): HealthCardVerifyPinResul
 /**
  * Maps the response of a VERIFY PIN command to the appropriate result object.
  */
-private fun HealthCardResponse.toVerifyPinResult(): HealthCardVerifyPinResult {
-    return when (this.status) {
+private fun HealthCardResponse.toVerifyPinResult(): HealthCardVerifyPinResult =
+    when (this.status) {
         HealthCardResponseStatus.SUCCESS -> HealthCardVerifyPinResult.Success(this)
-        HealthCardResponseStatus.WRONG_SECRET_WARNING_COUNT_01 -> HealthCardVerifyPinResult.WrongSecretWarning(this, 1)
-        HealthCardResponseStatus.WRONG_SECRET_WARNING_COUNT_02 -> HealthCardVerifyPinResult.WrongSecretWarning(this, 2)
-        HealthCardResponseStatus.WRONG_SECRET_WARNING_COUNT_03 -> HealthCardVerifyPinResult.WrongSecretWarning(this, 3)
+        HealthCardResponseStatus.WRONG_SECRET_WARNING_COUNT_01 ->
+            HealthCardVerifyPinResult
+                .WrongSecretWarning(
+                    this,
+                    1,
+                )
+        HealthCardResponseStatus.WRONG_SECRET_WARNING_COUNT_02 ->
+            HealthCardVerifyPinResult
+                .WrongSecretWarning(
+                    this,
+                    2,
+                )
+        HealthCardResponseStatus.WRONG_SECRET_WARNING_COUNT_03 ->
+            HealthCardVerifyPinResult
+                .WrongSecretWarning(
+                    this,
+                    3,
+                )
         HealthCardResponseStatus.PASSWORD_BLOCKED -> HealthCardVerifyPinResult.CardBlocked(this)
         else -> error("VERIFY PIN command failed with status: ${this.status}")
     }
-}
 
 /**
  * Unlocks the eGK using PUK or by changing the reference data.

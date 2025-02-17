@@ -30,37 +30,37 @@ class HealthCardVersion2(
     /**
      * Version information of C0: Filling instructions for Version 2.
      */
-    val fillingInstructionsVersion: ByteArray, // C0
+    val fillingInstructionsVersion: ByteArray,
     /**
      * Version information of C1: Card object system.
      */
-    val objectSystemVersion: ByteArray, // C1
+    val objectSystemVersion: ByteArray,
     /**
      * Version information of C2: Product identification object system.
      */
-    val productIdentificationObjectSystemVersion: ByteArray, // C2
+    val productIdentificationObjectSystemVersion: ByteArray,
     /**
      * Version information of C4: Filling instructions for EF.GDO.
      */
-    val fillingInstructionsEfGdoVersion: ByteArray, // C4
+    val fillingInstructionsEfGdoVersion: ByteArray,
     /**
      * Version information of C5: Filling instructions for EF.ATR.
      */
-    val fillingInstructionsEfAtrVersion: ByteArray, // C5
+    val fillingInstructionsEfAtrVersion: ByteArray,
     /**
      * Version information of C6: Filling instructions for EF.KeyInfo.
      * Applicable only for gSMC-K and gSMC-KT.
      */
-    val fillingInstructionsEfKeyInfoVersion: ByteArray, // C6
+    val fillingInstructionsEfKeyInfoVersion: ByteArray,
     /**
      * Version information of C3: Filling instructions for Environment Settings.
      * Applicable only for gSMC-K.
      */
-    val fillingInstructionsEfEnvironmentSettingsVersion: ByteArray, // C3
+    val fillingInstructionsEfEnvironmentSettingsVersion: ByteArray,
     /**
      * Version information of C7: Filling instructions for EF.Logging.
      */
-    val fillingInstructionsEfLoggingVersion: ByteArray, // C7
+    val fillingInstructionsEfLoggingVersion: ByteArray,
 )
 
 /**

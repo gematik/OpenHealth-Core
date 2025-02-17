@@ -21,7 +21,7 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.js.JsExport
 
 private val pemRegex = """^-----BEGIN (.*)-----(.*)-----END (.*)-----$""".toRegex()
-private const val pemDataMaxLengthPerLine = 64
+private const val PEM_DATA_MAX_LENGTH_PER_LINE = 64
 
 @JsExport
 class Pem(
@@ -36,7 +36,7 @@ fun Pem.encodeToString(): String =
         Base64.Default
             .encode(
                 data,
-            ).windowed(pemDataMaxLengthPerLine, pemDataMaxLengthPerLine, true)
+            ).windowed(PEM_DATA_MAX_LENGTH_PER_LINE, PEM_DATA_MAX_LENGTH_PER_LINE, true)
             .forEach {
                 appendLine(it)
             }

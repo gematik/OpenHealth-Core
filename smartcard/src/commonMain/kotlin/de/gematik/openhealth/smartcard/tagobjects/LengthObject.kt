@@ -21,12 +21,11 @@ import de.gematik.openhealth.asn1.Asn1Tag
 import de.gematik.openhealth.asn1.writeTaggedObject
 import de.gematik.openhealth.smartcard.command.EXPECTED_LENGTH_WILDCARD_SHORT
 
-private const val DO_97_TAG = 0x17
 private const val BYTE_MASK = 0xFF
 private const val BYTE_VALUE = 8
 
 /**
- * Length object with TAG 97
+ * Length object.
  *
  * @param le extracted expected length from plain CommandApdu
  */

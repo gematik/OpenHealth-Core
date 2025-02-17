@@ -38,13 +38,15 @@ class DataObject(
     val isEncrypted: Boolean = tag.tagNumber == 0x07
 
     val encoded: ByteArray
-        get() = Asn1Encoder().write {
-            writeTaggedObject(tagNumber = tag.tagNumber, tagClass = tag.tagClass) {
-                write(data)
+        get() =
+            Asn1Encoder().write {
+                writeTaggedObject(tagNumber = tag.tagNumber, tagClass = tag.tagClass) {
+                    write(data)
+                }
             }
-        }
 
     companion object {
-        fun encrypted(data: ByteArray) = DataObject(data, Asn1Tag(tagClass = Asn1Tag.CONTEXT_SPECIFIC, tagNumber = 0x07))
+        fun encrypted(data: ByteArray) =
+            DataObject(data, Asn1Tag(tagClass = Asn1Tag.CONTEXT_SPECIFIC, tagNumber = 0x07))
     }
 }

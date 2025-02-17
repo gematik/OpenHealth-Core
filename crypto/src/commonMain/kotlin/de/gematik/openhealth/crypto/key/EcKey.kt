@@ -40,6 +40,7 @@ import de.gematik.openhealth.crypto.encodeToString
  * Brainpool curves according to https://datatracker.ietf.org/doc/html/rfc5639.
  */
 @ExperimentalCryptoApi
+@Suppress("detekt.MaxLineLength")
 enum class EcCurve(
     val oid: String,
 ) {
@@ -216,7 +217,7 @@ class EcPublicKey internal constructor(
     override fun toString(): String = "EcPublicKey(data=${data.contentToString()}, curve=$curve)"
 
     companion object {
-        const val oid: String = "1.2.840.10045.2.1"
+        const val OID: String = "1.2.840.10045.2.1"
     }
 }
 
@@ -236,7 +237,7 @@ fun EcPublicKey.encodeToAsn1(): ByteArray =
     Asn1Encoder().write {
         writeTaggedObject(Asn1Type.SEQUENCE, Asn1Tag.CONSTRUCTED) {
             writeTaggedObject(Asn1Type.SEQUENCE, Asn1Tag.CONSTRUCTED) {
-                writeObjectIdentifier(EcPublicKey.oid)
+                writeObjectIdentifier(EcPublicKey.OID)
                 writeObjectIdentifier(curve.oid)
             }
             writeBitString(this@encodeToAsn1.data)
@@ -327,7 +328,7 @@ fun EcPrivateKey.encodeToAsn1(): ByteArray =
         writeTaggedObject(Asn1Type.SEQUENCE, Asn1Tag.CONSTRUCTED) {
             writeInt(0)
             writeTaggedObject(Asn1Type.SEQUENCE, Asn1Tag.CONSTRUCTED) {
-                writeObjectIdentifier(EcPublicKey.oid)
+                writeObjectIdentifier(EcPublicKey.OID)
                 writeObjectIdentifier(curve.oid)
             }
             writeTaggedObject(Asn1Type.OCTET_STRING) {
@@ -402,7 +403,7 @@ fun EcPrivateKey.Companion.decodeFromPem(data: String): EcPrivateKey {
 fun Asn1Decoder.ParserScope.readEcCurveFromAlgorithmIdentifier(): EcCurve =
     advanceWithTag(Asn1Type.SEQUENCE, Asn1Tag.CONSTRUCTED) {
         val oid = readObjectIdentifier()
-        require(oid == EcPublicKey.oid) { "Unexpected oid `$oid`. Expected `${EcPublicKey.oid}`" }
+        require(oid == EcPublicKey.OID) { "Unexpected oid `$oid`. Expected `${EcPublicKey.OID}`" }
         val curveOid = readObjectIdentifier()
         skipToEnd()
 

@@ -50,14 +50,16 @@ data class EcPoint(
     /**
      * Returns the uncompressed representation of the EC point.
      *
-     * The uncompressed representation consists of a leading byte (0x04) followed by the X coordinate and the Y coordinate, both as big-endian integers.
+     * The uncompressed representation consists of a leading byte (0x04) followed by
+     * the X coordinate and the Y coordinate, both as big-endian integers.
      *
      * The length of the returned byte array is always 65 bytes:
      * - 1 byte for the prefix (0x04)
      * - 32 bytes for the X coordinate
      * - 32 bytes for the Y coordinate
      *
-     * @throws IllegalArgumentException if the EC point is at infinity, as it cannot be represented in uncompressed form.
+     * @throws IllegalArgumentException if the EC point is at infinity, as it cannot be represented
+     * in uncompressed form.
      */
     val uncompressed: ByteArray get() =
         ByteArray(65).apply {

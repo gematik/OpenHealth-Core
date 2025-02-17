@@ -29,6 +29,18 @@ subprojects {
     apply(plugin = "org.jetbrains.dokka")
 }
 
+detekt {
+    buildUponDefaultConfig = true
+    source.from(
+        files(
+            fileTree(".") {
+                include("**/src/**/*.kt")
+                exclude("**/build/**", "**/generated/**")
+            },
+        ),
+    )
+}
+
 val ktlint by configurations.creating
 
 dependencies {

@@ -53,15 +53,6 @@ private class JsKemEncapsulation(
         }
     }
 
-    private val shake by lazyDeferred {
-        HashGenerator.create("SHAKE256")
-    }
-
-    private val sha by lazyDeferred {
-        HashGenerator.create("SHA3-256")
-    }
-
-    @OptIn(ExperimentalStdlibApi::class)
     override fun encapsulate(): KemEncapsulationResult =
         runWithProvider {
             deferScoped {
@@ -93,14 +84,6 @@ private class JsKemDecapsulation(
         MlKemDecapsulation.create(spec.algorithm.algorithmName())
     }
 
-    private val shake by lazyDeferred {
-        HashGenerator.create("SHAKE256")
-    }
-
-    private val sha by lazyDeferred {
-        HashGenerator.create("SHA3-256")
-    }
-
     override fun encapsulationKey(): ByteArray =
         runWithProvider {
             deferScoped {
@@ -109,7 +92,6 @@ private class JsKemDecapsulation(
             }
         }
 
-    @OptIn(ExperimentalStdlibApi::class)
     override fun decapsulate(wrappedKey: ByteArray): KemDecapsulationResult =
         runWithProvider {
             deferScoped {

@@ -48,10 +48,6 @@ private fun calculateP2(
         }
 
 /**
- * Commands representing Select Command gemSpec_COS#14.2.6
- */
-
-/**
  * Creates a [HealthCardCommand] for the SELECT command to select the root
  * of the object system or the parent folder.
  * (gemSpec_COS#14.2.6.1, gemSpec_COS#14.2.6.11, gemSpec_COS#14.2.6.2)

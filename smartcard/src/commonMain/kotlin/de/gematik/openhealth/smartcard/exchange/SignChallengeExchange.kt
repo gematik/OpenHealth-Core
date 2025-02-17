@@ -48,7 +48,8 @@ import de.gematik.openhealth.smartcard.identifier.ApplicationIdentifier
  *
  * Relevant specifications:
  * - gemSpecObjSys: Section 5.3.5 (eSign application and signing process).
- * - gemSpecCos: Sections 10.4.4 and 10.4.5 (PSO: COMPUTE DIGITAL SIGNATURE command and security environment configuration).
+ * - gemSpecCos: Sections 10.4.4 and 10.4.5 (PSO: COMPUTE DIGITAL SIGNATURE command and
+ *   security environment configuration).
  *
  * Steps:
  * 1. Select the eSign application (DF.eSign).

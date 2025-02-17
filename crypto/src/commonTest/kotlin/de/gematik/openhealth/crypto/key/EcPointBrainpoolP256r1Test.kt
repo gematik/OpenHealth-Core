@@ -62,12 +62,12 @@ class EcPointBrainpoolP256r1Test {
                     16,
                 )
 
-            val expected_xZ =
+            val expectedXZ =
                 BigInteger.parseString(
                     "05E940915549E9F6A4A75693716E37466ABA79B4BF2919877A16DD2CC2E23708",
                     16,
                 )
-            val expected_yZ =
+            val expectedYZ =
                 BigInteger.parseString(
                     "6BC23B6702BC5A019438CEEA107DAAD8B94232FFBBC350F3B137628FE6FD134C",
                     16,
@@ -86,10 +86,10 @@ class EcPointBrainpoolP256r1Test {
             val sharedSecretB = qA * dB
 
             // Verify
-            assertEquals(expected_xZ, sharedSecretA.x)
-            assertEquals(expected_yZ, sharedSecretA.y)
-            assertEquals(expected_xZ, sharedSecretB.x)
-            assertEquals(expected_yZ, sharedSecretB.y)
+            assertEquals(expectedXZ, sharedSecretA.x)
+            assertEquals(expectedYZ, sharedSecretA.y)
+            assertEquals(expectedXZ, sharedSecretB.x)
+            assertEquals(expectedYZ, sharedSecretB.y)
             assertEquals(sharedSecretA, sharedSecretB)
         }
 }

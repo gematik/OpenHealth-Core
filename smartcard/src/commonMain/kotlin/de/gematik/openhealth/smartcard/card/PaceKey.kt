@@ -50,7 +50,6 @@ class PaceKey(
     }
 }
 
-private const val CHECKSUM_LENGTH = 20
 private const val AES128_LENGTH = 16
 private const val OFFSET_LENGTH = 4
 private const val ENCLASTBYTE = 1

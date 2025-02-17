@@ -18,8 +18,8 @@ package de.gematik.openhealth.smartcard.card
 
 import de.gematik.openhealth.smartcard.command.HealthCardCommand
 import de.gematik.openhealth.smartcard.command.HealthCardResponse
-import de.gematik.openhealth.smartcard.command.ResponseException
 import de.gematik.openhealth.smartcard.command.HealthCardResponseStatus
+import de.gematik.openhealth.smartcard.command.ResponseException
 import de.gematik.openhealth.smartcard.command.commandApdu
 import de.gematik.openhealth.smartcard.command.requireSuccess
 
@@ -28,20 +28,27 @@ interface HealthCardScope : SmartCard.CommunicationScope {
      * Transmits the command on the given [SmartCard.CommunicationScope] and throws a [ResponseException]
      * if the command was not successful.
      */
-    suspend fun HealthCardCommand.transmitSuccessfully(): HealthCardResponse {
-        return transmit().also { it.requireSuccess() }
-    }
+    suspend fun HealthCardCommand.transmitSuccessfully(): HealthCardResponse =
+        transmit().also {
+            it.requireSuccess()
+        }
 
     suspend fun HealthCardCommand.transmit(): HealthCardResponse {
         val commandApdu = this.commandApdu(supportsExtendedLength)
         return transmit(commandApdu).let {
-            HealthCardResponse(this.expectedStatus[it.sw] ?: HealthCardResponseStatus.UNKNOWN_STATUS, it)
+            HealthCardResponse(
+                this.expectedStatus[it.sw] ?: HealthCardResponseStatus.UNKNOWN_STATUS,
+                it,
+            )
         }
     }
 }
 
-private class HealthCardScopeImpl(scope: SmartCard.CommunicationScope) : HealthCardScope, SmartCard.CommunicationScope by scope
+private class HealthCardScopeImpl(
+    scope: SmartCard.CommunicationScope,
+) : HealthCardScope,
+    SmartCard.CommunicationScope by scope
 
-suspend fun <R> SmartCard.CommunicationScope.useHealthCard(block: suspend HealthCardScope.() -> R): R {
-    return block(HealthCardScopeImpl(this))
-}
+suspend fun <R> SmartCard.CommunicationScope.useHealthCard(
+    block: suspend HealthCardScope.() -> R,
+): R = block(HealthCardScopeImpl(this))

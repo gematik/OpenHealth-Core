@@ -27,16 +27,19 @@ suspend fun TrustedChannelScope.readVsd(): ByteArray {
 
     // 5.4.9 MF / DF.HCA / EF.VD This file contains the VD of the cardholder.
 
-    HealthCardCommand.select(
-        FileIdentifier(Mf.Df.HCA.Ef.Vd.FID),
-        selectDfElseEf = false
-    ).transmitSuccessfully()
+    HealthCardCommand
+        .select(
+            FileIdentifier(Mf.Df.HCA.Ef.Vd.FID),
+            selectDfElseEf = false,
+        ).transmitSuccessfully()
 
     var buffer = byteArrayOf()
     var offset = 0
     while (true) {
-        val response = HealthCardCommand.read(offset)
-            .transmit()
+        val response =
+            HealthCardCommand
+                .read(offset)
+                .transmit()
 
         val data = response.apdu.data
 
@@ -48,7 +51,8 @@ suspend fun TrustedChannelScope.readVsd(): ByteArray {
         when (response.status) {
             HealthCardResponseStatus.SUCCESS -> {}
             HealthCardResponseStatus.END_OF_FILE_WARNING,
-            HealthCardResponseStatus.OFFSET_TOO_BIG -> break
+            HealthCardResponseStatus.OFFSET_TOO_BIG,
+            -> break
 
             else -> error("Couldn't read vsd: ${response.status}")
         }

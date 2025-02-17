@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
+
 package de.gematik.openhealth.crypto.cipher
-//
+
 import de.gematik.openhealth.crypto.ByteUnit
 import de.gematik.openhealth.crypto.CryptoScope
 import de.gematik.openhealth.crypto.UnsafeCryptoApi
@@ -59,11 +59,12 @@ private class JsAesCipher(
 
     private val cipher by lazyDeferred<AESCipher> {
         deferScoped(allowReturnClassHandle = true) {
-            val cipher = AESCipher.createEncryptor(
-                spec.algorithmName(key.length),
-                key.data.toUint8Vector().alsoDefer(),
-                ((spec as? AesCipherIvSpec)?.iv ?: byteArrayOf()).toUint8Vector().alsoDefer()
-            )
+            val cipher =
+                AESCipher.createEncryptor(
+                    spec.algorithmName(key.length),
+                    key.data.toUint8Vector().alsoDefer(),
+                    ((spec as? AesCipherIvSpec)?.iv ?: byteArrayOf()).toUint8Vector().alsoDefer(),
+                )
             cipher.setAutoPadding(spec.autoPadding)
             if (spec is AesGcmCipherSpec) {
                 if (spec.aad.isNotEmpty()) cipher.setAAD(spec.aad.toUint8Vector().alsoDefer())
@@ -104,14 +105,19 @@ private class JsAesDecipher(
 
     private val cipher by lazyDeferred {
         deferScoped(allowReturnClassHandle = true) {
-            val cipher = AESCipher.createDecryptor(
-                spec.algorithmName(key.length),
-                key.data.toUint8Vector().alsoDefer(),
-                ((spec as? AesDecipherIvSpec)?.iv ?: byteArrayOf()).toUint8Vector().alsoDefer()
-            )
+            val cipher =
+                AESCipher.createDecryptor(
+                    spec.algorithmName(key.length),
+                    key.data.toUint8Vector().alsoDefer(),
+                    ((spec as? AesDecipherIvSpec)?.iv ?: byteArrayOf()).toUint8Vector().alsoDefer(),
+                )
             cipher.setAutoPadding(spec.autoPadding)
             if (spec is AesGcmDecipherSpec) {
-                if (spec.authTag.isNotEmpty()) cipher.setAuthTag(spec.authTag.toUint8Vector().alsoDefer())
+                if (spec.authTag.isNotEmpty()) {
+                    cipher.setAuthTag(
+                        spec.authTag.toUint8Vector().alsoDefer(),
+                    )
+                }
                 if (spec.aad.isNotEmpty()) cipher.setAAD(spec.aad.toUint8Vector().alsoDefer())
             }
             cipher

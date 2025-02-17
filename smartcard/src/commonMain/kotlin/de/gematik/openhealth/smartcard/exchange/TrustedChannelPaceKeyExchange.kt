@@ -20,7 +20,6 @@ package de.gematik.openhealth.smartcard.exchange
 
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import com.ionspin.kotlin.bignum.integer.Sign
-import com.ionspin.kotlin.bignum.integer.util.fromTwosComplementByteArray
 import de.gematik.openhealth.asn1.Asn1Decoder
 import de.gematik.openhealth.asn1.Asn1Encoder
 import de.gematik.openhealth.asn1.Asn1Tag
@@ -32,7 +31,6 @@ import de.gematik.openhealth.crypto.ExperimentalCryptoApi
 import de.gematik.openhealth.crypto.UnsafeCryptoApi
 import de.gematik.openhealth.crypto.bytes
 import de.gematik.openhealth.crypto.cipher.AesCbcSpec
-import de.gematik.openhealth.crypto.cipher.AesEcbSpec
 import de.gematik.openhealth.crypto.key.EcKeyPairSpec
 import de.gematik.openhealth.crypto.key.EcPoint
 import de.gematik.openhealth.crypto.key.EcPrivateKey
@@ -66,8 +64,9 @@ private const val SECRET_KEY_REFERENCE = 2 // Reference of secret key for PACE (
 
 @OptIn(
     ExperimentalCryptoApi::class,
-    UnsafeCryptoApi::class, ExperimentalStdlibApi::class,
-    )
+    UnsafeCryptoApi::class,
+    ExperimentalStdlibApi::class,
+)
 /**
  * Establishes a trusted channel using the PACE protocol as specified in gemSpecObjSys and gemSpecCos.
  *
@@ -130,10 +129,12 @@ suspend fun HealthCardScope.establishTrustedChannel(cardAccessNumber: String): T
                     .transmitSuccessfully()
                     .apdu.data,
             )
+
         @Requirement(
-            "O.Cryp_3#2", "O.Cryp_4#2",
+            "O.Cryp_3#2",
+            "O.Cryp_4#2",
             sourceSpecification = "BSI-eRp-ePA",
-            rationale = "AES Key-Generation and one time usage"
+            rationale = "AES Key-Generation and one time usage",
         )
         val canKey = deriveAESKey(cardAccessNumber.encodeToByteArray(), Mode.PASSWORD)
         val nonceS =

@@ -67,7 +67,7 @@ suspend fun TrustedChannelScope.retrieveCertificate(): ByteArray {
             HealthCardResponseStatus.SUCCESS -> {}
             HealthCardResponseStatus.END_OF_FILE_WARNING,
             HealthCardResponseStatus.OFFSET_TOO_BIG,
-                -> break
+            -> break
 
             else -> error("Couldn't read certificate: ${response.status}")
         }

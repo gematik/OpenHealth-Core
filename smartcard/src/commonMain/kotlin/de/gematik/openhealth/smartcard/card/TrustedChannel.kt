@@ -51,7 +51,11 @@ interface TrustedChannelScope : HealthCardScope {
 }
 
 @OptIn(ExperimentalCryptoApi::class)
-internal class TrustedChannelScopeImpl(private val scope: HealthCardScope, override val paceKey: PaceKey): TrustedChannelScope, HealthCardScope {
+internal class TrustedChannelScopeImpl(
+    private val scope: HealthCardScope,
+    override val paceKey: PaceKey,
+) : TrustedChannelScope,
+    HealthCardScope {
     override val cardIdentifier: String = scope.cardIdentifier
     override val supportsExtendedLength: Boolean = scope.supportsExtendedLength
 
@@ -77,20 +81,24 @@ internal class TrustedChannelScopeImpl(private val scope: HealthCardScope, overr
 
         incrementMsgSeqCounter()
 
-        require(apduToEncrypt.size >= APDU_HEADER_SIZE_BYTES) { "APDU must be at least $APDU_HEADER_SIZE_BYTES bytes long" }
+        require(apduToEncrypt.size >= APDU_HEADER_SIZE_BYTES) {
+            "APDU must be at least $APDU_HEADER_SIZE_BYTES bytes long"
+        }
 
         val header = apduToEncrypt.copyOfRange(0, APDU_HEADER_SIZE_BYTES)
-        require(header[0] != (header[0] or SECURE_MESSAGING_COMMAND)) { "Secure Messaging command already set" }
+        require(header[0] != (header[0] or SECURE_MESSAGING_COMMAND)) {
+            "Secure Messaging command already set"
+        }
         // set secure messaging command on first header byte
         header[0] = header[0] or SECURE_MESSAGING_COMMAND
 
         var commandDataOutput = byteArrayOf()
 
-        apduToEncrypt.copyOfRange(
-            commandApdu.dataOffset,
-            commandApdu.dataOffset + commandApdu.rawNc
-        )
-            .takeIf { it.isNotEmpty() }
+        apduToEncrypt
+            .copyOfRange(
+                commandApdu.dataOffset,
+                commandApdu.dataOffset + commandApdu.rawNc,
+            ).takeIf { it.isNotEmpty() }
             ?.let {
                 var data = it
                 data = padData(data, CIPHER_BLOCK_SIZE_BYTES)
@@ -101,50 +109,55 @@ internal class TrustedChannelScopeImpl(private val scope: HealthCardScope, overr
                 commandDataOutput += DataObject.encrypted(data).encoded
             }
 
+        val le =
+            commandApdu.rawNe?.also {
+                // write length object to output
+                commandDataOutput += LengthObject(it).encoded
+            } ?: -1
 
-        val le = commandApdu.rawNe?.also {
-            // write length object to output
-            commandDataOutput += LengthObject(it).encoded
-        } ?: -1
-
-        val commandMacObject = MacObject(header, commandDataOutput, paceKey.mac, secureMessagingSequenceCounter)
+        val commandMacObject =
+            MacObject(header, commandDataOutput, paceKey.mac, secureMessagingSequenceCounter)
         commandDataOutput += commandMacObject.encoded
         return createEncryptedCommand(
             le = le,
             data = commandDataOutput,
-            header = header
+            header = header,
         )
     }
 
     @OptIn(UnsafeCryptoApi::class, ExperimentalStdlibApi::class)
     private fun encryptData(paddedData: ByteArray) =
         useCrypto {
-            val cbc = AesCbcSpec(
-                tagLength = 16.bytes,
-                iv = createIvWithEcb(),
-                autoPadding = false,
-            ).createCipher(paceKey.enc)
+            val cbc =
+                AesCbcSpec(
+                    tagLength = 16.bytes,
+                    iv = createIvWithEcb(),
+                    autoPadding = false,
+                ).createCipher(paceKey.enc)
             cbc.update(paddedData) + cbc.final()
         }
 
     private fun createEncryptedCommand(
         le: Int,
         data: ByteArray,
-        header: ByteArray
+        header: ByteArray,
     ): CardCommandApdu {
         val tempData = data
 
-        val ne = if (tempData.size < 1 && le == -1) {
-            EXPECTED_LENGTH_WILDCARD_SHORT
-        } else if (tempData.size < 1 && le > -1) {
-            EXPECTED_LENGTH_WILDCARD_EXTENDED
-        } else if (tempData.size > 0 && le < 0) {
-            if (data.size <= 255) {
+        val ne =
+            if (tempData.size < 1 && le == -1) {
                 EXPECTED_LENGTH_WILDCARD_SHORT
+            } else if (tempData.size < 1 && le > -1) {
+                EXPECTED_LENGTH_WILDCARD_EXTENDED
+            } else if (tempData.size > 0 && le < 0) {
+                if (data.size <= 255) {
+                    EXPECTED_LENGTH_WILDCARD_SHORT
+                } else {
+                    EXPECTED_LENGTH_WILDCARD_EXTENDED
+                }
             } else {
                 EXPECTED_LENGTH_WILDCARD_EXTENDED
             }
-        } else EXPECTED_LENGTH_WILDCARD_EXTENDED
 
         return CardCommandApdu.ofOptions(
             cla = header[0].toInt() and 0xFF,
@@ -152,7 +165,7 @@ internal class TrustedChannelScopeImpl(private val scope: HealthCardScope, overr
             p1 = header[2].toInt() and 0xFF,
             p2 = header[3].toInt() and 0xFF,
             data = data,
-            ne = ne
+            ne = ne,
         )
     }
 
@@ -164,7 +177,9 @@ internal class TrustedChannelScopeImpl(private val scope: HealthCardScope, overr
 
         var responseDataOutput = byteArrayOf()
 
-        require(apduResponseBytes.size >= APDU_MIN_RESPONSE_SIZE_BYTES) { "Apdu response is too short" }
+        require(
+            apduResponseBytes.size >= APDU_MIN_RESPONSE_SIZE_BYTES,
+        ) { "Apdu response is too short" }
 
         incrementMsgSeqCounter()
 
@@ -175,17 +190,21 @@ internal class TrustedChannelScopeImpl(private val scope: HealthCardScope, overr
         // write status object to output
         responseDataOutput += StatusObject(responseObject.statusBytes).encoded
 
-        val responseMacObject = MacObject(
-            commandOutput = responseDataOutput,
-            kMac = paceKey.mac,
-            ssc = secureMessagingSequenceCounter
-        )
+        val responseMacObject =
+            MacObject(
+                commandOutput = responseDataOutput,
+                kMac = paceKey.mac,
+                ssc = secureMessagingSequenceCounter,
+            )
         checkMac(responseMacObject.mac, responseObject.macBytes)
 
         return createDecryptedResponse(responseObject.statusBytes, responseObject.dataObject)
     }
 
-    private fun checkMac(mac: ByteArray, macObject: ByteArray) {
+    private fun checkMac(
+        mac: ByteArray,
+        macObject: ByteArray,
+    ) {
         require(mac.contentEquals(macObject)) { "Secure Messaging MAC verification failed" }
     }
 
@@ -205,38 +224,45 @@ internal class TrustedChannelScopeImpl(private val scope: HealthCardScope, overr
      */
     private fun CardResponseApdu.readResponseObject(): ResponseObject =
         Asn1Decoder(this.data).read {
-            val data = optional {
-                advance(
-                    {
-                        // Case DO81
-                        advanceWithTag(0x01, Asn1Tag.CONTEXT_SPECIFIC) {
-                            Asn1Tag(
-                                tagClass = Asn1Tag.CONTEXT_SPECIFIC,
-                                tagNumber = 0x01
-                            ) to readBytes(remainingLength)
-                        }
-                    },
-                    {
-                        // Case DO87
-                        advanceWithTag(0x07, Asn1Tag.CONTEXT_SPECIFIC) {
-                            Asn1Tag(
-                                tagClass = Asn1Tag.CONTEXT_SPECIFIC,
-                                tagNumber = 0x07
-                            ) to readBytes(remainingLength)
-                        }
-                    }
-                )
-            }
+            val data =
+                optional {
+                    advance(
+                        {
+                            // Case DO81
+                            advanceWithTag(0x01, Asn1Tag.CONTEXT_SPECIFIC) {
+                                Asn1Tag(
+                                    tagClass = Asn1Tag.CONTEXT_SPECIFIC,
+                                    tagNumber = 0x01,
+                                ) to readBytes(remainingLength)
+                            }
+                        },
+                        {
+                            // Case DO87
+                            advanceWithTag(0x07, Asn1Tag.CONTEXT_SPECIFIC) {
+                                Asn1Tag(
+                                    tagClass = Asn1Tag.CONTEXT_SPECIFIC,
+                                    tagNumber = 0x07,
+                                ) to readBytes(remainingLength)
+                            }
+                        },
+                    )
+                }
             // Case DO99
-            val statusBytes = advanceWithTag(0x19, Asn1Tag.CONTEXT_SPECIFIC) {
-                readBytes(remainingLength)
+            val statusBytes =
+                advanceWithTag(0x19, Asn1Tag.CONTEXT_SPECIFIC) {
+                    readBytes(remainingLength)
+                }
+            require(statusBytes.size == APDU_RESPONSE_STATUS_SIZE_BYTES) {
+                "Status must be $APDU_RESPONSE_STATUS_SIZE_BYTES bytes long"
             }
-            require(statusBytes.size == APDU_RESPONSE_STATUS_SIZE_BYTES) { "Status must be $APDU_RESPONSE_STATUS_SIZE_BYTES bytes long" }
             // Case DO8E
-            val macBytes = advanceWithTag(0x0E, Asn1Tag.CONTEXT_SPECIFIC) {
-                readBytes(remainingLength)
+            val macBytes =
+                advanceWithTag(0x0E, Asn1Tag.CONTEXT_SPECIFIC) {
+                    readBytes(remainingLength)
+                }
+            require(macBytes.size == APDU_RESPONSE_MAC_SIZE_BYTES) {
+                "Status must be $APDU_RESPONSE_MAC_SIZE_BYTES bytes long"
             }
-            require(macBytes.size == APDU_RESPONSE_MAC_SIZE_BYTES) { "Status must be $APDU_RESPONSE_MAC_SIZE_BYTES bytes long" }
             ResponseObject(
                 dataObject = data?.let { (tag, data) -> DataObject(data, tag) },
                 statusBytes = statusBytes,
@@ -247,21 +273,23 @@ internal class TrustedChannelScopeImpl(private val scope: HealthCardScope, overr
     @OptIn(UnsafeCryptoApi::class)
     private fun createDecryptedResponse(
         statusBytes: ByteArray,
-        dataObject: DataObject?
+        dataObject: DataObject?,
     ): CardResponseApdu {
         var outputStream = byteArrayOf()
         if (dataObject != null) {
             if (dataObject.isEncrypted) {
-                val dataDecrypted = removePaddingIndicator(dataObject.data).let {
-                    useCrypto {
-                        val cbc = AesCbcSpec(
-                            tagLength = 16.bytes,
-                            iv = createIvWithEcb(),
-                            autoPadding = false,
-                        ).createDecipher(paceKey.enc)
-                        cbc.update(it) + cbc.final()
+                val dataDecrypted =
+                    removePaddingIndicator(dataObject.data).let {
+                        useCrypto {
+                            val cbc =
+                                AesCbcSpec(
+                                    tagLength = 16.bytes,
+                                    iv = createIvWithEcb(),
+                                    autoPadding = false,
+                                ).createDecipher(paceKey.enc)
+                            cbc.update(it) + cbc.final()
+                        }
                     }
-                }
                 outputStream += unpadData(dataDecrypted)
             } else {
                 outputStream += dataObject.data
@@ -278,10 +306,11 @@ internal class TrustedChannelScopeImpl(private val scope: HealthCardScope, overr
     private fun createIvWithEcb(): ByteArray =
         // ECB instead of CBC on purpose. COS doesn't support CBC for this.
         useCrypto {
-            val ecb = AesEcbSpec(
-                tagLength = 16.bytes,
-                autoPadding = false,
-            ).createCipher(paceKey.enc)
+            val ecb =
+                AesEcbSpec(
+                    tagLength = 16.bytes,
+                    autoPadding = false,
+                ).createCipher(paceKey.enc)
             ecb.update(secureMessagingSequenceCounter) + ecb.final()
         }
 }

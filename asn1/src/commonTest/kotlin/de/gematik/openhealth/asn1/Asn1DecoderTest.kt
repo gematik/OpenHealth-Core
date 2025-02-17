@@ -157,21 +157,24 @@ class Asn1DecoderTest {
 
     @Test
     fun `read bit string - with unused bits`() {
-        val parser = Asn1Decoder("03 05 03 FF AA BB FF".hexToByteArray(hexSpaceFormat)) // Last 3 bits unused
+        // Last 3 bits unused
+        val parser = Asn1Decoder("03 05 03 FF AA BB FF".hexToByteArray(hexSpaceFormat))
         val result = parser.read { readBitString() }.toHexString(hexSpaceFormat)
         assertEquals("FF AA BB F8", result) // FF with last 3 bits unused becomes F8
     }
 
     @Test
     fun `read bit string - empty bit string`() {
-        val parser = Asn1Decoder("03 01 00".hexToByteArray(hexSpaceFormat)) // No bits, only unused bits byte
+        // No bits, only unused bits byte
+        val parser = Asn1Decoder("03 01 00".hexToByteArray(hexSpaceFormat))
         val result = parser.read { readBitString() }.toHexString(hexSpaceFormat)
         assertEquals("", result)
     }
 
     @Test
     fun `read bit string - invalid unused bits`() {
-        val parser = Asn1Decoder("03 04 08 FF AA BB CC".hexToByteArray(hexSpaceFormat)) // Invalid unused bits > 7
+        // Invalid unused bits > 7
+        val parser = Asn1Decoder("03 04 08 FF AA BB CC".hexToByteArray(hexSpaceFormat))
         assertFailsWith<Asn1DecoderException> {
             parser.read { readBitString() }
         }
@@ -215,7 +218,8 @@ class Asn1DecoderTest {
 
     @Test
     fun `read utf8 string - invalid data`() {
-        val parser = Asn1Decoder("04 03 C3 28".hexToByteArray(hexSpaceFormat)) // Invalid UTF-8 sequence
+        // Invalid UTF-8 sequence
+        val parser = Asn1Decoder("04 03 C3 28".hexToByteArray(hexSpaceFormat))
         assertFailsWith<Asn1DecoderException> {
             parser.read { readUtf8String() }
         }
@@ -233,7 +237,8 @@ class Asn1DecoderTest {
 
     @Test
     fun `read visible string - special characters`() {
-        val parser = Asn1Decoder("1A 06 41 42 20 21 40 23".hexToByteArray(hexSpaceFormat)) // Includes ASCII space and symbols
+        // Includes ASCII space and symbols
+        val parser = Asn1Decoder("1A 06 41 42 20 21 40 23".hexToByteArray(hexSpaceFormat))
         val result =
             parser.read {
                 readVisibleString()

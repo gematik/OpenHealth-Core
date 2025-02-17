@@ -65,8 +65,9 @@ fun parsePaceInfo(asn1: ByteArray): PaceInfo =
                 // Step 3: Read the parameter ID and map to an elliptic curve
                 val parameterId = readInt()
 
-                val curve = supportedCurves[parameterId]
-                    ?: fail { "Unsupported parameter ID: $parameterId" }
+                val curve =
+                    supportedCurves[parameterId]
+                        ?: fail { "Unsupported parameter ID: $parameterId" }
 
                 // Ensure no unexpected data exists
                 skipToEnd()
@@ -79,8 +80,9 @@ fun parsePaceInfo(asn1: ByteArray): PaceInfo =
 
 // Mapping of parameter IDs to supported elliptic curves
 @OptIn(ExperimentalCryptoApi::class)
-private val supportedCurves = mapOf(
-    13 to EcCurve.BrainpoolP256r1,
-    16 to EcCurve.BrainpoolP384r1,
-    17 to EcCurve.BrainpoolP512r1,
-)
+private val supportedCurves =
+    mapOf(
+        13 to EcCurve.BrainpoolP256r1,
+        16 to EcCurve.BrainpoolP384r1,
+        17 to EcCurve.BrainpoolP512r1,
+    )

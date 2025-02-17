@@ -20,7 +20,7 @@ kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-t
 
 bouncycastle-bcprov = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
 
-ktlint-cli = { module = "com.pinterest.ktlint:ktlint-cli", version = "1.4.1" }
+ktlint-cli = { module = "com.pinterest.ktlint:ktlint-cli", version = "1.5.0" }
 
 [plugins]
 androidLibrary = { id = "com.android.library", version.ref = "agp" }

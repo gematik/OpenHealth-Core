@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("detekt.MaxLineLength")
+
 package de.gematik.openhealth.smartcard.data
 
 import de.gematik.openhealth.smartcard.hexSpaceFormat

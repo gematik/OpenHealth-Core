@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package abc
+@file:Suppress("ktlint", "detekt.all")
+
+package de.gematik.openhealth.smartcard
 
 import node.buffer.Buffer
 import node.events.EventEmitter

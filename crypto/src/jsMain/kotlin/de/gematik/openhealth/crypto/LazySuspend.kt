@@ -34,5 +34,5 @@ class LazySuspend<T : Any>(
 
     fun tryGet(): T =
         value
-            ?: throw IllegalStateException("Value must be initialized before calling tryGet()")
+            ?: error("Value must be initialized before calling tryGet()")
 }

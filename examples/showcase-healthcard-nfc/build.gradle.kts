@@ -26,7 +26,7 @@ kotlin {
         binaries.library()
         generateTypeScriptDefinitions()
         compilations["main"].packageJson {
-            customField("types", "kotlin/${name}.d.ts")
+            customField("types", "kotlin/$name.d.ts")
         }
     }
 

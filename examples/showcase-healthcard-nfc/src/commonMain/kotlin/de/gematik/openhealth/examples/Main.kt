@@ -28,27 +28,27 @@ import de.gematik.openhealth.smartcard.exchange.establishTrustedChannel
 import de.gematik.openhealth.smartcard.exchange.retrieveCertificate
 import de.gematik.openhealth.smartcard.exchange.verifyPin
 
-class CallbackSmartCard(val transmit: suspend (apdu: ByteArray) -> ByteArray) : SmartCard() {
+class CallbackSmartCard(
+    val transmit: suspend (apdu: ByteArray) -> ByteArray,
+) : SmartCard() {
     inner class CommunicationScope : SmartCard.CommunicationScope {
         override val cardIdentifier: String
             get() = "WebSocket Card"
         override val supportsExtendedLength: Boolean
             get() = true
 
-        override suspend fun transmit(commandApdu: CardCommandApdu): CardResponseApdu {
-            return CardResponseApdu(this@CallbackSmartCard.transmit(commandApdu.apdu))
-        }
+        override suspend fun transmit(commandApdu: CardCommandApdu): CardResponseApdu =
+            CardResponseApdu(this@CallbackSmartCard.transmit(commandApdu.apdu))
     }
 
-    override suspend fun <T> connect(block: suspend SmartCard.CommunicationScope.() -> T): T {
-        return block(CommunicationScope())
-    }
+    override suspend fun <T> connect(block: suspend SmartCard.CommunicationScope.() -> T): T =
+        block(CommunicationScope())
 }
 
 suspend fun readHealthCard(
     can: String,
     pin: String,
-    transmit: suspend (apdu: ByteArray) -> ByteArray
+    transmit: suspend (apdu: ByteArray) -> ByteArray,
 ): String {
     initializeNativeCryptoProvider()
     return CallbackSmartCard(transmit).connect {
@@ -57,7 +57,10 @@ suspend fun readHealthCard(
                 val verifyPinResult = verifyPin(pin)
                 when (verifyPinResult) {
                     is HealthCardVerifyPinResult.CardBlocked -> error("Card blocked")
-                    is HealthCardVerifyPinResult.WrongSecretWarning -> error("Wrong secret - ${verifyPinResult.retriesLeft} retries left")
+                    is HealthCardVerifyPinResult.WrongSecretWarning ->
+                        error(
+                            "Wrong secret - ${verifyPinResult.retriesLeft} retries left",
+                        )
                     else -> retrieveCertificate().readSubjectName()
                 }
             }
@@ -73,16 +76,18 @@ private fun ByteArray.readSubjectName(): String {
     val indexOfSurnameOid = indexOf(surnameOid)
     if (indexOfSurnameOid == -1) error("OID for surname not found")
 
-    val surname = Asn1Decoder(this.copyOfRange(indexOfSurnameOid + givenNameOid.size, this.size)).read {
-        readUtf8String()
-    }
+    val surname =
+        Asn1Decoder(this.copyOfRange(indexOfSurnameOid + givenNameOid.size, this.size)).read {
+            readUtf8String()
+        }
 
     val indexOfGivenNameOid = indexOf(givenNameOid)
     if (indexOfGivenNameOid == -1) error("OID for given name not found")
 
-    val givenName = Asn1Decoder(this.copyOfRange(indexOfGivenNameOid + givenNameOid.size, this.size)).read {
-        readUtf8String()
-    }
+    val givenName =
+        Asn1Decoder(this.copyOfRange(indexOfGivenNameOid + givenNameOid.size, this.size)).read {
+            readUtf8String()
+        }
 
     return "$givenName $surname"
 }

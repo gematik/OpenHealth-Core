@@ -24,7 +24,7 @@ private const val PAD = 0x80.toByte()
 fun padData(
     data: ByteArray,
     blockSize: Int,
-    paddingByte: Byte = PAD
+    paddingByte: Byte = PAD,
 ): ByteArray =
     ByteArray(data.size + (blockSize - data.size % blockSize)).apply {
         data.copyInto(this)
@@ -34,7 +34,10 @@ fun padData(
 /**
  * Removes the padding from [paddedData].
  */
-fun unpadData(paddedData: ByteArray, paddingByte: Byte = PAD): ByteArray {
+fun unpadData(
+    paddedData: ByteArray,
+    paddingByte: Byte = PAD,
+): ByteArray {
     for (i in paddedData.indices.reversed()) {
         if (paddedData[i] == paddingByte) {
             return paddedData.copyOfRange(0, i)

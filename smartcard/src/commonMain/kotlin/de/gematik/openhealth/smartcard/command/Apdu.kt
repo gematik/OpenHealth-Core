@@ -156,8 +156,10 @@ class CardCommandApdu(
          * @param ne The expected length (Ne) of the response, or null for case 3s or 3e.
          * @return A new CardCommandApdu instance.
          * @throws IllegalArgumentException if any of the APDU header fields are out of range,
-         *                                  if the data length is out of range, or if the expected length is out of range.
+         *                                  if the data length is out of range, or if the expected
+         *                                  length is out of range.
          */
+        @Suppress("detekt.LongMethod", "detekt.CyclomaticComplexMethod")
         fun ofOptions(
             cla: Int,
             ins: Int,
@@ -226,7 +228,7 @@ class CardCommandApdu(
                     apduBytes = bytes,
                     rawNc = nc,
                     rawNe = le,
-                    dataOffset = dataOffset
+                    dataOffset = dataOffset,
                 )
             } else {
                 // Data is null
@@ -245,7 +247,7 @@ class CardCommandApdu(
                         apduBytes = bytes,
                         rawNc = 0,
                         rawNe = ne,
-                        dataOffset = 0
+                        dataOffset = 0,
                     )
                 } else {
                     // Case 1
@@ -253,7 +255,7 @@ class CardCommandApdu(
                         apduBytes = bytes,
                         rawNc = 0,
                         rawNe = null,
-                        dataOffset = 0
+                        dataOffset = 0,
                     )
                 }
             }
@@ -282,14 +284,6 @@ class CardResponseApdu(
             "Response APDU must contain at least 2 bytes (status bytes SW1, SW2)"
         }
     }
-
-    /**
-     * The number of data bytes (Nr) in the response.
-     * This is the total size of the APDU minus the two status bytes (SW1, SW2).
-     */
-    // Todo check if needed
-    val nr: Int
-        get() = bytes.size - 2
 
     /**
      * The data bytes of the response.

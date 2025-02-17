@@ -25,14 +25,14 @@ import de.gematik.openhealth.crypto.runTestWithProvider
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-private const val ecPublicKey = """
+private const val EC_PUBLIC_KEY = """
 -----BEGIN PUBLIC KEY-----
 MFowFAYHKoZIzj0CAQYJKyQDAwIIAQEHA0IABJBhNcQG6SALcDA4AOUgfySk4E0o
 LGTt+qP6dgv9qYMtojIMVQKNWfT14xR7LQnoSPABZlLJmWgh2cYKz3WbpVM=
 -----END PUBLIC KEY-----
 """
 
-private const val ecPrivateKey = """
+private const val EC_PRIVATE_KEY = """
 -----BEGIN EC PRIVATE KEY-----
 MIGIAgEAMBQGByqGSM49AgEGCSskAwMCCAEBBwRtMGsCAQEEIBu09g2V3coZsiK7
 AUT8gHFehP7KK77g83GJH2aeYxJ1oUQDQgAEkGE1xAbpIAtwMDgA5SB/JKTgTSgs
@@ -44,8 +44,8 @@ class EcdhTest {
     @Test
     fun `compute secret`() =
         runTestWithProvider {
-            val publicKey = EcPublicKey.decodeFromPem(ecPublicKey)
-            val privateKey = EcPrivateKey.decodeFromPem(ecPrivateKey)
+            val publicKey = EcPublicKey.decodeFromPem(EC_PUBLIC_KEY)
+            val privateKey = EcPrivateKey.decodeFromPem(EC_PRIVATE_KEY)
             val result =
                 EcdhSpec(EcCurve.BrainpoolP256r1)
                     .createKeyExchange(privateKey)

@@ -49,6 +49,9 @@ class ManageSecurityEnvironmentCommandTest {
                     oid.hexToByteArray(hexSpaceFormat),
                 )
 
-            assertEquals(expectedAPDU, HealthCardTestScope().test(command).toHexString(hexSpaceFormat))
+            assertEquals(
+                expectedAPDU,
+                HealthCardTestScope().test(command).toHexString(hexSpaceFormat),
+            )
         }
 }

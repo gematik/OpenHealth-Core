@@ -24,7 +24,6 @@ import de.gematik.openhealth.crypto.key.SecretKey
 import de.gematik.openhealth.crypto.useCrypto
 import de.gematik.openhealth.smartcard.utils.padData
 
-private const val DO_8E_TAG = 0x0E
 private const val MAC_SIZE = 8
 private const val BLOCK_SIZE = 16
 
@@ -42,7 +41,7 @@ class MacObject(
     private val header: ByteArray? = null,
     private val commandOutput: ByteArray,
     private val kMac: SecretKey,
-    private val ssc: ByteArray
+    private val ssc: ByteArray,
 ) {
     private var _mac: ByteArray = ByteArray(BLOCK_SIZE)
     val mac: ByteArray

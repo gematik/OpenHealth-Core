@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("ktlint", "detekt.all")
+
 package de.gematik.openhealth.smartcard.reader.nodejs
 
 import node.buffer.Buffer

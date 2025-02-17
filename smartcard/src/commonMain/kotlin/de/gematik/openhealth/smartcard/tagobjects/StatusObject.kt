@@ -20,7 +20,6 @@ import de.gematik.openhealth.asn1.Asn1Encoder
 import de.gematik.openhealth.asn1.Asn1Tag
 import de.gematik.openhealth.asn1.writeTaggedObject
 
-
 /**
  * Status object with TAG 99
  *
@@ -30,9 +29,10 @@ class StatusObject(
     private val statusBytes: ByteArray,
 ) {
     val encoded: ByteArray
-        get() = Asn1Encoder().write {
-            writeTaggedObject(0x19, Asn1Tag.CONTEXT_SPECIFIC) {
-                write(statusBytes)
+        get() =
+            Asn1Encoder().write {
+                writeTaggedObject(0x19, Asn1Tag.CONTEXT_SPECIFIC) {
+                    write(statusBytes)
+                }
             }
-        }
 }

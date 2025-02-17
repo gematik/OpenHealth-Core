@@ -18,7 +18,6 @@ package de.gematik.openhealth.crypto.exchange
 
 import de.gematik.openhealth.crypto.CryptoScope
 import de.gematik.openhealth.crypto.ExperimentalCryptoApi
-import de.gematik.openhealth.crypto.key.EcCurve
 import de.gematik.openhealth.crypto.key.EcPrivateKey
 import de.gematik.openhealth.crypto.key.EcPublicKey
 import de.gematik.openhealth.crypto.key.encodeToAsn1
@@ -28,13 +27,6 @@ import de.gematik.openhealth.crypto.wrapper.lazyDeferred
 import de.gematik.openhealth.crypto.wrapper.runWithProvider
 import de.gematik.openhealth.crypto.wrapper.toByteArray
 import de.gematik.openhealth.crypto.wrapper.toUint8Vector
-
-private fun EcCurve.curveName() =
-    when (this) {
-        EcCurve.BrainpoolP256r1 -> "brainpoolP256r1"
-        EcCurve.BrainpoolP384r1 -> "brainpoolP384r1"
-        EcCurve.BrainpoolP512r1 -> "brainpoolP512r1"
-    }
 
 private class JsEcdh(
     override val spec: EcdhSpec,

@@ -17,10 +17,14 @@
 package de.gematik.openhealth.smartcard.card
 
 /**
- * A password can be a regular password or multireference password
- *
- * * A "regular password" is used to store a secret, which is usually only known to one cardholder. The COS will allow certain services only if this secret has been successfully presented as part of a user verification. The need for user verification can be turned on (enable) or turned off (disable).
- * * A multireference password allows the use of a secret, which is stored as an at-tributary in a regular password (see (N015.200)), but under conditions that deviate from those of the regular password.
+ * A password can be a regular password or multireference password:
+ * - A "regular password" is used to store a secret, which is usually only known to one cardholder.
+ *   The COS will allow certain services only if this secret has been successfully presented as
+ *   part of a user verification. The need for user verification can be turned on (enable) or
+ *   turned off (disable).
+ * - A multireference password allows the use of a secret, which is stored as an at-tributary in a
+ *   regular password (see (N015.200)), but under conditions that deviate from those of the
+ *   regular password.
  *
  * @see "gemSpec_COS 'Spezifikation des Card Operating System'"
  */

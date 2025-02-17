@@ -16,14 +16,9 @@
 
 package de.gematik.openhealth.examples
 
-import de.gematik.openhealth.smartcard.card.SmartCard
-import de.gematik.openhealth.smartcard.command.CardCommandApdu
-import de.gematik.openhealth.smartcard.command.CardResponseApdu
-import js.promise.PromiseLike
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.await
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.promise
 import kotlin.js.Promise
 
@@ -32,8 +27,7 @@ import kotlin.js.Promise
 fun readHealthCardAsync(
     can: String,
     pin: String,
-    transmit: (apdu: ByteArray) -> Promise<ByteArray>
-) =
-    GlobalScope.promise {
-        readHealthCard(can, pin) { apdu -> transmit(apdu).await() }
-    }
+    transmit: (apdu: ByteArray) -> Promise<ByteArray>,
+) = GlobalScope.promise {
+    readHealthCard(can, pin) { apdu -> transmit(apdu).await() }
+}

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("ktlint", "detekt.all")
+
 package de.gematik.openhealth.crypto.wrapper
 
 import js.buffer.ArrayBuffer

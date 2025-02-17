@@ -134,7 +134,7 @@ class Asn1Decoder(
             for (bl in block) {
                 try {
                     return bl(this)
-                } catch (e: Asn1DecoderException) {
+                } catch (_: Asn1DecoderException) {
                     // continue
                 }
                 offset = originalOffset
@@ -151,7 +151,7 @@ class Asn1Decoder(
             val originalEndOffset = endOffset
             return try {
                 block(this)
-            } catch (e: Asn1DecoderException) {
+            } catch (_: Asn1DecoderException) {
                 offset = originalOffset
                 endOffset = originalEndOffset
 
@@ -203,7 +203,7 @@ class Asn1Decoder(
         fun readByte(): Byte = data[offset++]
 
         /**
-         * Read one bytes.
+         * Read [length] bytes.
          */
         fun readBytes(length: Int): ByteArray {
             check(length >= 0) { "Length must be >= `0`. Is `$length`" }
@@ -222,7 +222,7 @@ class Asn1Decoder(
             val tagNumber = firstByte and 0x1F // Low 5 bits
 
             return if (tagNumber == 0x1F) {
-                // Multi-byte tag: Read until MSB is 0
+                // Multibyte tag: Read until MSB is 0
                 var value = 0
                 do {
                     if (offset >= endOffset) fail { "Unexpected end of data in tag" }
@@ -352,8 +352,8 @@ fun Asn1Decoder.ParserScope.readBitString(): ByteArray =
 fun Asn1Decoder.ParserScope.readUtf8String(): String =
     advanceWithTag(Asn1Type.UTF8_STRING) {
         try {
-            readBytes(remainingLength).decodeToString()
-        } catch (e: Exception) {
+            readBytes(remainingLength).decodeToString(throwOnInvalidSequence = true)
+        } catch (e: CharacterCodingException) {
             fail(e) { "Malformed UTF-8 string" }
         }
     }
@@ -364,7 +364,11 @@ fun Asn1Decoder.ParserScope.readUtf8String(): String =
 @JsExport
 fun Asn1Decoder.ParserScope.readVisibleString(): String =
     advanceWithTag(Asn1Type.VISIBLE_STRING) {
-        readBytes(remainingLength).decodeToString()
+        try {
+            readBytes(remainingLength).decodeToString(throwOnInvalidSequence = true)
+        } catch (e: CharacterCodingException) {
+            fail(e) { "Malformed UTF-8 string" }
+        }
     }
 
 /**

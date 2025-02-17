@@ -26,7 +26,9 @@ class PaceInfoTest {
     @Test
     fun `PACE info extraction - validate protocol ID and protocol bytes with spaces`() =
         runTest {
-            val cardAccessBytes = "31 14 30 12 06 0A 04 00 7F 00 07 02 02 04 02 02 02 01 02 02 01 0D"
+            val cardAccessBytes =
+                "31 14 30 12 06 0A 04 00 7F 00 07" +
+                    "02 02 04 02 02 02 01 02 02 01 0D"
             val expectedProtocolId = "0.4.0.127.0.7.2.2.4.2.2"
             val expectedPaceInfoProtocolBytes = "04 00 7F 00 07 02 02 04 02 02"
 
