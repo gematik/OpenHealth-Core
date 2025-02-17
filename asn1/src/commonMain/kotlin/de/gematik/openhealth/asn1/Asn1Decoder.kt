@@ -74,12 +74,19 @@ class Asn1Decoder(
         startOffset: Int,
         endOffset: Int,
     ) {
+        /**
+         * The offset of the current parser scope.
+         */
         var offset: Int = startOffset
             private set(value) {
                 check(value <= endOffset) { "Offset must be <= `endOffset`" }
                 field = value
             }
 
+        /**
+         * The end offset of the current parser scope.
+         * Ensures that the end offset is always greater than or equal to the current offset.
+         */
         var endOffset: Int = endOffset
             private set(value) {
                 check(value >= offset) { "End offset must be >= `offset`" }
@@ -282,7 +289,7 @@ class Asn1Decoder(
         }
 
         /**
-         * Skip [length] bytes.
+         * Skip to the [endOffset].
          */
         fun skipToEnd() {
             check(endOffset != Int.MAX_VALUE) { "Can't skip bytes inside infinite length object" }
