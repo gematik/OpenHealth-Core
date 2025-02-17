@@ -5,7 +5,7 @@ import { computed, type ComputedRef, onUnmounted, type Ref, ref } from 'vue'
 export enum UseCase {
   AUTHENTICATION = 1,
   CHANGE_PASSWORD = 2,
-  UNLOCK_HC = 3
+  UNLOCK_HC = 3,
 }
 
 export type Command = CommandVerify | CommandApdu | CommandFinish
@@ -35,8 +35,7 @@ export type UseExchangeReturn = {
   connect: () => Promise<void>
   finish: () => Promise<void>
   ttlUntil: ComputedRef<number>
-  requestAsync: (request: Command,
-                 expectResponse: boolean) => Promise<Command>
+  requestAsync: (request: Command, expectResponse: boolean) => Promise<Command>
   responseAsync: () => Promise<Command>
   token: ComputedRef<string | null>
 }
@@ -76,10 +75,7 @@ export function useExchange(useCase: UseCase): UseExchangeReturn {
     })
   }
 
-  const requestAsync = async (
-    request: Command,
-    expectResponse: boolean = true,
-  ): Promise<Command> => {
+  const requestAsync = async (request: Command, expectResponse: boolean = true): Promise<Command> => {
     return new Promise((resolve, reject) => {
       if (state.value) {
         state.value.webToClientChannel.publish('w2c', request)
@@ -96,6 +92,7 @@ export function useExchange(useCase: UseCase): UseExchangeReturn {
   }
 
   const connect = async () => {
+    await finish()
     const exchange = (await (await fetch('/api/exchange')).json()) as ExchangeToken
     const ably = new Ably.Realtime({
       authCallback: (params, callback) => {
@@ -129,9 +126,9 @@ export function useExchange(useCase: UseCase): UseExchangeReturn {
     token,
     ttlUntil: computed(() => {
       console.log(state.value?.token.clientTokenRequest)
-      const tm = state.value?.token.clientTokenRequest.timestamp ?? 0;
-      const ttl = state.value?.token.clientTokenRequest.ttl ?? 0;
-      return tm + ttl;
+      const tm = state.value?.token.clientTokenRequest.timestamp ?? 0
+      const ttl = state.value?.token.clientTokenRequest.ttl ?? 0
+      return tm + ttl
     }),
     responseAsync,
     requestAsync,

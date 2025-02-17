@@ -32,12 +32,11 @@ const pinInput = ref('')
           label="Persönlicher Code (PIN)"
           class="w-full"
           v-model="pinInput"
-          type="password"
           inputmode="numeric"
           pattern="^[0-9]{0,6}$"
           error-message="Die PIN muss zwischen 6 und 8 Ziffern lang sein."
         />
-        <Button class="place-self-end" @click="onNext({ can: canInput, pin: pinInput })">Weiter </Button>
+        <Button class="place-self-end" @click="onNext({ can: canInput, pin: pinInput })">Weiter</Button>
       </div>
     </template>
     <template #image>
@@ -45,7 +44,7 @@ const pinInput = ref('')
         src="@/assets/ehealthcard/ehealthcard_1x.webp"
         srcset="@/assets/ehealthcard/ehealthcard_1x.webp 1x, @/assets/ehealthcard/ehealthcard_2x.webp 2x, @/assets/ehealthcard/ehealthcard_3x.webp 3x @/assets/ehealthcard/ehealthcard_4x.webp 4x"
         alt="Abbildung einer eGK mit Hinweis, wo die CAN steht"
-        class="mx-auto h-full max-h-[350px] w-auto object-contain py-14"
+        class="mx-auto h-full max-h-[350px] w-auto object-contain object-top lg:py-14"
       />
     </template>
   </StepsScaffold>

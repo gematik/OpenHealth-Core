@@ -1,17 +1,13 @@
 <script setup lang="ts">
-import { UseCase, useExchange, type UseExchangeReturn } from '@/Exchange.ts'
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { readHealthCardAsync } from 'gematik-oh'
-import { hexToInt8Array, int8ArrayToHex } from '@/HexUtils.ts'
-import Header from '@/components/Header.vue'
+import { type UseExchangeReturn } from '@/Exchange.ts'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useQRCode } from '@vueuse/integrations/useQRCode'
-import { useTimeAgo, useTimeoutPoll } from '@vueuse/core'
+import { useTimeoutPoll } from '@vueuse/core'
 import Button from '@/components/Button.vue'
 import StepsScaffold from '@/pages/StepsScaffold.vue'
-import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import LoadingIndicator from '@/components/LoadingIndicator.vue'
 
-const props = defineProps<{ onNext: () => void; exchange: UseExchangeReturn }>()
+const props = defineProps<{ onConnected: () => void; exchange: UseExchangeReturn }>()
 const { token, ttlUntil, responseAsync, requestAsync, connect, finish } = props.exchange
 
 const tokenValidUntil = ref({ minutesLeft: 0 })
@@ -32,20 +28,19 @@ const qrCode = useQRCode(
 
 const isLoading = ref(true)
 
-onMounted(async () => {
+async function onConnect() {
   try {
     isLoading.value = true
     await connect()
+    props.onConnected()
   } finally {
     isLoading.value = false
   }
+}
 
-  const verifyCommand = await responseAsync()
-  if (verifyCommand.type === 'verif') {
-    props.onNext()
-  }
+onMounted(async () => {
+  await onConnect()
 })
-
 </script>
 
 <template>
@@ -71,7 +66,7 @@ onMounted(async () => {
             v-if="tokenValidUntil.minutesLeft <= 0 || isLoading"
             class="bg-gem-neutral-100 rounded-2xl size-full flex items-center justify-center"
           >
-            <Button v-if="tokenValidUntil.minutesLeft <= 0 && !isLoading"
+            <Button v-if="tokenValidUntil.minutesLeft <= 0 && !isLoading" @click="onConnect"
               ><span class="material-icons-outlined">refresh</span> Neuen Code erzeugen
             </Button>
             <LoadingIndicator v-if="isLoading" class="absolute">Code wird geladen... </LoadingIndicator>

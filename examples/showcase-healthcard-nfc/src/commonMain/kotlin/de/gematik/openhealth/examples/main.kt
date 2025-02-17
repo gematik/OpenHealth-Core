@@ -17,12 +17,12 @@
 package de.gematik.openhealth.examples
 
 import de.gematik.openhealth.asn1.Asn1Decoder
+import de.gematik.openhealth.asn1.readUtf8String
 import de.gematik.openhealth.crypto.initializeNativeCryptoProvider
 import de.gematik.openhealth.smartcard.card.SmartCard
 import de.gematik.openhealth.smartcard.card.useHealthCard
 import de.gematik.openhealth.smartcard.command.CardCommandApdu
 import de.gematik.openhealth.smartcard.command.CardResponseApdu
-import de.gematik.openhealth.smartcard.command.HealthCardCommand
 import de.gematik.openhealth.smartcard.exchange.HealthCardVerifyPinResult
 import de.gematik.openhealth.smartcard.exchange.establishTrustedChannel
 import de.gematik.openhealth.smartcard.exchange.retrieveCertificate
@@ -45,7 +45,6 @@ class CallbackSmartCard(val transmit: suspend (apdu: ByteArray) -> ByteArray) : 
     }
 }
 
-@OptIn(ExperimentalStdlibApi::class)
 suspend fun readHealthCard(
     can: String,
     pin: String,
@@ -59,13 +58,41 @@ suspend fun readHealthCard(
                 when (verifyPinResult) {
                     is HealthCardVerifyPinResult.CardBlocked -> error("Card blocked")
                     is HealthCardVerifyPinResult.WrongSecretWarning -> error("Wrong secret - ${verifyPinResult.retriesLeft} retries left")
-                    else -> retrieveCertificate().readSubject()
+                    else -> retrieveCertificate().readSubjectName()
                 }
             }
         }
     }
 }
 
-private fun ByteArray.readSubject(): String {
-    return "TODO"
+private val surnameOid = byteArrayOf(0x06, 0x03, 0x55, 0x04, 0x04)
+private val givenNameOid = byteArrayOf(0x06, 0x03, 0x55, 0x04, 0x2A)
+
+// let's not bother with parsing the whole cert just for this example
+private fun ByteArray.readSubjectName(): String {
+    val indexOfSurnameOid = indexOf(surnameOid)
+    if (indexOfSurnameOid == -1) error("OID for surname not found")
+
+    val surname = Asn1Decoder(this.copyOfRange(indexOfSurnameOid + givenNameOid.size, this.size)).read {
+        readUtf8String()
+    }
+
+    val indexOfGivenNameOid = indexOf(givenNameOid)
+    if (indexOfGivenNameOid == -1) error("OID for given name not found")
+
+    val givenName = Asn1Decoder(this.copyOfRange(indexOfGivenNameOid + givenNameOid.size, this.size)).read {
+        readUtf8String()
+    }
+
+    return "$givenName $surname"
+}
+
+private fun ByteArray.indexOf(subArray: ByteArray): Int {
+    outer@ for (i in 0..this.size - subArray.size) {
+        for (j in subArray.indices) {
+            if (this[i + j] != subArray[j]) continue@outer
+        }
+        return i
+    }
+    return -1
 }

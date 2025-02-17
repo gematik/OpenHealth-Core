@@ -6,8 +6,7 @@ import '@fontsource/ibm-plex-sans/300.css'
 import '@fontsource/ibm-plex-sans/400.css'
 import '@fontsource/ibm-plex-sans/700.css'
 import '@/assets/verdana/stylesheet.css'
-import 'material-icons/iconfont/material-icons.css';
-
+import 'material-icons/iconfont/material-icons.css'
 
 import { createApp } from 'vue'
 import { router } from '@/routes.ts'

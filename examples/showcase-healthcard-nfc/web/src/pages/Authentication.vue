@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import Credentials from '@/pages/Credentials.vue'
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onUnmounted, ref } from 'vue'
 import Pairing from '@/pages/Pairing.vue'
 import { UseCase, useExchange } from '@/Exchange.ts'
 import Transmission from '@/pages/Transmission.vue'
+import { useReadHealthCard } from '@/ReadHealthCard.ts'
 
 type PageState =
   | {
@@ -21,20 +22,26 @@ type PageState =
     }
 
 const pageState = ref<PageState>({ page: 'credentials' })
+const exchange = useExchange(UseCase.AUTHENTICATION)
+const { finish } = exchange
+const readHealthCard = useReadHealthCard(exchange)
 
-const updatePageStateToPairing = ({ can, pin }: { can: string; pin: string }) => {
+const onNextToPairing = ({ can, pin }: { can: string; pin: string }) => {
   pageState.value = { page: 'pairing', can, pin }
 }
 
-const updatePageStateToTransmission = () => {
+const onConnected = () => {
   if (pageState.value.page === 'pairing') {
-    pageState.value = { ...pageState.value, page: 'transmission' }
-    console.log(pageState.value)
+    const currentPageState = pageState.value
+    readHealthCard
+      .process(currentPageState.can, currentPageState.pin, () => {
+        pageState.value = { ...currentPageState, page: 'transmission' }
+      })
+      .catch((error) => {
+        console.error(error)
+      })
   }
 }
-
-const exchange = useExchange(UseCase.AUTHENTICATION)
-const { finish } = exchange;
 
 onUnmounted(async () => {
   await finish()
@@ -42,9 +49,9 @@ onUnmounted(async () => {
 </script>
 
 <template>
-  <Credentials v-if="pageState.page === 'credentials'" :on-next="updatePageStateToPairing" />
-  <Pairing v-if="pageState.page === 'pairing'" :on-next="updatePageStateToTransmission" :exchange="exchange" />
-  <Transmission v-if="pageState.page === 'transmission'" :can="pageState.can" :pin="pageState.pin" :exchange="exchange" />
+  <Credentials v-if="pageState.page === 'credentials'" :on-next="onNextToPairing" />
+  <Pairing v-else-if="pageState.page === 'pairing'" :on-connected="onConnected" :exchange="exchange" />
+  <Transmission v-else-if="pageState.page === 'transmission'" :readHealthCard="readHealthCard" />
 </template>
 
 <style scoped></style>

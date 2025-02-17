@@ -195,7 +195,7 @@ class Asn1DecoderTest {
 
     @Test
     fun `read utf8 string`() {
-        val parser = Asn1Decoder("04 05 48 65 6C 6C 6F".hexToByteArray(hexSpaceFormat))
+        val parser = Asn1Decoder("0C 05 48 65 6C 6C 6F".hexToByteArray(hexSpaceFormat))
         val result =
             parser.read {
                 readUtf8String()
@@ -205,7 +205,7 @@ class Asn1DecoderTest {
 
     @Test
     fun `read utf8 string - empty`() {
-        val parser = Asn1Decoder("04 00".hexToByteArray(hexSpaceFormat))
+        val parser = Asn1Decoder("0C 00".hexToByteArray(hexSpaceFormat))
         val result =
             parser.read {
                 readUtf8String()

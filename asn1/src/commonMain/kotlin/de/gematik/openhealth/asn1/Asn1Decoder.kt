@@ -22,11 +22,22 @@ import kotlin.experimental.and
 import kotlin.js.JsExport
 import kotlin.js.JsName
 
+/**
+ * Exception class for ASN.1 decoding errors.
+ *
+ * @property message The detail message string.
+ * @property cause The cause of the exception.
+ */
 @JsExport
 class Asn1DecoderException(
     override val message: String,
     override val cause: Throwable?,
 ) : IllegalArgumentException(message, cause) {
+    /**
+     * Constructs an [Asn1DecoderException] with the specified detail message.
+     *
+     * @param message The detail message string.
+     */
     @JsExport.Ignore
     constructor(message: String) : this(message, null)
 }
@@ -93,7 +104,7 @@ class Asn1Decoder(
         ): Nothing = throw Asn1DecoderException(message(), cause)
 
         /**
-         * Throws an [ParserException] if [value] is `false` with the result of calling [message].
+         * Throws an [Asn1DecoderException] if [value] is `false` with the result of calling [message].
          */
         @OptIn(ExperimentalContracts::class)
         inline fun check(
@@ -142,8 +153,8 @@ class Asn1Decoder(
         }
 
         /**
-         * Advance with the given [tag] and return the resulting [Asn1Object]. Throws an [ParserException] if the [tag] doesn't match.
-         * @param tag the tag to advance with.
+         * Advances the parser with the given tag and executes the provided block.
+         * Throws an [Asn1DecoderException] if the tag does not match.
          */
         fun <T> advanceWithTag(
             tagNumber: Int,
@@ -279,6 +290,9 @@ class Asn1Decoder(
         }
     }
 
+    /**
+     * Reads the data using the provided [block] and returns the result.
+     */
     fun <T> read(block: ParserScope.() -> T): T {
         val scope =
             ParserScope(
@@ -329,7 +343,7 @@ fun Asn1Decoder.ParserScope.readBitString(): ByteArray =
  */
 @JsExport
 fun Asn1Decoder.ParserScope.readUtf8String(): String =
-    advanceWithTag(Asn1Type.OCTET_STRING) {
+    advanceWithTag(Asn1Type.UTF8_STRING) {
         try {
             readBytes(remainingLength).decodeToString()
         } catch (e: Exception) {
