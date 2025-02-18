@@ -16,6 +16,19 @@
 
 package de.gematik.openhealth.crypto
 
-actual fun secureRandom(): SecureRandom {
-    TODO("Not yet implemented")
+
+private class JvmSecureRandom : SecureRandom() {
+    private val secureRandom = java.security.SecureRandom()
+
+    override fun nextBits(bitCount: Int): Int {
+        val bytes = ByteArray((bitCount + 7) / 8)
+        secureRandom.nextBytes(bytes)
+        var result = 0
+        for (i in bytes.indices) {
+            result = result shl 8 or (bytes[i].toInt() and 0xFF)
+        }
+        return result ushr (bytes.size * 8 - bitCount)
+    }
 }
+
+actual fun secureRandom(): SecureRandom = JvmSecureRandom()

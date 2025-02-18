@@ -16,13 +16,32 @@
 
 package de.gematik.openhealth.crypto.cipher
 
+import de.gematik.openhealth.crypto.ByteUnit
+import de.gematik.openhealth.crypto.CryptoScope
 import de.gematik.openhealth.crypto.UnsafeCryptoApi
 import de.gematik.openhealth.crypto.bits
 import de.gematik.openhealth.crypto.bytes
 import de.gematik.openhealth.crypto.key.SecretKey
+import javax.crypto.Cipher
 import javax.crypto.spec.GCMParameterSpec
+import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
-import javax.crypto.Cipher as JavaCipher
+
+@OptIn(UnsafeCryptoApi::class)
+private fun AesCipherSpec.algorithmName(keyLength: ByteUnit): String =
+    when (this) {
+        is AesEcbSpec -> "AES/ECB/PKCS5Padding"
+        is AesCbcSpec -> "AES/CBC/PKCS5Padding"
+        is AesGcmCipherSpec -> "AES/GCM/NoPadding"
+    }
+
+@OptIn(UnsafeCryptoApi::class)
+private fun AesDecipherSpec.algorithmName(keyLength: ByteUnit): String =
+    when (this) {
+        is AesEcbSpec -> "AES/ECB/PKCS5Padding"
+        is AesCbcSpec -> "AES/CBC/PKCS5Padding"
+        is AesGcmDecipherSpec -> "AES/GCM/NoPadding"
+    }
 
 private class JvmAesCipher(
     override val spec: AesCipherSpec,
@@ -31,39 +50,32 @@ private class JvmAesCipher(
     private lateinit var authTag: ByteArray
 
     @OptIn(UnsafeCryptoApi::class)
-    private var cipher: JavaCipher =
+    private val cipher: Cipher = Cipher.getInstance(spec.algorithmName(key.length)).apply {
+        val secretKey = SecretKeySpec(key.data, "AES")
         when (spec) {
-            is AesEcbSpec -> {
-                val secretKey = SecretKeySpec(key.data, "AES")
-                val cipher = JavaCipher.getInstance("AES/ECB/PKCS5Padding")
-                cipher.init(JavaCipher.ENCRYPT_MODE, secretKey)
-                cipher
-            }
             is AesGcmCipherSpec -> {
-                val secretKey = SecretKeySpec(key.data, "AES")
                 val gcmSpec = GCMParameterSpec(spec.tagLength.bits, spec.iv)
-                val cipher = JavaCipher.getInstance("AES/GCM/NoPadding")
-                cipher.init(JavaCipher.ENCRYPT_MODE, secretKey, gcmSpec)
-                cipher.updateAAD(spec.aad)
-                cipher
+                init(Cipher.ENCRYPT_MODE, secretKey, gcmSpec)
+                updateAAD(spec.aad)
             }
+            is AesCbcSpec ->{
+                val ivSpec = IvParameterSpec(spec.iv)
+                init(Cipher.DECRYPT_MODE, secretKey, ivSpec)
+            }
+            else -> init(Cipher.ENCRYPT_MODE, secretKey)
         }
+    }
 
-    override suspend fun update(data: ByteArray): ByteArray = cipher.update(data)
+    override fun update(data: ByteArray): ByteArray = cipher.update(data)
 
-    @OptIn(UnsafeCryptoApi::class)
-    override suspend fun final(): ByteArray =
-        when (spec) {
-            is AesEcbSpec -> {
-                authTag = byteArrayOf()
-                cipher.doFinal()
-            }
-            is AesGcmCipherSpec -> {
-                val final = cipher.doFinal()
-                authTag = final.copyOfRange(final.size - spec.tagLength.bytes, final.size)
-                final.copyOfRange(0, final.size - spec.tagLength.bytes)
-            }
+    override fun final(): ByteArray = when (spec) {
+        is AesGcmCipherSpec -> {
+            val final = cipher.doFinal()
+            authTag = final.copyOfRange(final.size - spec.tagLength.bytes, final.size)
+            final.copyOfRange(0, final.size - spec.tagLength.bytes)
         }
+        else -> cipher.doFinal()
+    }
 
     override fun authTag(): ByteArray = authTag.copyOf()
 }
@@ -73,34 +85,36 @@ private class JvmAesDecipher(
     key: SecretKey,
 ) : AesDecipher {
     @OptIn(UnsafeCryptoApi::class)
-    private var cipher: JavaCipher =
+    private val cipher: Cipher = Cipher.getInstance(spec.algorithmName(key.length)).apply {
+        val secretKey = SecretKeySpec(key.data, "AES")
         when (spec) {
-            is AesEcbSpec -> {
-                val secretKey = SecretKeySpec(key.data, "AES")
-                val cipher = JavaCipher.getInstance("AES/ECB/PKCS5Padding")
-                cipher.init(JavaCipher.DECRYPT_MODE, secretKey)
-                cipher
-            }
             is AesGcmDecipherSpec -> {
-                val secretKey = SecretKeySpec(key.data, "AES")
                 val gcmSpec = GCMParameterSpec(spec.tagLength.bits, spec.iv)
-                val cipher = JavaCipher.getInstance("AES/GCM/NoPadding")
-                cipher.init(JavaCipher.DECRYPT_MODE, secretKey, gcmSpec)
-                cipher.updateAAD(spec.aad)
-                cipher
+                init(Cipher.DECRYPT_MODE, secretKey, gcmSpec)
+                updateAAD(spec.aad)
             }
+            is AesCbcSpec -> {
+                val ivSpec = IvParameterSpec(spec.iv)
+                init(Cipher.DECRYPT_MODE, secretKey, ivSpec)
+            }
+            else -> init(Cipher.DECRYPT_MODE, secretKey)
         }
+    }
 
-    override suspend fun update(data: ByteArray): ByteArray = cipher.update(data)
+    override fun update(data: ByteArray): ByteArray = cipher.update(data)
 
-    @OptIn(UnsafeCryptoApi::class)
-    override suspend fun final(): ByteArray =
-        when (spec) {
-            is AesEcbSpec -> cipher.doFinal()
-            is AesGcmDecipherSpec -> cipher.doFinal(spec.authTag)
-        }
+    override fun final(): ByteArray = when (spec) {
+        is AesGcmDecipherSpec -> cipher.doFinal(spec.authTag)
+        else -> cipher.doFinal()
+    }
 }
 
-actual fun AesCipherSpec.createCipher(key: SecretKey): AesCipher = JvmAesCipher(this, key)
+internal actual fun AesCipherSpec.nativeCreateCipher(
+    scope: CryptoScope,
+    key: SecretKey,
+): AesCipher = JvmAesCipher(this, key)
 
-actual fun AesDecipherSpec.createDecipher(key: SecretKey): AesDecipher = JvmAesDecipher(this, key)
+internal actual fun AesDecipherSpec.nativeCreateDecipher(
+    scope: CryptoScope,
+    key: SecretKey,
+): AesDecipher = JvmAesDecipher(this, key)

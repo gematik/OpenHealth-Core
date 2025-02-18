@@ -16,22 +16,16 @@
 
 package de.gematik.openhealth.crypto
 
-import java.security.MessageDigest
-
-private class JvmHash(
-    override val spec: HashSpec,
-) : Hash {
-    private var digested = false
-    private val hash = MessageDigest.getInstance(spec.algorithm.name, BCProvider)
-
-    override fun update(data: ByteArray) {
-        hash.update(data)
-    }
-
-    override fun digest(): ByteArray {
-        if (digested) throw HashException("Digest can only be called once")
-        return hash.digest().also { digested = true }
+internal class JvmCryptoScope :
+    CryptoScope(),
+    DeferScope by deferred() {
+    override fun release() {
+        executeAllDeferred()
     }
 }
 
-actual fun HashSpec.nativeCreateHash(scope: CryptoScope): Hash = JvmHash(this)
+internal actual fun <R : Any?> nativeUseCrypto(block: CryptoScope.() -> R): R =
+    block(JvmCryptoScope())
+
+internal actual suspend fun <R : Any?> nativeUseCrypto(block: suspend CryptoScope.() -> R): R =
+    block(JvmCryptoScope())

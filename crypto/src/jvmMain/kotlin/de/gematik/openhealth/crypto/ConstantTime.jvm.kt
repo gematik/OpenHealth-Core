@@ -16,22 +16,19 @@
 
 package de.gematik.openhealth.crypto
 
-import java.security.MessageDigest
 
-private class JvmHash(
-    override val spec: HashSpec,
-) : Hash {
-    private var digested = false
-    private val hash = MessageDigest.getInstance(spec.algorithm.name, BCProvider)
+/**
+ * JVM specific implementation of constant time equals for byte arrays using OpenSSL.
+ */
 
-    override fun update(data: ByteArray) {
-        hash.update(data)
+actual fun nativeConstantTimeEquals(
+    arrayA: ByteArray,
+    arrayB: ByteArray,
+): Boolean {
+    if (arrayA.size != arrayB.size) return false
+    var result = 0
+    for (i in arrayA.indices) {
+        result = result or (arrayA[i].toInt() xor arrayB[i].toInt())
     }
-
-    override fun digest(): ByteArray {
-        if (digested) throw HashException("Digest can only be called once")
-        return hash.digest().also { digested = true }
-    }
+    return result == 0
 }
-
-actual fun HashSpec.nativeCreateHash(scope: CryptoScope): Hash = JvmHash(this)

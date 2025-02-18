@@ -27,7 +27,7 @@ private fun EcCurve.curveName() =
         EcCurve.BrainpoolP512r1 -> "brainpoolP512r1"
     }
 
-actual suspend fun EcKeyPairSpec.generateKeyPair(): Pair<EcPublicKey, EcPrivateKey> {
+actual fun EcKeyPairSpec.generateKeyPair(): Pair<EcPublicKey, EcPrivateKey> {
     val keyPairGen = KeyPairGenerator.getInstance("EC", BCProvider)
     keyPairGen.initialize(ECGenParameterSpec(curve.curveName()))
     val keyPair = keyPairGen.generateKeyPair()

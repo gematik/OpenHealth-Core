@@ -39,14 +39,14 @@ private class JvmCmac(
     private val secretKey = SecretKeySpec(secret.data, keyName)
     private val mac = Mac.getInstance(algorithmName, BCProvider).apply { init(secretKey) }
 
-    override suspend fun update(data: ByteArray) {
+    override fun update(data: ByteArray) {
         mac.update(data)
     }
 
-    override suspend fun final(): ByteArray {
+    override fun final(): ByteArray {
         if (final) throw CmacException("Final can only be called once")
         return mac.doFinal().also { final = true }
     }
 }
 
-actual fun CmacSpec.createCmac(secret: SecretKey): Cmac = JvmCmac(this, secret)
+actual fun CmacSpec.nativeCreateCmac(scope: CryptoScope, secret: SecretKey): Cmac = JvmCmac(this, secret)

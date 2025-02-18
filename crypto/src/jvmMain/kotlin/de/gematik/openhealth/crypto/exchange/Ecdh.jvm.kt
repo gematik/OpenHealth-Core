@@ -17,6 +17,7 @@
 package de.gematik.openhealth.crypto.exchange
 
 import de.gematik.openhealth.crypto.BCProvider
+import de.gematik.openhealth.crypto.CryptoScope
 import de.gematik.openhealth.crypto.ExperimentalCryptoApi
 import de.gematik.openhealth.crypto.key.EcPrivateKey
 import de.gematik.openhealth.crypto.key.EcPublicKey
@@ -27,21 +28,21 @@ import java.security.spec.X509EncodedKeySpec
 import javax.crypto.KeyAgreement
 
 private class JvmEcdh(
-    val spec: EcdhSpec,
-    val privateKey: EcPrivateKey,
+    override val spec: EcdhSpec,
+    private val privateKey: EcPrivateKey,
 ) : Ecdh {
-    private val keyAgreement: KeyAgreement =
-        run {
-            val keyFactory = KeyFactory.getInstance("EC", BCProvider)
-            val privateKeySpec = PKCS8EncodedKeySpec(privateKey.encodeToAsn1())
-            val privateKey = keyFactory.generatePrivate(privateKeySpec)
+    init {
+        require(spec.curve == privateKey.curve) { "Spec curve and private key curve must match." }
+    }
 
-            val keyAgreement = KeyAgreement.getInstance("ECDH", BCProvider)
-            keyAgreement.init(privateKey)
-            keyAgreement
-        }
+    private val keyAgreement: KeyAgreement = KeyAgreement.getInstance("ECDH", BCProvider).apply {
+        val keyFactory = KeyFactory.getInstance("EC", BCProvider)
+        val privateKeySpec = PKCS8EncodedKeySpec(privateKey.encodeToAsn1())
+        val privateKey = keyFactory.generatePrivate(privateKeySpec)
+        init(privateKey)
+    }
 
-    override suspend fun computeSecret(otherPublicKey: EcPublicKey): ByteArray {
+    override fun computeSecret(otherPublicKey: EcPublicKey): ByteArray {
         require(otherPublicKey.curve == spec.curve) { "Public key curve does not match spec curve" }
 
         val keyFactory = KeyFactory.getInstance("EC", BCProvider)
@@ -53,4 +54,7 @@ private class JvmEcdh(
 }
 
 @ExperimentalCryptoApi
-actual fun EcdhSpec.createKeyExchange(privateKey: EcPrivateKey): Ecdh = JvmEcdh(this, privateKey)
+internal actual fun EcdhSpec.nativeCreateKeyExchange(
+    scope: CryptoScope,
+    privateKey: EcPrivateKey,
+): Ecdh = JvmEcdh(this, privateKey)
