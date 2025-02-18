@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 gematik GmbH
+ * Copyright 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,9 @@ package de.gematik.openhealth.crypto
 fun ByteArray.contentConstantTimeEquals(other: ByteArray): Boolean =
     nativeConstantTimeEquals(this, other)
 
+/**
+ * Constant time equals for byte arrays.
+ */
 internal expect fun nativeConstantTimeEquals(
     arrayA: ByteArray,
     arrayB: ByteArray,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 gematik GmbH
+ * Copyright 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,9 @@ import de.gematik.openhealth.crypto.wrapper.deferScoped
 import de.gematik.openhealth.crypto.wrapper.runWithProvider
 import de.gematik.openhealth.crypto.wrapper.toUint8Vector
 
+/**
+ * JS specific implementation of constant time equals for byte arrays using OpenSSL.
+ */
 actual fun nativeConstantTimeEquals(
     arrayA: ByteArray,
     arrayB: ByteArray,

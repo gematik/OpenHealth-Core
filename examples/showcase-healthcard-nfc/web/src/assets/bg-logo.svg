@@ -1,3 +1,19 @@
+<!--
+  - Copyright 2025 gematik GmbH
+  -
+  - Licensed under the Apache License, Version 2.0 (the "License");
+  - you may not use this file except in compliance with the License.
+  - You may obtain a copy of the License at
+  -
+  -     http://www.apache.org/licenses/LICENSE-2.0
+  -
+  - Unless required by applicable law or agreed to in writing, software
+  - distributed under the License is distributed on an "AS IS" BASIS,
+  - WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  - See the License for the specific language governing permissions and
+  - limitations under the License.
+  -->
+
 <svg width="460" height="415" viewBox="0 0 460 415" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M309.11 -36.9586L485.607 29.0113L473.926 179.776L312.901 216.715L381.477 354.414L204.16 363.653L100.194 155.466L64.0744 -42.043L16.4376 286.84L309.11 -36.9586Z" stroke="#8DA5C4" stroke-width="0.83" stroke-miterlimit="10"/>
 <path d="M100.194 155.465L308.91 215.221L309.53 -38.0706L203.668 364.947" stroke="#8DA5C4" stroke-width="0.83" stroke-miterlimit="10"/>

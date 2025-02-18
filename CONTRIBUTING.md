@@ -18,7 +18,7 @@ Ensure your Merge/Pull Request (MR/PR) includes:
 
 ## Reviewing Changes (To be done by automation)
 
-Ensure all of the following pre-requirements are done:
+Ensure all the following pre-requirements are done:
 1. Check `TODOs` are included with the provided ticket
 2. Check `FIXMEs` are not included
 3. Check for breaking API declaration changes:

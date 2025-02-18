@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 gematik GmbH
+ * Copyright 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-@file:Suppress("MagicNumber")
 
 package de.gematik.openhealth.smartcard.exchange
 
@@ -62,11 +60,6 @@ import de.gematik.openhealth.smartcard.identifier.ShortFileIdentifier
 
 private const val SECRET_KEY_REFERENCE = 2 // Reference of secret key for PACE (CAN)
 
-@OptIn(
-    ExperimentalCryptoApi::class,
-    UnsafeCryptoApi::class,
-    ExperimentalStdlibApi::class,
-)
 /**
  * Establishes a trusted channel using the PACE protocol as specified in gemSpecObjSys and gemSpecCos.
  *
@@ -82,6 +75,10 @@ private const val SECRET_KEY_REFERENCE = 2 // Reference of secret key for PACE (
  * @param cardAccessNumber The Card Access Number (CAN) for PACE initialization.
  * @return A trusted channel scope to communicate securely with the card.
  */
+@OptIn(
+    ExperimentalCryptoApi::class,
+    UnsafeCryptoApi::class,
+)
 suspend fun HealthCardScope.establishTrustedChannel(cardAccessNumber: String): TrustedChannelScope {
     // Step 1: Read and configure supported PACE parameters
     suspend fun initializePace(): PaceInfo {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 gematik GmbH
+ * Copyright 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,29 @@ plugins {
 
 subprojects {
     apply(plugin = "org.jetbrains.dokka")
+}
+
+tasks.register("licenseHeaderCheck") {
+    val licenseTextRegex = "Copyright \\d{4} gematik GmbH".toRegex()
+
+    val filesWithoutLicense =
+        fileTree(".") {
+            include("**/src/**/*.kt", "**/*.cpp", "**/*.hpp", "**/*.java", "**/*.ts", "**/*.js")
+            exclude("**.*/*", "**/build/**", "**/dist/**", "**/generated/**", "**/node_modules/**")
+        }.files.filter { file ->
+            !file.readText().contains(licenseTextRegex)
+        }
+
+    doLast {
+        if (filesWithoutLicense.isNotEmpty()) {
+            filesWithoutLicense.forEach { file ->
+                println("file://${file.absolutePath}: Missing or incorrect license header")
+            }
+            throw GradleException(
+                "License check failed. Missing headers in ${filesWithoutLicense.size} files.",
+            )
+        }
+    }
 }
 
 detekt {

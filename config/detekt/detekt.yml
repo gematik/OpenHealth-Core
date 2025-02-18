@@ -13,6 +13,13 @@ complexity:
   LongParameterList:
     active: false
 
+comments:
+  # FIXME: Activate before launch
+  UndocumentedPublicClass:
+    active: false
+  UndocumentedPublicFunction:
+    active: false
+
 naming:
   MatchingDeclarationName:
     active: false
