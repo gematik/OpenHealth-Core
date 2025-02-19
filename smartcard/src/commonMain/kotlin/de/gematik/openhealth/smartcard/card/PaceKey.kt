@@ -21,6 +21,7 @@ import de.gematik.openhealth.crypto.HashAlgorithm
 import de.gematik.openhealth.crypto.HashSpec
 import de.gematik.openhealth.crypto.key.SecretKey
 import de.gematik.openhealth.crypto.useCrypto
+import kotlin.js.JsExport
 
 /**
  * Pace Key for TrustedChannel with Session key for encoding and Session key for message authentication

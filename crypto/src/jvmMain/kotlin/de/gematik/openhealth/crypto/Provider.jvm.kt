@@ -16,18 +16,10 @@
 
 package de.gematik.openhealth.crypto
 
-internal class JvmCryptoScope : CryptoScope() {
-    override fun release() {
-        // noop
-    }
-
-    override fun defer(block: () -> Unit) {
-        // noop
-    }
+/**
+ * Initializes the underlying native provider. A call to this function is required before calling
+ * any other cryptographic operations.
+ */
+actual suspend fun initializeNativeCryptoProvider() {
+    // noop
 }
-
-internal actual fun <R : Any?> nativeUseCrypto(block: CryptoScope.() -> R): R =
-    block(JvmCryptoScope())
-
-internal actual suspend fun <R : Any?> nativeUseCrypto(block: suspend CryptoScope.() -> R): R =
-    block(JvmCryptoScope())

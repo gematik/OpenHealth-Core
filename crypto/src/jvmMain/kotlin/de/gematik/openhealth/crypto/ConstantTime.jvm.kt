@@ -16,7 +16,6 @@
 
 package de.gematik.openhealth.crypto
 
-
 /**
  * JVM specific implementation of constant time equals for byte arrays using OpenSSL.
  */

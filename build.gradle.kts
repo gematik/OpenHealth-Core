@@ -22,12 +22,12 @@ plugins {
     alias(libs.plugins.detekt) apply true
 
     id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.16.3"
-    id("org.jetbrains.dokka") version "1.9.20"
+//    id("org.jetbrains.dokka") version "2.0.0"
 }
 
-subprojects {
-    apply(plugin = "org.jetbrains.dokka")
-}
+// subprojects {
+//    apply(plugin = "org.jetbrains.dokka")
+// }
 
 tasks.register("licenseHeaderCheck") {
     val licenseTextRegex = "Copyright \\d{4} gematik GmbH".toRegex()

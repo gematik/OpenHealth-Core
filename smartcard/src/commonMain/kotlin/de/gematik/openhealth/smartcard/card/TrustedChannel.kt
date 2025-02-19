@@ -36,6 +36,7 @@ import de.gematik.openhealth.smartcard.utils.padData
 import de.gematik.openhealth.smartcard.utils.unpadData
 import kotlin.collections.plus
 import kotlin.experimental.or
+import kotlin.js.JsExport
 
 private const val SECURE_MESSAGING_COMMAND = 0x0C.toByte()
 private val PADDING_INDICATOR = byteArrayOf(0x01.toByte())

@@ -14,20 +14,17 @@
  * limitations under the License.
  */
 
-package de.gematik.openhealth.crypto
+package de.gematik.openhealth.crypto.kem
 
-internal class JvmCryptoScope : CryptoScope() {
-    override fun release() {
-        // noop
-    }
+import de.gematik.openhealth.crypto.CryptoScope
 
-    override fun defer(block: () -> Unit) {
-        // noop
-    }
+internal actual fun KemSpec.nativeCreateEncapsulation(
+    scope: CryptoScope,
+    encapsulationKey: ByteArray,
+): KemEncapsulation {
+    TODO("Not yet implemented")
 }
 
-internal actual fun <R : Any?> nativeUseCrypto(block: CryptoScope.() -> R): R =
-    block(JvmCryptoScope())
-
-internal actual suspend fun <R : Any?> nativeUseCrypto(block: suspend CryptoScope.() -> R): R =
-    block(JvmCryptoScope())
+internal actual fun KemSpec.nativeCreateDecapsulation(scope: CryptoScope): KemDecapsulation {
+    TODO("Not yet implemented")
+}

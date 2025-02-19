@@ -15,7 +15,6 @@
  */
 
 import com.vanniktech.maven.publish.SonatypeHost
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -28,15 +27,15 @@ version = project.findProperty("gematik.version") as String
 
 kotlin {
     jvm()
-    androidTarget {
-//        publishLibraryVariants("release")
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_1_8)
-        }
-    }
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
+//    androidTarget {
+// //        publishLibraryVariants("release")
+//        compilerOptions {
+//            jvmTarget.set(JvmTarget.JVM_1_8)
+//        }
+//    }
+//    iosX64()
+//    iosArm64()
+//    iosSimulatorArm64()
     js {
         browser {}
         nodejs {}
@@ -86,9 +85,9 @@ android {
 mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
 
-    signAllPublications()
+//    signAllPublications()
 
-    coordinates(group.toString(), "library", version.toString())
+    coordinates(group.toString(), "asn1", version.toString())
 
     pom {
         name = "My library"

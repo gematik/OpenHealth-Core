@@ -27,6 +27,7 @@ version = project.findProperty("gematik.version") as String
 // val platformAttribute = Attribute.of("$group.platform", String::class.java)
 
 kotlin {
+    jvm()
     js("jsNode") {
 //        attributes.attribute(platformAttribute, "jsnode")
         nodejs {
@@ -107,9 +108,9 @@ rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlu
 mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
 
-    signAllPublications()
+//    signAllPublications()
 
-    coordinates(group.toString(), "library", version.toString())
+    coordinates(group.toString(), "smartcard", version.toString())
 
     pom {
         name = "My library"

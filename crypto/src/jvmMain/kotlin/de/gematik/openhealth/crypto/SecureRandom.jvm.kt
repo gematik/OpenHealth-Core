@@ -16,7 +16,6 @@
 
 package de.gematik.openhealth.crypto
 
-
 private class JvmSecureRandom : SecureRandom() {
     private val secureRandom = java.security.SecureRandom()
 

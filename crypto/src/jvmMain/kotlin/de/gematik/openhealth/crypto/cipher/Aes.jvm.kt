@@ -16,7 +16,6 @@
 
 package de.gematik.openhealth.crypto.cipher
 
-import de.gematik.openhealth.crypto.ByteUnit
 import de.gematik.openhealth.crypto.CryptoScope
 import de.gematik.openhealth.crypto.UnsafeCryptoApi
 import de.gematik.openhealth.crypto.bits
@@ -28,7 +27,7 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
 @OptIn(UnsafeCryptoApi::class)
-private fun AesCipherSpec.algorithmName(keyLength: ByteUnit): String =
+private fun AesCipherSpec.algorithmName(): String =
     when (this) {
         is AesEcbSpec -> "AES/ECB/PKCS5Padding"
         is AesCbcSpec -> "AES/CBC/PKCS5Padding"
@@ -36,7 +35,7 @@ private fun AesCipherSpec.algorithmName(keyLength: ByteUnit): String =
     }
 
 @OptIn(UnsafeCryptoApi::class)
-private fun AesDecipherSpec.algorithmName(keyLength: ByteUnit): String =
+private fun AesDecipherSpec.algorithmName(): String =
     when (this) {
         is AesEcbSpec -> "AES/ECB/PKCS5Padding"
         is AesCbcSpec -> "AES/CBC/PKCS5Padding"
@@ -50,32 +49,34 @@ private class JvmAesCipher(
     private lateinit var authTag: ByteArray
 
     @OptIn(UnsafeCryptoApi::class)
-    private val cipher: Cipher = Cipher.getInstance(spec.algorithmName(key.length)).apply {
-        val secretKey = SecretKeySpec(key.data, "AES")
-        when (spec) {
-            is AesGcmCipherSpec -> {
-                val gcmSpec = GCMParameterSpec(spec.tagLength.bits, spec.iv)
-                init(Cipher.ENCRYPT_MODE, secretKey, gcmSpec)
-                updateAAD(spec.aad)
+    private val cipher: Cipher =
+        Cipher.getInstance(spec.algorithmName()).apply {
+            val secretKey = SecretKeySpec(key.data, "AES")
+            when (spec) {
+                is AesGcmCipherSpec -> {
+                    val gcmSpec = GCMParameterSpec(spec.tagLength.bits, spec.iv)
+                    init(Cipher.ENCRYPT_MODE, secretKey, gcmSpec)
+                    updateAAD(spec.aad)
+                }
+                is AesCbcSpec -> {
+                    val ivSpec = IvParameterSpec(spec.iv)
+                    init(Cipher.ENCRYPT_MODE, secretKey, ivSpec)
+                }
+                else -> init(Cipher.ENCRYPT_MODE, secretKey)
             }
-            is AesCbcSpec ->{
-                val ivSpec = IvParameterSpec(spec.iv)
-                init(Cipher.DECRYPT_MODE, secretKey, ivSpec)
-            }
-            else -> init(Cipher.ENCRYPT_MODE, secretKey)
         }
-    }
 
     override fun update(data: ByteArray): ByteArray = cipher.update(data)
 
-    override fun final(): ByteArray = when (spec) {
-        is AesGcmCipherSpec -> {
-            val final = cipher.doFinal()
-            authTag = final.copyOfRange(final.size - spec.tagLength.bytes, final.size)
-            final.copyOfRange(0, final.size - spec.tagLength.bytes)
+    override fun final(): ByteArray =
+        when (spec) {
+            is AesGcmCipherSpec -> {
+                val final = cipher.doFinal()
+                authTag = final.copyOfRange(final.size - spec.tagLength.bytes, final.size)
+                final.copyOfRange(0, final.size - spec.tagLength.bytes)
+            }
+            else -> cipher.doFinal()
         }
-        else -> cipher.doFinal()
-    }
 
     override fun authTag(): ByteArray = authTag.copyOf()
 }
@@ -85,28 +86,30 @@ private class JvmAesDecipher(
     key: SecretKey,
 ) : AesDecipher {
     @OptIn(UnsafeCryptoApi::class)
-    private val cipher: Cipher = Cipher.getInstance(spec.algorithmName(key.length)).apply {
-        val secretKey = SecretKeySpec(key.data, "AES")
-        when (spec) {
-            is AesGcmDecipherSpec -> {
-                val gcmSpec = GCMParameterSpec(spec.tagLength.bits, spec.iv)
-                init(Cipher.DECRYPT_MODE, secretKey, gcmSpec)
-                updateAAD(spec.aad)
+    private val cipher: Cipher =
+        Cipher.getInstance(spec.algorithmName()).apply {
+            val secretKey = SecretKeySpec(key.data, "AES")
+            when (spec) {
+                is AesGcmDecipherSpec -> {
+                    val gcmSpec = GCMParameterSpec(spec.tagLength.bits, spec.iv)
+                    init(Cipher.DECRYPT_MODE, secretKey, gcmSpec)
+                    updateAAD(spec.aad)
+                }
+                is AesCbcSpec -> {
+                    val ivSpec = IvParameterSpec(spec.iv)
+                    init(Cipher.DECRYPT_MODE, secretKey, ivSpec)
+                }
+                else -> init(Cipher.DECRYPT_MODE, secretKey)
             }
-            is AesCbcSpec -> {
-                val ivSpec = IvParameterSpec(spec.iv)
-                init(Cipher.DECRYPT_MODE, secretKey, ivSpec)
-            }
-            else -> init(Cipher.DECRYPT_MODE, secretKey)
         }
-    }
 
     override fun update(data: ByteArray): ByteArray = cipher.update(data)
 
-    override fun final(): ByteArray = when (spec) {
-        is AesGcmDecipherSpec -> cipher.doFinal(spec.authTag)
-        else -> cipher.doFinal()
-    }
+    override fun final(): ByteArray =
+        when (spec) {
+            is AesGcmDecipherSpec -> cipher.doFinal(spec.authTag)
+            else -> cipher.doFinal()
+        }
 }
 
 internal actual fun AesCipherSpec.nativeCreateCipher(

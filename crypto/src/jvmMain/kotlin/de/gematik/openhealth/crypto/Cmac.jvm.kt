@@ -49,4 +49,7 @@ private class JvmCmac(
     }
 }
 
-actual fun CmacSpec.nativeCreateCmac(scope: CryptoScope, secret: SecretKey): Cmac = JvmCmac(this, secret)
+actual fun CmacSpec.nativeCreateCmac(
+    scope: CryptoScope,
+    secret: SecretKey,
+): Cmac = JvmCmac(this, secret)

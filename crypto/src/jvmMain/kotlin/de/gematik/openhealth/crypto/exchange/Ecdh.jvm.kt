@@ -35,12 +35,13 @@ private class JvmEcdh(
         require(spec.curve == privateKey.curve) { "Spec curve and private key curve must match." }
     }
 
-    private val keyAgreement: KeyAgreement = KeyAgreement.getInstance("ECDH", BCProvider).apply {
-        val keyFactory = KeyFactory.getInstance("EC", BCProvider)
-        val privateKeySpec = PKCS8EncodedKeySpec(privateKey.encodeToAsn1())
-        val privateKey = keyFactory.generatePrivate(privateKeySpec)
-        init(privateKey)
-    }
+    private val keyAgreement: KeyAgreement =
+        KeyAgreement.getInstance("ECDH", BCProvider).apply {
+            val keyFactory = KeyFactory.getInstance("EC", BCProvider)
+            val privateKeySpec = PKCS8EncodedKeySpec(privateKey.encodeToAsn1())
+            val privateKey = keyFactory.generatePrivate(privateKeySpec)
+            init(privateKey)
+        }
 
     override fun computeSecret(otherPublicKey: EcPublicKey): ByteArray {
         require(otherPublicKey.curve == spec.curve) { "Public key curve does not match spec curve" }

@@ -52,3 +52,6 @@ private class HealthCardScopeImpl(
 suspend fun <R> SmartCard.CommunicationScope.useHealthCard(
     block: suspend HealthCardScope.() -> R,
 ): R = block(HealthCardScopeImpl(this))
+
+fun <R> SmartCard.CommunicationScope.useHealthCardBlocking(block: HealthCardScope.() -> R): R =
+    block(HealthCardScopeImpl(this))
