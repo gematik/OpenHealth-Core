@@ -22,7 +22,7 @@ internal class JvmCryptoScope : CryptoScope() {
     }
 
     override fun defer(block: () -> Unit) {
-
+        // noop
     }
 }
 
