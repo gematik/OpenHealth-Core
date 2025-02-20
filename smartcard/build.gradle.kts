@@ -138,7 +138,6 @@ mavenPublishing {
     }
 }
 
-
 val generateKarmaConfig by project.tasks.registering {
     group = "js test setup"
     description =
