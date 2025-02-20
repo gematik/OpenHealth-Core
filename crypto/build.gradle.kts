@@ -23,7 +23,7 @@ plugins {
     alias(libs.plugins.vanniktech.mavenPublish)
 }
 
-group = "${project.findProperty("gematik.baseGroup") as String}.crypto"
+group = project.findProperty("gematik.baseGroup") as String
 version = project.findProperty("gematik.version") as String
 
 // Currently useless since it lacks a lot of generation logic for the *.d.ts files
@@ -135,28 +135,27 @@ mavenPublishing {
     coordinates(group.toString(), "crypto", version.toString())
 
     pom {
-        name = "My library"
-        description = "A library."
-        inceptionYear = "2024"
-        url = "https://github.com/kotlin/multiplatform-library-template/"
+        name = "OpenHealth Crypto"
+        description = "OpenHealth Crypto"
+        inceptionYear = "2025"
+        url = "https://github.com/gematik/OpenHealth-Core"
         licenses {
             license {
-                name = "XXX"
-                url = "YYY"
-                distribution = "ZZZ"
+                name = "Apache 2.0"
+                url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+                distribution = "repo"
             }
         }
         developers {
             developer {
-                id = "XXX"
-                name = "YYY"
-                url = "ZZZ"
+                name = "gematik GmbH"
+                url = "https://github.com/gematik"
             }
         }
         scm {
-            url = "XXX"
-            connection = "YYY"
-            developerConnection = "ZZZ"
+            url = "https://github.com/gematik/OpenHealth-Core"
+            connection = "scm:git:https://github.com/gematik/OpenHealth-Core.git"
+            developerConnection = "scm:git:https://github.com/gematik/OpenHealth-Core.git"
         }
     }
 }

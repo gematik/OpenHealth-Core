@@ -19,7 +19,7 @@
 echo "Running pre-commit hook"
 
 echo "Running lint checks"
-if ! ./gradlew licenseHeaderCheck detekt ktlintCheck; then
+if ! ./gradlew ktlintFormat licenseHeaderCheck detekt; then
   echo "Lint errors detected. Commit aborted."
   exit 1
 fi
