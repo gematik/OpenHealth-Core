@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.31)
+cmake_minimum_required(VERSION 3.28)
 
 set(CMAKE_CXX_STANDARD 23)
 
@@ -32,6 +32,8 @@ target_link_libraries(oh_crypto_base PRIVATE OpenSSL::Crypto)
 
 
 if (NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    set_target_properties(oh_crypto_base PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
     find_package(JNI)
 
     add_library(oh_crypto SHARED ${PROJECT_ROOT_DIR}/crypto-jvm-swig/build/generated/sources/jni/crypto.cpp)

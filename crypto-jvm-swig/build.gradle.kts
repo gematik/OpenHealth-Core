@@ -75,6 +75,10 @@ val patchGeneratedJava by tasks.registering {
     dependsOn(generateJniWrapper)
 }
 
+tasks.named("sourcesJar") {
+    dependsOn(patchGeneratedJava)
+}
+
 tasks.withType(JavaCompile::class) {
     dependsOn(patchGeneratedJava)
 }

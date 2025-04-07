@@ -1,34 +1,44 @@
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set(OPENSSL_TARGET "linux-x86_64")
+    set(_OPENSSL_TARGET "linux-x86_64")
+    set(_OPENSSL_LIB_PATH "lib64")
+    set(_OPENSSL_LIB_SUFFIX "a")
 
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Android")
     if (CMAKE_ANDROID_ARCH_ABI STREQUAL "armeabi-v7a")
-        set(OPENSSL_TARGET "android-arm")
+        set(_OPENSSL_TARGET "android-arm")
     elseif (CMAKE_ANDROID_ARCH_ABI STREQUAL "arm64-v8a")
-        set(OPENSSL_TARGET "android-arm64")
+        set(_OPENSSL_TARGET "android-arm64")
     elseif (CMAKE_ANDROID_ARCH_ABI STREQUAL "x86")
-        set(OPENSSL_TARGET "android-x86")
+        set(_OPENSSL_TARGET "android-x86")
     elseif (CMAKE_ANDROID_ARCH_ABI STREQUAL "x86_64")
-        set(OPENSSL_TARGET "android-x86_64")
+        set(_OPENSSL_TARGET "android-x86_64")
     else ()
         message(FATAL_ERROR "Unsupported Android architecture: ${CMAKE_ANDROID_ARCH_ABI}")
     endif ()
+    set(_OPENSSL_LIB_PATH "lib")
+    set(_OPENSSL_LIB_SUFFIX "a")
 
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     #    if(CMAKE_OSX_ARCHITECTURES STREQUAL "arm64")
-    #        set(OPENSSL_TARGET "darwin64-arm64-cc") # macOS ARM target
+    #        set(_OPENSSL_TARGET "darwin64-arm64-cc") # macOS ARM target
     #    elseif(CMAKE_OSX_ARCHITECTURES STREQUAL "x86_64")
-    #        set(OPENSSL_TARGET "darwin64-x86_64-cc") # macOS Intel target
+    #        set(_OPENSSL_TARGET "darwin64-x86_64-cc") # macOS Intel target
     #    else()
     #        message(FATAL_ERROR "Unsupported macOS architecture: ${CMAKE_OSX_ARCHITECTURES}")
     #    endif()
-    set(OPENSSL_TARGET "darwin64-arm64-cc") # macOS ARM target
+    set(_OPENSSL_TARGET "darwin64-arm64-cc") # macOS ARM target
+    set(_OPENSSL_LIB_PATH "lib")
+    set(_OPENSSL_LIB_SUFFIX "a")
 
 elseif (CMAKE_SYSTEM_NAME STREQUAL "iOS")
-    set(OPENSSL_TARGET "ios64-cross") # iOS target
+    set(_OPENSSL_TARGET "ios64-cross") # iOS target
+    set(_OPENSSL_LIB_PATH "lib")
+    set(_OPENSSL_LIB_SUFFIX "a")
 
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
-    set(OPENSSL_TARGET "wasm32-wasi") # Emscripten target
+    set(_OPENSSL_TARGET "wasm32-wasi") # Emscripten target
+    set(_OPENSSL_LIB_PATH "lib")
+    set(_OPENSSL_LIB_SUFFIX "a")
 
 else ()
     message(FATAL_ERROR "Unsupported platform: ${CMAKE_SYSTEM_NAME}")
@@ -36,8 +46,8 @@ endif ()
 
 include(ExternalProject)
 set(OPENSSL_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/openssl-src)
-set(OPENSSL_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/openssl-build-${OPENSSL_TARGET})
-set(OPENSSL_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/openssl-${OPENSSL_TARGET})
+set(OPENSSL_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/openssl-build-${_OPENSSL_TARGET})
+set(OPENSSL_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/openssl-${_OPENSSL_TARGET})
 set(OPENSSL_INCLUDE_DIR ${OPENSSL_INSTALL_DIR}/include)
 set(OPENSSL_CONFIG_PARAMS "
     no-asm \
@@ -65,16 +75,18 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
                 ${OPENSSL_SOURCE_DIR}/Configure \
                 --prefix=${OPENSSL_INSTALL_DIR} \
                 ${OPENSSL_CONFIG_PARAMS}
-    ${OPENSSL_TARGET}"
+    ${_OPENSSL_TARGET}"
     )
 else ()
     set(OPENSSL_CONFIGURE_COMMAND
             bash -c "${OPENSSL_SOURCE_DIR}/Configure \
             --prefix=${OPENSSL_INSTALL_DIR} \
             ${OPENSSL_CONFIG_PARAMS}
-    ${OPENSSL_TARGET}"
+    ${_OPENSSL_TARGET}"
     )
 endif ()
+
+set(_OPENSSL_BUILD_TARGET ${OPENSSL_INSTALL_DIR}/${_OPENSSL_LIB_PATH}/libcrypto.${_OPENSSL_LIB_SUFFIX})
 
 ExternalProject_Add(
         OpenSSL
@@ -88,7 +100,7 @@ ExternalProject_Add(
         BUILD_COMMAND make -j14
         BUILD_IN_SOURCE 0
         # required, otherwise ninja fails
-        BUILD_BYPRODUCTS ${OPENSSL_INSTALL_DIR}/lib/libcrypto.a
+        BUILD_BYPRODUCTS ${_OPENSSL_BUILD_TARGET}
         TEST_COMMAND ""
         INSTALL_COMMAND make install
         INSTALL_DIR ${OPENSSL_INSTALL_DIR}
@@ -101,6 +113,6 @@ ExternalProject_Add(
 file(MAKE_DIRECTORY ${OPENSSL_INCLUDE_DIR})
 
 add_library(OpenSSL::Crypto STATIC IMPORTED GLOBAL)
-set_property(TARGET OpenSSL::Crypto PROPERTY IMPORTED_LOCATION ${OPENSSL_INSTALL_DIR}/lib/libcrypto.a)
+set_property(TARGET OpenSSL::Crypto PROPERTY IMPORTED_LOCATION ${_OPENSSL_BUILD_TARGET})
 set_property(TARGET OpenSSL::Crypto PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${OPENSSL_INCLUDE_DIR})
 add_dependencies(OpenSSL::Crypto OpenSSL)

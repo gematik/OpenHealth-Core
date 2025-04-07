@@ -6,12 +6,14 @@ const program = new Command();
 
 program
     .version("0.1.0")
-    .option("--module-name <moduleName>", "Specify the module name")
+    .option("--module-name <moduleName>", "Specify the module name. Must match the package.json name")
+    .option("--module-class-name <moduleName>", "Specify the module class name. This will be the generated class and function name")
     .option("--package-path <importPath>", "Specify the Kotlin package path")
     .arguments("<inputFile> <outputFile>")
     .description("Convert Emscripten *.d.ts to Kotlin")
     .action((inputFile: string, outputFile: string) => {
         const moduleName = program.opts().moduleName || "MainModule";
+        const moduleClassName = program.opts().moduleClassName || "MainModule";
         const packagePath = program.opts().packagePath;
 
         const project = new Project({
@@ -112,7 +114,7 @@ program
         sourceFile.getTypeAliases().forEach(alias => {
             const aliasName = alias.getName();
             if (aliasName === "MainModule") {
-                kotlinOutput += `external interface ${moduleName} : WasmModule, EmbindModule\n\n`;
+                kotlinOutput += `external interface ${moduleClassName} : WasmModule, EmbindModule\n\n`;
             } else {
                 kotlinOutput += `typealias ${aliasName} = Any\n\n`;
             }
@@ -125,7 +127,7 @@ program
         kotlinOutput += `
 @JsModule("${moduleName}")
 @JsNonModule
-external fun ${moduleName}Factory(options: Any? = definedExternally): Promise<${moduleName}>
+external fun ${moduleClassName}Factory(options: Any? = definedExternally): Promise<${moduleClassName}>
 `;
 
         fs.writeFileSync(outputFile, kotlinOutput);

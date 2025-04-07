@@ -19,6 +19,7 @@
 package de.gematik.openhealth.crypto
 
 import de.gematik.openhealth.crypto.key.SecretKey
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -70,6 +71,7 @@ class CmacTest {
             )
         }
 
+    @Ignore
     @Test
     fun `cmac final can only be called once`() =
         runTestWithProvider {

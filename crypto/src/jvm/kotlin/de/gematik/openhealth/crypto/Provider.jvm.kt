@@ -17,7 +17,6 @@
 package de.gematik.openhealth.crypto
 
 import java.io.File
-import java.io.IOException
 
 private val hostOs =
     System
@@ -46,15 +45,11 @@ fun loadNativeLibrary() {
 
         val libResUrl = ClassLoader.getSystemResource("$hostOs-$hostArch/$libName")
 
-        try {
-            val tempLib = File.createTempFile("lib", libName)
-            tempLib.deleteOnExit()
-            libResUrl.openStream().copyTo(tempLib.outputStream())
+        val tempLib = File.createTempFile("lib", libName)
+        tempLib.deleteOnExit()
+        libResUrl.openStream().copyTo(tempLib.outputStream())
 
-            System.load(tempLib.absolutePath)
-        } catch (e: IOException) {
-            error("Failed to extract native library", e)
-        }
+        System.load(tempLib.absolutePath)
     }
 }
 

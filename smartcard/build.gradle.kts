@@ -29,14 +29,9 @@ version = project.findProperty("gematik.version") as String
 
 kotlin {
     jvm()
-    js("jsNode") {
+    js {
         nodejs {
             useEsModules()
-            testTask {
-                useMocha {
-                    timeout = "60s"
-                }
-            }
         }
         browser { }
         generateTypeScriptDefinitions()
@@ -57,21 +52,6 @@ kotlin {
         val commonTest by getting {
             dependencies {
                 implementation(libs.kotlin.test)
-                implementation(libs.kotlinx.coroutines.test)
-            }
-        }
-        val jsCommonMain by creating {
-        }
-        val jsNodeMain by getting {
-            dependencies {
-                implementation(npm("pcsclite", "1.0.1"))
-                implementation(libs.kotlin.node)
-            }
-        }
-        val jsNodeTest by getting {
-            dependencies {
-                implementation(npm("pcsclite", "1.0.1"))
-                implementation(libs.kotlin.node)
                 implementation(libs.kotlinx.coroutines.test)
             }
         }

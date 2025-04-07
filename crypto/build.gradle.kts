@@ -27,7 +27,7 @@ plugins {
 group = project.findProperty("gematik.baseGroup") as String
 version = project.findProperty("gematik.version") as String
 
-val cmakeVersion = project.findProperty("cmake.version") as? String
+val cmakeVersion = project.findProperty("cmake.version") as? String ?: "3.31.6"
 
 kotlin {
     jvm {

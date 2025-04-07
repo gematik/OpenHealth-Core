@@ -21,13 +21,15 @@ plugins {
 group = project.findProperty("gematik.baseGroup") as String
 version = project.findProperty("gematik.version") as String
 
-val rootOutputDir = "${layout.buildDirectory.get().asFile}/generated/"
-val emscriptenDir =
-    project.findProperty("emscripten.dir") as? String
+val buildDirPath =
+    layout.buildDirectory
+        .get()
+        .asFile.absolutePath
 
-if (emscriptenDir == null) println("emscripten.dir property is not set - ignoring emscripten build")
+val rootOutputDir = "$buildDirPath/generated/"
+var emscriptenDir = project.findProperty("emscripten.dir") as? String
 
-val cmakeBuildDir = "${layout.buildDirectory.get().asFile}/cmake-build"
+val cmakeBuildDir = "$buildDirPath/cmake-build"
 
 kotlin {
     js {
@@ -48,68 +50,98 @@ kotlin {
     }
 }
 
-if (emscriptenDir != null) {
-    val emcmakeSetup by tasks.registering(Exec::class) {
-        inputs.file("$rootDir/libs/openssl/wrapper/CMakeLists.txt")
-        outputs.dir(cmakeBuildDir)
-        workingDir(projectDir)
+if (emscriptenDir == null) {
+    val emscriptenGitHash = "24fc909c0da13ef641d5ae75e89b5a97f25e37aa"
+
+    emscriptenDir = "$buildDirPath/emsdk-$emscriptenGitHash"
+
+    tasks.register("emscriptenSetup", Exec::class) {
+        val zipUrl =
+            "https://github.com/emscripten-core/emsdk/archive/$emscriptenGitHash.zip"
+        val zipFile = "$buildDirPath/emsdk-$emscriptenGitHash.zip"
+        val outputDir = "$buildDirPath/emsdk-$emscriptenGitHash"
+
+        outputs.dir(outputDir)
+        outputs.file(zipFile)
         commandLine(
             "bash",
             "-c",
-            "source $emscriptenDir/emsdk_env.sh && emcmake cmake -DPROJECT_ROOT_DIR=$rootDir -GNinja -S $rootDir/libs/openssl/wrapper -B ${layout.buildDirectory.get().asFile}/cmake-build",
+            """
+            curl -L -o "$zipFile" "$zipUrl" &&
+            unzip -o -q "$zipFile" -d "$outputDir/../" &&
+            cd "$outputDir" &&
+            ./emsdk install latest &&
+            ./emsdk activate latest &&
+            source ./emsdk_env.sh &&
+            cd ./upstream/emscripten/ &&
+            npm ci
+            """.trimIndent(),
         )
     }
+}
 
-    val emcmakeBuild by tasks.registering(Exec::class) {
-        dependsOn(emcmakeSetup)
-        inputs.dir(cmakeBuildDir)
-        outputs.dir(cmakeBuildDir)
-        workingDir(projectDir)
-        commandLine(
-            "bash",
-            "-c",
-            "source $emscriptenDir/emsdk_env.sh && cmake --build $cmakeBuildDir --target oh_crypto",
-        )
-    }
+val emcmakeSetup by tasks.registering(Exec::class) {
+    inputs.file("$rootDir/libs/openssl/wrapper/CMakeLists.txt")
+    outputs.dir(cmakeBuildDir)
+    workingDir(projectDir)
+    commandLine(
+        "bash",
+        "-c",
+        "source $emscriptenDir/emsdk_env.sh && emcmake cmake -DPROJECT_ROOT_DIR=$rootDir -GNinja -S $rootDir/libs/openssl/wrapper -B $buildDirPath/cmake-build",
+    )
+    tasks.findByName("emscriptenSetup")?.let { dependsOn(it) }
+}
 
-    val copyJsLibs by tasks.registering(Copy::class) {
-        dependsOn(emcmakeBuild)
-        from("${layout.buildDirectory.get().asFile}/cmake-build") {
-            include("oh_crypto.*")
-        }
-        into("npm/lib")
-        duplicatesStrategy = DuplicatesStrategy.INCLUDE
-    }
+val emcmakeBuild by tasks.registering(Exec::class) {
+    dependsOn(emcmakeSetup)
+    inputs.dir(cmakeBuildDir)
+    outputs.dir(cmakeBuildDir)
+    workingDir(projectDir)
+    commandLine(
+        "bash",
+        "-c",
+        "source $emscriptenDir/emsdk_env.sh && cmake --build $cmakeBuildDir --target oh_crypto",
+    )
+}
 
-    val npmInstall by tasks.registering(Exec::class) {
-        inputs.file("npm/package-lock.json")
-        outputs.dir("npm/node_modules")
-        workingDir("npm")
-        commandLine("npm", "ci")
+val copyJsLibs by tasks.registering(Copy::class) {
+    dependsOn(emcmakeBuild)
+    from("$buildDirPath/cmake-build") {
+        include("oh_crypto.*")
     }
+    into("npm/lib")
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
 
-    val npxNodeConv by tasks.registering(Exec::class) {
-        inputs.file("$cmakeBuildDir/oh_crypto.d.ts")
-        outputs.file(
-            "$rootOutputDir/jsMainGenerated/kotlin/de/gematik/openhealth/crypto/internal/interop/crypto.kt",
-        )
-        workingDir("npm")
-        commandLine(
-            "npx",
-            "node",
-            "src/conv.ts",
-            "--package-path",
-            "de.gematik.openhealth.crypto.internal.interop",
-            "--module-name",
-            "CryptoModule",
-            "$cmakeBuildDir/oh_crypto.d.ts",
-            "$rootOutputDir/jsMainGenerated/kotlin/de/gematik/openhealth/crypto/internal/interop/crypto.kt",
-        )
-        dependsOn(emcmakeBuild)
-        dependsOn(npmInstall)
-    }
+val npmInstall by tasks.registering(Exec::class) {
+    inputs.file("npm/package-lock.json")
+    outputs.dir("npm/node_modules")
+    workingDir("npm")
+    commandLine("npm", "ci")
+}
 
-    tasks.named<ProcessResources>("jsProcessResources") {
-        dependsOn(copyJsLibs, npxNodeConv)
-    }
+val npxNodeConv by tasks.registering(Exec::class) {
+    inputs.file("$cmakeBuildDir/oh_crypto.d.ts")
+    outputs.file(
+        "$rootOutputDir/jsMainGenerated/kotlin/de/gematik/openhealth/crypto/internal/interop/crypto.kt",
+    )
+    workingDir("npm")
+    commandLine(
+        "bash",
+        "-c",
+        """
+        source $emscriptenDir/emsdk_env.sh &&
+        npx node src/conv.ts --package-path de.gematik.openhealth.crypto.internal.interop --module-class-name CryptoModule --module-name gematik-openhealth-internal-crypto $cmakeBuildDir/oh_crypto.d.ts $rootOutputDir/jsMainGenerated/kotlin/de/gematik/openhealth/crypto/internal/interop/crypto.kt
+        """.trimIndent(),
+    )
+    dependsOn(emcmakeBuild)
+    dependsOn(npmInstall)
+}
+
+tasks.named("compileKotlinJs") {
+    dependsOn(copyJsLibs, npxNodeConv)
+}
+
+tasks.named("jsProcessResources") {
+    dependsOn(copyJsLibs, npxNodeConv)
 }
