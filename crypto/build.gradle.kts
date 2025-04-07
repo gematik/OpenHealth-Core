@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import com.android.build.gradle.internal.cxx.configure.defaultCmakeVersion
 import de.gematik.openhealth.build.applyOpenHealthMavenPublishing
 import okio.Path.Companion.toPath
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -26,6 +27,8 @@ plugins {
 
 group = project.findProperty("gematik.baseGroup") as String
 version = project.findProperty("gematik.version") as String
+
+val cmakeVersion = project.findProperty("cmake.version") as? String
 
 kotlin {
     jvm {
@@ -165,7 +168,7 @@ android {
     }
     externalNativeBuild {
         cmake {
-            version = "3.31.5"
+            version = cmakeVersion
             path("$rootDir/libs/openssl/wrapper/CMakeLists.txt".toPath().toFile())
         }
     }
