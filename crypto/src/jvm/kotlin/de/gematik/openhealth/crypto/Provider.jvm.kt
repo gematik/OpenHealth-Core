@@ -53,7 +53,7 @@ fun loadNativeLibrary() {
 
             System.load(tempLib.absolutePath)
         } catch (e: IOException) {
-            throw RuntimeException("Failed to extract native library", e)
+            error("Failed to extract native library", e)
         }
     }
 }

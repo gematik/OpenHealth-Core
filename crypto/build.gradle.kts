@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import com.android.build.gradle.internal.cxx.configure.defaultCmakeVersion
 import de.gematik.openhealth.build.applyOpenHealthMavenPublishing
 import okio.Path.Companion.toPath
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
