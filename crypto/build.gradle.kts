@@ -132,7 +132,7 @@ kotlin {
 }
 
 android {
-    ndkVersion = "29.0.13113456"
+    ndkVersion = "27.2.12479018"
 
     namespace = "de.gematik.openhealth.crypto"
     compileSdk =
