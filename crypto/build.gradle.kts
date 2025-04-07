@@ -165,7 +165,7 @@ android {
     }
     externalNativeBuild {
         cmake {
-            version = "3.31.6"
+            version = "3.31.5"
             path("$rootDir/libs/openssl/wrapper/CMakeLists.txt".toPath().toFile())
         }
     }
