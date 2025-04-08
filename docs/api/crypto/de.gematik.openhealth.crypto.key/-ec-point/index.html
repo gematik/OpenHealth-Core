@@ -1,0 +1,305 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>EcPoint</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script>
+<link href="../../../images/logo.png">
+<link href="../../../styles/dokkaStyle.css" rel="Stylesheet"></head>
+<body>
+    <div class="root">
+    <nav class="navigation theme-dark" id="navigation-wrapper">
+<a class="library-name--link" href="../../../index.html">
+                    openhealth-core
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <div class="filter-section filter-section_loading" id="filter-section">
+                <button class="platform-tag platform-selector common-like" data-active="" data-filter=":crypto/jvm">common</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
+                    <div class="dropdown--header"><span>Platform filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option common-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":crypto/jvm" data-filter=":crypto/jvm">
+                                <span class="checkbox--icon"></span>
+                                common
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </div>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox">
+                        <div class="dropdown--header">
+                            <span>
+                                    openhealth-core
+                            </span>
+                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar--inner" id="sideMenu"></div>
+                    </ul>
+                    <div class="dropdown--overlay"></div>
+                </div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="crypto::de.gematik.openhealth.crypto.key/EcPoint///PointingToDeclaration//-1230127527">
+  <div class="breadcrumbs"><a href="../../index.html">crypto</a><span class="delimiter">/</span><a href="../index.html">de.gematik.openhealth.crypto.key</a><span class="delimiter">/</span><span class="current">EcPoint</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Ec</span><wbr><span><span>Point</span></span></h1>
+    <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+      <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="../../de.gematik.openhealth.crypto/-experimental-crypto-api/index.html"><span class="token annotation builtin">ExperimentalCryptoApi</span></a></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">EcPoint</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>curve<span class="token operator">: </span><a href="../-ec-curve/index.html">EcCurve</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>x<span class="token operator">: </span><span data-unresolved-link="com.ionspin.kotlin.bignum.integer/BigInteger///PointingToDeclaration/">BigInteger</span><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>y<span class="token operator">: </span><span data-unresolved-link="com.ionspin.kotlin.bignum.integer/BigInteger///PointingToDeclaration/">BigInteger</span><span class="token operator">?</span></span></span><span class="token punctuation">)</span></div><p class="paragraph">Represents a point on an elliptic curve.</p><p class="paragraph">An EC point is defined by its coordinates (<a href="x.html">x</a>, <a href="y.html">y</a>) and the elliptic curve it belongs to. It can also represent the point at infinity, which is denoted by having both x and y coordinates as null.</p><p class="paragraph">The <a href="x.html">x</a> and <a href="y.html">y</a> coordinates are not verified to lie on the specified <a href="curve.html">curve</a>.</p><p class="paragraph"><a href="index.html">EcPoint</a> provides basic operations for EC points, such as addition, doubling, and negation.</p><h4 class="">Throws</h4><div class="table"><div class="table-row" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-illegal-argument-exception/index.html"><span>Illegal</span><wbr><span>Argument</span><wbr><span><span>Exception</span></span></a></div></span></div><div><div class="title"><p class="paragraph">If x and y are not both null or not null.</p></div></div></div></div></div></div>    </div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button><button class="section-tab" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION,EXTENSION_PROPERTY,EXTENSION_FUNCTION">Members &amp; Extensions</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="-252738262%2FConstructors%2F-1230127527" anchor-label="EcPoint" id="-252738262%2FConstructors%2F-1230127527" data-filterable-set=":crypto/jvm"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-ec-point.html"><span>Ec</span><wbr><span><span>Point</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-252738262%2FConstructors%2F-1230127527"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">curve<span class="token operator">: </span><a href="../-ec-curve/index.html">EcCurve</a><span class="token punctuation">, </span></span><span class="parameter ">x<span class="token operator">: </span><span data-unresolved-link="com.ionspin.kotlin.bignum.integer/BigInteger///PointingToDeclaration/">BigInteger</span><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter ">y<span class="token operator">: </span><span data-unresolved-link="com.ionspin.kotlin.bignum.integer/BigInteger///PointingToDeclaration/">BigInteger</span><span class="token operator">?</span></span></span><span class="token punctuation">)</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="279364791%2FProperties%2F-1230127527" anchor-label="curve" id="279364791%2FProperties%2F-1230127527" data-filterable-set=":crypto/jvm"></a>
+          <div class="table-row" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="curve.html"><span><span>curve</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="279364791%2FProperties%2F-1230127527"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><span class="token keyword">val </span><a href="curve.html">curve</a><span class="token operator">: </span><a href="../-ec-curve/index.html">EcCurve</a></div><div class="brief "><p class="paragraph">the elliptic curve this point belongs to.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="572337442%2FProperties%2F-1230127527" anchor-label="isInfinity" id="572337442%2FProperties%2F-1230127527" data-filterable-set=":crypto/jvm"></a>
+          <div class="table-row" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-infinity.html"><span>is</span><wbr><span><span>Infinity</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="572337442%2FProperties%2F-1230127527"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><span class="token keyword">val </span><a href="is-infinity.html">isInfinity</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Returns <code class="lang-kotlin">true</code> if this represents an infinite point, i.e., both x and y coordinates are null.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2138558202%2FProperties%2F-1230127527" anchor-label="uncompressed" id="2138558202%2FProperties%2F-1230127527" data-filterable-set=":crypto/jvm"></a>
+          <div class="table-row" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="uncompressed.html"><span><span>uncompressed</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2138558202%2FProperties%2F-1230127527"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><span class="token keyword">val </span><a href="uncompressed.html">uncompressed</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></div><div class="brief "><p class="paragraph">Returns the uncompressed representation of the EC point.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-529396274%2FProperties%2F-1230127527" anchor-label="x" id="-529396274%2FProperties%2F-1230127527" data-filterable-set=":crypto/jvm"></a>
+          <div class="table-row" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="x.html"><span><span>x</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-529396274%2FProperties%2F-1230127527"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><span class="token keyword">val </span><a href="x.html">x</a><span class="token operator">: </span><span data-unresolved-link="com.ionspin.kotlin.bignum.integer/BigInteger///PointingToDeclaration/">BigInteger</span><span class="token operator">?</span></div><div class="brief "><p class="paragraph">the x-coordinate of the point, or null if it is at infinity.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-498376467%2FProperties%2F-1230127527" anchor-label="y" id="-498376467%2FProperties%2F-1230127527" data-filterable-set=":crypto/jvm"></a>
+          <div class="table-row" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="y.html"><span><span>y</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-498376467%2FProperties%2F-1230127527"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><span class="token keyword">val </span><a href="y.html">y</a><span class="token operator">: </span><span data-unresolved-link="com.ionspin.kotlin.bignum.integer/BigInteger///PointingToDeclaration/">BigInteger</span><span class="token operator">?</span></div><div class="brief "><p class="paragraph">the y-coordinate of the point, or null if it is at infinity.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="-150217454%2FFunctions%2F-1230127527" anchor-label="negate" id="-150217454%2FFunctions%2F-1230127527" data-filterable-set=":crypto/jvm"></a>
+          <div class="table-row" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="negate.html"><span><span>negate</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-150217454%2FFunctions%2F-1230127527"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><span class="token keyword">fun </span><a href="negate.html"><span class="token function">negate</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">EcPoint</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1965931757%2FFunctions%2F-1230127527" anchor-label="plus" id="-1965931757%2FFunctions%2F-1230127527" data-filterable-set=":crypto/jvm"></a>
+          <div class="table-row" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="plus.html"><span><span>plus</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1965931757%2FFunctions%2F-1230127527"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><span class="token keyword">operator </span><span class="token keyword">fun </span><a href="plus.html"><span class="token function">plus</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">other<span class="token operator">: </span><a href="index.html">EcPoint</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">EcPoint</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="260703974%2FFunctions%2F-1230127527" anchor-label="times" id="260703974%2FFunctions%2F-1230127527" data-filterable-set=":crypto/jvm"></a>
+          <div class="table-row" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="times.html"><span><span>times</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="260703974%2FFunctions%2F-1230127527"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><span class="token keyword">operator </span><span class="token keyword">fun </span><a href="times.html"><span class="token function">times</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">k<span class="token operator">: </span><span data-unresolved-link="com.ionspin.kotlin.bignum.integer/BigInteger///PointingToDeclaration/">BigInteger</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">EcPoint</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-942205302%2FFunctions%2F-1230127527" anchor-label="toEcPublicKey" id="-942205302%2FFunctions%2F-1230127527" data-filterable-set=":crypto/jvm"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../to-ec-public-key.html"><span>to</span><wbr><span>Ec</span><wbr><span>Public</span><wbr><span><span>Key</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-942205302%2FFunctions%2F-1230127527"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="../../de.gematik.openhealth.crypto/-experimental-crypto-api/index.html"><span class="token annotation builtin">ExperimentalCryptoApi</span></a></div></div><span class="token keyword">fun </span><a href="index.html">EcPoint</a><span class="token punctuation">.</span><a href="../to-ec-public-key.html"><span class="token function">toEcPublicKey</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-ec-public-key/index.html">EcPublicKey</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+        <span>(c) Your Company</span>
+        <span class="pull-right">
+            <span>Generated by </span>
+            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                <span>dokka</span>
+            </a>
+        </span>
+    </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

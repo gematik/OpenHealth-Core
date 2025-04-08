@@ -1,0 +1,366 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>TrustedChannelScope</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script>
+<link href="../../../images/logo.png">
+<link href="../../../styles/dokkaStyle.css" rel="Stylesheet"></head>
+<body>
+    <div class="root">
+    <nav class="navigation theme-dark" id="navigation-wrapper">
+<a class="library-name--link" href="../../../index.html">
+                    openhealth-core
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <div class="filter-section filter-section_loading" id="filter-section">
+                <button class="platform-tag platform-selector common-like" data-active="" data-filter=":smartcard/commonMain">common</button>
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":smartcard/jvmMain">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
+                    <div class="dropdown--header"><span>Platform filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option common-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":smartcard/commonMain" data-filter=":smartcard/commonMain">
+                                <span class="checkbox--icon"></span>
+                                common
+                            </label>
+                        </li>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":smartcard/jvmMain" data-filter=":smartcard/jvmMain">
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </div>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox">
+                        <div class="dropdown--header">
+                            <span>
+                                    openhealth-core
+                            </span>
+                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar--inner" id="sideMenu"></div>
+                    </ul>
+                    <div class="dropdown--overlay"></div>
+                </div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="smartcard::de.gematik.openhealth.smartcard.card/TrustedChannelScope///PointingToDeclaration//869120786">
+  <div class="breadcrumbs"><a href="../../index.html">smartcard</a><span class="delimiter">/</span><a href="../index.html">de.gematik.openhealth.smartcard.card</a><span class="delimiter">/</span><span class="current">TrustedChannelScope</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Trusted</span><wbr><span>Channel</span><wbr><span><span>Scope</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">interface </span><a href="index.html">TrustedChannelScope</a> : <a href="../-health-card-scope/index.html">HealthCardScope</a></div><p class="paragraph">Scope for Trusted Channel communication with the card.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button><button class="section-tab" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION,EXTENSION_PROPERTY,EXTENSION_FUNCTION">Members &amp; Extensions</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="2146335729%2FProperties%2F869120786" anchor-label="paceKey" id="2146335729%2FProperties%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="pace-key.html"><span>pace</span><wbr><span><span>Key</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2146335729%2FProperties%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="pace-key.html">paceKey</a><span class="token operator">: </span><a href="../-pace-key/index.html">PaceKey</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1281311799%2FProperties%2F869120786" anchor-label="supportsExtendedLength" id="-1281311799%2FProperties%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-smart-card-communication-scope/supports-extended-length.html"><span>supports</span><wbr><span>Extended</span><wbr><span><span>Length</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1281311799%2FProperties%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="../-smart-card-communication-scope/supports-extended-length.html">supportsExtendedLength</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Indicates whether the card supports extended length APDU commands.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="-2105963405%2FFunctions%2F869120786" anchor-label="establishTrustedChannel" id="-2105963405%2FFunctions%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../de.gematik.openhealth.smartcard.exchange/establish-trusted-channel.html"><span>establish</span><wbr><span>Trusted</span><wbr><span><span>Channel</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2105963405%2FFunctions%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../-health-card-scope/index.html">HealthCardScope</a><span class="token punctuation">.</span><a href="../../de.gematik.openhealth.smartcard.exchange/establish-trusted-channel.html"><span class="token function">establishTrustedChannel</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cardAccessNumber<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">TrustedChannelScope</a></div><div class="brief "><p class="paragraph">Establishes a trusted channel using the PACE protocol as specified in gemSpecObjSys and gemSpecCos.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-441678477%2FFunctions%2F752255908" anchor-label="establishTrustedChannelBlocking" id="-441678477%2FFunctions%2F752255908" data-filterable-set=":smartcard/jvmMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":smartcard/jvmMain" data-filterable-set=":smartcard/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../de.gematik.openhealth.smartcard/establish-trusted-channel-blocking.html"><span>establish</span><wbr><span>Trusted</span><wbr><span>Channel</span><wbr><span><span>Blocking</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-441678477%2FFunctions%2F752255908"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":smartcard/jvmMain" data-filterable-set=":smartcard/jvmMain" data-active="" data-toggle=":smartcard/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/jvmMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a></div></div><span class="token keyword">fun </span><a href="../-health-card-scope/index.html">HealthCardScope</a><span class="token punctuation">.</span><a href="../../de.gematik.openhealth.smartcard/establish-trusted-channel-blocking.html"><span class="token function">establishTrustedChannelBlocking</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cardAccessNumber<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">dispatcher<span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines/CoroutineDispatcher///PointingToDeclaration/">CoroutineDispatcher</span><span class="token operator"> = </span>Dispatchers.IO</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">TrustedChannelScope</a></div><div class="brief "><p class="paragraph">Blocking version of <a href="../../de.gematik.openhealth.smartcard.exchange/establish-trusted-channel.html">establishTrustedChannel</a>.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="904999867%2FFunctions%2F869120786" anchor-label="getRandom" id="904999867%2FFunctions%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../de.gematik.openhealth.smartcard.exchange/get-random.html"><span>get</span><wbr><span><span>Random</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="904999867%2FFunctions%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../-health-card-scope/index.html">HealthCardScope</a><span class="token punctuation">.</span><a href="../../de.gematik.openhealth.smartcard.exchange/get-random.html"><span class="token function">getRandom</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">length<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></div><div class="brief "><p class="paragraph">Retrieves a cryptographically secure random byte array of the specified length.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-500981110%2FFunctions%2F869120786" anchor-label="healthCardScope" id="-500981110%2FFunctions%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../health-card-scope.html"><span>health</span><wbr><span>Card</span><wbr><span><span>Scope</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-500981110%2FFunctions%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="../-smart-card-communication-scope/index.html">SmartCardCommunicationScope</a><span class="token punctuation">.</span><a href="../health-card-scope.html"><span class="token function">healthCardScope</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-health-card-scope/index.html">HealthCardScope</a></div><div class="brief "><p class="paragraph">Creates a new <a href="../-health-card-scope/index.html">HealthCardScope</a> for the given <a href="../-smart-card-communication-scope/index.html">SmartCardCommunicationScope</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-79493243%2FFunctions%2F869120786" anchor-label="readVsd" id="-79493243%2FFunctions%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../de.gematik.openhealth.smartcard.exchange/read-vsd.html"><span>read</span><wbr><span><span>Vsd</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-79493243%2FFunctions%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="index.html">TrustedChannelScope</a><span class="token punctuation">.</span><a href="../../de.gematik.openhealth.smartcard.exchange/read-vsd.html"><span class="token function">readVsd</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></div><div class="brief "><p class="paragraph">Reads the insurance data (VD) from the EF.VD file located in the DF.HCA directory of the eGK.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="440311643%2FFunctions%2F869120786" anchor-label="retrieveCertificate" id="440311643%2FFunctions%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../de.gematik.openhealth.smartcard.exchange/retrieve-certificate.html"><span>retrieve</span><wbr><span><span>Certificate</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="440311643%2FFunctions%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="index.html">TrustedChannelScope</a><span class="token punctuation">.</span><a href="../../de.gematik.openhealth.smartcard.exchange/retrieve-certificate.html"><span class="token function">retrieveCertificate</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></div><div class="brief "><p class="paragraph">Retrieves the X.509 certificate stored in the EF.C.CH.AUT.E256 file on the eGK.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-990832084%2FFunctions%2F869120786" anchor-label="signChallenge" id="-990832084%2FFunctions%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../de.gematik.openhealth.smartcard.exchange/sign-challenge.html"><span>sign</span><wbr><span><span>Challenge</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-990832084%2FFunctions%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="index.html">TrustedChannelScope</a><span class="token punctuation">.</span><a href="../../de.gematik.openhealth.smartcard.exchange/sign-challenge.html"><span class="token function">signChallenge</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">challenge<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></div><div class="brief "><p class="paragraph">Signs the given challenge using the card's private key for authentication.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1907346347%2FFunctions%2F869120786" anchor-label="transmit" id="-1907346347%2FFunctions%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-health-card-scope/transmit.html"><span><span>transmit</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1907346347%2FFunctions%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../de.gematik.openhealth.smartcard.command/-health-card-command/index.html">HealthCardCommand</a><span class="token punctuation">.</span><a href="../-health-card-scope/transmit.html"><span class="token function">transmit</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../de.gematik.openhealth.smartcard.command/-health-card-response/index.html">HealthCardResponse</a></div><div class="brief "><p class="paragraph">Transmits the command on the given <a href="../-smart-card-communication-scope/index.html">SmartCardCommunicationScope</a> and returns the response.</p></div><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="../-smart-card-communication-scope/transmit.html"><span class="token function">transmit</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">commandApdu<span class="token operator">: </span><a href="../../de.gematik.openhealth.smartcard.command/-card-command-apdu/index.html">CardCommandApdu</a><span class="token punctuation">, </span></span><span class="parameter ">response<span class="token operator">: </span><span class="token punctuation">(</span>responseApdu<span class="token operator">: </span><a href="../../de.gematik.openhealth.smartcard.command/-card-response-apdu/index.html">CardResponseApdu</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Transmits a command APDU to the smart card and receives the corresponding response APDU.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="622533434%2FFunctions%2F869120786" anchor-label="transmit" id="622533434%2FFunctions%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../transmit.html"><span><span>transmit</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="622533434%2FFunctions%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../-smart-card-communication-scope/index.html">SmartCardCommunicationScope</a><span class="token punctuation">.</span><a href="../transmit.html"><span class="token function">transmit</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">commandApdu<span class="token operator">: </span><a href="../../de.gematik.openhealth.smartcard.command/-card-command-apdu/index.html">CardCommandApdu</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../de.gematik.openhealth.smartcard.command/-card-response-apdu/index.html">CardResponseApdu</a></div><div class="brief "><p class="paragraph">Transmits a command APDU to the smart card and receives the corresponding response APDU.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1190397866%2FFunctions%2F752255908" anchor-label="transmitBlocking" id="1190397866%2FFunctions%2F752255908" data-filterable-set=":smartcard/jvmMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":smartcard/jvmMain" data-filterable-set=":smartcard/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../de.gematik.openhealth.smartcard/transmit-blocking.html"><span>transmit</span><wbr><span><span>Blocking</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1190397866%2FFunctions%2F752255908"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":smartcard/jvmMain" data-filterable-set=":smartcard/jvmMain" data-active="" data-toggle=":smartcard/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/jvmMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a></div></div><span class="token keyword">fun </span><a href="../-smart-card-communication-scope/index.html">SmartCardCommunicationScope</a><span class="token punctuation">.</span><a href="../../de.gematik.openhealth.smartcard/transmit-blocking.html"><span class="token function">transmitBlocking</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">commandApdu<span class="token operator">: </span><a href="../../de.gematik.openhealth.smartcard.command/-card-command-apdu/index.html">CardCommandApdu</a><span class="token punctuation">, </span></span><span class="parameter ">dispatcher<span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines/CoroutineDispatcher///PointingToDeclaration/">CoroutineDispatcher</span><span class="token operator"> = </span>Dispatchers.IO</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../de.gematik.openhealth.smartcard.command/-card-response-apdu/index.html">CardResponseApdu</a></div><div class="brief "><p class="paragraph">Blocking version of <a href="../-smart-card-communication-scope/transmit.html">SmartCardCommunicationScope.transmit</a>.</p></div><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a></div></div><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="../../de.gematik.openhealth.smartcard/transmit-blocking.html">R</a><span class="token operator">&gt; </span><a href="index.html">TrustedChannelScope</a><span class="token punctuation">.</span><a href="../../de.gematik.openhealth.smartcard/transmit-blocking.html"><span class="token function">transmitBlocking</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">exchange<span class="token operator">: </span><span class="token keyword">suspend </span><a href="index.html">TrustedChannelScope</a><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="../../de.gematik.openhealth.smartcard/transmit-blocking.html">R</a><span class="token punctuation">, </span></span><span class="parameter ">dispatcher<span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines/CoroutineDispatcher///PointingToDeclaration/">CoroutineDispatcher</span><span class="token operator"> = </span>Dispatchers.IO</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../de.gematik.openhealth.smartcard/transmit-blocking.html">R</a></div><div class="brief "><p class="paragraph">Blocking version of <a href="../../../smartcard/de.gematik.openhealth.smartcard.card/-trusted-channel-scope/transmit.html">TrustedChannelScope.transmit</a>.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-854152244%2FFunctions%2F869120786" anchor-label="transmitSuccessfully" id="-854152244%2FFunctions%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-health-card-scope/transmit-successfully.html"><span>transmit</span><wbr><span><span>Successfully</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-854152244%2FFunctions%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../de.gematik.openhealth.smartcard.command/-health-card-command/index.html">HealthCardCommand</a><span class="token punctuation">.</span><a href="../-health-card-scope/transmit-successfully.html"><span class="token function">transmitSuccessfully</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../de.gematik.openhealth.smartcard.command/-health-card-response/index.html">HealthCardResponse</a></div><div class="brief "><p class="paragraph">Transmits the command on the given <a href="../-smart-card-communication-scope/index.html">SmartCardCommunicationScope</a> and throws a <a href="../../de.gematik.openhealth.smartcard.command/-response-exception/index.html">ResponseException</a> if the command was not successful.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-623537090%2FFunctions%2F869120786" anchor-label="unlockEgk" id="-623537090%2FFunctions%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../de.gematik.openhealth.smartcard.exchange/unlock-egk.html"><span>unlock</span><wbr><span><span>Egk</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-623537090%2FFunctions%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="index.html">TrustedChannelScope</a><span class="token punctuation">.</span><a href="../../de.gematik.openhealth.smartcard.exchange/unlock-egk.html"><span class="token function">unlockEgk</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">unlockMethod<span class="token operator">: </span><a href="../../de.gematik.openhealth.smartcard.command/-unlock-method/index.html">UnlockMethod</a><span class="token punctuation">, </span></span><span class="parameter ">puk<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter ">oldSecret<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">newSecret<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../de.gematik.openhealth.smartcard.command/-health-card-response-status/index.html">HealthCardResponseStatus</a></div><div class="brief "><p class="paragraph">Unlocks the eGK using PUK or by changing the reference data.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="411835690%2FFunctions%2F869120786" anchor-label="verifyPin" id="411835690%2FFunctions%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../de.gematik.openhealth.smartcard.exchange/verify-pin.html"><span>verify</span><wbr><span><span>Pin</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="411835690%2FFunctions%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="index.html">TrustedChannelScope</a><span class="token punctuation">.</span><a href="../../de.gematik.openhealth.smartcard.exchange/verify-pin.html"><span class="token function">verifyPin</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">pin<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../de.gematik.openhealth.smartcard.exchange/-health-card-verify-pin-result/index.html">HealthCardVerifyPinResult</a></div><div class="brief "><p class="paragraph">Verifies the PIN of the eGK.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+        <span>(c) Your Company</span>
+        <span class="pull-right">
+            <span>Generated by </span>
+            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                <span>dokka</span>
+            </a>
+        </span>
+    </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

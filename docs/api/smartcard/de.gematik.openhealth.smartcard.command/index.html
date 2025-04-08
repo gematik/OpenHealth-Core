@@ -1,0 +1,657 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>de.gematik.openhealth.smartcard.command</title>
+<link href="../../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/main.css" rel="Stylesheet">
+<link href="../../styles/prism.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<link href="../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../ui-kit/ui-kit.min.js" defer></script>
+<script type="text/javascript" src="../../scripts/symbol-parameters-wrapper_deferred.js" defer></script>
+<link href="../../images/logo.png">
+<link href="../../styles/dokkaStyle.css" rel="Stylesheet"></head>
+<body>
+    <div class="root">
+    <nav class="navigation theme-dark" id="navigation-wrapper">
+<a class="library-name--link" href="../../index.html">
+                    openhealth-core
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <div class="filter-section filter-section_loading" id="filter-section">
+                <button class="platform-tag platform-selector common-like" data-active="" data-filter=":smartcard/commonMain">common</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
+                    <div class="dropdown--header"><span>Platform filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option common-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":smartcard/commonMain" data-filter=":smartcard/commonMain">
+                                <span class="checkbox--icon"></span>
+                                common
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </div>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox">
+                        <div class="dropdown--header">
+                            <span>
+                                    openhealth-core
+                            </span>
+                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar--inner" id="sideMenu"></div>
+                    </ul>
+                    <div class="dropdown--overlay"></div>
+                </div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="package" id="content" pageids="smartcard::de.gematik.openhealth.smartcard.command////PointingToDeclaration//869120786">
+  <div class="breadcrumbs"><a href="../index.html">smartcard</a><span class="delimiter">/</span><span class="current">de.gematik.openhealth.smartcard.command</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button><button class="section-tab" data-togglable="FUNCTION,EXTENSION_FUNCTION">Functions</button><button class="section-tab" data-togglable="PROPERTY,EXTENSION_PROPERTY">Properties</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="550118720%2FClasslikes%2F869120786" anchor-label="CardCommandApdu" id="550118720%2FClasslikes%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-card-command-apdu/index.html"><span>Card</span><wbr><span>Command</span><wbr><span><span>Apdu</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="550118720%2FClasslikes%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-card-command-apdu/index.html">CardCommandApdu</a></div><div class="brief "><p class="paragraph">Represents an APDU (Application Protocol Data Unit) Command as per ISO/IEC 7816-4.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-845164522%2FClasslikes%2F869120786" anchor-label="CardResponseApdu" id="-845164522%2FClasslikes%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-card-response-apdu/index.html"><span>Card</span><wbr><span>Response</span><wbr><span><span>Apdu</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-845164522%2FClasslikes%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-card-response-apdu/index.html">CardResponseApdu</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">apdu<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Represents a response APDU (Application Protocol Data Unit)received from a smart card, as defined by ISO/IEC 7816-4.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1153535708%2FClasslikes%2F869120786" anchor-label="HealthCardCommand" id="1153535708%2FClasslikes%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-health-card-command/index.html"><span>Health</span><wbr><span>Card</span><wbr><span><span>Command</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1153535708%2FClasslikes%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-health-card-command/index.html">HealthCardCommand</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>expectedStatus<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span><a href="-health-card-response-status/index.html">HealthCardResponseStatus</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>cla<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>ins<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>p1<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">0</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>p2<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">0</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>data<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>ne<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Superclass for all health card commands.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1611838010%2FClasslikes%2F869120786" anchor-label="HealthCardResponse" id="1611838010%2FClasslikes%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-health-card-response/index.html"><span>Health</span><wbr><span>Card</span><wbr><span><span>Response</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1611838010%2FClasslikes%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-health-card-response/index.html">HealthCardResponse</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>status<span class="token operator">: </span><a href="-health-card-response-status/index.html">HealthCardResponseStatus</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>apdu<span class="token operator">: </span><a href="-card-response-apdu/index.html">CardResponseApdu</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Represents the response from a HealthCardCommand.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1646894168%2FClasslikes%2F869120786" anchor-label="HealthCardResponseStatus" id="-1646894168%2FClasslikes%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-health-card-response-status/index.html"><span>Health</span><wbr><span>Card</span><wbr><span>Response</span><wbr><span><span>Status</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1646894168%2FClasslikes%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">enum </span><a href="-health-card-response-status/index.html">HealthCardResponseStatus</a> : <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><a href="-health-card-response-status/index.html">HealthCardResponseStatus</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">All response status codes gemSpec_COS_3.14.0#16.2</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="170201805%2FClasslikes%2F869120786" anchor-label="ResponseException" id="170201805%2FClasslikes%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-response-exception/index.html"><span>Response</span><wbr><span><span>Exception</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="170201805%2FClasslikes%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-response-exception/index.html">ResponseException</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>healthCardResponseStatus<span class="token operator">: </span><a href="-health-card-response-status/index.html">HealthCardResponseStatus</a></span></span><span class="token punctuation">)</span> : <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-exception/index.html">Exception</a></div><div class="brief "><p class="paragraph">Exception thrown when a command execution was not successful.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2127719326%2FClasslikes%2F869120786" anchor-label="UnlockMethod" id="-2127719326%2FClasslikes%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-unlock-method/index.html"><span>Unlock</span><wbr><span><span>Method</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2127719326%2FClasslikes%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">enum </span><a href="-unlock-method/index.html">UnlockMethod</a> : <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><a href="-unlock-method/index.html">UnlockMethod</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">Unlock methods for the eGK (electronic health card).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="-1898809493%2FProperties%2F869120786" anchor-label="changeReferenceDataStatus" id="-1898809493%2FProperties%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="change-reference-data-status.html"><span>change</span><wbr><span>Reference</span><wbr><span>Data</span><wbr><span><span>Status</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1898809493%2FProperties%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="change-reference-data-status.html">changeReferenceDataStatus</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span><a href="-health-card-response-status/index.html">HealthCardResponseStatus</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1061052380%2FProperties%2F869120786" anchor-label="EXPECT_ALL_WILDCARD" id="-1061052380%2FProperties%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-e-x-p-e-c-t_-a-l-l_-w-i-l-d-c-a-r-d.html"><span>EXPECT_</span><wbr><span>ALL_</span><wbr><span>WILDCARD</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1061052380%2FProperties%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-e-x-p-e-c-t_-a-l-l_-w-i-l-d-c-a-r-d.html">EXPECT_ALL_WILDCARD</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1918750614%2FProperties%2F869120786" anchor-label="EXPECTED_LENGTH_WILDCARD_EXTENDED" id="1918750614%2FProperties%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-e-x-p-e-c-t-e-d_-l-e-n-g-t-h_-w-i-l-d-c-a-r-d_-e-x-t-e-n-d-e-d.html"><span>EXPECTED_</span><wbr><span>LENGTH_</span><wbr><span>WILDCARD_</span><wbr><span>EXTENDED</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1918750614%2FProperties%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-e-x-p-e-c-t-e-d_-l-e-n-g-t-h_-w-i-l-d-c-a-r-d_-e-x-t-e-n-d-e-d.html">EXPECTED_LENGTH_WILDCARD_EXTENDED</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">65536</span></div><div class="brief "><p class="paragraph">Value for when a wildcard for the expected length encoding is needed for extended length APDUs. This value (65536) indicates that the maximum possible length is expected.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-262224593%2FProperties%2F869120786" anchor-label="EXPECTED_LENGTH_WILDCARD_SHORT" id="-262224593%2FProperties%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-e-x-p-e-c-t-e-d_-l-e-n-g-t-h_-w-i-l-d-c-a-r-d_-s-h-o-r-t.html"><span>EXPECTED_</span><wbr><span>LENGTH_</span><wbr><span>WILDCARD_</span><wbr><span>SHORT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-262224593%2FProperties%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-e-x-p-e-c-t-e-d_-l-e-n-g-t-h_-w-i-l-d-c-a-r-d_-s-h-o-r-t.html">EXPECTED_LENGTH_WILDCARD_SHORT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">256</span></div><div class="brief "><p class="paragraph">Value for when a wildcard for the expected length encoding is needed for short length APDUs. This value (256) indicates that the maximum possible length is expected for short APDUs.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="982625363%2FProperties%2F869120786" anchor-label="generalAuthenticateStatus" id="982625363%2FProperties%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="general-authenticate-status.html"><span>general</span><wbr><span>Authenticate</span><wbr><span><span>Status</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="982625363%2FProperties%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="general-authenticate-status.html">generalAuthenticateStatus</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span><a href="-health-card-response-status/index.html">HealthCardResponseStatus</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1357913931%2FProperties%2F869120786" anchor-label="getRandomValuesStatus" id="-1357913931%2FProperties%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-random-values-status.html"><span>get</span><wbr><span>Random</span><wbr><span>Values</span><wbr><span><span>Status</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1357913931%2FProperties%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="get-random-values-status.html">getRandomValuesStatus</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span><a href="-health-card-response-status/index.html">HealthCardResponseStatus</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1121383746%2FProperties%2F869120786" anchor-label="manageSecurityEnvironmentStatus" id="1121383746%2FProperties%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="manage-security-environment-status.html"><span>manage</span><wbr><span>Security</span><wbr><span>Environment</span><wbr><span><span>Status</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1121383746%2FProperties%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="manage-security-environment-status.html">manageSecurityEnvironmentStatus</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span><a href="-health-card-response-status/index.html">HealthCardResponseStatus</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="90496239%2FProperties%2F869120786" anchor-label="NE_MAX_EXTENDED_LENGTH" id="90496239%2FProperties%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-n-e_-m-a-x_-e-x-t-e-n-d-e-d_-l-e-n-g-t-h.html"><span>NE_</span><wbr><span>MAX_</span><wbr><span>EXTENDED_</span><wbr><span>LENGTH</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="90496239%2FProperties%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-n-e_-m-a-x_-e-x-t-e-n-d-e-d_-l-e-n-g-t-h.html">NE_MAX_EXTENDED_LENGTH</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">65536</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1403898858%2FProperties%2F869120786" anchor-label="NE_MAX_SHORT_LENGTH" id="-1403898858%2FProperties%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-n-e_-m-a-x_-s-h-o-r-t_-l-e-n-g-t-h.html"><span>NE_</span><wbr><span>MAX_</span><wbr><span>SHORT_</span><wbr><span>LENGTH</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1403898858%2FProperties%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-n-e_-m-a-x_-s-h-o-r-t_-l-e-n-g-t-h.html">NE_MAX_SHORT_LENGTH</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">256</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1862243739%2FProperties%2F869120786" anchor-label="pinStatus" id="1862243739%2FProperties%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="pin-status.html"><span>pin</span><wbr><span><span>Status</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1862243739%2FProperties%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="pin-status.html">pinStatus</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span><a href="-health-card-response-status/index.html">HealthCardResponseStatus</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="705225627%2FProperties%2F869120786" anchor-label="psoComputeDigitalSignatureStatus" id="705225627%2FProperties%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="pso-compute-digital-signature-status.html"><span>pso</span><wbr><span>Compute</span><wbr><span>Digital</span><wbr><span>Signature</span><wbr><span><span>Status</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="705225627%2FProperties%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="pso-compute-digital-signature-status.html">psoComputeDigitalSignatureStatus</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span><a href="-health-card-response-status/index.html">HealthCardResponseStatus</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="443709008%2FProperties%2F869120786" anchor-label="readStatus" id="443709008%2FProperties%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-status.html"><span>read</span><wbr><span><span>Status</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="443709008%2FProperties%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="read-status.html">readStatus</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span><a href="-health-card-response-status/index.html">HealthCardResponseStatus</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1860113558%2FProperties%2F869120786" anchor-label="selectStatus" id="-1860113558%2FProperties%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="select-status.html"><span>select</span><wbr><span><span>Status</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1860113558%2FProperties%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="select-status.html">selectStatus</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span><a href="-health-card-response-status/index.html">HealthCardResponseStatus</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="704691019%2FProperties%2F869120786" anchor-label="unlockEgkStatus" id="704691019%2FProperties%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="unlock-egk-status.html"><span>unlock</span><wbr><span>Egk</span><wbr><span><span>Status</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="704691019%2FProperties%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="unlock-egk-status.html">unlockEgkStatus</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span><a href="-health-card-response-status/index.html">HealthCardResponseStatus</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2060812797%2FProperties%2F869120786" anchor-label="verifySecretStatus" id="2060812797%2FProperties%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="verify-secret-status.html"><span>verify</span><wbr><span>Secret</span><wbr><span><span>Status</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2060812797%2FProperties%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="verify-secret-status.html">verifySecretStatus</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span><a href="-health-card-response-status/index.html">HealthCardResponseStatus</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="EXTENSION_FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="337133225%2FFunctions%2F869120786" anchor-label="changeReferenceData" id="337133225%2FFunctions%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="change-reference-data.html"><span>change</span><wbr><span>Reference</span><wbr><span><span>Data</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="337133225%2FFunctions%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-health-card-command/-companion/index.html">HealthCardCommand.Companion</a><span class="token punctuation">.</span><a href="change-reference-data.html"><span class="token function">changeReferenceData</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">passwordReference<span class="token operator">: </span><a href="../de.gematik.openhealth.smartcard.card/-password-reference/index.html">PasswordReference</a><span class="token punctuation">, </span></span><span class="parameter ">dfSpecific<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">oldSecret<span class="token operator">: </span><a href="../de.gematik.openhealth.smartcard.card/-encrypted-pin-format2/index.html">EncryptedPinFormat2</a><span class="token punctuation">, </span></span><span class="parameter ">newSecret<span class="token operator">: </span><a href="../de.gematik.openhealth.smartcard.card/-encrypted-pin-format2/index.html">EncryptedPinFormat2</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-health-card-command/index.html">HealthCardCommand</a></div><div class="brief "><p class="paragraph">Creates a <a href="-health-card-command/index.html">HealthCardCommand</a> to change a secret.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1893295680%2FFunctions%2F869120786" anchor-label="commandApdu" id="1893295680%2FFunctions%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="command-apdu.html"><span>command</span><wbr><span><span>Apdu</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1893295680%2FFunctions%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-health-card-command/index.html">HealthCardCommand</a><span class="token punctuation">.</span><a href="command-apdu.html"><span class="token function">commandApdu</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">scopeSupportsExtendedLength<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-card-command-apdu/index.html">CardCommandApdu</a></div><div class="brief "><p class="paragraph">Converts the <a href="-health-card-command/index.html">HealthCardCommand</a> to a <a href="-card-command-apdu/index.html">CardCommandApdu</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="957643062%2FFunctions%2F869120786" anchor-label="generalAuthenticate" id="957643062%2FFunctions%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="general-authenticate.html"><span>general</span><wbr><span><span>Authenticate</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="957643062%2FFunctions%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-health-card-command/-companion/index.html">HealthCardCommand.Companion</a><span class="token punctuation">.</span><a href="general-authenticate.html"><span class="token function">generalAuthenticate</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">commandChaining<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-health-card-command/index.html">HealthCardCommand</a></div><div class="brief "><p class="paragraph">Creates a <a href="-health-card-command/index.html">HealthCardCommand</a> for the GENERAL AUTHENTICATE command UseCase: gemSpec_COS_3.14.0#14.7.2.1.1 PACE for end-user cards, Step 1 a</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="-health-card-command/-companion/index.html">HealthCardCommand.Companion</a><span class="token punctuation">.</span><a href="general-authenticate.html"><span class="token function">generalAuthenticate</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">commandChaining<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">data<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token punctuation">, </span></span><span class="parameter ">tagNo<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-health-card-command/index.html">HealthCardCommand</a></div><div class="brief "><p class="paragraph">Creates a <a href="-health-card-command/index.html">HealthCardCommand</a> for the GENERAL AUTHENTICATE command UseCase: gemSpec_COS_3.14.0#14.7.2.1.1 PACE for end-user cards, Step 2a (tagNo 1), 3a (3), 5a (5)</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1418519885%2FFunctions%2F869120786" anchor-label="getPinStatus" id="-1418519885%2FFunctions%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-pin-status.html"><span>get</span><wbr><span>Pin</span><wbr><span><span>Status</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1418519885%2FFunctions%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-health-card-command/-companion/index.html">HealthCardCommand.Companion</a><span class="token punctuation">.</span><a href="get-pin-status.html"><span class="token function">getPinStatus</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">password<span class="token operator">: </span><a href="../de.gematik.openhealth.smartcard.card/-password-reference/index.html">PasswordReference</a><span class="token punctuation">, </span></span><span class="parameter ">dfSpecific<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-health-card-command/index.html">HealthCardCommand</a></div><div class="brief "><p class="paragraph">Creates a <a href="-health-card-command/index.html">HealthCardCommand</a> to get the pin status. Use case gemSpec_COS_3.14.0#14.6.4.1</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1329279655%2FFunctions%2F869120786" anchor-label="getRandomValues" id="1329279655%2FFunctions%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-random-values.html"><span>get</span><wbr><span>Random</span><wbr><span><span>Values</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1329279655%2FFunctions%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-health-card-command/-companion/index.html">HealthCardCommand.Companion</a><span class="token punctuation">.</span><a href="get-random-values.html"><span class="token function">getRandomValues</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">length<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-health-card-command/index.html">HealthCardCommand</a></div><div class="brief "><p class="paragraph">Creates a <a href="-health-card-command/index.html">HealthCardCommand</a> to request random values from the card. Use case gemSpec_COS_3.14.0#14.9.5.1</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-759041874%2FFunctions%2F869120786" anchor-label="manageSecEnvForSigning" id="-759041874%2FFunctions%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="manage-sec-env-for-signing.html"><span>manage</span><wbr><span>Sec</span><wbr><span>Env</span><wbr><span>For</span><wbr><span><span>Signing</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-759041874%2FFunctions%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-health-card-command/-companion/index.html">HealthCardCommand.Companion</a><span class="token punctuation">.</span><a href="manage-sec-env-for-signing.html"><span class="token function">manageSecEnvForSigning</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">psoAlgorithm<span class="token operator">: </span><a href="../de.gematik.openhealth.smartcard.card/-pso-algorithm/index.html">PsoAlgorithm</a><span class="token punctuation">, </span></span><span class="parameter ">key<span class="token operator">: </span><a href="../de.gematik.openhealth.smartcard.card/-card-key/index.html">CardKey</a><span class="token punctuation">, </span></span><span class="parameter ">dfSpecific<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-health-card-command/index.html">HealthCardCommand</a></div><div class="brief "><p class="paragraph">Creates a <a href="-health-card-command/index.html">HealthCardCommand</a> for the MANAGE SECURITY ENVIRONMENT command for signing. (gemSpec_COS_3.14.0#14.9.9.9)</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="244921337%2FFunctions%2F869120786" anchor-label="manageSecEnvWithoutCurves" id="244921337%2FFunctions%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="manage-sec-env-without-curves.html"><span>manage</span><wbr><span>Sec</span><wbr><span>Env</span><wbr><span>Without</span><wbr><span><span>Curves</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="244921337%2FFunctions%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-health-card-command/-companion/index.html">HealthCardCommand.Companion</a><span class="token punctuation">.</span><a href="manage-sec-env-without-curves.html"><span class="token function">manageSecEnvWithoutCurves</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cardKey<span class="token operator">: </span><a href="../de.gematik.openhealth.smartcard.card/-card-key/index.html">CardKey</a><span class="token punctuation">, </span></span><span class="parameter ">dfSpecific<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">oid<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-health-card-command/index.html">HealthCardCommand</a></div><div class="brief "><p class="paragraph">Creates a <a href="-health-card-command/index.html">HealthCardCommand</a> for the MANAGE SECURITY ENVIRONMENT command without curves. (gemSpec_COS_3.14.0#14.9.9.7)</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1959195329%2FFunctions%2F869120786" anchor-label="psoComputeDigitalSignature" id="-1959195329%2FFunctions%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="pso-compute-digital-signature.html"><span>pso</span><wbr><span>Compute</span><wbr><span>Digital</span><wbr><span><span>Signature</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1959195329%2FFunctions%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-health-card-command/-companion/index.html">HealthCardCommand.Companion</a><span class="token punctuation">.</span><a href="pso-compute-digital-signature.html"><span class="token function">psoComputeDigitalSignature</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">dataToBeSigned<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-health-card-command/index.html">HealthCardCommand</a></div><div class="brief "><p class="paragraph">Creates a <a href="-health-card-command/index.html">HealthCardCommand</a> for the PSO COMPUTE DIGITAL SIGNATURE command. (gemSpec_COS_3.14.0#14.8.2)</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1270888394%2FFunctions%2F869120786" anchor-label="read" id="1270888394%2FFunctions%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read.html"><span><span>read</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1270888394%2FFunctions%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-health-card-command/-companion/index.html">HealthCardCommand.Companion</a><span class="token punctuation">.</span><a href="read.html"><span class="token function">read</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-health-card-command/index.html">HealthCardCommand</a></div><div class="brief "><p class="paragraph">Creates a <a href="-health-card-command/index.html">HealthCardCommand</a> for the READ BINARY command without offset. (gemSpec_COS_3.14.0#14.3.2)</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="-health-card-command/-companion/index.html">HealthCardCommand.Companion</a><span class="token punctuation">.</span><a href="read.html"><span class="token function">read</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">sfi<span class="token operator">: </span><a href="../de.gematik.openhealth.smartcard.identifier/-short-file-identifier/index.html">ShortFileIdentifier</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-health-card-command/index.html">HealthCardCommand</a></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="-health-card-command/-companion/index.html">HealthCardCommand.Companion</a><span class="token punctuation">.</span><a href="read.html"><span class="token function">read</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">sfi<span class="token operator">: </span><a href="../de.gematik.openhealth.smartcard.identifier/-short-file-identifier/index.html">ShortFileIdentifier</a><span class="token punctuation">, </span></span><span class="parameter ">offset<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-health-card-command/index.html">HealthCardCommand</a></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="-health-card-command/-companion/index.html">HealthCardCommand.Companion</a><span class="token punctuation">.</span><a href="read.html"><span class="token function">read</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">sfi<span class="token operator">: </span><a href="../de.gematik.openhealth.smartcard.identifier/-short-file-identifier/index.html">ShortFileIdentifier</a><span class="token punctuation">, </span></span><span class="parameter ">offset<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">ne<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-health-card-command/index.html">HealthCardCommand</a></div><div class="brief "><p class="paragraph">Creates a <a href="-health-card-command/index.html">HealthCardCommand</a> for the READ BINARY command with ShortFileIdentifier. (gemSpec_COS_3.14.0#14.3.2.2)</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="-health-card-command/-companion/index.html">HealthCardCommand.Companion</a><span class="token punctuation">.</span><a href="read.html"><span class="token function">read</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">offset<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-health-card-command/index.html">HealthCardCommand</a></div><div class="brief "><p class="paragraph">Creates a<a href="-health-card-command/index.html">HealthCardCommand</a> for the READ BINARY command. (gemSpec_COS_3.14.0#14.3.2)</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="-health-card-command/-companion/index.html">HealthCardCommand.Companion</a><span class="token punctuation">.</span><a href="read.html"><span class="token function">read</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">offset<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">ne<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-health-card-command/index.html">HealthCardCommand</a></div><div class="brief "><p class="paragraph">Creates a <a href="-health-card-command/index.html">HealthCardCommand</a> for the READ BINARY command without ShortFileIdentifier. (gemSpec_COS_3.14.0#14.3.2.1)</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-125496080%2FFunctions%2F869120786" anchor-label="requireSuccess" id="-125496080%2FFunctions%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="require-success.html"><span>require</span><wbr><span><span>Success</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-125496080%2FFunctions%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-health-card-response/index.html">HealthCardResponse</a><span class="token punctuation">.</span><a href="require-success.html"><span class="token function">requireSuccess</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Checks if the command execution was successful and throws a <a href="-response-exception/index.html">ResponseException</a> if not.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1444863703%2FFunctions%2F869120786" anchor-label="select" id="-1444863703%2FFunctions%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="select.html"><span><span>select</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1444863703%2FFunctions%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-health-card-command/-companion/index.html">HealthCardCommand.Companion</a><span class="token punctuation">.</span><a href="select.html"><span class="token function">select</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">aid<span class="token operator">: </span><a href="../de.gematik.openhealth.smartcard.identifier/-application-identifier/index.html">ApplicationIdentifier</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-health-card-command/index.html">HealthCardCommand</a></div><div class="brief "><p class="paragraph">Creates a <a href="-health-card-command/index.html">HealthCardCommand</a> for the SELECT command to select a file with an Application Identifier (AID), first occurrence, without File Control Parameter. (gemSpec_COS_3.14.0#14.2.6.5)</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="-health-card-command/-companion/index.html">HealthCardCommand.Companion</a><span class="token punctuation">.</span><a href="select.html"><span class="token function">select</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fid<span class="token operator">: </span><a href="../de.gematik.openhealth.smartcard.identifier/-file-identifier/index.html">FileIdentifier</a><span class="token punctuation">, </span></span><span class="parameter ">selectDfElseEf<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-health-card-command/index.html">HealthCardCommand</a></div><div class="brief "><p class="paragraph">Creates a <a href="-health-card-command/index.html">HealthCardCommand</a> for the SELECT command to select a DF or EF with a File Identifier (FID). (gemSpec_COS_3.14.0#14.2.6.9, gemSpec_COS_3.14.0#14.2.6.13)</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="-health-card-command/-companion/index.html">HealthCardCommand.Companion</a><span class="token punctuation">.</span><a href="select.html"><span class="token function">select</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">selectParentElseRoot<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">readFirst<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-health-card-command/index.html">HealthCardCommand</a></div><div class="brief "><p class="paragraph">Creates a <a href="-health-card-command/index.html">HealthCardCommand</a> for the SELECT command to select the root of the object system or the parent folder. (gemSpec_COS_3.14.0#14.2.6.1, gemSpec_COS_3.14.0#14.2.6.11, gemSpec_COS_3.14.0#14.2.6.2)</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="-health-card-command/-companion/index.html">HealthCardCommand.Companion</a><span class="token punctuation">.</span><a href="select.html"><span class="token function">select</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">aid<span class="token operator">: </span><a href="../de.gematik.openhealth.smartcard.identifier/-application-identifier/index.html">ApplicationIdentifier</a><span class="token punctuation">, </span></span><span class="parameter ">selectNextElseFirstOccurrence<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">requestFcp<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">fcpLength<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-health-card-command/index.html">HealthCardCommand</a></div><div class="brief "><p class="paragraph">Creates a <a href="-health-card-command/index.html">HealthCardCommand</a> for the SELECT command to select a file with an Application Identifier (AID). (gemSpec_COS_3.14.0#14.2.6.5 - 14.2.6.8)</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="-health-card-command/-companion/index.html">HealthCardCommand.Companion</a><span class="token punctuation">.</span><a href="select.html"><span class="token function">select</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fid<span class="token operator">: </span><a href="../de.gematik.openhealth.smartcard.identifier/-file-identifier/index.html">FileIdentifier</a><span class="token punctuation">, </span></span><span class="parameter ">selectDfElseEf<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">requestFcp<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">fcpLength<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-health-card-command/index.html">HealthCardCommand</a></div><div class="brief "><p class="paragraph">Creates a <a href="-health-card-command/index.html">HealthCardCommand</a> for the SELECT command to select a DF or EF with a File Identifier (FID). (gemSpec_COS_3.14.0#14.2.6.9 - 14.2.6.10, gemSpec_COS_3.14.0#14.2.6.13 - 14.2.6.14)</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-97460319%2FFunctions%2F869120786" anchor-label="unlockEgk" id="-97460319%2FFunctions%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="unlock-egk.html"><span>unlock</span><wbr><span><span>Egk</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-97460319%2FFunctions%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-health-card-command/-companion/index.html">HealthCardCommand.Companion</a><span class="token punctuation">.</span><a href="unlock-egk.html"><span class="token function">unlockEgk</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">unlockMethod<span class="token operator">: </span><a href="-unlock-method/index.html">UnlockMethod</a><span class="token punctuation">, </span></span><span class="parameter ">passwordReference<span class="token operator">: </span><a href="../de.gematik.openhealth.smartcard.card/-password-reference/index.html">PasswordReference</a><span class="token punctuation">, </span></span><span class="parameter ">dfSpecific<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">puk<span class="token operator">: </span><a href="../de.gematik.openhealth.smartcard.card/-encrypted-pin-format2/index.html">EncryptedPinFormat2</a><span class="token punctuation">, </span></span><span class="parameter ">newSecret<span class="token operator">: </span><a href="../de.gematik.openhealth.smartcard.card/-encrypted-pin-format2/index.html">EncryptedPinFormat2</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-health-card-command/index.html">HealthCardCommand</a></div><div class="brief "><p class="paragraph">Creates a <a href="-health-card-command/index.html">HealthCardCommand</a> for the UNLOCK eGK command. (gemSpec_COS_3.14.0#14.6.5.1, gemSpec_COS_3.14.0#14.6.5.2)</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-910384389%2FFunctions%2F869120786" anchor-label="verifyPin" id="-910384389%2FFunctions%2F869120786" data-filterable-set=":smartcard/commonMain"></a>
+          <div class="table-row" data-filterable-current=":smartcard/commonMain" data-filterable-set=":smartcard/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="verify-pin.html"><span>verify</span><wbr><span><span>Pin</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-910384389%2FFunctions%2F869120786"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":smartcard/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-health-card-command/-companion/index.html">HealthCardCommand.Companion</a><span class="token punctuation">.</span><a href="verify-pin.html"><span class="token function">verifyPin</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">passwordReference<span class="token operator">: </span><a href="../de.gematik.openhealth.smartcard.card/-password-reference/index.html">PasswordReference</a><span class="token punctuation">, </span></span><span class="parameter ">dfSpecific<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">pin<span class="token operator">: </span><a href="../de.gematik.openhealth.smartcard.card/-encrypted-pin-format2/index.html">EncryptedPinFormat2</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-health-card-command/index.html">HealthCardCommand</a></div><div class="brief "><p class="paragraph">Creates a <a href="-health-card-command/index.html">HealthCardCommand</a> for the VERIFY SECRET command. (gemSpec_COS_3.14.0#14.6.6.1)</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+        <span>(c) Your Company</span>
+        <span class="pull-right">
+            <span>Generated by </span>
+            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                <span>dokka</span>
+            </a>
+        </span>
+    </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

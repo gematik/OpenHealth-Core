@@ -1,0 +1,25 @@
+$dokka.format:html-v1
+$dokka.linkExtension:html
+$dokka.location:de.gematik.openhealth.crypto.wrapper//toUint8Vector/kotlin.ByteArray#/PointingToDeclaration/crypto/de.gematik.openhealth.crypto.wrapper/[common]to-uint8-vector.html
+$dokka.location:de.gematik.openhealth.crypto/LazySuspend///PointingToDeclaration/crypto/de.gematik.openhealth.crypto/[common]-lazy-suspend/index.html
+$dokka.location:de.gematik.openhealth.crypto/LazySuspend/LazySuspend/#kotlin.coroutines.SuspendFunction0[TypeParam(bounds=[kotlin.Any])]/PointingToDeclaration/crypto/de.gematik.openhealth.crypto/[common]-lazy-suspend/-lazy-suspend.html
+$dokka.location:de.gematik.openhealth.crypto/LazySuspend/get/#/PointingToDeclaration/crypto/de.gematik.openhealth.crypto/[common]-lazy-suspend/get.html
+$dokka.location:de.gematik.openhealth.crypto/LazySuspend/tryGet/#/PointingToDeclaration/crypto/de.gematik.openhealth.crypto/[common]-lazy-suspend/try-get.html
+module:asn1
+de.gematik.openhealth.asn1
+module:crypto
+de.gematik.openhealth.crypto
+de.gematik.openhealth.crypto.cipher
+de.gematik.openhealth.crypto.exchange
+de.gematik.openhealth.crypto.kem
+de.gematik.openhealth.crypto.key
+de.gematik.openhealth.crypto.wrapper
+module:smartcard
+de.gematik.openhealth.smartcard
+de.gematik.openhealth.smartcard.card
+de.gematik.openhealth.smartcard.cardobjects
+de.gematik.openhealth.smartcard.command
+de.gematik.openhealth.smartcard.exchange
+de.gematik.openhealth.smartcard.identifier
+de.gematik.openhealth.smartcard.tagobjects
+de.gematik.openhealth.smartcard.utils

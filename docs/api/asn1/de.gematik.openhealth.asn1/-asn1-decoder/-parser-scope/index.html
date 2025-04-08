@@ -1,0 +1,508 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>ParserScope</title>
+<link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<link href="../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../ui-kit/ui-kit.min.js" defer></script>
+<script type="text/javascript" src="../../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script>
+<link href="../../../../images/logo.png">
+<link href="../../../../styles/dokkaStyle.css" rel="Stylesheet"></head>
+<body>
+    <div class="root">
+    <nav class="navigation theme-dark" id="navigation-wrapper">
+<a class="library-name--link" href="../../../../index.html">
+                    openhealth-core
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <div class="filter-section filter-section_loading" id="filter-section">
+                <button class="platform-tag platform-selector common-like" data-active="" data-filter=":asn1/commonMain">common</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
+                    <div class="dropdown--header"><span>Platform filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option common-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":asn1/commonMain" data-filter=":asn1/commonMain">
+                                <span class="checkbox--icon"></span>
+                                common
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </div>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox">
+                        <div class="dropdown--header">
+                            <span>
+                                    openhealth-core
+                            </span>
+                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar--inner" id="sideMenu"></div>
+                    </ul>
+                    <div class="dropdown--overlay"></div>
+                </div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="asn1::de.gematik.openhealth.asn1/Asn1Decoder.ParserScope///PointingToDeclaration//1572161152">
+  <div class="breadcrumbs"><a href="../../../index.html">asn1</a><span class="delimiter">/</span><a href="../../index.html">de.gematik.openhealth.asn1</a><span class="delimiter">/</span><a href="../index.html">Asn1Decoder</a><span class="delimiter">/</span><span class="current">ParserScope</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Parser</span><wbr><span><span>Scope</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">inner </span><span class="token keyword">class </span><a href="index.html">ParserScope</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">startOffset<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">endOffset<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div><p class="paragraph"><a href="index.html">ParserScope</a> implements the basic parsing functionality.</p><p class="paragraph">Important: <a href="index.html">ParserScope</a> is treated as a mutable object throughout the entire time of calling <a href="../read.html">read</a> and therefore unsafe to keep references to it or use it in the context of coroutines or threads.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button><button class="section-tab" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION,EXTENSION_PROPERTY,EXTENSION_FUNCTION">Members &amp; Extensions</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="1916526453%2FConstructors%2F1572161152" anchor-label="ParserScope" id="1916526453%2FConstructors%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-parser-scope.html"><span>Parser</span><wbr><span><span>Scope</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1916526453%2FConstructors%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">startOffset<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">endOffset<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="-983366031%2FProperties%2F1572161152" anchor-label="endOffset" id="-983366031%2FProperties%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="end-offset.html"><span>end</span><wbr><span><span>Offset</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-983366031%2FProperties%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">var </span><a href="end-offset.html">endOffset</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">The end offset of the current parser scope. Ensures that the end offset is always greater than or equal to the current offset.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="167885192%2FProperties%2F1572161152" anchor-label="offset" id="167885192%2FProperties%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="offset.html"><span><span>offset</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="167885192%2FProperties%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">var </span><a href="offset.html">offset</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">The offset of the current parser scope.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1208278653%2FProperties%2F1572161152" anchor-label="remainingLength" id="-1208278653%2FProperties%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="remaining-length.html"><span>remaining</span><wbr><span><span>Length</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1208278653%2FProperties%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="remaining-length.html">remainingLength</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="1345512887%2FFunctions%2F1572161152" anchor-label="advance" id="1345512887%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="advance.html"><span><span>advance</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1345512887%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="advance.html">T</a><span class="token operator">&gt; </span><a href="advance.html"><span class="token function">advance</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">vararg </span>block<span class="token operator">: </span><a href="index.html">Asn1Decoder.ParserScope</a><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="advance.html">T</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="advance.html">T</a></div><div class="brief "><p class="paragraph">Advance with one of the <a href="advance.html">block</a>s and return the resulting Asn1Object. Returns <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-result/-companion/failure.html">Result.failure</a> if no <a href="advance.html">block</a> was matched.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1596466529%2FFunctions%2F1572161152" anchor-label="advanceWithTag" id="1596466529%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="advance-with-tag.html"><span>advance</span><wbr><span>With</span><wbr><span><span>Tag</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1596466529%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="advance-with-tag.html">T</a><span class="token operator">&gt; </span><a href="advance-with-tag.html"><span class="token function">advanceWithTag</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">tagNumber<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">tagClass<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">0</span><span class="token punctuation">, </span></span><span class="parameter ">block<span class="token operator">: </span><a href="index.html">Asn1Decoder.ParserScope</a><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="advance-with-tag.html">T</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="advance-with-tag.html">T</a></div><div class="brief "><p class="paragraph">Advances the parser with the given tag and executes the provided block. Throws an <a href="../../-asn1-decoder-exception/index.html">Asn1DecoderException</a> if the tag does not match.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1644752240%2FFunctions%2F1572161152" anchor-label="check" id="1644752240%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="check.html"><span><span>check</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1644752240%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><a href="check.html"><span class="token function">check</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">message<span class="token operator">: </span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Throws an <a href="../../-asn1-decoder-exception/index.html">Asn1DecoderException</a> if <a href="check.html">value</a> is <code class="lang-kotlin">false</code> with the result of calling <a href="check.html">message</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1023620152%2FFunctions%2F1572161152" anchor-label="fail" id="-1023620152%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="fail.html"><span><span>fail</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1023620152%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><a href="fail.html"><span class="token function">fail</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">message<span class="token operator">: </span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-nothing/index.html">Nothing</a></div><div class="brief "><p class="paragraph">Throws an <a href="../../-asn1-decoder-exception/index.html">Asn1DecoderException</a> with the result of calling <a href="fail.html">message</a>.</p></div><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><a href="fail.html"><span class="token function">fail</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cause<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-throwable/index.html">Throwable</a><span class="token punctuation">, </span></span><span class="parameter ">message<span class="token operator">: </span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-nothing/index.html">Nothing</a></div><div class="brief "><p class="paragraph">Throws an <a href="../../-asn1-decoder-exception/index.html">Asn1DecoderException</a> with the result of calling <a href="fail.html">message</a> and the <a href="fail.html">cause</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="328722611%2FFunctions%2F1572161152" anchor-label="optional" id="328722611%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="optional.html"><span><span>optional</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="328722611%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="optional.html">T</a><span class="token operator">&gt; </span><a href="optional.html"><span class="token function">optional</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">block<span class="token operator">: </span><a href="index.html">Asn1Decoder.ParserScope</a><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="optional.html">T</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="optional.html">T</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Optional parsing <a href="optional.html">block</a>. Returns <code class="lang-kotlin">null</code> if <a href="optional.html">block</a> throws an <a href="../../-asn1-decoder-exception/index.html">Asn1DecoderException</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="812049929%2FFunctions%2F1572161152" anchor-label="readBitString" id="812049929%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../read-bit-string.html"><span>read</span><wbr><span>Bit</span><wbr><span><span>String</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="812049929%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html">Asn1Decoder.ParserScope</a><span class="token punctuation">.</span><a href="../../read-bit-string.html"><span class="token function">readBitString</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></div><div class="brief "><p class="paragraph">Read <a href="../../-asn1-type/-b-i-t_-s-t-r-i-n-g.html">Asn1Type.BIT_STRING</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="794328607%2FFunctions%2F1572161152" anchor-label="readBoolean" id="794328607%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../read-boolean.html"><span>read</span><wbr><span><span>Boolean</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="794328607%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html">Asn1Decoder.ParserScope</a><span class="token punctuation">.</span><a href="../../read-boolean.html"><span class="token function">readBoolean</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Read <a href="../../-asn1-type/-b-o-o-l-e-a-n.html">Asn1Type.BOOLEAN</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-400377539%2FFunctions%2F1572161152" anchor-label="readByte" id="-400377539%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-byte.html"><span>read</span><wbr><span><span>Byte</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-400377539%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="read-byte.html"><span class="token function">readByte</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte/index.html">Byte</a></div><div class="brief "><p class="paragraph">Read one byte.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1535418952%2FFunctions%2F1572161152" anchor-label="readBytes" id="1535418952%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-bytes.html"><span>read</span><wbr><span><span>Bytes</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1535418952%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="read-bytes.html"><span class="token function">readBytes</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">length<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></div><div class="brief "><p class="paragraph">Read <a href="read-bytes.html">length</a> bytes.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1960578242%2FFunctions%2F1572161152" anchor-label="readGeneralizedTime" id="1960578242%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../read-generalized-time.html"><span>read</span><wbr><span>Generalized</span><wbr><span><span>Time</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1960578242%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html">Asn1Decoder.ParserScope</a><span class="token punctuation">.</span><a href="../../read-generalized-time.html"><span class="token function">readGeneralizedTime</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../-asn1-generalized-time/index.html">Asn1GeneralizedTime</a></div><div class="brief "><p class="paragraph">Read <a href="../../-asn1-type/-g-e-n-e-r-a-l-i-z-e-d_-t-i-m-e.html">Asn1Type.GENERALIZED_TIME</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1744095424%2FFunctions%2F1572161152" anchor-label="readInt" id="1744095424%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-int.html"><span>read</span><wbr><span><span>Int</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1744095424%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="read-int.html"><span class="token function">readInt</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">length<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">signed<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Read <a href="read-int.html">length</a> bytes as an integer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1212766728%2FFunctions%2F1572161152" anchor-label="readInt" id="-1212766728%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../read-int.html"><span>read</span><wbr><span><span>Int</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1212766728%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html">Asn1Decoder.ParserScope</a><span class="token punctuation">.</span><a href="../../read-int.html"><span class="token function">readInt</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Read <a href="../../-asn1-type/-i-n-t-e-g-e-r.html">Asn1Type.INTEGER</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-401222881%2FFunctions%2F1572161152" anchor-label="readLength" id="-401222881%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-length.html"><span>read</span><wbr><span><span>Length</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-401222881%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="read-length.html"><span class="token function">readLength</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Read the length. Returns <code class="lang-kotlin">-1</code> for infinite length.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1273829959%2FFunctions%2F1572161152" anchor-label="readObjectIdentifier" id="1273829959%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../read-object-identifier.html"><span>read</span><wbr><span>Object</span><wbr><span><span>Identifier</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1273829959%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html">Asn1Decoder.ParserScope</a><span class="token punctuation">.</span><a href="../../read-object-identifier.html"><span class="token function">readObjectIdentifier</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Read <a href="../../-asn1-type/-o-b-j-e-c-t_-i-d-e-n-t-i-f-i-e-r.html">Asn1Type.OBJECT_IDENTIFIER</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1030338937%2FFunctions%2F1572161152" anchor-label="readOctetString" id="-1030338937%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../read-octet-string.html"><span>read</span><wbr><span>Octet</span><wbr><span><span>String</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1030338937%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html">Asn1Decoder.ParserScope</a><span class="token punctuation">.</span><a href="../../read-octet-string.html"><span class="token function">readOctetString</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></div><div class="brief "><p class="paragraph">Read <a href="../../-asn1-type/-o-c-t-e-t_-s-t-r-i-n-g.html">Asn1Type.OCTET_STRING</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1393899227%2FFunctions%2F1572161152" anchor-label="readTag" id="1393899227%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-tag.html"><span>read</span><wbr><span><span>Tag</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1393899227%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="read-tag.html"><span class="token function">readTag</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../-asn1-tag/index.html">Asn1Tag</a></div><div class="brief "><p class="paragraph">Reads the next tag from the data, handling multi-byte tags.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="277261334%2FFunctions%2F1572161152" anchor-label="readUtcTime" id="277261334%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../read-utc-time.html"><span>read</span><wbr><span>Utc</span><wbr><span><span>Time</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="277261334%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html">Asn1Decoder.ParserScope</a><span class="token punctuation">.</span><a href="../../read-utc-time.html"><span class="token function">readUtcTime</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../-asn1-utc-time/index.html">Asn1UtcTime</a></div><div class="brief "><p class="paragraph">Read <a href="../../-asn1-type/-u-t-c_-t-i-m-e.html">Asn1Type.UTC_TIME</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1244158099%2FFunctions%2F1572161152" anchor-label="readUtf8String" id="-1244158099%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../read-utf8-string.html"><span>read</span><wbr><span><span>Utf8String</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1244158099%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html">Asn1Decoder.ParserScope</a><span class="token punctuation">.</span><a href="../../read-utf8-string.html"><span class="token function">readUtf8String</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Read <a href="../../-asn1-type/-u-t-f8_-s-t-r-i-n-g.html">Asn1Type.UTF8_STRING</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-158645436%2FFunctions%2F1572161152" anchor-label="readVisibleString" id="-158645436%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../read-visible-string.html"><span>read</span><wbr><span>Visible</span><wbr><span><span>String</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-158645436%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html">Asn1Decoder.ParserScope</a><span class="token punctuation">.</span><a href="../../read-visible-string.html"><span class="token function">readVisibleString</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Read <a href="../../-asn1-type/-v-i-s-i-b-l-e_-s-t-r-i-n-g.html">Asn1Type.VISIBLE_STRING</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="996223034%2FFunctions%2F1572161152" anchor-label="skip" id="996223034%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="skip.html"><span><span>skip</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="996223034%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="skip.html"><span class="token function">skip</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">length<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Skip <a href="skip.html">length</a> bytes.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="116106494%2FFunctions%2F1572161152" anchor-label="skipToEnd" id="116106494%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="skip-to-end.html"><span>skip</span><wbr><span>To</span><wbr><span><span>End</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="116106494%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="skip-to-end.html"><span class="token function">skipToEnd</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Skip to the <a href="end-offset.html">endOffset</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+        <span>(c) Your Company</span>
+        <span class="pull-right">
+            <span>Generated by </span>
+            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                <span>dokka</span>
+            </a>
+        </span>
+    </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
