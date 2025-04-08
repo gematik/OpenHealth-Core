@@ -1,5 +1,7 @@
 import org.jetbrains.dokka.gradle.DokkaTaskPartial
 import java.util.Properties
+import org.jetbrains.dokka.DokkaDefaults.pluginsConfiguration
+import org.jetbrains.dokka.gradle.DokkaMultiModuleTask
 
 /*
  * Copyright 2025 gematik GmbH
@@ -83,6 +85,20 @@ tasks.register<JacocoReport>("jacocoRootReport") {
 }
 
 subprojects {
+    apply(plugin = "org.jetbrains.dokka")
+    dokka {
+//        dokkaPublications.html {
+//            outputDirectory.set(rootDir.resolve("docs/api"))
+//            includes.from(project.layout.projectDirectory.file("README.md"))
+//
+//        }
+
+        pluginsConfiguration.html {
+            customStyleSheets.from(rootDir.resolve("dokkaStyle.css"))
+            customAssets.from(rootDir.resolve("logo.png"))
+            footerMessage.set("(c) Gematik GmbH")
+        }
+    }
     tasks.withType<Test> {
         finalizedBy(tasks.withType<JacocoReport>())
     }
@@ -172,9 +188,26 @@ detekt {
     )
 }
 
+dokka {
+    dokkaPublications.html {
+        outputDirectory.set(rootDir.resolve("docs/api"))
+        includes.from(project.layout.projectDirectory.file("README.md"))
+
+    }
+
+    pluginsConfiguration.html {
+        customStyleSheets.from("dokkaStyle.css")
+        customAssets.from(rootDir.resolve("logo.png"))
+        footerMessage.set("(c) Your Company")
+    }
+}
+
 val ktlint by configurations.creating
 
 dependencies {
+    dokka(project(":asn1"))
+    dokka(project(":crypto"))
+    dokka(project(":smartcard"))
     ktlint(libs.ktlint.cli) {
         attributes {
             attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL))
