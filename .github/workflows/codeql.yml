@@ -77,7 +77,7 @@ jobs:
           CXX: clang++
           CXXFLAGS: --stdlib=libc++
         run: |
-          ./gradlew build -Dorg.gradle.vfs.watch=false
+          ./gradlew assemble
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3

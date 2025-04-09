@@ -1,0 +1,236 @@
+public class de/gematik/openhealth/crypto/internal/interop/AesCipher : de/gematik/openhealth/crypto/internal/interop/ClassHandle {
+	protected field swigCMemOwn Z
+	protected fun <init> (JZ)V
+	public fun _final ()Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;
+	public static fun createDecryptor (Ljava/lang/String;Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)Lde/gematik/openhealth/crypto/internal/interop/AesCipher;
+	public static fun createEncryptor (Ljava/lang/String;Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)Lde/gematik/openhealth/crypto/internal/interop/AesCipher;
+	public fun delete ()V
+	protected fun finalize ()V
+	public fun getAuthTag (J)Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;
+	protected static fun getCPtr (Lde/gematik/openhealth/crypto/internal/interop/AesCipher;)J
+	public fun jniFreeMemory ()V
+	public fun setAad (Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)V
+	public fun setAuthTag (Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)V
+	public fun setAutoPadding (Z)V
+	protected static fun swigRelease (Lde/gematik/openhealth/crypto/internal/interop/AesCipher;)J
+	public fun update (Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;
+}
+
+public abstract interface class de/gematik/openhealth/crypto/internal/interop/ClassHandle {
+	public abstract fun jniFreeMemory ()V
+}
+
+public class de/gematik/openhealth/crypto/internal/interop/Cmac : de/gematik/openhealth/crypto/internal/interop/ClassHandle {
+	protected field swigCMemOwn Z
+	protected fun <init> (JZ)V
+	public fun _final ()Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;
+	public static fun create (Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;Ljava/lang/String;)Lde/gematik/openhealth/crypto/internal/interop/Cmac;
+	public fun delete ()V
+	protected fun finalize ()V
+	protected static fun getCPtr (Lde/gematik/openhealth/crypto/internal/interop/Cmac;)J
+	public fun jniFreeMemory ()V
+	protected static fun swigRelease (Lde/gematik/openhealth/crypto/internal/interop/Cmac;)J
+	public fun update (Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)V
+}
+
+public class de/gematik/openhealth/crypto/internal/interop/Crypto {
+	public fun <init> ()V
+	public static fun cryptoConstTimeEquals (Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)Z
+	public static fun cryptoRandom (J)Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;
+}
+
+public class de/gematik/openhealth/crypto/internal/interop/CryptoJNI {
+	public fun <init> ()V
+	public static final fun AesCipher__final (JLde/gematik/openhealth/crypto/internal/interop/AesCipher;)J
+	public static final fun AesCipher_createDecryptor (Ljava/lang/String;JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)J
+	public static final fun AesCipher_createEncryptor (Ljava/lang/String;JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)J
+	public static final fun AesCipher_getAuthTag (JLde/gematik/openhealth/crypto/internal/interop/AesCipher;J)J
+	public static final fun AesCipher_setAad (JLde/gematik/openhealth/crypto/internal/interop/AesCipher;JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)V
+	public static final fun AesCipher_setAuthTag (JLde/gematik/openhealth/crypto/internal/interop/AesCipher;JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)V
+	public static final fun AesCipher_setAutoPadding (JLde/gematik/openhealth/crypto/internal/interop/AesCipher;Z)V
+	public static final fun AesCipher_update (JLde/gematik/openhealth/crypto/internal/interop/AesCipher;JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)J
+	public static final fun Cmac__final (JLde/gematik/openhealth/crypto/internal/interop/Cmac;)J
+	public static final fun Cmac_create (JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;Ljava/lang/String;)J
+	public static final fun Cmac_update (JLde/gematik/openhealth/crypto/internal/interop/Cmac;JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)V
+	public static final fun EcKeypair_generateKeypair (Ljava/lang/String;)J
+	public static final fun EcKeypair_getPrivateKeyDer (JLde/gematik/openhealth/crypto/internal/interop/EcKeypair;)J
+	public static final fun EcKeypair_getPublicKeyDer (JLde/gematik/openhealth/crypto/internal/interop/EcKeypair;)J
+	public static final fun EcPoint_add (JLde/gematik/openhealth/crypto/internal/interop/EcPoint;JLde/gematik/openhealth/crypto/internal/interop/EcPoint;)J
+	public static final fun EcPoint_clone (JLde/gematik/openhealth/crypto/internal/interop/EcPoint;)J
+	public static final fun EcPoint_create (Ljava/lang/String;JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)J
+	public static final fun EcPoint_times (JLde/gematik/openhealth/crypto/internal/interop/EcPoint;JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)J
+	public static final fun EcPoint_uncompressed (JLde/gematik/openhealth/crypto/internal/interop/EcPoint;)J
+	public static final fun Ecdh_computeSecret (JLde/gematik/openhealth/crypto/internal/interop/Ecdh;JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)J
+	public static final fun Ecdh_create (JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)J
+	public static final fun HashGenerator__final (JLde/gematik/openhealth/crypto/internal/interop/HashGenerator;)J
+	public static final fun HashGenerator_create (Ljava/lang/String;)J
+	public static final fun HashGenerator_setFinalOutputLength (JLde/gematik/openhealth/crypto/internal/interop/HashGenerator;J)V
+	public static final fun HashGenerator_update (JLde/gematik/openhealth/crypto/internal/interop/HashGenerator;JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)V
+	public static final fun MlkemDecapsulation_create (Ljava/lang/String;)J
+	public static final fun MlkemDecapsulation_createFromPrivateKey (Ljava/lang/String;JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)J
+	public static final fun MlkemDecapsulation_decapsulate (JLde/gematik/openhealth/crypto/internal/interop/MlkemDecapsulation;JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)J
+	public static final fun MlkemDecapsulation_getEncapsulationKey (JLde/gematik/openhealth/crypto/internal/interop/MlkemDecapsulation;)J
+	public static final fun MlkemDecapsulation_getPrivateKey (JLde/gematik/openhealth/crypto/internal/interop/MlkemDecapsulation;)J
+	public static final fun MlkemEncapsulationData_sharedSecret_get (JLde/gematik/openhealth/crypto/internal/interop/MlkemEncapsulationData;)J
+	public static final fun MlkemEncapsulationData_sharedSecret_set (JLde/gematik/openhealth/crypto/internal/interop/MlkemEncapsulationData;JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)V
+	public static final fun MlkemEncapsulationData_wrappedKey_get (JLde/gematik/openhealth/crypto/internal/interop/MlkemEncapsulationData;)J
+	public static final fun MlkemEncapsulationData_wrappedKey_set (JLde/gematik/openhealth/crypto/internal/interop/MlkemEncapsulationData;JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)V
+	public static final fun MlkemEncapsulation_create (Ljava/lang/String;JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)J
+	public static final fun MlkemEncapsulation_encapsulate (JLde/gematik/openhealth/crypto/internal/interop/MlkemEncapsulation;)J
+	public static final fun Uint8Vector_clear (JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)V
+	public static final fun Uint8Vector_doAdd__SWIG_0 (JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;B)V
+	public static final fun Uint8Vector_doAdd__SWIG_1 (JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;IB)V
+	public static final fun Uint8Vector_doCapacity (JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)I
+	public static final fun Uint8Vector_doGet (JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;I)B
+	public static final fun Uint8Vector_doRemove (JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;I)B
+	public static final fun Uint8Vector_doRemoveRange (JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;II)V
+	public static final fun Uint8Vector_doReserve (JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;I)V
+	public static final fun Uint8Vector_doSet (JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;IB)B
+	public static final fun Uint8Vector_doSize (JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)I
+	public static final fun Uint8Vector_isEmpty (JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)Z
+	public static final fun cryptoConstTimeEquals (JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)Z
+	public static final fun cryptoRandom (J)J
+	public static final fun delete_AesCipher (J)V
+	public static final fun delete_Cmac (J)V
+	public static final fun delete_EcKeypair (J)V
+	public static final fun delete_EcPoint (J)V
+	public static final fun delete_Ecdh (J)V
+	public static final fun delete_HashGenerator (J)V
+	public static final fun delete_MlkemDecapsulation (J)V
+	public static final fun delete_MlkemEncapsulation (J)V
+	public static final fun delete_MlkemEncapsulationData (J)V
+	public static final fun delete_Uint8Vector (J)V
+	public static final fun new_Uint8Vector__SWIG_0 ()J
+	public static final fun new_Uint8Vector__SWIG_1 (JLde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)J
+	public static final fun new_Uint8Vector__SWIG_2 (IB)J
+	public static final fun new_mlkemEncapsulationData ()J
+}
+
+public class de/gematik/openhealth/crypto/internal/interop/EcKeypair : de/gematik/openhealth/crypto/internal/interop/ClassHandle {
+	protected field swigCMemOwn Z
+	protected fun <init> (JZ)V
+	public fun delete ()V
+	protected fun finalize ()V
+	public static fun generateKeypair (Ljava/lang/String;)Lde/gematik/openhealth/crypto/internal/interop/EcKeypair;
+	protected static fun getCPtr (Lde/gematik/openhealth/crypto/internal/interop/EcKeypair;)J
+	public fun getPrivateKeyDer ()Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;
+	public fun getPublicKeyDer ()Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;
+	public fun jniFreeMemory ()V
+	protected static fun swigRelease (Lde/gematik/openhealth/crypto/internal/interop/EcKeypair;)J
+}
+
+public class de/gematik/openhealth/crypto/internal/interop/EcPoint : de/gematik/openhealth/crypto/internal/interop/ClassHandle {
+	protected field swigCMemOwn Z
+	protected fun <init> (JZ)V
+	public fun add (Lde/gematik/openhealth/crypto/internal/interop/EcPoint;)Lde/gematik/openhealth/crypto/internal/interop/EcPoint;
+	public fun clone ()Lde/gematik/openhealth/crypto/internal/interop/EcPoint;
+	public synthetic fun clone ()Ljava/lang/Object;
+	public static fun create (Ljava/lang/String;Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)Lde/gematik/openhealth/crypto/internal/interop/EcPoint;
+	public fun delete ()V
+	protected fun finalize ()V
+	protected static fun getCPtr (Lde/gematik/openhealth/crypto/internal/interop/EcPoint;)J
+	public fun jniFreeMemory ()V
+	protected static fun swigRelease (Lde/gematik/openhealth/crypto/internal/interop/EcPoint;)J
+	public fun times (Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)Lde/gematik/openhealth/crypto/internal/interop/EcPoint;
+	public fun uncompressed ()Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;
+}
+
+public class de/gematik/openhealth/crypto/internal/interop/Ecdh : de/gematik/openhealth/crypto/internal/interop/ClassHandle {
+	protected field swigCMemOwn Z
+	protected fun <init> (JZ)V
+	public fun computeSecret (Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;
+	public static fun create (Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)Lde/gematik/openhealth/crypto/internal/interop/Ecdh;
+	public fun delete ()V
+	protected fun finalize ()V
+	protected static fun getCPtr (Lde/gematik/openhealth/crypto/internal/interop/Ecdh;)J
+	public fun jniFreeMemory ()V
+	protected static fun swigRelease (Lde/gematik/openhealth/crypto/internal/interop/Ecdh;)J
+}
+
+public class de/gematik/openhealth/crypto/internal/interop/HashGenerator : de/gematik/openhealth/crypto/internal/interop/ClassHandle {
+	protected field swigCMemOwn Z
+	protected fun <init> (JZ)V
+	public fun _final ()Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;
+	public static fun create (Ljava/lang/String;)Lde/gematik/openhealth/crypto/internal/interop/HashGenerator;
+	public fun delete ()V
+	protected fun finalize ()V
+	protected static fun getCPtr (Lde/gematik/openhealth/crypto/internal/interop/HashGenerator;)J
+	public fun jniFreeMemory ()V
+	public fun setFinalOutputLength (J)V
+	protected static fun swigRelease (Lde/gematik/openhealth/crypto/internal/interop/HashGenerator;)J
+	public fun update (Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)V
+}
+
+public class de/gematik/openhealth/crypto/internal/interop/MlkemDecapsulation : de/gematik/openhealth/crypto/internal/interop/ClassHandle {
+	protected field swigCMemOwn Z
+	protected fun <init> (JZ)V
+	public static fun create (Ljava/lang/String;)Lde/gematik/openhealth/crypto/internal/interop/MlkemDecapsulation;
+	public static fun createFromPrivateKey (Ljava/lang/String;Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)Lde/gematik/openhealth/crypto/internal/interop/MlkemDecapsulation;
+	public fun decapsulate (Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;
+	public fun delete ()V
+	protected fun finalize ()V
+	protected static fun getCPtr (Lde/gematik/openhealth/crypto/internal/interop/MlkemDecapsulation;)J
+	public fun getEncapsulationKey ()Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;
+	public fun getPrivateKey ()Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;
+	public fun jniFreeMemory ()V
+	protected static fun swigRelease (Lde/gematik/openhealth/crypto/internal/interop/MlkemDecapsulation;)J
+}
+
+public class de/gematik/openhealth/crypto/internal/interop/MlkemEncapsulation : de/gematik/openhealth/crypto/internal/interop/ClassHandle {
+	protected field swigCMemOwn Z
+	protected fun <init> (JZ)V
+	public static fun create (Ljava/lang/String;Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)Lde/gematik/openhealth/crypto/internal/interop/MlkemEncapsulation;
+	public fun delete ()V
+	public fun encapsulate ()Lde/gematik/openhealth/crypto/internal/interop/MlkemEncapsulationData;
+	protected fun finalize ()V
+	protected static fun getCPtr (Lde/gematik/openhealth/crypto/internal/interop/MlkemEncapsulation;)J
+	public fun jniFreeMemory ()V
+	protected static fun swigRelease (Lde/gematik/openhealth/crypto/internal/interop/MlkemEncapsulation;)J
+}
+
+public class de/gematik/openhealth/crypto/internal/interop/MlkemEncapsulationData : de/gematik/openhealth/crypto/internal/interop/ClassHandle {
+	protected field swigCMemOwn Z
+	public fun <init> ()V
+	protected fun <init> (JZ)V
+	public fun delete ()V
+	protected fun finalize ()V
+	protected static fun getCPtr (Lde/gematik/openhealth/crypto/internal/interop/MlkemEncapsulationData;)J
+	public fun getSharedSecret ()Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;
+	public fun getWrappedKey ()Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;
+	public fun jniFreeMemory ()V
+	public fun setSharedSecret (Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)V
+	public fun setWrappedKey (Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)V
+	protected static fun swigRelease (Lde/gematik/openhealth/crypto/internal/interop/MlkemEncapsulationData;)J
+}
+
+public class de/gematik/openhealth/crypto/internal/interop/Uint8Vector : java/util/AbstractList, de/gematik/openhealth/crypto/internal/interop/ClassHandle, java/util/RandomAccess {
+	protected field swigCMemOwn Z
+	public fun <init> ()V
+	public fun <init> (IB)V
+	protected fun <init> (JZ)V
+	public fun <init> (Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)V
+	public fun <init> (Ljava/lang/Iterable;)V
+	public fun <init> ([B)V
+	public fun add (ILjava/lang/Byte;)V
+	public synthetic fun add (ILjava/lang/Object;)V
+	public fun add (Ljava/lang/Byte;)Z
+	public synthetic fun add (Ljava/lang/Object;)Z
+	public fun capacity ()I
+	public fun clear ()V
+	public fun delete ()V
+	protected fun finalize ()V
+	public fun get (I)Ljava/lang/Byte;
+	public synthetic fun get (I)Ljava/lang/Object;
+	protected static fun getCPtr (Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)J
+	public fun isEmpty ()Z
+	public fun jniFreeMemory ()V
+	public fun remove (I)Ljava/lang/Byte;
+	public synthetic fun remove (I)Ljava/lang/Object;
+	protected fun removeRange (II)V
+	public fun reserve (I)V
+	public fun set (ILjava/lang/Byte;)Ljava/lang/Byte;
+	public synthetic fun set (ILjava/lang/Object;)Ljava/lang/Object;
+	public fun size ()I
+	protected static fun swigRelease (Lde/gematik/openhealth/crypto/internal/interop/Uint8Vector;)J
+}
+

@@ -16,7 +16,6 @@
 
 package de.gematik.openhealth.smartcard.card
 
-import MacObject
 import de.gematik.openhealth.asn1.Asn1Decoder
 import de.gematik.openhealth.asn1.Asn1Tag
 import de.gematik.openhealth.crypto.ExperimentalCryptoApi
@@ -31,6 +30,7 @@ import de.gematik.openhealth.smartcard.command.EXPECTED_LENGTH_WILDCARD_EXTENDED
 import de.gematik.openhealth.smartcard.command.EXPECTED_LENGTH_WILDCARD_SHORT
 import de.gematik.openhealth.smartcard.tagobjects.DataObject
 import de.gematik.openhealth.smartcard.tagobjects.LengthObject
+import de.gematik.openhealth.smartcard.tagobjects.MacObject
 import de.gematik.openhealth.smartcard.tagobjects.StatusObject
 import de.gematik.openhealth.smartcard.utils.padData
 import de.gematik.openhealth.smartcard.utils.unpadData
