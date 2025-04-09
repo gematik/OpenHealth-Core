@@ -1,0 +1,4 @@
+public final class de/gematik/openhealth/crypto/internal/interop/NativeLoaderKt {
+	public static final fun loadNativeLibrary ()V
+}
+

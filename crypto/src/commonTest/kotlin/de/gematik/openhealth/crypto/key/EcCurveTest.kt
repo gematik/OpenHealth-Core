@@ -4,6 +4,7 @@ import com.ionspin.kotlin.bignum.integer.BigInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+@Suppress("ktlint:standard:max-line-length", "MaxLineLength")
 class EcCurveTest {
     @Test
     fun `test BrainpoolP256r1 parameters`() {

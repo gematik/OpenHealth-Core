@@ -15,7 +15,7 @@
  */
 
 plugins {
-    id("java-library")
+    kotlin("jvm")
 }
 
 group = project.findProperty("gematik.baseGroup") as String
@@ -73,6 +73,10 @@ val patchGeneratedJava by tasks.registering {
         inputFile.writeText(patched)
     }
     dependsOn(generateJniWrapper)
+}
+
+tasks.named("sourcesJar") {
+    dependsOn(patchGeneratedJava)
 }
 
 tasks.withType(JavaCompile::class) {

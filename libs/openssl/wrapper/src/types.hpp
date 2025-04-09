@@ -17,6 +17,7 @@
 #pragma once
 
 #include <vector>
+#include <cstdint>
 
 using uint8_vector = std::vector<uint8_t>;
 

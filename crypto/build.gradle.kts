@@ -27,6 +27,8 @@ plugins {
 group = project.findProperty("gematik.baseGroup") as String
 version = project.findProperty("gematik.version") as String
 
+val cmakeVersion = project.findProperty("cmake.version") as? String ?: "3.31.6"
+
 kotlin {
     jvm {
     }
@@ -82,21 +84,16 @@ kotlin {
             dependsOn(commonMain)
             dependencies {
                 api(project(":crypto-jvm-swig"))
+                implementation(project(":crypto-jvm-lib"))
             }
         }
         val jvmMain by getting {
             dependsOn(jvm)
-            dependencies {
-                implementation(project(":crypto-jvm-lib"))
-            }
         }
         val jvmTest by getting {
         }
         val androidMain by getting {
             dependsOn(jvm)
-            dependencies {
-                implementation(project(":crypto-jvm-lib"))
-            }
         }
         val androidInstrumentedTest by getting {
             dependencies {
@@ -165,7 +162,7 @@ android {
     }
     externalNativeBuild {
         cmake {
-            version = "3.31.6"
+            version = cmakeVersion
             path("$rootDir/libs/openssl/wrapper/CMakeLists.txt".toPath().toFile())
         }
     }

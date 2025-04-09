@@ -16,47 +16,7 @@
 
 package de.gematik.openhealth.crypto
 
-import java.io.File
-import java.io.IOException
-
-private val hostOs =
-    System
-        .getProperty("os.name")
-        .lowercase()
-        .trim()
-        .replace(" ", "")
-private val hostArch =
-    System
-        .getProperty("os.arch")
-        .lowercase()
-        .trim()
-        .replace(" ", "")
-
-@Suppress("UnsafeDynamicallyLoadedCode")
-fun loadNativeLibrary() {
-    try {
-        System.loadLibrary("oh_crypto")
-    } catch (_: UnsatisfiedLinkError) {
-        val libName =
-            when {
-                hostOs.contains("mac") -> "liboh_crypto.dylib"
-                hostOs.contains("win") -> "oh_crypto.dll"
-                else -> "liboh_crypto.so"
-            }
-
-        val libResUrl = ClassLoader.getSystemResource("$hostOs-$hostArch/$libName")
-
-        try {
-            val tempLib = File.createTempFile("lib", libName)
-            tempLib.deleteOnExit()
-            libResUrl.openStream().copyTo(tempLib.outputStream())
-
-            System.load(tempLib.absolutePath)
-        } catch (e: IOException) {
-            throw RuntimeException("Failed to extract native library", e)
-        }
-    }
-}
+import de.gematik.openhealth.crypto.internal.interop.loadNativeLibrary
 
 actual suspend fun initializeNativeCryptoProvider() {
     loadNativeLibrary()

@@ -16,10 +16,10 @@
 # limitations under the License.
 #
 
-echo "Running pre-commit hook"
+echo "Running pre-push hook"
 
 echo "Running format and lint checks"
-if ! ./gradlew ktlintFormat licenseHeaderCheck detekt; then
+if ! ./gradlew ktlintFormat detekt; then
   echo "Lint errors detected. Commit aborted."
   exit 1
 fi

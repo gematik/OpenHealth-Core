@@ -21,7 +21,7 @@ import de.gematik.openhealth.crypto.runTestWithProvider
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@Suppress("ktlint:standard:max-line-length")
+@Suppress("ktlint:standard:max-line-length", "MaxLineLength")
 class EcPointBrainpoolP256r1Test {
     private val curve = EcCurve.BrainpoolP256r1
 

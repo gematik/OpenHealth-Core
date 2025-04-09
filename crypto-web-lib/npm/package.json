@@ -1,5 +1,5 @@
 {
-  "name": "gematik-internal-oh-crypto",
+  "name": "gematik-openhealth-internal-crypto",
   "version": "0.1.0",
   "private": true,
   "description": "OpenSSL wrapper for usage with WebAssembly",
@@ -20,7 +20,8 @@
   ],
   "devDependencies": {
     "@types/node": "^22.13.14",
+    "commander": "^13.1.0",
     "ts-morph": "^25.0.1",
-    "commander": "^13.1.0"
+    "tsx": "^4.19.3"
   }
 }
