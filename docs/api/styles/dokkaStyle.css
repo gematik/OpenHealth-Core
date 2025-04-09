@@ -1,19 +1,8 @@
-:root {
-    --dokka-logo-image-url: url('../images/logo.png');
-    --dokka-logo-height:125px;
-    --dokka-logo-width: 125px;
-}
-
-
-/* link custom rules styles */
-.library-name--link {
-    /* ... */
-}
-
-
 /* logo custom rules styles */
-.library-name--link::before {
-    background-position: left;
-    width: 170px;
+.library-name--link:before {
+    background: url('../images/gematik_logo_white.svg') center no-repeat;
+    content: "";
+    height: 36px;
+    width: 120px;
 }
 

@@ -1,7 +1,5 @@
-import org.jetbrains.dokka.gradle.DokkaTaskPartial
-import java.util.Properties
 import org.jetbrains.dokka.DokkaDefaults.pluginsConfiguration
-import org.jetbrains.dokka.gradle.DokkaMultiModuleTask
+import java.util.Properties
 
 /*
  * Copyright 2025 gematik GmbH
@@ -29,9 +27,6 @@ plugins {
     alias(libs.plugins.dokka) apply true
 
     id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.16.3"
-//    alias(libs.plugins.requirements)
-//    alias(libs.plugins.licenseheader)
-//    id("org.jetbrains.dokka") version "2.0.0"
 
     id("de.gematik.openhealth.build")
 }
@@ -87,15 +82,9 @@ tasks.register<JacocoReport>("jacocoRootReport") {
 subprojects {
     apply(plugin = "org.jetbrains.dokka")
     dokka {
-//        dokkaPublications.html {
-//            outputDirectory.set(rootDir.resolve("docs/api"))
-//            includes.from(project.layout.projectDirectory.file("README.md"))
-//
-//        }
-
         pluginsConfiguration.html {
-            customStyleSheets.from(rootDir.resolve("dokkaStyle.css"))
-            customAssets.from(rootDir.resolve("logo.png"))
+            customStyleSheets.from(rootDir.resolve("config/dokka/dokkaStyle.css"))
+            customAssets.from(rootDir.resolve("config/dokka/gematik_logo_white.svg"))
             footerMessage.set("(c) Gematik GmbH")
         }
     }
@@ -189,16 +178,17 @@ detekt {
 }
 
 dokka {
+    moduleName.set("OpenHealth - Core")
+
     dokkaPublications.html {
         outputDirectory.set(rootDir.resolve("docs/api"))
         includes.from(project.layout.projectDirectory.file("README.md"))
-
     }
 
     pluginsConfiguration.html {
-        customStyleSheets.from("dokkaStyle.css")
-        customAssets.from(rootDir.resolve("logo.png"))
-        footerMessage.set("(c) Your Company")
+        customStyleSheets.from(rootDir.resolve("config/dokka/dokkaStyle.css"))
+        customAssets.from(rootDir.resolve("config/dokka/gematik_logo_white.svg"))
+        footerMessage.set("© Gematik GmbH")
     }
 }
 
