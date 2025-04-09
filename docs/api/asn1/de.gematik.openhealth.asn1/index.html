@@ -1,0 +1,548 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>de.gematik.openhealth.asn1</title>
+<link href="../../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/main.css" rel="Stylesheet">
+<link href="../../styles/prism.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<link href="../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../ui-kit/ui-kit.min.js" defer></script>
+<script type="text/javascript" src="../../scripts/symbol-parameters-wrapper_deferred.js" defer></script>
+<link href="../../images/gematik_logo_white.svg">
+<link href="../../styles/dokkaStyle.css" rel="Stylesheet"></head>
+<body>
+    <div class="root">
+    <nav class="navigation theme-dark" id="navigation-wrapper">
+<a class="library-name--link" href="../../index.html">
+                    OpenHealth - Core
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <div class="filter-section filter-section_loading" id="filter-section">
+                <button class="platform-tag platform-selector common-like" data-active="" data-filter=":asn1/commonMain">common</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
+                    <div class="dropdown--header"><span>Platform filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option common-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":asn1/commonMain" data-filter=":asn1/commonMain">
+                                <span class="checkbox--icon"></span>
+                                common
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </div>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox">
+                        <div class="dropdown--header">
+                            <span>
+                                    OpenHealth - Core
+                            </span>
+                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar--inner" id="sideMenu"></div>
+                    </ul>
+                    <div class="dropdown--overlay"></div>
+                </div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="package" id="content" pageids="asn1::de.gematik.openhealth.asn1////PointingToDeclaration//1572161152">
+  <div class="breadcrumbs"><a href="../index.html">asn1</a><span class="delimiter">/</span><span class="current">de.gematik.openhealth.asn1</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button><button class="section-tab" data-togglable="FUNCTION,EXTENSION_FUNCTION">Functions</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="1135265611%2FClasslikes%2F1572161152" anchor-label="Asn1Decoder" id="1135265611%2FClasslikes%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-asn1-decoder/index.html"><span><span>Asn1Decoder</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1135265611%2FClasslikes%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-asn1-decoder/index.html">Asn1Decoder</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">data<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Constructs an <a href="-asn1-decoder/index.html">Asn1Decoder</a> from the given <a href="../../asn1/de.gematik.openhealth.asn1/-asn1-decoder/data.html">data</a>. The <a href="../../asn1/de.gematik.openhealth.asn1/-asn1-decoder/data.html">data</a> byte array will not be copied!</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="583062792%2FClasslikes%2F1572161152" anchor-label="Asn1DecoderException" id="583062792%2FClasslikes%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-asn1-decoder-exception/index.html"><span>Asn1Decoder</span><wbr><span><span>Exception</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="583062792%2FClasslikes%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-asn1-decoder-exception/index.html">Asn1DecoderException</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>cause<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-throwable/index.html">Throwable</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span> : <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-illegal-argument-exception/index.html">IllegalArgumentException</a></div><div class="brief "><p class="paragraph">Exception class for ASN.1 decoding errors.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2012606093%2FClasslikes%2F1572161152" anchor-label="Asn1Encoder" id="-2012606093%2FClasslikes%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-asn1-encoder/index.html"><span><span>Asn1Encoder</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2012606093%2FClasslikes%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-asn1-encoder/index.html">Asn1Encoder</a></div><div class="brief "><p class="paragraph">ASN.1 encoder for encoding data in ASN.1 format.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1083279392%2FClasslikes%2F1572161152" anchor-label="Asn1EncoderException" id="-1083279392%2FClasslikes%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-asn1-encoder-exception/index.html"><span>Asn1Encoder</span><wbr><span><span>Exception</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1083279392%2FClasslikes%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-asn1-encoder-exception/index.html">Asn1EncoderException</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>cause<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-throwable/index.html">Throwable</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span> : <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-illegal-argument-exception/index.html">IllegalArgumentException</a></div><div class="brief "><p class="paragraph">Exception thrown by the ASN.1 encoder.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="105012042%2FClasslikes%2F1572161152" anchor-label="Asn1GeneralizedTime" id="105012042%2FClasslikes%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-asn1-generalized-time/index.html"><span>Asn1Generalized</span><wbr><span><span>Time</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="105012042%2FClasslikes%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-asn1-generalized-time/index.html">Asn1GeneralizedTime</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>year<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>month<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>day<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>hour<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>minute<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>second<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>fractionOfSecond<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>offset<span class="token operator">: </span><a href="-asn1-offset/-generalized-offset/index.html">Asn1Offset.GeneralizedOffset</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Raw representation of an <a href="-asn1-type/-g-e-n-e-r-a-l-i-z-e-d_-t-i-m-e.html">Asn1Type.GENERALIZED_TIME</a>. If <a href="-asn1-generalized-time/offset.html">offset</a> is <code class="lang-kotlin">null</code> this indicates that the time is in UTC.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2053762976%2FClasslikes%2F1572161152" anchor-label="Asn1Offset" id="-2053762976%2FClasslikes%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-asn1-offset/index.html"><span><span>Asn1Offset</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2053762976%2FClasslikes%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="-asn1-offset/index.html">Asn1Offset</a></div><div class="brief "><p class="paragraph">Raw representation of an ASN.1 time offset.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1443291211%2FClasslikes%2F1572161152" anchor-label="Asn1Tag" id="-1443291211%2FClasslikes%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-asn1-tag/index.html"><span><span>Asn1Tag</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1443291211%2FClasslikes%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-asn1-tag/index.html">Asn1Tag</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>tagClass<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>tagNumber<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">ASN.1 tag class as defined in ITU-T X.680.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="233099289%2FClasslikes%2F1572161152" anchor-label="Asn1Type" id="233099289%2FClasslikes%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-asn1-type/index.html"><span><span>Asn1Type</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="233099289%2FClasslikes%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">object </span><a href="-asn1-type/index.html">Asn1Type</a></div><div class="brief "><p class="paragraph">ASN.1 type identifiers as defined in ITU-T X.680.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1817568866%2FClasslikes%2F1572161152" anchor-label="Asn1UtcTime" id="-1817568866%2FClasslikes%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-asn1-utc-time/index.html"><span>Asn1Utc</span><wbr><span><span>Time</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1817568866%2FClasslikes%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-asn1-utc-time/index.html">Asn1UtcTime</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>year<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>month<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>day<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>hour<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>minute<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>second<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>offset<span class="token operator">: </span><a href="-asn1-offset/-utc-offset/index.html">Asn1Offset.UtcOffset</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Raw representation of an <a href="-asn1-type/-u-t-c_-t-i-m-e.html">Asn1Type.UTC_TIME</a>. If <a href="-asn1-utc-time/offset.html">offset</a> is <code class="lang-kotlin">null</code> this indicates that the time is in UTC.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="EXTENSION_FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="812049929%2FFunctions%2F1572161152" anchor-label="readBitString" id="812049929%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-bit-string.html"><span>read</span><wbr><span>Bit</span><wbr><span><span>String</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="812049929%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-asn1-decoder/-parser-scope/index.html">Asn1Decoder.ParserScope</a><span class="token punctuation">.</span><a href="read-bit-string.html"><span class="token function">readBitString</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></div><div class="brief "><p class="paragraph">Read <a href="-asn1-type/-b-i-t_-s-t-r-i-n-g.html">Asn1Type.BIT_STRING</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="794328607%2FFunctions%2F1572161152" anchor-label="readBoolean" id="794328607%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-boolean.html"><span>read</span><wbr><span><span>Boolean</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="794328607%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-asn1-decoder/-parser-scope/index.html">Asn1Decoder.ParserScope</a><span class="token punctuation">.</span><a href="read-boolean.html"><span class="token function">readBoolean</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Read <a href="-asn1-type/-b-o-o-l-e-a-n.html">Asn1Type.BOOLEAN</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1960578242%2FFunctions%2F1572161152" anchor-label="readGeneralizedTime" id="1960578242%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-generalized-time.html"><span>read</span><wbr><span>Generalized</span><wbr><span><span>Time</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1960578242%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-asn1-decoder/-parser-scope/index.html">Asn1Decoder.ParserScope</a><span class="token punctuation">.</span><a href="read-generalized-time.html"><span class="token function">readGeneralizedTime</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-asn1-generalized-time/index.html">Asn1GeneralizedTime</a></div><div class="brief "><p class="paragraph">Read <a href="-asn1-type/-g-e-n-e-r-a-l-i-z-e-d_-t-i-m-e.html">Asn1Type.GENERALIZED_TIME</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1212766728%2FFunctions%2F1572161152" anchor-label="readInt" id="-1212766728%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-int.html"><span>read</span><wbr><span><span>Int</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1212766728%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-asn1-decoder/-parser-scope/index.html">Asn1Decoder.ParserScope</a><span class="token punctuation">.</span><a href="read-int.html"><span class="token function">readInt</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Read <a href="-asn1-type/-i-n-t-e-g-e-r.html">Asn1Type.INTEGER</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1273829959%2FFunctions%2F1572161152" anchor-label="readObjectIdentifier" id="1273829959%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-object-identifier.html"><span>read</span><wbr><span>Object</span><wbr><span><span>Identifier</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1273829959%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-asn1-decoder/-parser-scope/index.html">Asn1Decoder.ParserScope</a><span class="token punctuation">.</span><a href="read-object-identifier.html"><span class="token function">readObjectIdentifier</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Read <a href="-asn1-type/-o-b-j-e-c-t_-i-d-e-n-t-i-f-i-e-r.html">Asn1Type.OBJECT_IDENTIFIER</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1030338937%2FFunctions%2F1572161152" anchor-label="readOctetString" id="-1030338937%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-octet-string.html"><span>read</span><wbr><span>Octet</span><wbr><span><span>String</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1030338937%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-asn1-decoder/-parser-scope/index.html">Asn1Decoder.ParserScope</a><span class="token punctuation">.</span><a href="read-octet-string.html"><span class="token function">readOctetString</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></div><div class="brief "><p class="paragraph">Read <a href="-asn1-type/-o-c-t-e-t_-s-t-r-i-n-g.html">Asn1Type.OCTET_STRING</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="277261334%2FFunctions%2F1572161152" anchor-label="readUtcTime" id="277261334%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-utc-time.html"><span>read</span><wbr><span>Utc</span><wbr><span><span>Time</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="277261334%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-asn1-decoder/-parser-scope/index.html">Asn1Decoder.ParserScope</a><span class="token punctuation">.</span><a href="read-utc-time.html"><span class="token function">readUtcTime</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-asn1-utc-time/index.html">Asn1UtcTime</a></div><div class="brief "><p class="paragraph">Read <a href="-asn1-type/-u-t-c_-t-i-m-e.html">Asn1Type.UTC_TIME</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1244158099%2FFunctions%2F1572161152" anchor-label="readUtf8String" id="-1244158099%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-utf8-string.html"><span>read</span><wbr><span><span>Utf8String</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1244158099%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-asn1-decoder/-parser-scope/index.html">Asn1Decoder.ParserScope</a><span class="token punctuation">.</span><a href="read-utf8-string.html"><span class="token function">readUtf8String</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Read <a href="-asn1-type/-u-t-f8_-s-t-r-i-n-g.html">Asn1Type.UTF8_STRING</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-158645436%2FFunctions%2F1572161152" anchor-label="readVisibleString" id="-158645436%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-visible-string.html"><span>read</span><wbr><span>Visible</span><wbr><span><span>String</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-158645436%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-asn1-decoder/-parser-scope/index.html">Asn1Decoder.ParserScope</a><span class="token punctuation">.</span><a href="read-visible-string.html"><span class="token function">readVisibleString</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Read <a href="-asn1-type/-v-i-s-i-b-l-e_-s-t-r-i-n-g.html">Asn1Type.VISIBLE_STRING</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-708923209%2FFunctions%2F1572161152" anchor-label="writeBitString" id="-708923209%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="write-bit-string.html"><span>write</span><wbr><span>Bit</span><wbr><span><span>String</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-708923209%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-asn1-encoder/-writer-scope/index.html">Asn1Encoder.WriterScope</a><span class="token punctuation">.</span><a href="write-bit-string.html"><span class="token function">writeBitString</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token punctuation">, </span></span><span class="parameter ">unusedBits<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">0</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Write an ASN.1 bit string.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="916880229%2FFunctions%2F1572161152" anchor-label="writeBoolean" id="916880229%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="write-boolean.html"><span>write</span><wbr><span><span>Boolean</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="916880229%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-asn1-encoder/-writer-scope/index.html">Asn1Encoder.WriterScope</a><span class="token punctuation">.</span><a href="write-boolean.html"><span class="token function">writeBoolean</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Write an ASN.1 boolean.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1629983013%2FFunctions%2F1572161152" anchor-label="writeGeneralizedTime" id="-1629983013%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="write-generalized-time.html"><span>write</span><wbr><span>Generalized</span><wbr><span><span>Time</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1629983013%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-asn1-encoder/-writer-scope/index.html">Asn1Encoder.WriterScope</a><span class="token punctuation">.</span><a href="write-generalized-time.html"><span class="token function">writeGeneralizedTime</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">value<span class="token operator">: </span><a href="-asn1-generalized-time/index.html">Asn1GeneralizedTime</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Write <a href="-asn1-type/-g-e-n-e-r-a-l-i-z-e-d_-t-i-m-e.html">Asn1Type.GENERALIZED_TIME</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-896241449%2FFunctions%2F1572161152" anchor-label="writeInt" id="-896241449%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="write-int.html"><span>write</span><wbr><span><span>Int</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-896241449%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-asn1-encoder/-writer-scope/index.html">Asn1Encoder.WriterScope</a><span class="token punctuation">.</span><a href="write-int.html"><span class="token function">writeInt</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Write an ASN.1 integer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1186643754%2FFunctions%2F1572161152" anchor-label="writeObjectIdentifier" id="-1186643754%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="write-object-identifier.html"><span>write</span><wbr><span>Object</span><wbr><span><span>Identifier</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1186643754%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-asn1-encoder/-writer-scope/index.html">Asn1Encoder.WriterScope</a><span class="token punctuation">.</span><a href="write-object-identifier.html"><span class="token function">writeObjectIdentifier</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">oid<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Write <a href="-asn1-type/-o-b-j-e-c-t_-i-d-e-n-t-i-f-i-e-r.html">Asn1Type.OBJECT_IDENTIFIER</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="217393700%2FFunctions%2F1572161152" anchor-label="writeOctetString" id="217393700%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="write-octet-string.html"><span>write</span><wbr><span>Octet</span><wbr><span><span>String</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="217393700%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-asn1-encoder/-writer-scope/index.html">Asn1Encoder.WriterScope</a><span class="token punctuation">.</span><a href="write-octet-string.html"><span class="token function">writeOctetString</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Write an ASN.1 octet string.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-337644591%2FFunctions%2F1572161152" anchor-label="writeTag" id="-337644591%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="write-tag.html"><span>write</span><wbr><span><span>Tag</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-337644591%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-asn1-encoder/-writer-scope/index.html">Asn1Encoder.WriterScope</a><span class="token punctuation">.</span><a href="write-tag.html"><span class="token function">writeTag</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">tagNumber<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">tagClass<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">0</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Write the encoded tag directly, handling multi-byte encoding for large tags.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-412277196%2FFunctions%2F1572161152" anchor-label="writeTaggedObject" id="-412277196%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="write-tagged-object.html"><span>write</span><wbr><span>Tagged</span><wbr><span><span>Object</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-412277196%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-asn1-encoder/-writer-scope/index.html">Asn1Encoder.WriterScope</a><span class="token punctuation">.</span><a href="write-tagged-object.html"><span class="token function">writeTaggedObject</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">tagNumber<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">tagClass<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">0</span><span class="token punctuation">, </span></span><span class="parameter ">block<span class="token operator">: </span><a href="-asn1-encoder/-writer-scope/index.html">Asn1Encoder.WriterScope</a><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Write an ASN.1 tagged object.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-684736381%2FFunctions%2F1572161152" anchor-label="writeUtcTime" id="-684736381%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="write-utc-time.html"><span>write</span><wbr><span>Utc</span><wbr><span><span>Time</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-684736381%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-asn1-encoder/-writer-scope/index.html">Asn1Encoder.WriterScope</a><span class="token punctuation">.</span><a href="write-utc-time.html"><span class="token function">writeUtcTime</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">value<span class="token operator">: </span><a href="-asn1-utc-time/index.html">Asn1UtcTime</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Write <a href="-asn1-type/-u-t-c_-t-i-m-e.html">Asn1Type.UTC_TIME</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-469650640%2FFunctions%2F1572161152" anchor-label="writeUtf8String" id="-469650640%2FFunctions%2F1572161152" data-filterable-set=":asn1/commonMain"></a>
+          <div class="table-row" data-filterable-current=":asn1/commonMain" data-filterable-set=":asn1/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="write-utf8-string.html"><span>write</span><wbr><span><span>Utf8String</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-469650640%2FFunctions%2F1572161152"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":asn1/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-asn1-encoder/-writer-scope/index.html">Asn1Encoder.WriterScope</a><span class="token punctuation">.</span><a href="write-utf8-string.html"><span class="token function">writeUtf8String</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Write an ASN.1 utf8 string.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+        <span>(c) Gematik GmbH</span>
+        <span class="pull-right">
+            <span>Generated by </span>
+            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                <span>dokka</span>
+            </a>
+        </span>
+    </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

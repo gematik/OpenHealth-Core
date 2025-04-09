@@ -1,4 +1,4 @@
-import org.jetbrains.dokka.gradle.DokkaTaskPartial
+import org.jetbrains.dokka.DokkaDefaults.pluginsConfiguration
 import java.util.Properties
 
 /*
@@ -27,9 +27,6 @@ plugins {
     alias(libs.plugins.dokka) apply true
 
     id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.16.3"
-//    alias(libs.plugins.requirements)
-//    alias(libs.plugins.licenseheader)
-//    id("org.jetbrains.dokka") version "2.0.0"
 
     id("de.gematik.openhealth.build")
 }
@@ -83,6 +80,14 @@ tasks.register<JacocoReport>("jacocoRootReport") {
 }
 
 subprojects {
+    apply(plugin = "org.jetbrains.dokka")
+    dokka {
+        pluginsConfiguration.html {
+            customStyleSheets.from(rootDir.resolve("config/dokka/dokkaStyle.css"))
+            customAssets.from(rootDir.resolve("config/dokka/gematik_logo_white.svg"))
+            footerMessage.set("(c) Gematik GmbH")
+        }
+    }
     tasks.withType<Test> {
         finalizedBy(tasks.withType<JacocoReport>())
     }
@@ -172,9 +177,27 @@ detekt {
     )
 }
 
+dokka {
+    moduleName.set("OpenHealth - Core")
+
+    dokkaPublications.html {
+        outputDirectory.set(rootDir.resolve("docs/api"))
+        includes.from(project.layout.projectDirectory.file("README.md"))
+    }
+
+    pluginsConfiguration.html {
+        customStyleSheets.from(rootDir.resolve("config/dokka/dokkaStyle.css"))
+        customAssets.from(rootDir.resolve("config/dokka/gematik_logo_white.svg"))
+        footerMessage.set("© Gematik GmbH")
+    }
+}
+
 val ktlint by configurations.creating
 
 dependencies {
+    dokka(project(":asn1"))
+    dokka(project(":crypto"))
+    dokka(project(":smartcard"))
     ktlint(libs.ktlint.cli) {
         attributes {
             attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL))

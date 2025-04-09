@@ -17,7 +17,6 @@
 package de.gematik.openhealth.crypto.kem
 
 import de.gematik.openhealth.crypto.runTestWithProvider
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertTrue
 

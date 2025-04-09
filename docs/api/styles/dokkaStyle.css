@@ -1,0 +1,8 @@
+/* logo custom rules styles */
+.library-name--link:before {
+    background: url('../images/gematik_logo_white.svg') center no-repeat;
+    content: "";
+    height: 36px;
+    width: 120px;
+}
+

@@ -59,15 +59,17 @@ val generateJniWrapper by tasks.registering(Exec::class) {
 }
 
 val patchGeneratedJava by tasks.registering {
-    val inputFile = file("$rootOutputDir/java/de/gematik/openhealth/crypto/internal/interop/Uint8Vector.java")
+    val inputFile =
+        file("$rootOutputDir/java/de/gematik/openhealth/crypto/internal/interop/Uint8Vector.java")
     inputs.file(inputFile)
     outputs.file(inputFile)
     doLast {
         val content = inputFile.readText()
-        val patched = content.replace(
-            "public class Uint8Vector extends java.util.AbstractList<Byte> implements java.util.RandomAccess {",
-            "public class Uint8Vector extends java.util.AbstractList<Byte> implements java.util.RandomAccess, ClassHandle {"
-        )
+        val patched =
+            content.replace(
+                "public class Uint8Vector extends java.util.AbstractList<Byte> implements java.util.RandomAccess {",
+                "public class Uint8Vector extends java.util.AbstractList<Byte> implements java.util.RandomAccess, ClassHandle {",
+            )
         inputFile.writeText(patched)
     }
     dependsOn(generateJniWrapper)

@@ -53,7 +53,7 @@ val emcmakeSetup by tasks.registering(Exec::class) {
     commandLine(
         "bash",
         "-c",
-        "source ${emscriptenDir}/emsdk_env.sh && emcmake cmake -DPROJECT_ROOT_DIR=$rootDir -GNinja -S $rootDir/libs/openssl/wrapper -B ${layout.buildDirectory.get().asFile}/cmake-build"
+        "source $emscriptenDir/emsdk_env.sh && emcmake cmake -DPROJECT_ROOT_DIR=$rootDir -GNinja -S $rootDir/libs/openssl/wrapper -B ${layout.buildDirectory.get().asFile}/cmake-build",
     )
 }
 
@@ -65,7 +65,7 @@ val emcmakeBuild by tasks.registering(Exec::class) {
     commandLine(
         "bash",
         "-c",
-        "source ${emscriptenDir}/emsdk_env.sh && cmake --build $cmakeBuildDir --target oh_crypto",
+        "source $emscriptenDir/emsdk_env.sh && cmake --build $cmakeBuildDir --target oh_crypto",
     )
 }
 
@@ -87,7 +87,9 @@ val npmInstall by tasks.registering(Exec::class) {
 
 val npxNodeConv by tasks.registering(Exec::class) {
     inputs.file("$cmakeBuildDir/oh_crypto.d.ts")
-    outputs.file("$rootOutputDir/jsMainGenerated/kotlin/de/gematik/openhealth/crypto/internal/interop/crypto.kt")
+    outputs.file(
+        "$rootOutputDir/jsMainGenerated/kotlin/de/gematik/openhealth/crypto/internal/interop/crypto.kt",
+    )
     workingDir("npm")
     commandLine(
         "npx",
@@ -98,7 +100,7 @@ val npxNodeConv by tasks.registering(Exec::class) {
         "--module-name",
         "CryptoModule",
         "$cmakeBuildDir/oh_crypto.d.ts",
-        "$rootOutputDir/jsMainGenerated/kotlin/de/gematik/openhealth/crypto/internal/interop/crypto.kt"
+        "$rootOutputDir/jsMainGenerated/kotlin/de/gematik/openhealth/crypto/internal/interop/crypto.kt",
     )
     dependsOn(emcmakeBuild)
     dependsOn(npmInstall)

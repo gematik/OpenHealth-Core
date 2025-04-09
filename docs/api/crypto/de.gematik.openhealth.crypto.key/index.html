@@ -1,0 +1,425 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>de.gematik.openhealth.crypto.key</title>
+<link href="../../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/main.css" rel="Stylesheet">
+<link href="../../styles/prism.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<link href="../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../ui-kit/ui-kit.min.js" defer></script>
+<script type="text/javascript" src="../../scripts/symbol-parameters-wrapper_deferred.js" defer></script>
+<link href="../../images/gematik_logo_white.svg">
+<link href="../../styles/dokkaStyle.css" rel="Stylesheet"></head>
+<body>
+    <div class="root">
+    <nav class="navigation theme-dark" id="navigation-wrapper">
+<a class="library-name--link" href="../../index.html">
+                    OpenHealth - Core
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <div class="filter-section filter-section_loading" id="filter-section">
+                <button class="platform-tag platform-selector js-like" data-active="" data-filter=":crypto/jsMain">js</button>
+                <button class="platform-tag platform-selector common-like" data-active="" data-filter=":crypto/jvm">common</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
+                    <div class="dropdown--header"><span>Platform filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option js-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":crypto/jsMain" data-filter=":crypto/jsMain">
+                                <span class="checkbox--icon"></span>
+                                js
+                            </label>
+                        </li>
+                        <li role="option" class="dropdown--option platform-selector-option common-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":crypto/jvm" data-filter=":crypto/jvm">
+                                <span class="checkbox--icon"></span>
+                                common
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </div>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox">
+                        <div class="dropdown--header">
+                            <span>
+                                    OpenHealth - Core
+                            </span>
+                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar--inner" id="sideMenu"></div>
+                    </ul>
+                    <div class="dropdown--overlay"></div>
+                </div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="package" id="content" pageids="crypto::de.gematik.openhealth.crypto.key////PointingToDeclaration//-912053449">
+  <div class="breadcrumbs"><a href="../index.html">crypto</a><span class="delimiter">/</span><span class="current">de.gematik.openhealth.crypto.key</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button><button class="section-tab" data-togglable="FUNCTION,EXTENSION_FUNCTION">Functions</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="-919502260%2FClasslikes%2F-1230127527" anchor-label="EcCurve" id="-919502260%2FClasslikes%2F-1230127527" data-filterable-set=":crypto/jvm"></a>
+          <div class="table-row" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-ec-curve/index.html"><span>Ec</span><wbr><span><span>Curve</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-919502260%2FClasslikes%2F-1230127527"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="../de.gematik.openhealth.crypto/-experimental-crypto-api/index.html"><span class="token annotation builtin">ExperimentalCryptoApi</span></a></div></div><span class="token keyword">enum </span><a href="-ec-curve/index.html">EcCurve</a> : <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><a href="-ec-curve/index.html">EcCurve</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">Elliptic curve parameters according to RFC 5639.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="615357991%2FClasslikes%2F-1230127527" anchor-label="EcKeyPairSpec" id="615357991%2FClasslikes%2F-1230127527" data-filterable-set=":crypto/jvm"></a>
+          <div class="table-row" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-ec-key-pair-spec/index.html"><span>Ec</span><wbr><span>Key</span><wbr><span>Pair</span><wbr><span><span>Spec</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="615357991%2FClasslikes%2F-1230127527"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><span class="token keyword">class </span><a href="-ec-key-pair-spec/index.html">EcKeyPairSpec</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>curve<span class="token operator">: </span><a href="-ec-curve/index.html">EcCurve</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Specification for EC key pair generation.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1276054325%2FClasslikes%2F-1230127527" anchor-label="EcPoint" id="-1276054325%2FClasslikes%2F-1230127527" data-filterable-set=":crypto/jvm"></a>
+          <div class="table-row" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-ec-point/index.html"><span>Ec</span><wbr><span><span>Point</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1276054325%2FClasslikes%2F-1230127527"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="../de.gematik.openhealth.crypto/-experimental-crypto-api/index.html"><span class="token annotation builtin">ExperimentalCryptoApi</span></a></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="-ec-point/index.html">EcPoint</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>curve<span class="token operator">: </span><a href="-ec-curve/index.html">EcCurve</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>x<span class="token operator">: </span><span data-unresolved-link="com.ionspin.kotlin.bignum.integer/BigInteger///PointingToDeclaration/">BigInteger</span><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>y<span class="token operator">: </span><span data-unresolved-link="com.ionspin.kotlin.bignum.integer/BigInteger///PointingToDeclaration/">BigInteger</span><span class="token operator">?</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Represents a point on an elliptic curve.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1200672789%2FClasslikes%2F-1230127527" anchor-label="EcPrivateKey" id="-1200672789%2FClasslikes%2F-1230127527" data-filterable-set=":crypto/jvm"></a>
+          <div class="table-row" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-ec-private-key/index.html"><span>Ec</span><wbr><span>Private</span><wbr><span><span>Key</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1200672789%2FClasslikes%2F-1230127527"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="../de.gematik.openhealth.crypto/-experimental-crypto-api/index.html"><span class="token annotation builtin">ExperimentalCryptoApi</span></a></div></div><span class="token keyword">class </span><a href="-ec-private-key/index.html">EcPrivateKey</a> : <a href="-key/index.html">Key</a></div><div class="brief "><p class="paragraph">Elliptic curve private key implementation with curve parameters and scalar data.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="138558693%2FClasslikes%2F-1230127527" anchor-label="EcPublicKey" id="138558693%2FClasslikes%2F-1230127527" data-filterable-set=":crypto/jvm"></a>
+          <div class="table-row" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-ec-public-key/index.html"><span>Ec</span><wbr><span>Public</span><wbr><span><span>Key</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="138558693%2FClasslikes%2F-1230127527"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="../de.gematik.openhealth.crypto/-experimental-crypto-api/index.html"><span class="token annotation builtin">ExperimentalCryptoApi</span></a></div></div><span class="token keyword">class </span><a href="-ec-public-key/index.html">EcPublicKey</a> : <a href="-key/index.html">Key</a></div><div class="brief "><p class="paragraph">EC public key implementation with curve parameters and uncompressed point data.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="583370910%2FClasslikes%2F-1230127527" anchor-label="Key" id="583370910%2FClasslikes%2F-1230127527" data-filterable-set=":crypto/jvm"></a>
+          <div class="table-row" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-key/index.html"><span><span>Key</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="583370910%2FClasslikes%2F-1230127527"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="../de.gematik.openhealth.crypto/-experimental-crypto-api/index.html"><span class="token annotation builtin">ExperimentalCryptoApi</span></a></div></div><span class="token keyword">interface </span><a href="-key/index.html">Key</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-622501266%2FClasslikes%2F-1230127527" anchor-label="SecretKey" id="-622501266%2FClasslikes%2F-1230127527" data-filterable-set=":crypto/jvm"></a>
+          <div class="table-row" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-secret-key/index.html"><span>Secret</span><wbr><span><span>Key</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-622501266%2FClasslikes%2F-1230127527"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="../de.gematik.openhealth.crypto/-experimental-crypto-api/index.html"><span class="token annotation builtin">ExperimentalCryptoApi</span></a></div></div><span class="token keyword">class </span><a href="-secret-key/index.html">SecretKey</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>data<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span> : <a href="-key/index.html">Key</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="EXTENSION_FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="-145314478%2FFunctions%2F-1230127527" anchor-label="decodeFromAsn1" id="-145314478%2FFunctions%2F-1230127527" data-filterable-set=":crypto/jvm"></a>
+          <div class="table-row" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="decode-from-asn1.html"><span>decode</span><wbr><span>From</span><wbr><span><span>Asn1</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-145314478%2FFunctions%2F-1230127527"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-ec-private-key/-companion/index.html">EcPrivateKey.Companion</a><span class="token punctuation">.</span><a href="decode-from-asn1.html"><span class="token function">decodeFromAsn1</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">data<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-ec-private-key/index.html">EcPrivateKey</a></div><div class="brief "><p class="paragraph">Parses a ASN.1 DER encoded private key and returns an <a href="-ec-private-key/index.html">EcPrivateKey</a>.</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="-ec-public-key/-companion/index.html">EcPublicKey.Companion</a><span class="token punctuation">.</span><a href="decode-from-asn1.html"><span class="token function">decodeFromAsn1</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">data<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-ec-public-key/index.html">EcPublicKey</a></div><div class="brief "><p class="paragraph">Parses a ASN.1 DER encoded subject public key info and returns an <a href="-ec-public-key/index.html">EcPublicKey</a>.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1016694496%2FFunctions%2F-1230127527" anchor-label="decodeFromPem" id="1016694496%2FFunctions%2F-1230127527" data-filterable-set=":crypto/jvm"></a>
+          <div class="table-row" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="decode-from-pem.html"><span>decode</span><wbr><span>From</span><wbr><span><span>Pem</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1016694496%2FFunctions%2F-1230127527"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-ec-private-key/-companion/index.html">EcPrivateKey.Companion</a><span class="token punctuation">.</span><a href="decode-from-pem.html"><span class="token function">decodeFromPem</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">data<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-ec-private-key/index.html">EcPrivateKey</a></div><div class="brief "><p class="paragraph">Parses a private key from a PEM-encoded string and returns an <a href="-ec-private-key/index.html">EcPrivateKey</a>.</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="-ec-public-key/-companion/index.html">EcPublicKey.Companion</a><span class="token punctuation">.</span><a href="decode-from-pem.html"><span class="token function">decodeFromPem</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">data<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-ec-public-key/index.html">EcPublicKey</a></div><div class="brief "><p class="paragraph">Parses a public key from a PEM-encoded string and returns an <a href="-ec-public-key/index.html">EcPublicKey</a>.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2124665403%2FFunctions%2F-1230127527" anchor-label="decodeFromUncompressedFormat" id="-2124665403%2FFunctions%2F-1230127527" data-filterable-set=":crypto/jvm"></a>
+          <div class="table-row" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="decode-from-uncompressed-format.html"><span>decode</span><wbr><span>From</span><wbr><span>Uncompressed</span><wbr><span><span>Format</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2124665403%2FFunctions%2F-1230127527"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-ec-public-key/-companion/index.html">EcPublicKey.Companion</a><span class="token punctuation">.</span><a href="decode-from-uncompressed-format.html"><span class="token function">decodeFromUncompressedFormat</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">curve<span class="token operator">: </span><a href="-ec-curve/index.html">EcCurve</a><span class="token punctuation">, </span></span><span class="parameter ">data<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-ec-public-key/index.html">EcPublicKey</a></div><div class="brief "><p class="paragraph">Returns an <a href="-ec-public-key/index.html">EcPublicKey</a> from an uncompressed EC point representation.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1405118496%2FFunctions%2F-1230127527" anchor-label="encodeToAsn1" id="1405118496%2FFunctions%2F-1230127527" data-filterable-set=":crypto/jvm"></a>
+          <div class="table-row" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="encode-to-asn1.html"><span>encode</span><wbr><span>To</span><wbr><span><span>Asn1</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1405118496%2FFunctions%2F-1230127527"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-ec-private-key/index.html">EcPrivateKey</a><span class="token punctuation">.</span><a href="encode-to-asn1.html"><span class="token function">encodeToAsn1</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></div><div class="brief "><p class="paragraph">Encodes the private key as an ASN.1 DER encoded private key info.</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="-ec-public-key/index.html">EcPublicKey</a><span class="token punctuation">.</span><a href="encode-to-asn1.html"><span class="token function">encodeToAsn1</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></div><div class="brief "><p class="paragraph">Encodes the public key as an ASN.1 DER encoded subject public key info.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-813390622%2FFunctions%2F-1230127527" anchor-label="encodeToPem" id="-813390622%2FFunctions%2F-1230127527" data-filterable-set=":crypto/jvm"></a>
+          <div class="table-row" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="encode-to-pem.html"><span>encode</span><wbr><span>To</span><wbr><span><span>Pem</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-813390622%2FFunctions%2F-1230127527"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-ec-private-key/index.html">EcPrivateKey</a><span class="token punctuation">.</span><a href="encode-to-pem.html"><span class="token function">encodeToPem</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><br><div class="symbol monospace"><span class="token keyword">fun </span><a href="-ec-public-key/index.html">EcPublicKey</a><span class="token punctuation">.</span><a href="encode-to-pem.html"><span class="token function">encodeToPem</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Encodes the public key as a PEM-encoded string.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1364805638%2FFunctions%2F-1230127527" anchor-label="fromScalar" id="1364805638%2FFunctions%2F-1230127527" data-filterable-set=":crypto/jvm"></a>
+          <div class="table-row" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="from-scalar.html"><span>from</span><wbr><span><span>Scalar</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1364805638%2FFunctions%2F-1230127527"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-ec-private-key/-companion/index.html">EcPrivateKey.Companion</a><span class="token punctuation">.</span><a href="from-scalar.html"><span class="token function">fromScalar</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">curve<span class="token operator">: </span><a href="-ec-curve/index.html">EcCurve</a><span class="token punctuation">, </span></span><span class="parameter ">data<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-ec-private-key/index.html">EcPrivateKey</a></div><div class="brief "><p class="paragraph">Creates an <a href="-ec-private-key/index.html">EcPrivateKey</a> from a scalar value.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-288099673%2FFunctions%2F-912053449" anchor-label="generateKeyPair" id="-288099673%2FFunctions%2F-912053449" data-filterable-set=":crypto/jvm,:crypto/jsMain"></a>
+          <div class="table-row" data-filterable-current=":crypto/jvm,:crypto/jsMain" data-filterable-set=":crypto/jvm,:crypto/jsMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="generate-key-pair.html"><span>generate</span><wbr><span>Key</span><wbr><span><span>Pair</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-288099673%2FFunctions%2F-912053449"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jsMain" data-filterable-set=":crypto/jsMain" data-active="" data-toggle=":crypto/jsMain">js</button><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-togglable=":crypto/jsMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">fun </span><a href="-ec-key-pair-spec/index.html#615357991%2FMain%2F-965527698">EcKeyPairSpec</a><span class="token punctuation">.</span><a href="generate-key-pair.html"><span class="token function">generateKeyPair</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-pair/index.html">Pair</a><span class="token operator">&lt;</span><a href="../../crypto/de.gematik.openhealth.crypto.key/-ec-public-key/index.html">EcPublicKey</a><span class="token punctuation">, </span><a href="../../crypto/de.gematik.openhealth.crypto.key/-ec-private-key/index.html">EcPrivateKey</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">JavaScript-specific implementation to generate an EC key pair. Generates both public and private keys in ASN.1 DER format and decodes them into the appropriate key types.</p></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">fun </span><a href="-ec-key-pair-spec/index.html">EcKeyPairSpec</a><span class="token punctuation">.</span><a href="generate-key-pair.html"><span class="token function">generateKeyPair</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-pair/index.html">Pair</a><span class="token operator">&lt;</span><a href="-ec-public-key/index.html">EcPublicKey</a><span class="token punctuation">, </span><a href="-ec-private-key/index.html">EcPrivateKey</a><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">fun </span><a href="-ec-key-pair-spec/index.html">EcKeyPairSpec</a><span class="token punctuation">.</span><a href="generate-key-pair.html"><span class="token function">generateKeyPair</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-pair/index.html">Pair</a><span class="token operator">&lt;</span><a href="-ec-public-key/index.html">EcPublicKey</a><span class="token punctuation">, </span><a href="-ec-private-key/index.html">EcPrivateKey</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Generates a new EC key pair.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1374369237%2FFunctions%2F-1230127527" anchor-label="readEcCurveFromAlgorithmIdentifier" id="1374369237%2FFunctions%2F-1230127527" data-filterable-set=":crypto/jvm"></a>
+          <div class="table-row" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-ec-curve-from-algorithm-identifier.html"><span>read</span><wbr><span>Ec</span><wbr><span>Curve</span><wbr><span>From</span><wbr><span>Algorithm</span><wbr><span><span>Identifier</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1374369237%2FFunctions%2F-1230127527"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><span class="token keyword">fun </span><a href="../../asn1/de.gematik.openhealth.asn1/-asn1-decoder/-parser-scope/index.html">Asn1Decoder.ParserScope</a><span class="token punctuation">.</span><a href="read-ec-curve-from-algorithm-identifier.html"><span class="token function">readEcCurveFromAlgorithmIdentifier</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-ec-curve/index.html">EcCurve</a></div><div class="brief "><p class="paragraph">Parses an ASN.1 DER encoded algorithm identifier and returns an <a href="-ec-public-key/index.html">EcPublicKey</a>.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-108972010%2FFunctions%2F-1230127527" anchor-label="toEcPoint" id="-108972010%2FFunctions%2F-1230127527" data-filterable-set=":crypto/jvm"></a>
+          <div class="table-row" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-ec-point.html"><span>to</span><wbr><span>Ec</span><wbr><span><span>Point</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-108972010%2FFunctions%2F-1230127527"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-ec-public-key/index.html">EcPublicKey</a><span class="token punctuation">.</span><a href="to-ec-point.html"><span class="token function">toEcPoint</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-ec-point/index.html">EcPoint</a></div><div class="brief "><p class="paragraph">Elliptic curve point representation.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-942205302%2FFunctions%2F-1230127527" anchor-label="toEcPublicKey" id="-942205302%2FFunctions%2F-1230127527" data-filterable-set=":crypto/jvm"></a>
+          <div class="table-row" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-ec-public-key.html"><span>to</span><wbr><span>Ec</span><wbr><span>Public</span><wbr><span><span>Key</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-942205302%2FFunctions%2F-1230127527"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":crypto/jvm" data-filterable-set=":crypto/jvm" data-active="" data-toggle=":crypto/jvm">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":crypto/jvm"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="../de.gematik.openhealth.crypto/-experimental-crypto-api/index.html"><span class="token annotation builtin">ExperimentalCryptoApi</span></a></div></div><span class="token keyword">fun </span><a href="-ec-point/index.html">EcPoint</a><span class="token punctuation">.</span><a href="to-ec-public-key.html"><span class="token function">toEcPublicKey</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-ec-public-key/index.html">EcPublicKey</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+        <span>(c) Gematik GmbH</span>
+        <span class="pull-right">
+            <span>Generated by </span>
+            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                <span>dokka</span>
+            </a>
+        </span>
+    </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package de.gematik.openhealth.smartcard.tagobjects
 
 import de.gematik.openhealth.asn1.Asn1Encoder
 import de.gematik.openhealth.asn1.Asn1Tag
