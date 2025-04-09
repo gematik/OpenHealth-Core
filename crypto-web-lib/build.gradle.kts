@@ -131,7 +131,7 @@ val npxNodeConv by tasks.registering(Exec::class) {
         "-c",
         """
         source $emscriptenDir/emsdk_env.sh &&
-        npx node src/conv.ts --package-path de.gematik.openhealth.crypto.internal.interop --module-class-name CryptoModule --module-name gematik-openhealth-internal-crypto $cmakeBuildDir/oh_crypto.d.ts $rootOutputDir/jsMainGenerated/kotlin/de/gematik/openhealth/crypto/internal/interop/crypto.kt
+        npx tsx src/conv.ts --package-path de.gematik.openhealth.crypto.internal.interop --module-class-name CryptoModule --module-name gematik-openhealth-internal-crypto $cmakeBuildDir/oh_crypto.d.ts $rootOutputDir/jsMainGenerated/kotlin/de/gematik/openhealth/crypto/internal/interop/crypto.kt
         """.trimIndent(),
     )
     dependsOn(emcmakeBuild)
