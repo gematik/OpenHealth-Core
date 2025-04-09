@@ -306,8 +306,8 @@ private val EXPECTED_APDU =
         mapOf(
             "MANAGESECURITYENVIRONMENTCOMMAND_APDU-4" to
                 mapOf(
-                    "apdu-true" to "0022C1A409800100830189840110",
-                    "apdu-false" to "0022C1A409800100830109840110",
+                    "apdu-true" to "002241B606840189800100",
+                    "apdu-false" to "002241B606840109800100",
                 ),
         ),
         // ManageSecurityEnvironmentCommand(de.gematik.ti.healthcardaccess.commands.ManageSecurityEnvironmentCommand$MseUseCase,de.gematik.ti.healthcardaccess.cardobjects.GemCvCertificate)
