@@ -84,21 +84,16 @@ kotlin {
             dependsOn(commonMain)
             dependencies {
                 api(project(":crypto-jvm-swig"))
+                implementation(project(":crypto-jvm-lib"))
             }
         }
         val jvmMain by getting {
             dependsOn(jvm)
-            dependencies {
-                implementation(project(":crypto-jvm-lib"))
-            }
         }
         val jvmTest by getting {
         }
         val androidMain by getting {
             dependsOn(jvm)
-            dependencies {
-                implementation(project(":crypto-jvm-lib"))
-            }
         }
         val androidInstrumentedTest by getting {
             dependencies {

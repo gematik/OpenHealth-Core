@@ -15,7 +15,7 @@
  */
 
 plugins {
-    id("java-library")
+    kotlin("jvm")
     id("maven-publish")
 }
 
@@ -24,15 +24,13 @@ version = project.findProperty("gematik.version") as String
 
 val rootOutputDir = "${layout.buildDirectory.get().asFile}/generated/"
 
-java {
+kotlin {
+    jvmToolchain(17)
     sourceSets {
         main {
             resources.srcDir("$rootOutputDir/resources")
         }
     }
-
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
 }
 
 val hostOs =
@@ -98,10 +96,14 @@ val copyNativeLibs by tasks.registering(Copy::class) {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
-tasks.named<Jar>("jar") {
+tasks.named("jar") {
     dependsOn(copyNativeLibs)
 }
 
-tasks.named<ProcessResources>("processResources") {
+tasks.named("processTestResources") {
+    dependsOn(copyNativeLibs)
+}
+
+tasks.named("processResources") {
     dependsOn(copyNativeLibs)
 }

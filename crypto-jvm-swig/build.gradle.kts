@@ -15,7 +15,7 @@
  */
 
 plugins {
-    id("java-library")
+    kotlin("jvm")
 }
 
 group = project.findProperty("gematik.baseGroup") as String
