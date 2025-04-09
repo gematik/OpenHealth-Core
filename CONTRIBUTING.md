@@ -32,7 +32,7 @@ Ensure all the following pre-requirements are done:
 Use the predefined Git hooks to ensure code quality and consistency. Run the following command from the root directory:
 
 ```sh
-chmod +x .githooks/pre-commit
+chmod +x .githooks/pre-push
 git config core.hooksPath .githooks
 ````
 

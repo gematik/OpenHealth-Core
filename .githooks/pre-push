@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-echo "Running pre-commit hook"
+echo "Running pre-push hook"
 
 echo "Running format and lint checks"
 if ! ./gradlew ktlintFormat detekt; then
