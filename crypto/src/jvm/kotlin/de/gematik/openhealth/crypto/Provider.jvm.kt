@@ -18,6 +18,14 @@ package de.gematik.openhealth.crypto
 
 import de.gematik.openhealth.crypto.internal.interop.loadNativeLibrary
 
+/**
+ * Initializes the native crypto provider by loading the native library.
+ *
+ * This function should be called before using any cryptographic operations that rely on the
+ * native library.
+ *
+ * @throws RuntimeException if the native library cannot be loaded.
+ */
 actual suspend fun initializeNativeCryptoProvider() {
     loadNativeLibrary()
 }

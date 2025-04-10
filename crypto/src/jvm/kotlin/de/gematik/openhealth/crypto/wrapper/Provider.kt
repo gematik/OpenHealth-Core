@@ -16,4 +16,4 @@
 
 package de.gematik.openhealth.crypto.wrapper
 
-fun <T : Any> runWithProvider(block: () -> T): T = block()
+internal fun <T : Any> runWithProvider(block: () -> T): T = block()

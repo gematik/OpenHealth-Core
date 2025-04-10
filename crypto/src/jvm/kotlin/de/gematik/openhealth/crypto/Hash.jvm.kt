@@ -45,4 +45,9 @@ private class JvmHash(
         }
 }
 
+/**
+ * Creates a new instance of the [Hash] class.
+ *
+ * @param scope The [CryptoScope] to use for the hash operation.
+ */
 actual fun HashSpec.nativeCreateHash(scope: CryptoScope): Hash = JvmHash(scope, this)

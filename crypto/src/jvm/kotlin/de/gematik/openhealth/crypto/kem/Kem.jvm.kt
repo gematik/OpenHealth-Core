@@ -130,10 +130,16 @@ private fun DeferScope.kyberSharedSecret(
     shake._final().alsoDefer()
 }
 
+/**
+ * JVM-specific implementation for creating KEM encapsulation instances.
+ */
 actual fun KemSpec.nativeCreateEncapsulation(
     scope: CryptoScope,
     encapsulationKey: ByteArray,
 ): KemEncapsulation = JvmKemEncapsulation(this, encapsulationKey, scope)
 
+/**
+ * JVM-specific implementation for creating KEM decapsulation instances.
+ */
 actual fun KemSpec.nativeCreateDecapsulation(scope: CryptoScope): KemDecapsulation =
     JvmKemDecapsulation(this, scope)

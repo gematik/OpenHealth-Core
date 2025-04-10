@@ -26,6 +26,9 @@ internal fun EcCurve.curveName() =
         EcCurve.BrainpoolP512r1 -> "brainpoolP512r1"
     }
 
+/**
+ * Generates a new EC key pair using the specified curve.
+ */
 actual fun EcKeyPairSpec.generateKeyPair(): Pair<EcPublicKey, EcPrivateKey> =
     runWithProvider {
         val keyPair = EcKeypair.generateKeypair(this@generateKeyPair.curve.curveName())

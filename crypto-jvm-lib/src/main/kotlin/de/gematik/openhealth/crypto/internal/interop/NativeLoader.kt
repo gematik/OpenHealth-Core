@@ -30,6 +30,11 @@ private val hostArch =
         .trim()
         .replace(" ", "")
 
+/**
+ * Loads the native crypto library for the current platform.
+ *
+ * @throws UnsatisfiedLinkError if the library cannot be loaded.
+ */
 @Suppress("UnsafeDynamicallyLoadedCode")
 fun loadNativeLibrary() {
     try {
