@@ -89,6 +89,9 @@ data class KemDecapsulationResult(
 interface KemEncapsulation {
     val spec: KemSpec
 
+    /**
+     * Encapsulates a key and returns the shared secret and wrapped key.
+     */
     fun encapsulate(): KemEncapsulationResult
 }
 
@@ -99,8 +102,14 @@ interface KemEncapsulation {
 interface KemDecapsulation {
     val spec: KemSpec
 
+    /**
+     * Returns the encapsulation key.
+     */
     fun encapsulationKey(): ByteArray
 
+    /**
+     * Decapsulates the wrapped key and returns the shared secret.
+     */
     fun decapsulate(wrappedKey: ByteArray): KemDecapsulationResult
 }
 

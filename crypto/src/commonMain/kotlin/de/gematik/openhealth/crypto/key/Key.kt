@@ -21,18 +21,24 @@ import de.gematik.openhealth.crypto.ExperimentalCryptoApi
 import de.gematik.openhealth.crypto.bytes
 import kotlin.js.JsExport
 
+/**
+ * Represents a key in the cryptographic system.
+ */
 @JsExport
 @ExperimentalCryptoApi
 interface Key {
     val data: ByteArray
 }
 
+/**
+ * Represents a secret key in the cryptographic system.
+ */
 @JsExport
 @ExperimentalCryptoApi
 class SecretKey(
     override val data: ByteArray,
 ) : Key {
-    val length: ByteUnit = data.size.bytes
+    private val length: ByteUnit = data.size.bytes
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

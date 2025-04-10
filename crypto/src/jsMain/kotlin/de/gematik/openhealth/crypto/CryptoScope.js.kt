@@ -45,5 +45,5 @@ internal actual fun <R : Any?> nativeUseCrypto(block: CryptoScope.() -> R): R =
  * JavaScript-specific implementation for asynchronous cryptographic operations.
  * Executes the given suspend block within a crypto scope.
  */
-internal actual suspend fun <R : Any?> nativeUseCrypto(block: suspend CryptoScope.() -> R): R =
+internal actual suspend fun <R : Any?> nativeUseCryptSuspendable(block: suspend CryptoScope.() -> R): R =
     block(JsCryptoScope())

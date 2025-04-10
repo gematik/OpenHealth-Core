@@ -18,7 +18,7 @@ package de.gematik.openhealth.crypto.wrapper
 
 import de.gematik.openhealth.crypto.internal.interop.Uint8Vector
 
-fun ByteArray.toUint8Vector(): Uint8Vector =
+internal fun ByteArray.toUint8Vector(): Uint8Vector =
     runWithProvider {
         Uint8Vector().apply { addAll(this@toUint8Vector.toTypedArray()) }
     }
