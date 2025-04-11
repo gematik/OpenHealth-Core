@@ -112,38 +112,6 @@ class EcPointTest {
             }
         }
 
-//    @Test
-//    fun `test point addition with infinity`() =
-//        runTestWithProvider {
-//            val x =
-//                BigInteger.parseString(
-//                    "78028496B5ECAAB3C8B6C12E45DB1E02C9E4D26B4113BC4F015F60C5CCC0D206",
-//                    16,
-//                )
-//            val y =
-//                BigInteger.parseString(
-//                    "A2AE1762A3831C1D20F03F8D1E3C0C39AFE6F09B4D44BBE80CD100987B05F92B",
-//                    16,
-//                )
-//            val point = EcPoint(curve, x, y)
-//            val infinity = EcPoint(curve, null, null)
-//
-//            assertFalse(point.isInfinity)
-//            assertTrue(infinity.isInfinity)
-//
-//            val sum1 = point + infinity
-//            val sum2 = infinity + point
-//            val sum3 = infinity + infinity
-//
-//            assertEquals(point.x, sum1.x)
-//            assertEquals(point.y, sum1.y)
-//
-//            assertEquals(point.x, sum2.x)
-//            assertEquals(point.y, sum2.y)
-//
-//            assertTrue(sum3.isInfinity)
-//        }
-
     @Test
     fun `test scalar multiplication`() =
         runTestWithProvider {
@@ -161,6 +129,25 @@ class EcPointTest {
 
             val result = point * BigInteger.TWO
             assertFalse(result.isInfinity)
+        }
+
+    @Test
+    fun `test point addition with self`() =
+        runTestWithProvider {
+            val x =
+                BigInteger.parseString(
+                    "78028496B5ECAAB3C8B6C12E45DB1E02C9E4D26B4113BC4F015F60C5CCC0D206",
+                    16,
+                )
+            val y =
+                BigInteger.parseString(
+                    "A2AE1762A3831C1D20F03F8D1E3C0C39AFE6F09B4D44BBE80CD100987B05F92B",
+                    16,
+                )
+            val point = EcPoint(curve, x, y)
+
+            val doubled = point.plus(point)
+            assertEquals(doubled, point * BigInteger.TWO)
         }
 
     @Test

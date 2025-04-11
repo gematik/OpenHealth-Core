@@ -38,9 +38,7 @@ val Int.bytes: ByteUnit get() = ByteUnit(this)
  */
 @ExperimentalCryptoApi
 val Int.bits: ByteUnit get() =
-    if (this % 8 ==
-        0
-    ) {
+    if (this % 8 == 0) {
         ByteUnit(this / 8)
     } else {
         error("Value must be multiple of 8")

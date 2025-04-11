@@ -71,7 +71,7 @@ class CmacTest {
             )
         }
 
-    @Ignore
+    @Ignore // TODO: check if we should support this
     @Test
     fun `cmac final can only be called once`() =
         runTestWithProvider {

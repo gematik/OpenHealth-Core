@@ -57,7 +57,7 @@ private class JvmCmac(
      */
     override fun final(): ByteArray =
         runWithProvider {
-            cmac._final().toByteArray()
+            cmac._final().toByteArray().alsoDefer()
         }
 }
 
