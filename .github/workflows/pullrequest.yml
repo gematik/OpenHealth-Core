@@ -3,6 +3,8 @@ name: "PullRequest Checks"
 on:
   push:
     branches: [ "main" ]
+  pull_request:
+    branches: [ main ]
   schedule:
     - cron: '27 0 * * 2'
 
