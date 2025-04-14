@@ -102,8 +102,8 @@ fun <R : Any?> useCrypto(block: CryptoScope.() -> R): R = nativeUseCrypto(block)
  * ensuring that all resources are properly closed or released afterward.
  */
 suspend fun <R : Any?> useCryptoAsync(block: suspend CryptoScope.() -> R): R =
-    nativeUseCryptSuspendable(block)
+    nativeUseCryptoSuspendable(block)
 
 internal expect fun <R : Any?> nativeUseCrypto(block: CryptoScope.() -> R): R
 
-internal expect suspend fun <R : Any?> nativeUseCryptSuspendable(block: suspend CryptoScope.() -> R): R
+internal expect suspend fun <R : Any?> nativeUseCryptoSuspendable(block: suspend CryptoScope.() -> R): R
