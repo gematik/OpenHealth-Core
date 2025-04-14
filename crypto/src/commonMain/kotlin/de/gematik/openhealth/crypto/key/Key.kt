@@ -38,7 +38,7 @@ interface Key {
 class SecretKey(
     override val data: ByteArray,
 ) : Key {
-    private val length: ByteUnit = data.size.bytes
+    val length: ByteUnit = data.size.bytes
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
