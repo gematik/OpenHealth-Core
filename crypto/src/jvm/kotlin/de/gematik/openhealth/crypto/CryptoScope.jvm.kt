@@ -41,5 +41,5 @@ internal actual fun <R : Any?> nativeUseCrypto(block: CryptoScope.() -> R): R =
  * JVM-specific implementation for asynchronous cryptographic operations.
  * Executes the given suspend block within a crypto scope.
  */
-internal actual suspend fun <R : Any?> nativeUseCrypto(block: suspend CryptoScope.() -> R): R =
+internal actual suspend fun <R : Any?> nativeUseCryptoSuspendable(block: suspend CryptoScope.() -> R): R =
     block(JvmCryptoScope())

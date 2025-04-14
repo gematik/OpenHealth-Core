@@ -92,10 +92,19 @@ data class EcPoint(
      */
     val isInfinity: Boolean get() = x == null && y == null
 
+    /**
+     * Adds this EC point to another EC point.
+     */
     operator fun plus(other: EcPoint): EcPoint = nativePlus(other)
 
+    /**
+     * Multiplies this EC point by a scalar value.
+     */
     operator fun times(k: BigInteger): EcPoint = nativeTimes(k)
 
+    /**
+     * Negates this EC point.
+     */
     fun negate(): EcPoint = if (isInfinity) this else curve.point(x, (curve.p - y!!).mod(curve.p))
 }
 
@@ -103,5 +112,8 @@ internal expect fun EcPoint.nativeTimes(k: BigInteger): EcPoint
 
 internal expect fun EcPoint.nativePlus(other: EcPoint): EcPoint
 
+/**
+ * Converts this [EcPoint] to an [EcPublicKey].
+ */
 @ExperimentalCryptoApi
 fun EcPoint.toEcPublicKey(): EcPublicKey = EcPublicKey(curve, uncompressed)

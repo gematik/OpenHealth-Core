@@ -168,6 +168,9 @@ enum class EcCurve(
 
     val g: EcPoint get() = EcPoint(this, x, y)
 
+    /**
+     * Creates a new EC point with the given x and y coordinates.
+     */
     fun point(
         x: BigInteger?,
         y: BigInteger?,
@@ -231,6 +234,7 @@ class EcPublicKey internal constructor(
 
     override fun toString(): String = "EcPublicKey(data=${data.contentToString()}, curve=$curve)"
 
+    @Suppress("UndocumentedPublicClass")
     companion object {
         const val OID: String = "1.2.840.10045.2.1"
     }
@@ -354,6 +358,7 @@ class EcPrivateKey internal constructor(
 
     override fun toString(): String = "EcPrivateKey(data=${data.contentToString()}, curve=$curve)"
 
+    @Suppress("UndocumentedPublicClass")
     companion object
 }
 
@@ -395,6 +400,9 @@ fun EcPrivateKey.encodeToAsn1(): ByteArray =
         }
     }
 
+/**
+ * Encodes the private key as a PEM-encoded string.
+ */
 fun EcPrivateKey.encodeToPem(): String =
     Pem(type = "EC PRIVATE KEY", data = encodeToAsn1()).encodeToString()
 
