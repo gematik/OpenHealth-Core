@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.gematik.openhealth.smartcard
+package de.gematik.openhealth.smartcard.utils
 
 import de.gematik.openhealth.smartcard.card.HealthCardScope
 import de.gematik.openhealth.smartcard.card.TrustedChannelScope

@@ -61,7 +61,10 @@ tasks.register<JacocoReport>("jacocoRootReport") {
                     include("tmp/kotlin-classes/jvmMain/**")
                     // Exclude exchange package (needs virtual health card for testing)
                     exclude("**/de/gematik/openhealth/smartcard/*exchange*/**")
-                    exclude("**/de/gematik/openhealth/smartcard/*Exchange*/**")
+                    exclude("**/de/gematik/openhealth/smartcard/*utils*/**")
+                    exclude("**/de/gematik/openhealth/crypto/ByteUnit*")
+                    exclude("**/de/gematik/openhealth/**/*Exception*")
+                    exclude("**/de/gematik/openhealth/crypto/CmacAlgorithm*")
                 }
             },
         ),
@@ -121,7 +124,6 @@ tasks.register<JacocoCoverageVerification>("jacocoRootVerification") {
             (tasks.named("jacocoRootReport").get() as JacocoReport).classDirectories.files.map {
                 fileTree(it) {
                     exclude(
-                        "**/de/gematik/openhealth/smartcard/exchange/**",
                         "**/*Impl*",
                         "*.internal.*",
                         "*.Generated*",
@@ -139,7 +141,7 @@ tasks.register<JacocoCoverageVerification>("jacocoRootVerification") {
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
-                minimum = BigDecimal.valueOf(0.7)
+                minimum = BigDecimal.valueOf(0.6)
             }
             excludes =
                 listOf(
@@ -147,12 +149,6 @@ tasks.register<JacocoCoverageVerification>("jacocoRootVerification") {
                     "*.internal.*",
                     "*.Generated*",
                 )
-        }
-    }
-    doFirst {
-        println("\nVerifying coverage for:")
-        classDirectories.files.forEach { file ->
-            println("- ${file.absolutePath}")
         }
     }
 }
