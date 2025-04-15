@@ -106,4 +106,6 @@ suspend fun <R : Any?> useCryptoAsync(block: suspend CryptoScope.() -> R): R =
 
 internal expect fun <R : Any?> nativeUseCrypto(block: CryptoScope.() -> R): R
 
-internal expect suspend fun <R : Any?> nativeUseCryptoSuspendable(block: suspend CryptoScope.() -> R): R
+internal expect suspend fun <R : Any?> nativeUseCryptoSuspendable(
+    block: suspend CryptoScope.() -> R,
+): R
