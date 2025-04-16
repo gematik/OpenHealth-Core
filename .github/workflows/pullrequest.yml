@@ -50,5 +50,5 @@ jobs:
           CXX: clang++
           CXXFLAGS: --stdlib=libc++
         run: |
-          ./gradlew jvmTest
+          ./gradlew jvmTest --debug
 
