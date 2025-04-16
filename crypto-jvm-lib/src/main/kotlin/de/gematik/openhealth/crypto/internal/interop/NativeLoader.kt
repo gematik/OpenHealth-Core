@@ -49,13 +49,22 @@ fun loadNativeLibrary() {
 
         val libResUrl = ClassLoader.getSystemResource("$hostOs-$hostArch/$libName")
 
-        println("Debug: libResUrl " + libResUrl.path)
+        val cacheFilePath = getCacheDir() + File.pathSeparator + libName
+        val cacheFile = File(cacheFilePath)
+        cacheFile.parentFile.mkdirs()
+        libResUrl.openStream().copyTo(cacheFile.outputStream())
 
-        val tempLib = File.createTempFile("lib", libName)
-        println("Debug: tempLib " + tempLib.absolutePath)
-        tempLib.deleteOnExit()
-        libResUrl.openStream().copyTo(tempLib.outputStream())
-
-        System.load(tempLib.absolutePath)
+        System.load(cacheFile.absolutePath)
     }
+}
+
+private fun getCacheDir(): String {
+    val os = System.getProperty("os.name").lowercase()
+    val userHome = System.getProperty("user.home")
+
+    return when {
+        os.contains("win") -> System.getenv("LOCALAPPDATA") ?: "$userHome\\AppData\\Local"
+        os.contains("mac") -> "$userHome/Library/Caches"
+        else -> System.getenv("XDG_CACHE_HOME") ?: "$userHome/.cache"
+    } + File.pathSeparator + "de.gematik.openhealth.crypto"
 }
