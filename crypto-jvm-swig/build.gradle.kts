@@ -75,6 +75,10 @@ val patchGeneratedJava by tasks.registering {
     dependsOn(generateJniWrapper)
 }
 
+tasks.named("clean") {
+    mustRunAfter(":crypto:clean")
+}
+
 tasks.named("sourcesJar") {
     dependsOn(patchGeneratedJava)
 }

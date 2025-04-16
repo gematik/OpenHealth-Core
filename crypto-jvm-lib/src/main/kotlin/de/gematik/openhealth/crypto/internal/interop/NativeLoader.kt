@@ -49,7 +49,10 @@ fun loadNativeLibrary() {
 
         val libResUrl = ClassLoader.getSystemResource("$hostOs-$hostArch/$libName")
 
+        println("Debug: libResUrl " + libResUrl.path)
+
         val tempLib = File.createTempFile("lib", libName)
+        println("Debug: tempLib " + tempLib.absolutePath)
         tempLib.deleteOnExit()
         libResUrl.openStream().copyTo(tempLib.outputStream())
 

@@ -96,6 +96,10 @@ val copyNativeLibs by tasks.registering(Copy::class) {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
+tasks.named("clean") {
+    mustRunAfter(":crypto:clean")
+}
+
 tasks.named("jar") {
     dependsOn(copyNativeLibs)
 }
