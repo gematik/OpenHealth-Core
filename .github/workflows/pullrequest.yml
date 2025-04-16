@@ -49,7 +49,7 @@ jobs:
         env:
           CC: clang
           CXX: clang++
-          CXXFLAGS: "--stdlib=libc++ -static-libstdc++"
+          CXXFLAGS: "--stdlib=libc++"
         run: |
           ./gradlew crypto-jvm-lib:cmakeBuild
           ls -l crypto-jvm-lib/build/cmake-build/
