@@ -23,8 +23,10 @@ jobs:
       - name: Install dependencies
         shell: bash
         run: |
+          file /lib/x86_64-linux-gnu/libc++.so
           sudo apt-get update
           sudo apt-get install -y cmake swig ninja-build clang clang-tools libc++-dev libc++abi-dev
+          file /lib/x86_64-linux-gnu/libc++.so
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
       - name: Setup Android NDK
@@ -50,5 +52,5 @@ jobs:
           CXX: clang++
           CXXFLAGS: --stdlib=libc++
         run: |
-          ./gradlew jvmTest --debug
+          ./gradlew jvmTest
 
