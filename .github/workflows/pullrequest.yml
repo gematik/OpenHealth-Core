@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         shell: bash
         run: |
-          mount | grep /tmp
+          cat /proc/mounts | grep /tmp
           sudo apt-get update
           sudo apt-get install -y cmake swig ninja-build clang clang-tools libc++-dev libc++abi-dev
           file /lib/x86_64-linux-gnu/libc++.so
