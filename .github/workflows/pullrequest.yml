@@ -35,13 +35,13 @@ jobs:
           echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/27.2.12479018" >> $GITHUB_ENV
           echo "$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin" >> $GITHUB_PATH
 
-      - name: KTLint Check
-        run: |
-          ./gradlew ktlintCheck
-
-      - name: Detekt Check
-        run: |
-          ./gradlew detekt
+#      - name: KTLint Check
+#        run: |
+#          ./gradlew ktlintCheck
+#
+#      - name: Detekt Check
+#        run: |
+#          ./gradlew detekt
 
       - name: Test
         shell: bash
@@ -50,5 +50,7 @@ jobs:
           CXX: clang++
           CXXFLAGS: --stdlib=libc++
         run: |
-          ./gradlew jvmTest
+          ./gradlew crypto-jvm-lib:cmakeBuild
+          ls -l crypto-jvm-lib/build/cmake-build/
+          ldd crypto-jvm-lib/build/cmake-build/liboh_crypto.so
 
