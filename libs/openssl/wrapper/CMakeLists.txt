@@ -4,8 +4,6 @@ set(CMAKE_CXX_STANDARD 23)
 
 project(crypto)
 
-# enable_testing()
-
 ### OpenSSL
 
 include(cmake/openssl.cmake)
@@ -39,6 +37,13 @@ if (NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
     add_library(oh_crypto SHARED ${PROJECT_ROOT_DIR}/crypto-jvm-swig/build/generated/sources/jni/crypto.cpp)
     target_include_directories(oh_crypto PRIVATE src)
     target_link_libraries(oh_crypto PRIVATE oh_crypto_base OpenSSL::Crypto JNI::JNI)
+
+    if(CMAKE_SYSTEM_NAME STREQUAL "Darwin" OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+            target_compile_options(oh_crypto PRIVATE -stdlib=libc++)
+            target_link_options(oh_crypto PRIVATE -stdlib=libc++)
+        endif()
+    endif()
 else ()
     # Build the lib as a wasm module using Emscripten
     add_executable(oh_crypto src/ems_wrapper.cpp)
@@ -71,5 +76,3 @@ else ()
         target_link_options(oh_crypto PRIVATE -Oz -flto)
     endif ()
 endif ()
-
-#add_subdirectory(test)

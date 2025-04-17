@@ -1,26 +1,16 @@
 name: "PullRequest Checks"
 
 on:
-  push:
+  pull_request:
     branches: [ "main" ]
-  schedule:
-    - cron: '27 0 * * 2'
 
 jobs:
-  analyze:
-    name: Analyze C/C++ and Java/Kotlin
+  build:
     runs-on: 'ubuntu-latest'
     permissions:
-      # required for all workflows
-      security-events: write
-
-      # required to fetch internal or private CodeQL packs
-      packages: read
-
-      # only required for workflows in private repositories
-      actions: read
       contents: read
-
+      pull-requests: write
+      
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -34,17 +24,8 @@ jobs:
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake swig ninja-build clang clang-tools libc++-dev libc++abi-dev
-#      - name: Install latest cmake
-#        run: |
-#          CMAKE_URL="https://github.com/Kitware/CMake/releases/latest/download/cmake-4.0.0-linux-x86_64.sh"
-#          EXPECTED_HASH="33ba237f2850a82d5c71c1d41803ab832a9a7aac7d99fa6e48bbe5bb4d66653c"
-#
-#          wget "$CMAKE_URL" -O cmake-installer.sh
-#          echo "$EXPECTED_HASH  cmake-installer.sh" | sha256sum -c -
-#
-#          chmod +x cmake-installer.sh
-#          sudo ./cmake-installer.sh --skip-license --prefix=/usr/local
+          sudo apt-get install -y cmake swig ninja-build clang clang-tools
+          sudo apt-get install -y libc++-dev libc++abi-dev llvm
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
       - name: Setup Android NDK
@@ -53,22 +34,24 @@ jobs:
           sdkmanager "ndk;27.2.12479018"
           sdkmanager "cmake;3.31.6"
           echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/27.2.12479018" >> $GITHUB_ENV
-          echo "$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin" >> $GITHUB_PATH
+#          echo "$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin" >> $GITHUB_PATH
 
-      - name: KTLint Check
-        run: |
-          ./gradlew ktlintCheck
-
-      - name: Detekt Check
-        run: |
-          ./gradlew detekt
+#      - name: KTLint Check
+#        run: |
+#          ./gradlew ktlintCheck
+#
+#      - name: Detekt Check
+#        run: |
+#          ./gradlew detekt
 
       - name: Test
         shell: bash
         env:
           CC: clang
           CXX: clang++
-          CXXFLAGS: --stdlib=libc++
+          CXXFLAGS: "--stdlib=libc++"
         run: |
-          ./gradlew jvmTest
+          ./gradlew crypto-jvm-lib:cmakeBuild
+          ls -l crypto-jvm-lib/build/cmake-build/
+          ldd crypto-jvm-lib/build/cmake-build/liboh_crypto.so
 

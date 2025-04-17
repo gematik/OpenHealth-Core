@@ -135,6 +135,10 @@ val npxNodeConv by tasks.registering(Exec::class) {
     dependsOn(npmInstall)
 }
 
+tasks.named("clean") {
+    mustRunAfter(":crypto:clean")
+}
+
 tasks.named("compileKotlinJs") {
     dependsOn(copyJsLibs, npxNodeConv)
 }
