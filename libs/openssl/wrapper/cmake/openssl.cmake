@@ -18,6 +18,10 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL "Android")
     set(_OPENSSL_LIB_PATH "lib")
     set(_OPENSSL_LIB_SUFFIX "a")
 
+    # OpenSSL requires the android toolchain on the PATH
+    file(GLOB NDK_DIRS "$ENV{ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/*/bin")
+    list(GET NDK_DIRS 0 NDK_BIN_PATH)
+
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     #    if(CMAKE_OSX_ARCHITECTURES STREQUAL "arm64")
     #        set(_OPENSSL_TARGET "darwin64-arm64-cc") # macOS ARM target
@@ -74,15 +78,16 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
                 CROSS_COMPILE=\"\" \
                 ${OPENSSL_SOURCE_DIR}/Configure \
                 --prefix=${OPENSSL_INSTALL_DIR} \
-                ${OPENSSL_CONFIG_PARAMS}
-    ${_OPENSSL_TARGET}"
+                ${OPENSSL_CONFIG_PARAMS} \
+                ${_OPENSSL_TARGET}"
     )
 else ()
     set(OPENSSL_CONFIGURE_COMMAND
-            bash -c "${OPENSSL_SOURCE_DIR}/Configure \
+            bash -c "PATH=${NDK_BIN_PATH}:$PATH \
+            ${OPENSSL_SOURCE_DIR}/Configure \
             --prefix=${OPENSSL_INSTALL_DIR} \
-            ${OPENSSL_CONFIG_PARAMS}
-    ${_OPENSSL_TARGET}"
+            ${OPENSSL_CONFIG_PARAMS} \
+            ${_OPENSSL_TARGET}"
     )
 endif ()
 
@@ -97,7 +102,7 @@ ExternalProject_Add(
         CONFIGURE_COMMAND
         ${OPENSSL_CONFIGURE_COMMAND}
         UPDATE_COMMAND ""
-        BUILD_COMMAND make -j14
+        BUILD_COMMAND bash -c "PATH=${NDK_BIN_PATH}:$PATH make -j14"
         BUILD_IN_SOURCE 0
         # required, otherwise ninja fails
         BUILD_BYPRODUCTS ${_OPENSSL_BUILD_TARGET}
