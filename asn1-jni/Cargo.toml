@@ -1,0 +1,15 @@
+[package]
+name = "asn1-jni"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+
+[lib]
+name = "asn1_jni"
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+asn1-core = { path = "../asn1-core" }
+jni = { version = "0.21"}
+
+[target.'cfg(target_os = "macos")'.dependencies]

@@ -1,0 +1,78 @@
+# Rust specific ignores
+/target/
+**/*.rs.bk
+Cargo.lock
+.cargo/
+
+# Kotlin/KMP specific
+.gradle/**
+**/build/**
+**/out/
+.kotlin/
+*.hprof
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+*.bak
+
+# Native libraries
+*.dylib
+*.so
+*.dll
+*.a
+*.lib
+
+# .NET specific ignores
+bin/
+obj/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+net*/
+net[0-9]*/
+net[0-9][0-9]*/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+
+# NuGet packages
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+
+# IDE specific files
+.idea/
+*.iml
+.vscode/
+*.code-workspace
+.vs/
+.ionide/
+
+# OS specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Build results and logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
