@@ -3,6 +3,8 @@ members = [
     "asn1-core",
     "asn1-jni",
     "asn1-ffi",
+    "crypto-openssl-core",
+    "crypto-openssl-ffi",
 ]
 resolver = "2"
 [workspace.package]

@@ -1,13 +1,9 @@
-
 [package]
-name = "asn1-core"
+name = "crypto-openssl-core"
 version = "0.1.0"
 edition = "2021"
 license = "Apache-2.0"
 
 [dependencies]
-regex = "1.9"
-lazy_static = "1.4"
-serde = { version = "1.0", features = ["derive"] }
-
+openssl = "0.10"
 [target.'cfg(target_os = "macos")'.dependencies]

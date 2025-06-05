@@ -1,0 +1,12 @@
+[package]
+name = "crypto-openssl-ffi"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+
+[lib]
+name = "crypto_openssl_ffi"
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+crypto-openssl-core = { path = "../crypto-openssl-core" }
