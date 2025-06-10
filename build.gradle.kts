@@ -12,7 +12,7 @@ allprojects {
 }
 
 tasks.register<Exec>("buildRustLibrary") {
-    workingDir = file("${projectDir}/asn1-jni")
+    workingDir = file("${projectDir}/binding-layers/asn1-jni")
 
     commandLine("${System.getProperty("user.home")}/.cargo/bin/cargo",
         "build", "--release", "--target", "aarch64-apple-darwin")

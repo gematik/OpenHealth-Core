@@ -9,4 +9,4 @@ name = "asn1_ffi"
 crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
-asn1-core = { path = "../asn1-core" }
+asn1 = { path = "../../core-modules/asn1" }

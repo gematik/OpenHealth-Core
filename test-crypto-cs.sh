@@ -3,5 +3,5 @@ set -e
 
 ./build-all.sh
 
-cd crypto-openssl-ffi-cs-tests
+cd crypto-ffi-cs-tests
 dotnet test

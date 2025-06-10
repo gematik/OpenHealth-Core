@@ -1,10 +1,10 @@
 [workspace]
 members = [
-    "asn1-core",
-    "asn1-jni",
-    "asn1-ffi",
-    "crypto-openssl-core",
-    "crypto-openssl-ffi",
+    "core-modules/asn1",
+    "core-modules/crypto",
+    "binding-layers/asn1-jni",
+    "binding-layers/asn1-ffi",
+    "binding-layers/crypto-ffi",
 ]
 resolver = "2"
 [workspace.package]

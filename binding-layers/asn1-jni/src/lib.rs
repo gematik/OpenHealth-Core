@@ -1,7 +1,7 @@
 use jni::JNIEnv;
 use jni::objects::{JClass, JString};
 use jni::sys::jstring;
-use asn1_core::{Asn1UtcTime, Asn1GeneralizedTime};
+use asn1::{Asn1UtcTime, Asn1GeneralizedTime};
 
 #[no_mangle]
 pub extern "system" fn Java_de_gematik_openhealth_asn1_Asn1GeneralizedTime_parse(

@@ -1,6 +1,6 @@
 use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
-use asn1_core::{Asn1UtcTime, Asn1GeneralizedTime};
+use asn1::{Asn1UtcTime, Asn1GeneralizedTime};
 
 #[no_mangle]
 pub extern "C" fn asn1_generalized_time_parse(input: *const c_char) -> *mut c_char {

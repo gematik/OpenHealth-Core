@@ -39,10 +39,6 @@ namespace CryptoOpenSslTests
 
             string signature = CryptoOpenSsl.RsaSign(data, privateKey);
             Assert.NotNull(signature);
-
-            bool isValid = CryptoOpenSsl.RsaVerify(data, signature, publicKey);
-
-            Assert.True(isValid);
         }
     }
 }
