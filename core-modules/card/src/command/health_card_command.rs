@@ -2,9 +2,9 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
 
-use crate::apdu::{EXPECTED_LENGTH_WILDCARD_EXTENDED, EXPECTED_LENGTH_WILDCARD_SHORT};
-use crate::apdu::{CardCommandApdu, CardResponseApdu};
-use crate::health_card_status::HealthCardResponseStatus;
+use crate::command::apdu::{EXPECTED_LENGTH_WILDCARD_EXTENDED, EXPECTED_LENGTH_WILDCARD_SHORT};
+use crate::command::apdu::{CardCommandApdu, CardResponseApdu};
+use crate::command::health_card_status::HealthCardResponseStatus;
 
 /// Special value to indicate that all available data should be expected.
 pub const EXPECT_ALL_WILDCARD: i32 = -1;

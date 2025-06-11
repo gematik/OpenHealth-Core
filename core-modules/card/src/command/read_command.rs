@@ -1,6 +1,6 @@
-use crate::health_card_command::{HealthCardCommand, EXPECT_ALL_WILDCARD};
-use crate::health_card_status::READ_STATUS; // Importiere READ_STATUS
-use crate::short_file_identifier::ShortFileIdentifier;
+use crate::command::health_card_command::{HealthCardCommand, EXPECT_ALL_WILDCARD};
+use crate::command::health_card_status::READ_STATUS;
+use crate::identifier::ShortFileIdentifier;
 
 /// CLA byte for the READ BINARY command
 const CLA: u8 = 0x00;
@@ -127,7 +127,7 @@ impl ReadCommand for HealthCardCommand {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::short_file_identifier::ShortFileIdentifier;
+    use crate::identifier::ShortFileIdentifier;
 
     #[test]
     fn test_read_command_without_parameters() {
