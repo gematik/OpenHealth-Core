@@ -2,6 +2,7 @@
 members = [
     "core-modules/asn1",
     "core-modules/crypto",
+    "core-modules/card",
     "binding-layers/asn1-jni",
     "binding-layers/asn1-ffi",
     "binding-layers/crypto-ffi",
