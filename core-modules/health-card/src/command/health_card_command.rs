@@ -9,7 +9,7 @@ use crate::command::health_card_status::HealthCardResponseStatus;
 /// Special value to indicate that all available data should be expected.
 pub const EXPECT_ALL_WILDCARD: i32 = -1;
 
-/// Superclass for all health card commands.
+/// Superclass for all health health-card commands.
 #[derive(Clone)]
 pub struct HealthCardCommand {
     /// Expected status codes mapped to their response status
