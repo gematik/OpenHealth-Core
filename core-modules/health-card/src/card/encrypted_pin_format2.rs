@@ -90,8 +90,6 @@ mod tests {
 
         // First byte should be 0x24 (FORMAT_PIN_2_ID + pin length)
         assert_eq!(encrypted.bytes[0], 0x24);
-
-        // Check remaining bytes follow the format
         assert_eq!(encrypted.bytes.len(), FORMAT2_PIN_SIZE);
     }
 
@@ -100,7 +98,6 @@ mod tests {
         let pin = "123456";
         let encrypted = EncryptedPinFormat2::new(pin);
 
-        // First byte should be 0x26 (FORMAT_PIN_2_ID + pin length)
         assert_eq!(encrypted.bytes[0], 0x26);
     }
 
@@ -126,12 +123,7 @@ mod tests {
     fn test_specific_pin_value() {
         let pin = "1234";
         let encrypted = EncryptedPinFormat2::new(pin);
-
-        // Verify the exact byte pattern:
-        // [0] = 0x24 (0x20 + length 4)
-        // [1] = 0x12 (digits 1 and 2)
-        // [2] = 0x34 (digits 3 and 4)
-        // [3-7] = 0xFF (filler bytes)
+        
         assert_eq!(encrypted.bytes[0], 0x24);
         assert_eq!(encrypted.bytes[1], 0x12);
         assert_eq!(encrypted.bytes[2], 0x34);

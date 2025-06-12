@@ -8,3 +8,5 @@ license = "Apache-2.0"
 lazy_static = "1.5.0"
 thiserror = "2.0.12"
 hex = "0.4.3"
+asn1 = { path = "../asn1" } 
+
