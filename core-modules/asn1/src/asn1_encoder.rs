@@ -345,7 +345,6 @@ mod tests {
         assert_eq!(result, test_str);
     }
 
-
     #[test]
     fn test_write_tagged_object() {
         let mut encoder = Asn1Encoder::new();
