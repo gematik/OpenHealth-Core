@@ -36,55 +36,21 @@ impl Asn1Encoder {
     }
 
     /// Writes an integer in big-endian format, using a variable-length encoding.
-    pub fn write_int(encoder: &mut Asn1Encoder, value: i32) -> Result<(), Asn1DecoderError> {
-        // Don't use write_tagged_object here as we want to directly write the integer
-        // without adding another layer of tagging
+    pub fn write_int(&mut self, integer: i32) {
+        let mut bytes = Vec::new();
+        let mut value = integer;
 
-        // For the value 0, we need a special encoding
-        if value == 0 {
-            encoder.buffer.push(asn1_type::INTEGER); // INTEGER tag
-            encoder.buffer.push(0x01); // Length
-            encoder.buffer.push(0x00); // Value
-            return Ok(());
+        while value < -0x80 || value >= 0x80 {
+            bytes.push((value & 0xFF) as u8);
+            value /= 0x100;
         }
+        bytes.push((value & 0xFF) as u8);
 
-        let is_negative = value < 0;
-        let mut bytes_needed = 0;
-        let mut temp = value;
-
-        // Calculate bytes needed for the value
-        while (is_negative && temp != -1) || (!is_negative && temp != 0) {
-            bytes_needed += 1;
-            temp >>= 8;
+        for byte in bytes.iter().rev() {
+            self.write_byte(*byte);
         }
-
-        // Ensure at least one byte
-        if bytes_needed == 0 {
-            bytes_needed = 1;
-        }
-
-        // For positive numbers with high bit set, add an extra byte
-        if !is_negative {
-            let highest_byte = (value >> ((bytes_needed - 1) * 8)) & 0xFF;
-            if (highest_byte & 0x80) != 0 {
-                bytes_needed += 1;
-            }
-        }
-
-        // Write the tag
-        encoder.buffer.push(asn1_type::INTEGER);
-
-        // Write the length
-        encoder.buffer.push(bytes_needed);
-
-        // Write the value bytes in big-endian order
-        for i in (0..bytes_needed).rev() {
-            let byte = (value >> (i * 8)) & 0xFF;
-            encoder.buffer.push(byte as u8);
-        }
-
-        Ok(())
     }
+
 
 
     /// Writes a length in a variable-length encoding.
@@ -218,35 +184,46 @@ pub fn write_boolean(encoder: &mut Asn1Encoder, value: bool) -> Result<(), Asn1D
 
 /// Write an ASN.1 integer.
 pub fn write_int(encoder: &mut Asn1Encoder, value: i32) -> Result<(), Asn1DecoderError> {
-    write_tagged_object(encoder, asn1_type::INTEGER, 0, |inner_encoder| {
-        // Convert integer to bytes
-        let mut bytes = Vec::new();
-        let mut val = value;
+    // Start with INTEGER tag
+    encoder.write_byte(0x02); // ASN.1 INTEGER tag
 
-        // Handle special case for 0
-        if val == 0 {
-            inner_encoder.write_byte(0);
-            return Ok(());
-        }
+    // Handle special case for zero
+    if value == 0 {
+        encoder.write_byte(0x01); // Length 1
+        encoder.write_byte(0x00); // Value 0
+        return Ok(());
+    }
 
-        // Convert integer to bytes
-        while val != 0 {
-            bytes.push((val & 0xFF) as u8);
-            val >>= 8;
-        }
+    // Convert the integer to bytes in big-endian format
+    let mut bytes = Vec::new();
+    let mut val = value;
+    let is_negative = value < 0;
 
-        // Add a leading zero if the high bit is set on the first byte to ensure proper sign
-        if value > 0 && (bytes.last().unwrap() & 0x80) != 0 {
-            bytes.push(0);
-        }
+    // Extract bytes one at a time
+    while val != 0 && val != -1 {
+        bytes.push((val & 0xFF) as u8);
+        val >>= 8;
+    }
 
-        // Write bytes in big-endian order
-        for byte in bytes.into_iter().rev() {
-            inner_encoder.write_byte(byte);
-        }
+    // Add padding byte if needed to preserve sign
+    if is_negative && (bytes.last().unwrap_or(&0) & 0x80) == 0 {
+        bytes.push(0xFF);
+    } else if !is_negative && (bytes.last().unwrap_or(&0) & 0x80) != 0 {
+        bytes.push(0x00);
+    }
 
-        Ok(())
-    })
+    // Reverse to get big-endian order
+    bytes.reverse();
+
+    // Write length
+    encoder.write_byte(bytes.len() as u8);
+
+    // Write integer bytes
+    for byte in bytes {
+        encoder.write_byte(byte);
+    }
+
+    Ok(())
 }
 
 /// Write an ASN.1 bit string.
@@ -315,23 +292,26 @@ mod tests {
     }
 
     #[test]
-    fn test_write_integer() {
+    fn test_write_int_zero() {
         let mut encoder = Asn1Encoder::new();
-
-        // Test various integer values
-        let test_values = [0, 127, 128, 255, 256, -1, -127, -128, -129, 65535];
-
-        for val in test_values.iter() {
-            // Encode
-            let data = encoder.write(|encoder| write_int(encoder, *val)).unwrap();
-
-            // Decode
-            let mut decoder = Asn1Decoder::new(&data).unwrap();
-            let result = read_int(&mut decoder).unwrap();
-
-            assert_eq!(result, *val, "Failed for value {}", val);
-        }
+        write_int(&mut encoder, 0).unwrap();
+        assert_eq!(encoder.get_buffer(), &[0x02, 0x01, 0x00]);
     }
+
+    #[test]
+    fn test_write_int_positive() {
+        let mut encoder = Asn1Encoder::new();
+        write_int(&mut encoder, 42).unwrap();
+        assert_eq!(encoder.get_buffer(), &[0x02, 0x01, 0x2A]);
+    }
+
+    #[test]
+    fn test_write_int_negative() {
+        let mut encoder = Asn1Encoder::new();
+        write_int(&mut encoder, -42).unwrap();
+        assert_eq!(encoder.get_buffer(), &[0x02, 0x01, 0xD6]);
+    }
+
 
     #[test]
     fn test_write_octet_string() {

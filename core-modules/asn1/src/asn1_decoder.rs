@@ -242,7 +242,6 @@ impl<'a> Asn1Decoder<'a> {
 
     /// Read length bytes.
     pub fn read_bytes(&mut self, length: usize) -> Result<Vec<u8>, Asn1DecoderError> {
-        self.check(length >= 0, "Length must be >= `0`")?;
 
         if self.offset + length > self.end_offset {
             return self.fail("Not enough data to read requested bytes");
