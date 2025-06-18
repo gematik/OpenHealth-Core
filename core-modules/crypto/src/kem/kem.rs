@@ -95,7 +95,6 @@ impl KemSpec {
 /// Creates a native KEM encapsulation instance.
 pub(crate) fn native_create_encapsulation(
     spec: &KemSpec,
-    scope: &CryptoScope,
     encapsulation_key: &[u8],
 ) -> Box<dyn KemEncapsulation> {
     unimplemented!()
@@ -104,7 +103,6 @@ pub(crate) fn native_create_encapsulation(
 /// Creates a native KEM decapsulation instance.
 pub(crate) fn native_create_decapsulation(
     spec: &KemSpec,
-    scope: &CryptoScope,
 ) -> Box<dyn KemDecapsulation> {
     unimplemented!()
 }

@@ -171,7 +171,6 @@ impl AesDecipherIvSpec for AesGcmDecipherSpec {
 /// Creates a native AES cipher instance.
 pub(crate) fn native_create_cipher(
     _spec: &dyn AesCipherSpec,
-    _scope: &CryptoScope,
     _key: &SecretKey,
 ) -> Box<dyn AesCipher> {
     unimplemented!()
@@ -180,7 +179,6 @@ pub(crate) fn native_create_cipher(
 /// Creates a native AES decipher instance.
 pub(crate) fn native_create_decipher(
     _spec: &dyn AesDecipherSpec,
-    _scope: &CryptoScope,
     _key: &SecretKey,
 ) -> Box<dyn AesDecipher> {
     unimplemented!()

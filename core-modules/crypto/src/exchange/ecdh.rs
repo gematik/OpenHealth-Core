@@ -21,7 +21,6 @@ impl EcdhSpec {
 /// Creates a native ECDH key exchange instance.
 pub(crate) fn native_create_key_exchange(
     spec: &EcdhSpec,
-    scope: &CryptoScope,
     private_key: &EcPrivateKey,
 ) -> Box<dyn Ecdh> {
     unimplemented!()

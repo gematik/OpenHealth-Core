@@ -51,6 +51,6 @@ pub struct HashSpec {
 }
 
 /// Creates a native hash function instance based on the given specification.
-pub(crate) fn native_create_hash(_spec: &HashSpec, _scope: &CryptoScope) -> Box<dyn Hash> {
+pub(crate) fn native_create_hash(_spec: &HashSpec) -> Box<dyn Hash> {
     unimplemented!()
 }
