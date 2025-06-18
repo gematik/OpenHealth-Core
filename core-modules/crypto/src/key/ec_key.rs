@@ -1,4 +1,5 @@
 use crate::key::ec_point::EcPoint;
+use num_bigint::BigInt;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum EcCurve {
