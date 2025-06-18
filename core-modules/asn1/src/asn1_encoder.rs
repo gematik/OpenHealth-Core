@@ -262,7 +262,7 @@ pub fn write_utf8_string(encoder: &mut Asn1Encoder, value: &str) -> Result<(), A
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::asn1_decoder::{Asn1Decoder, read_boolean, read_int, read_octet_string, read_utf8_string};
+    use crate::asn1_decoder::{Asn1Decoder, read_boolean, read_octet_string, read_utf8_string};
 
     #[test]
     fn test_write_boolean() {
