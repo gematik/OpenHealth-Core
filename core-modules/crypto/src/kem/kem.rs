@@ -106,3 +106,104 @@ pub(crate) fn native_create_decapsulation(
 ) -> Box<dyn KemDecapsulation> {
     unimplemented!()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn vec1() -> Vec<u8> { vec![1, 2, 3] }
+    fn vec2() -> Vec<u8> { vec![1, 2, 3] }
+    fn vec3() -> Vec<u8> { vec![4, 5, 6] }
+    fn wrap1() -> Vec<u8> { vec![7, 8, 9] }
+    fn wrap2() -> Vec<u8> { vec![7, 8, 9] }
+    fn wrap3() -> Vec<u8> { vec![10, 11, 12] }
+
+    #[test]
+    fn kem_encapsulation_result_equality() {
+        let result1 = KemEncapsulationResult { shared_secret: vec1(), wrapped_key: wrap1() };
+        let result2 = KemEncapsulationResult { shared_secret: vec2(), wrapped_key: wrap2() };
+        let result3 = KemEncapsulationResult { shared_secret: vec3(), wrapped_key: wrap1() };
+        let result4 = KemEncapsulationResult { shared_secret: vec1(), wrapped_key: wrap3() };
+
+        assert_eq!(result1, result2);
+        assert_ne!(result1, result3);
+        assert_ne!(result1, result4);
+    }
+
+    #[test]
+    fn kem_decapsulation_result_equality() {
+        let result1 = KemDecapsulationResult { shared_secret: vec1() };
+        let result2 = KemDecapsulationResult { shared_secret: vec2() };
+        let result3 = KemDecapsulationResult { shared_secret: vec3() };
+
+        assert_eq!(result1, result2);
+        assert_ne!(result1, result3);
+    }
+
+    #[test]
+    fn kem_decapsulation_is_valid_compares_shared_secret() {
+        let decap = KemDecapsulationResult { shared_secret: vec1() };
+        let encap1 = KemEncapsulationResult { shared_secret: vec2(), wrapped_key: wrap1() };
+        let encap2 = KemEncapsulationResult { shared_secret: vec3(), wrapped_key: wrap1() };
+
+        assert!(decap.is_valid(&encap1));
+        assert!(!decap.is_valid(&encap2));
+    }
+
+    #[test]
+    fn kem_encapsulation_reference_equality() {
+        let result = KemEncapsulationResult { shared_secret: vec1(), wrapped_key: wrap1() };
+        let result2 = KemEncapsulationResult { shared_secret: vec1(), wrapped_key: wrap1() };
+        assert_eq!(result, result);
+        assert_eq!(result, result2);
+    }
+
+    #[test]
+    fn kem_encapsulation_hash_code_consistent() {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+
+        let result1 = KemEncapsulationResult { shared_secret: vec1(), wrapped_key: wrap1() };
+        let result2 = KemEncapsulationResult { shared_secret: vec1(), wrapped_key: wrap1() };
+
+        let mut hasher1 = DefaultHasher::new();
+        let mut hasher2 = DefaultHasher::new();
+        result1.hash(&mut hasher1);
+        result2.hash(&mut hasher2);
+
+        assert_eq!(hasher1.finish(), hasher2.finish());
+    }
+
+    #[test]
+    fn kem_decapsulation_reference_equality() {
+        let result = KemDecapsulationResult { shared_secret: vec1() };
+        assert_eq!(result, result); // Same instance
+    }
+
+    #[test]
+    fn kem_decapsulation_hash_code_consistent() {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+
+        let result1 = KemDecapsulationResult { shared_secret: vec1() };
+        let result2 = KemDecapsulationResult { shared_secret: vec1() };
+
+        let mut hasher1 = DefaultHasher::new();
+        let mut hasher2 = DefaultHasher::new();
+        result1.hash(&mut hasher1);
+        result2.hash(&mut hasher2);
+
+        assert_eq!(hasher1.finish(), hasher2.finish());
+    }
+
+    #[test]
+    fn kem_decapsulation_is_valid_with_empty_secret() {
+        let decap = KemDecapsulationResult { shared_secret: vec![] };
+        let encap = KemEncapsulationResult { shared_secret: vec1(), wrapped_key: wrap1() };
+        assert!(!decap.is_valid(&encap));
+
+        let decap2 = KemDecapsulationResult { shared_secret: vec1() };
+        let encap2 = KemEncapsulationResult { shared_secret: vec![], wrapped_key: wrap1() };
+        assert!(!decap2.is_valid(&encap2));
+    }
+}

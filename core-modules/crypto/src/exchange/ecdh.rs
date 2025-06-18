@@ -25,3 +25,37 @@ pub(crate) fn native_create_key_exchange(
 ) -> Box<dyn Ecdh> {
     unimplemented!()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::utils::test_utils::{hex_to_bytes, to_hex_string};
+
+    const EC_PUBLIC_KEY_PEM: &str = r#"-----BEGIN PUBLIC KEY-----
+MFowFAYHKoZIzj0CAQYJKyQDAwIIAQEHA0IABJBhNcQG6SALcDA4AOUgfySk4E0o
+LGTt+qP6dgv9qYMtojIMVQKNWfT14xR7LQnoSPABZlLJmWgh2cYKz3WbpVM=
+-----END PUBLIC KEY-----"#;
+
+    const EC_PRIVATE_KEY_PEM: &str = r#"-----BEGIN EC PRIVATE KEY-----
+MIGIAgEAMBQGByqGSM49AgEGCSskAwMCCAEBBwRtMGsCAQEEIBu09g2V3coZsiK7
+AUT8gHFehP7KK77g83GJH2aeYxJ1oUQDQgAEkGE1xAbpIAtwMDgA5SB/JKTgTSgs
+ZO36o/p2C/2pgy2iMgxVAo1Z9PXjFHstCehI8AFmUsmZaCHZxgrPdZulUw==
+-----END EC PRIVATE KEY-----"#;
+
+    #[test]
+    fn compute_secret() {
+        let public_key = EcPublicKey::decode_from_pem(EC_PUBLIC_KEY_PEM).unwrap();
+        let private_key = EcPrivateKey::decode_from_pem(EC_PRIVATE_KEY_PEM).unwrap();
+
+        let result = EcdhSpec {
+            curve: EcCurve::BrainpoolP256r1,
+        }
+            .create_key_exchange(&private_key)
+            .compute_secret(&public_key);
+
+        assert_eq!(
+            to_hex_string(&result),
+            "A6 00 6D F4 D0 9A A6 B7 AF 41 B8 FF E6 62 78 CE B2 F6 B8 44 E1 6F 1A 73 F3 3E CB EA D3 AF 0A 7B"
+        );
+    }
+}

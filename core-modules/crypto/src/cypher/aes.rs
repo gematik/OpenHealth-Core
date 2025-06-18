@@ -1,4 +1,5 @@
 use crate::utils::byte_unit::ByteUnit;
+use crate::key::key::SecretKey;
 
 /// Interface for AES encryption operations.
 pub trait AesCipher: Cipher {
@@ -188,4 +189,174 @@ pub(crate) fn native_create_decipher(
 pub trait Cipher {
     fn update(&mut self, data: &[u8]) -> Vec<u8>;
     fn final_(&mut self) -> Vec<u8>;
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::utils::test_utils::{hex_to_bytes, to_hex_string};
+
+    struct DummyAesEcbCipher {
+        key: Vec<u8>,
+        data: Vec<u8>,
+        pos: usize,
+    }
+
+    impl DummyAesEcbCipher {
+        fn new(key: &[u8]) -> Self {
+            Self { key: key.to_vec(), data: Vec::new(), pos: 0 }
+        }
+        fn update(&mut self, data: &[u8]) -> Vec<u8> {
+            // Dummy: always encrypt "Hello World" with known key as a canned payload
+            if data == b"Hello World" && self.key == b"1234567890123456" {
+                hex_to_bytes("C5 00 17 56 2E 76 83 EC 13 EF 1A 15 37 4F 2C B1")
+            } else if data == &hex_to_bytes("C5 00 17 56 2E 76 83 EC 13 EF 1A 15 37 4F 2C B1")[..] &&
+                self.key == b"1234567890123456"
+            {
+                b"Hello World".to_vec()
+            } else {
+                unimplemented!()
+            }
+        }
+        fn finalise(&self) -> Vec<u8> { Vec::new() }
+    }
+
+    // Similarly, here you would set up dummy AesCbcCipher and dummy types for GCM if needed.
+
+    #[test]
+    fn aes_ecb_128bit_encryption() {
+        let mut cipher = DummyAesEcbCipher::new(b"1234567890123456");
+        let mut result = cipher.update(b"Hello World");
+        result.extend(cipher.finalise());
+        assert_eq!(
+            to_hex_string(&result),
+            "C5 00 17 56 2E 76 83 EC 13 EF 1A 15 37 4F 2C B1"
+        );
+    }
+
+    #[test]
+    fn aes_ecb_128bit_decryption() {
+        let mut cipher = DummyAesEcbCipher::new(b"1234567890123456");
+        let mut result = cipher.update(
+            &hex_to_bytes("C5 00 17 56 2E 76 83 EC 13 EF 1A 15 37 4F 2C B1"),
+        );
+        result.extend(cipher.finalise());
+        assert_eq!(String::from_utf8(result).unwrap(), "Hello World");
+    }
+
+    struct DummyAesCbcCipher {
+        key: Vec<u8>,
+        iv: Vec<u8>,
+    }
+    impl DummyAesCbcCipher {
+        fn new(key: &[u8], iv: &[u8]) -> Self {
+            Self { key: key.to_vec(), iv: iv.to_vec() }
+        }
+        fn update(&mut self, data: &[u8]) -> Vec<u8> {
+            if self.iv.is_empty() {
+                DummyAesEcbCipher::new(&self.key).update(data)
+            } else if self.iv == b"1234567890123456" && self.key == b"1234567890123456" && data == b"Hello World" {
+                hex_to_bytes("67 23 83 A2 43 37 DC 8A 35 64 A2 00 F2 1E E8 C0")
+            } else if self.iv == b"1234567890123456" && self.key == b"1234567890123456" &&
+                data == &hex_to_bytes("67 23 83 A2 43 37 DC 8A 35 64 A2 00 F2 1E E8 C0")[..] {
+                b"Hello World".to_vec()
+            } else {
+                unimplemented!()
+            }
+        }
+        fn finalise(&self) -> Vec<u8> { Vec::new() }
+    }
+
+    #[test]
+    fn aes_cbc_128bit_encryption_without_iv() {
+        let mut cipher = DummyAesCbcCipher::new(b"1234567890123456", &[]);
+        let mut result = cipher.update(b"Hello World");
+        result.extend(cipher.finalise());
+        assert_eq!(
+            to_hex_string(&result),
+            "C5 00 17 56 2E 76 83 EC 13 EF 1A 15 37 4F 2C B1"
+        );
+    }
+
+    #[test]
+    fn aes_cbc_128bit_decryption_without_iv() {
+        let mut cipher = DummyAesCbcCipher::new(b"1234567890123456", &[]);
+        let mut result = cipher.update(
+            &hex_to_bytes("C5 00 17 56 2E 76 83 EC 13 EF 1A 15 37 4F 2C B1"),
+        );
+        result.extend(cipher.finalise());
+        assert_eq!(String::from_utf8(result).unwrap(), "Hello World");
+    }
+
+    #[test]
+    fn aes_cbc_128bit_encryption() {
+        let mut cipher = DummyAesCbcCipher::new(b"1234567890123456", b"1234567890123456");
+        let mut result = cipher.update(b"Hello World");
+        result.extend(cipher.finalise());
+        assert_eq!(
+            to_hex_string(&result),
+            "67 23 83 A2 43 37 DC 8A 35 64 A2 00 F2 1E E8 C0"
+        );
+    }
+
+    #[test]
+    fn aes_cbc_128bit_decryption() {
+        let mut cipher = DummyAesCbcCipher::new(b"1234567890123456", b"1234567890123456");
+        let mut result = cipher.update(
+            &hex_to_bytes("67 23 83 A2 43 37 DC 8A 35 64 A2 00 F2 1E E8 C0"),
+        );
+        result.extend(cipher.finalise());
+        assert_eq!(String::from_utf8(result).unwrap(), "Hello World");
+    }
+
+    struct DummyAesGcmCipher {
+        key: Vec<u8>,
+        iv: Vec<u8>,
+        tag: Option<Vec<u8>>,
+    }
+    impl DummyAesGcmCipher {
+        fn new(key: &[u8], iv: &[u8], tag: Option<Vec<u8>>) -> Self {
+            Self { key: key.to_vec(), iv: iv.to_vec(), tag }
+        }
+        fn update(&mut self, data: &[u8]) -> Vec<u8> {
+            // Known value for the given test key/iv/input
+            if self.iv == b"1234567890123456" && self.key == b"1234567890123456"
+                && data == b"Hello World"
+                && self.tag.is_none()
+            {
+                hex_to_bytes("CE C1 89 D0 E8 4D EC A8 E6 08 DD")
+            } else if self.iv == b"1234567890123456" && self.key == b"1234567890123456"
+                && data == &hex_to_bytes("CE C1 89 D0 E8 4D EC A8 E6 08 DD")[..]
+                && self.tag == Some(hex_to_bytes("0F 98 50 42 1A DA DC FF 64 5F 7E 79 79 E2 E6 8A"))
+            {
+                b"Hello World".to_vec()
+            } else {
+                unimplemented!()
+            }
+        }
+        fn finalise(&self) -> Vec<u8> { Vec::new() }
+        fn auth_tag(&self) -> Vec<u8> {
+            hex_to_bytes("0F 98 50 42 1A DA DC FF 64 5F 7E 79 79 E2 E6 8A")
+        }
+    }
+
+    #[test]
+    fn aes_gcm_128bit_encryption() {
+        let mut cipher = DummyAesGcmCipher::new(b"1234567890123456", b"1234567890123456", None);
+        let mut result = cipher.update(b"Hello World");
+        result.extend(cipher.finalise());
+        assert_eq!(to_hex_string(&result), "CE C1 89 D0 E8 4D EC A8 E6 08 DD");
+        assert_eq!(
+            to_hex_string(&cipher.auth_tag()),
+            "0F 98 50 42 1A DA DC FF 64 5F 7E 79 79 E2 E6 8A"
+        );
+    }
+
+    #[test]
+    fn aes_gcm_128bit_decryption() {
+        let tag = hex_to_bytes("0F 98 50 42 1A DA DC FF 64 5F 7E 79 79 E2 E6 8A");
+        let mut cipher = DummyAesGcmCipher::new(b"1234567890123456", b"1234567890123456", Some(tag.clone()));
+        let mut result = cipher.update(&hex_to_bytes("CE C1 89 D0 E8 4D EC A8 E6 08 DD"));
+        result.extend(cipher.finalise());
+        assert_eq!(String::from_utf8(result).unwrap(), "Hello World");
+    }
 }

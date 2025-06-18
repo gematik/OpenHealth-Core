@@ -46,3 +46,84 @@ impl DecodeToPem for str {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn encode_and_decode_pem_with_short_data() {
+        let typ = "TEST CERTIFICATE";
+        let data = b"Hello World".to_vec();
+        let pem = Pem { r#type: typ.to_string(), data: data.clone() };
+
+        let encoded = pem.encode_to_string();
+        let decoded = encoded.decode_to_pem();
+
+        assert_eq!(typ, decoded.r#type);
+        assert_eq!(data, decoded.data);
+    }
+
+    #[test]
+    fn encode_and_decode_pem_with_long_data() {
+        let typ = "LONG CERTIFICATE";
+        let data: Vec<u8> = (0..100).collect();
+        let pem = Pem { r#type: typ.to_string(), data: data.clone() };
+
+        let encoded = pem.encode_to_string();
+        let decoded = encoded.decode_to_pem();
+
+        assert_eq!(typ, decoded.r#type);
+        assert_eq!(data, decoded.data);
+        assert!(encoded.contains('\n'));
+    }
+
+    #[test]
+    fn encode_pem_respects_line_length_limit() {
+        let typ = "TEST";
+        let data = vec![65u8; 100]; // 100 x 'A'
+        let pem = Pem { r#type: typ.to_string(), data };
+
+        let encoded = pem.encode_to_string();
+        let lines: Vec<&str> = encoded.lines().collect();
+
+        for line in lines.iter()
+            .filter(|l| !l.is_empty() && !l.starts_with("-----"))
+        {
+            assert!(
+                line.len() <= 64,
+                "Line exceeds 64 characters: {line}"
+            );
+        }
+    }
+
+    #[test]
+    #[should_panic(expected = "Invalid PEM format")]
+    fn decode_invalid_pem_format_throws_error() {
+        let invalid_pem = "Not a PEM format";
+        // will panic
+        invalid_pem.decode_to_pem();
+    }
+
+    #[test]
+    #[should_panic(expected = "Invalid PEM type format")]
+    fn decode_pem_with_mismatched_types_throws_error() {
+        let invalid_pem = "-----BEGIN CERT-----SGVsbG8gV29ybGQ=-----END DIFFERENT-----";
+        // will panic
+        invalid_pem.decode_to_pem();
+    }
+
+    #[test]
+    fn decode_pem_with_whitespace_and_newlines() {
+        let typ = "CERTIFICATE";
+        let content = "Hello World";
+        let encoded_content = base64::engine::general_purpose::STANDARD.encode(content.as_bytes());
+        let pem_string = format!(
+            "-----BEGIN {typ}-----\n{encoded_content}\n-----END {typ}-----\n"
+        );
+
+        let decoded = pem_string.decode_to_pem();
+        assert_eq!(typ, decoded.r#type);
+        assert_eq!(content, String::from_utf8(decoded.data).unwrap());
+    }
+}
