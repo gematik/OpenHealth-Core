@@ -31347,4 +31347,7 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn OSSL_ERR_STATE_free(es: *mut ERR_STATE);
 }
+unsafe extern "C" {
+    pub fn OPENSSL_free_fn(ptr: *mut ::std::os::raw::c_void);
+}
 pub type __builtin_va_list = *mut ::std::os::raw::c_char;
