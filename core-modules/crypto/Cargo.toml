@@ -6,6 +6,6 @@ license = "Apache-2.0"
 
 [dependencies]
 asn1 = { path = "../asn1" }
-num-bigint = "0.4.6"
-thiserror = "2.0.12"
 crypto-openssl-sys = { path = "../crypto-openssl-sys" }
+regex = "1.11.1"
+base64 = "0.22.1"
