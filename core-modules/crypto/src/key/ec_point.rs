@@ -1,4 +1,5 @@
 use num_bigint::BigInt;
+use num_integer::Integer;
 use crate::key::ec_key::{EcCurve, EcPublicKey};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -63,8 +64,8 @@ impl EcPoint {
         if self.is_infinity() {
             self.clone()
         } else {
-            let p = &self.curve.p();
-            let y = (&p - self.y.as_ref().unwrap()).mod_floor(p);
+            let p = self.curve.p();
+            let y = ((&p - self.y.as_ref().unwrap()) % &p + &p) % &p;
             self.curve.point(self.x.clone(), Some(y))
         }
     }
@@ -94,3 +95,104 @@ impl EcPoint {
         EcPublicKey::new(self.curve.clone(), self.uncompressed())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use num_bigint::BigInt;
+    use num_traits::{One, Zero};
+    use std::str::FromStr;
+
+    fn hex_bigint(s: &str) -> BigInt {
+        BigInt::parse_bytes(s.as_bytes(), 16).unwrap()
+    }
+
+    #[test]
+    fn test_point_at_infinity() {
+        let curve = EcCurve::BrainpoolP256r1;
+        let point = EcPoint::new(curve.clone(), None, None);
+        assert!(point.is_infinity());
+    }
+
+    #[test]
+    fn test_regular_point() {
+        let curve = EcCurve::BrainpoolP256r1;
+        let x = hex_bigint("78028496B5ECAAB3C8B6C12E45DB1E02C9E4D26B4113BC4F015F60C5CCC0D206");
+        let y = hex_bigint("A2AE1762A3831C1D20F03F8D1E3C0C39AFE6F09B4D44BBE80CD100987B05F92B");
+        let point = EcPoint::new(curve.clone(), Some(x.clone()), Some(y.clone()));
+        assert!(!point.is_infinity());
+        assert_eq!(Some(x), point.x);
+        assert_eq!(Some(y), point.y);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_invalid_point_coordinates_x_none_y_some() {
+        let curve = EcCurve::BrainpoolP256r1;
+        EcPoint::new(curve.clone(), None, Some(BigInt::one()));
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_invalid_point_coordinates_x_some_y_none() {
+        let curve = EcCurve::BrainpoolP256r1;
+        EcPoint::new(curve.clone(), Some(BigInt::one()), None);
+    }
+
+    #[test]
+    fn test_point_negation() {
+        let curve = EcCurve::BrainpoolP256r1;
+        let x = hex_bigint("78028496B5ECAAB3C8B6C12E45DB1E02C9E4D26B4113BC4F015F60C5CCC0D206");
+        let y = hex_bigint("A2AE1762A3831C1D20F03F8D1E3C0C39AFE6F09B4D44BBE80CD100987B05F92B");
+        let point = EcPoint::new(curve.clone(), Some(x.clone()), Some(y.clone()));
+        let negated = point.negate();
+        assert_eq!(point.x, negated.x);
+        let expected_y = ((curve.p() - &y) % curve.p() + curve.p()) % curve.p();
+        assert_eq!(Some(expected_y), negated.y);
+    }
+
+    #[test]
+    fn test_uncompressed_encoding() {
+        let curve = EcCurve::BrainpoolP256r1;
+        let x = hex_bigint("78028496B5ECAAB3C8B6C12E45DB1E02C9E4D26B4113BC4F015F60C5CCC0D206");
+        let y = hex_bigint("A2AE1762A3831C1D20F03F8D1E3C0C39AFE6F09B4D44BBE80CD100987B05F92B");
+        let point = EcPoint::new(curve, Some(x), Some(y));
+        let uncompressed = point.uncompressed();
+        assert_eq!(65, uncompressed.len());
+        assert_eq!(0x04, uncompressed[0]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_uncompressed_encoding_of_infinity() {
+        let curve = EcCurve::BrainpoolP256r1;
+        let point = EcPoint::new(curve, None, None);
+        point.uncompressed();
+    }
+
+    #[test]
+    fn test_curve_coordinate_sizes() {
+        let x = BigInt::one();
+        let y = BigInt::one();
+        let p256_point = EcPoint::new(EcCurve::BrainpoolP256r1, Some(x.clone()), Some(y.clone()));
+        assert_eq!(65, p256_point.uncompressed().len());
+
+        let p384_point = EcPoint::new(EcCurve::BrainpoolP384r1, Some(x.clone()), Some(y.clone()));
+        assert_eq!(97, p384_point.uncompressed().len());
+
+        let p512_point = EcPoint::new(EcCurve::BrainpoolP512r1, Some(x), Some(y));
+        assert_eq!(129, p512_point.uncompressed().len());
+    }
+
+    #[test]
+    fn test_to_ec_public_key() {
+        let curve = EcCurve::BrainpoolP256r1;
+        let x = hex_bigint("78028496B5ECAAB3C8B6C12E45DB1E02C9E4D26B4113BC4F015F60C5CCC0D206");
+        let y = hex_bigint("A2AE1762A3831C1D20F03F8D1E3C0C39AFE6F09B4D44BBE80CD100987B05F92B");
+        let point = EcPoint::new(curve.clone(), Some(x), Some(y));
+        let public_key = point.to_ec_public_key();
+        assert_eq!(curve, public_key.curve);
+        assert_eq!(point.uncompressed(), public_key.data);
+    }
+}
+
