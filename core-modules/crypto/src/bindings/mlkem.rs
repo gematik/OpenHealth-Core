@@ -23,7 +23,7 @@ impl MlkemEncapsulation {
                 algorithm.as_ptr() as *const _,
                 ptr::null_mut(),
                 encapsulation_key.as_ptr(),
-                encapsulation_key.len() as c_int,
+                encapsulation_key.len(),
             )
         };
         if p.is_null() {
@@ -132,7 +132,7 @@ impl MlkemDecapsulation {
                 algorithm.as_ptr() as *const _,
                 ptr::null_mut(),
                 private_key.as_ptr(),
-                private_key.len() as c_int,
+                private_key.len(),
             )
         };
         if p.is_null() {

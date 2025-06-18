@@ -20,7 +20,7 @@ impl Drop for Cmac {
 impl Cmac {
     /// Fetches CMAC and allocates a new context.
     pub fn new() -> Result<Self, OsslError> {
-        let mac = unsafe { EVP_MAC_fetch(ptr::null_mut(), CString::new("CMAC")?.as_ptr(), ptr::null_mut()) };
+        let mac = unsafe { EVP_MAC_fetch(ptr::null_mut(), CString::new("CMAC").unwrap().as_ptr(), ptr::null_mut()) };
         if mac.is_null() {
             return Err(throw_openssl_error("EVP_MAC_fetch failed"));
         }
@@ -36,8 +36,8 @@ impl Cmac {
     pub fn create(key: &[u8], cipher: &str) -> Result<Self, OsslError> {
         let mut cm = Self::new()?;
 
-        let cname = CString::new("cipher")?;
-        let alg_c = CString::new(cipher)?;
+        let cname = CString::new("cipher").unwrap();
+        let alg_c = CString::new(cipher).unwrap();
         let mut params: [OSSL_PARAM; 2] = unsafe {
             [
                 OSSL_PARAM_construct_utf8_string(

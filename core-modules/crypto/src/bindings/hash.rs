@@ -54,7 +54,7 @@ impl HashGenerator {
     /// Feeds more data into the digest.
     pub fn update(&mut self, data: &[u8]) -> Result<(), OsslError> {
         ossl_check!(
-            unsafe { EVP_DigestUpdate(self.ctx, data.as_ptr() as *const _, data.len() as c_int) },
+            unsafe { EVP_DigestUpdate(self.ctx, data.as_ptr() as *const _, data.len() as usize) },
             "Failed to update digest"
         );
         Ok(())
@@ -64,7 +64,7 @@ impl HashGenerator {
     /// For fixed-length hashes you may only ever request the one true size.
     pub fn set_final_output_length(&mut self, length: usize) {
         let flags = unsafe { EVP_MD_get_flags(self.md) };
-        if flags & EVP_MD_FLAG_XOF != 0 {
+        if flags & EVP_MD_FLAG_XOF as u64 != 0 {
             if length == 0 {
                 panic!("Output length must be specified for XOF hashes");
             }
@@ -80,7 +80,7 @@ impl HashGenerator {
     /// Finalizes and returns the digest bytes.
     pub fn finalize(&self) -> Result<Vec<u8>, OsslError> {
         let flags = unsafe { EVP_MD_get_flags(self.md) };
-        if flags & EVP_MD_FLAG_XOF != 0 {
+        if flags & EVP_MD_FLAG_XOF as u64 != 0 {
             let mut out = vec![0u8; self.output_length];
             ossl_check!(
                 unsafe { EVP_DigestFinalXOF(self.ctx, out.as_mut_ptr() as *mut _, self.output_length) },

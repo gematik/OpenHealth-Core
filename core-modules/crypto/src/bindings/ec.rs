@@ -6,7 +6,7 @@ use std::os::raw::{c_char, c_int};
 use std::ptr;
 use crypto_openssl_sys::point_conversion_form_t::POINT_CONVERSION_UNCOMPRESSED;
 
-pub struct PKeyCtx(*mut EVP_PKEY_CTX);
+pub struct PKeyCtx(pub *mut EVP_PKEY_CTX);
 
 impl PKeyCtx {
     /// expose the raw EVP_PKEY_CTX pointer
@@ -67,7 +67,7 @@ impl Drop for Bio {
 }
 
 /// EVP_PKEY wrapper
-pub struct PKey(*mut EVP_PKEY);
+pub struct PKey(pub *mut EVP_PKEY);
 
 impl PKey {
     pub fn from_der_private(data: &[u8]) -> Result<Self, OsslError> {
