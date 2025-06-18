@@ -5,7 +5,7 @@ set -euo pipefail
 # Config
 OPENSSL_VERSION=8fabfd81094d1d9f8890df4bee083aa6f77d769d
 OPENSSL_TARGET=darwin64-arm64-cc
-INSTALL_DIR="$(pwd)/openssl-$(OPENSSL_TARGET)"
+INSTALL_DIR="$(pwd)/openssl-${OPENSSL_TARGET}"
 SRC_DIR="$(pwd)/openssl-src"
 
 # Clean old dirs
