@@ -8,6 +8,17 @@ pub enum EcCurve {
     BrainpoolP512r1,
 }
 
+impl std::fmt::Display for EcCurve {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let curve_name = match self {
+            EcCurve::BrainpoolP256r1 => "BrainpoolP256r1",
+            EcCurve::BrainpoolP384r1 => "BrainpoolP384r1",
+            EcCurve::BrainpoolP512r1 => "BrainpoolP512r1",
+        };
+        write!(f, "{}", curve_name)
+    }
+}
+
 impl EcCurve {
     pub fn oid(&self) -> &'static str {
         match self {

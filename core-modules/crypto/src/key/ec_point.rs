@@ -1,4 +1,5 @@
 use num_bigint::BigInt;
+use crate::key::ec_key::{EcCurve, EcPublicKey};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EcPoint {
@@ -68,13 +69,22 @@ impl EcPoint {
         }
     }
 
-    // Placeholder for trait contract from Kotlin code
     fn native_times(&self, k: &BigInt) -> EcPoint {
-        unimplemented!()
+        crate::bindings::ec::EcPoint::from_public(self.curve.to_string().as_str(), self.uncompressed().as_slice())
+            .and_then(|ep| ep.mul(&k.to_signed_bytes_be()))
+            .and_then(|ep| ep.to_bytes())
+            .map(|bytes| EcPublicKey::new(self.curve.clone(), bytes).to_ec_point())
+            .unwrap()
     }
 
     fn native_plus(&self, other: &EcPoint) -> EcPoint {
-        unimplemented!()
+        let other_ec = crate::bindings::ec::EcPoint::from_public(other.curve.to_string().as_str(), other.uncompressed().as_slice()).unwrap();
+
+        crate::bindings::ec::EcPoint::from_public(self.curve.to_string().as_str(), self.uncompressed().as_slice())
+            .and_then(|ep| ep.add(&other_ec))
+            .and_then(|ep| ep.to_bytes())
+            .map(|bytes| EcPublicKey::new(self.curve.clone(), bytes).to_ec_point())
+            .unwrap()
     }
 }
 
@@ -82,17 +92,5 @@ impl EcPoint {
 impl EcPoint {
     pub fn to_ec_public_key(&self) -> EcPublicKey {
         EcPublicKey::new(self.curve.clone(), self.uncompressed())
-    }
-}
-
-// Placeholder structs, as required by translation only.
-pub struct EcPublicKey {
-    pub curve: EcCurve,
-    pub uncompressed: Vec<u8>,
-}
-
-impl EcPublicKey {
-    pub fn new(curve: EcCurve, uncompressed: Vec<u8>) -> Self {
-        EcPublicKey { curve, uncompressed }
     }
 }
