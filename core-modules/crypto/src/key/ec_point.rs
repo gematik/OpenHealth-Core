@@ -1,5 +1,4 @@
 use num_bigint::BigInt;
-use num_integer::Integer;
 use crate::key::ec_key::{EcCurve, EcPublicKey};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -100,8 +99,7 @@ impl EcPoint {
 mod tests {
     use super::*;
     use num_bigint::BigInt;
-    use num_traits::{One, Zero};
-    use std::str::FromStr;
+    use num_traits::One;
 
     fn hex_bigint(s: &str) -> BigInt {
         BigInt::parse_bytes(s.as_bytes(), 16).unwrap()
@@ -195,4 +193,3 @@ mod tests {
         assert_eq!(point.uncompressed(), public_key.data);
     }
 }
-

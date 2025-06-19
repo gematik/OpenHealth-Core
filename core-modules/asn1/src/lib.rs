@@ -1,10 +1,10 @@
 
 pub mod asn1_tag;
 pub mod asn1_encoder;
-mod asn1_decoder;
+pub mod asn1_decoder;
 mod error;
-mod asn1_date_time;
-mod asn1_object_identifier;
+pub mod asn1_date_time;
+pub mod asn1_object_identifier;
 
 // Public re-exports
 pub use asn1_tag::{Asn1Tag, tag_class, asn1_type};
@@ -40,4 +40,12 @@ pub mod decoder {
 
 pub mod tag {
     pub use crate::asn1_tag::*;
+}
+
+pub mod date_time {
+    pub use crate::asn1_date_time::*;
+}
+
+pub mod object_identifier {
+    pub use crate::asn1_object_identifier::*;
 }
