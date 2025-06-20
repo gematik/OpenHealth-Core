@@ -107,8 +107,7 @@ rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlu
 
 mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
-
-//    signAllPublications()
+    signAllPublications()
 
     coordinates(group.toString(), "smartcard", version.toString())
 
@@ -128,6 +127,7 @@ mavenPublishing {
             developer {
                 name = "gematik GmbH"
                 url = "https://github.com/gematik"
+                email = "software-development@gematik.de"
             }
         }
         scm {

@@ -34,7 +34,7 @@ include(
     ":asn1",
     ":crypto",
     ":smartcard",
-    ":smartcard-reader-nodejs",
-    ":examples:healthcard-nfc",
-    ":examples:showcase-healthcard-nfc",
+//    ":smartcard-reader-nodejs",
+//    ":examples:healthcard-nfc",
+//    ":examples:showcase-healthcard-nfc",
 )

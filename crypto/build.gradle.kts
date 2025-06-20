@@ -129,8 +129,7 @@ android {
 
 mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
-
-//    signAllPublications()
+    signAllPublications()
 
     coordinates(group.toString(), "crypto", version.toString())
 
@@ -150,6 +149,7 @@ mavenPublishing {
             developer {
                 name = "gematik GmbH"
                 url = "https://github.com/gematik"
+                email = "software-development@gematik.de"
             }
         }
         scm {
