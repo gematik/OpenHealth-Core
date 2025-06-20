@@ -25,5 +25,5 @@ ktlint-cli = { module = "com.pinterest.ktlint:ktlint-cli", version = "1.5.0" }
 [plugins]
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
-vanniktech-mavenPublish = { id = "com.vanniktech.maven.publish", version = "0.29.0" }
+vanniktech-mavenPublish = { id = "com.vanniktech.maven.publish", version = "0.31.0" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version = "1.23.7" }
