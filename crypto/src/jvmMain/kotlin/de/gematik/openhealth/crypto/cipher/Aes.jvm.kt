@@ -29,16 +29,16 @@ import javax.crypto.spec.SecretKeySpec
 @OptIn(UnsafeCryptoApi::class)
 private fun AesCipherSpec.algorithmName(): String =
     when (this) {
-        is AesEcbSpec -> "AES/ECB/PKCS5Padding"
-        is AesCbcSpec -> "AES/CBC/PKCS5Padding"
+        is AesEcbSpec -> if (autoPadding) "AES/ECB/PKCS5Padding" else "AES/ECB/NoPadding"
+        is AesCbcSpec -> if (autoPadding) "AES/CBC/PKCS5Padding" else "AES/CBC/NoPadding"
         is AesGcmCipherSpec -> "AES/GCM/NoPadding"
     }
 
 @OptIn(UnsafeCryptoApi::class)
 private fun AesDecipherSpec.algorithmName(): String =
     when (this) {
-        is AesEcbSpec -> "AES/ECB/PKCS5Padding"
-        is AesCbcSpec -> "AES/CBC/PKCS5Padding"
+        is AesEcbSpec -> if (autoPadding) "AES/ECB/PKCS5Padding" else "AES/ECB/NoPadding"
+        is AesCbcSpec -> if (autoPadding) "AES/CBC/PKCS5Padding" else "AES/CBC/NoPadding"
         is AesGcmDecipherSpec -> "AES/GCM/NoPadding"
     }
 

@@ -42,18 +42,6 @@ kotlin {
         generateTypeScriptDefinitions()
         binaries.library()
     }
-//    js("jsBrowser") {
-//        attributes.attribute(platformAttribute, "jsbrowser")
-//        browser()
-//        generateTypeScriptDefinitions()
-// //        binaries.executable()
-//    }
-//    iosX64()
-//    iosArm64()
-//    iosSimulatorArm64()
-//    linuxX64()
-
-    applyDefaultHierarchyTemplate()
 
     sourceSets {
         val commonMain by getting {

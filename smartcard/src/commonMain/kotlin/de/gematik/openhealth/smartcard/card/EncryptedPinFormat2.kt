@@ -34,6 +34,14 @@ private const val MIN_DIGIT = 0 // specSpec_COS#N008.000
 private const val MAX_DIGIT = 9 // specSpec_COS#N008.000
 private const val STRING_INT_OFFSET = 48
 
+/**
+ * Represents an encrypted PIN in format 2.
+ *
+ * The format 2 PIN block is used with IC cards in an offline environment and is constructed by
+ * concatenating the plain text PIN field and a filler field.
+ *
+ * @property pin The PIN string to be encrypted. The PIN must be between 4 and 12 digits long.
+ */
 class EncryptedPinFormat2(
     pin: String,
 ) {

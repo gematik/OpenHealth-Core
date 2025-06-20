@@ -16,7 +16,6 @@
 
 package de.gematik.openhealth.smartcard.card
 
-import MacObject
 import de.gematik.openhealth.asn1.Asn1Decoder
 import de.gematik.openhealth.asn1.Asn1Tag
 import de.gematik.openhealth.crypto.ExperimentalCryptoApi
@@ -31,6 +30,7 @@ import de.gematik.openhealth.smartcard.command.EXPECTED_LENGTH_WILDCARD_EXTENDED
 import de.gematik.openhealth.smartcard.command.EXPECTED_LENGTH_WILDCARD_SHORT
 import de.gematik.openhealth.smartcard.tagobjects.DataObject
 import de.gematik.openhealth.smartcard.tagobjects.LengthObject
+import de.gematik.openhealth.smartcard.tagobjects.MacObject
 import de.gematik.openhealth.smartcard.tagobjects.StatusObject
 import de.gematik.openhealth.smartcard.utils.padData
 import de.gematik.openhealth.smartcard.utils.unpadData
@@ -46,6 +46,9 @@ private const val APDU_RESPONSE_STATUS_SIZE_BYTES = 2
 private const val APDU_MIN_RESPONSE_SIZE_BYTES = 12
 private const val APDU_HEADER_SIZE_BYTES = 4
 
+/**
+ * Scope for Trusted Channel communication with the card.
+ */
 @JsExport
 interface TrustedChannelScope : HealthCardScope {
     val paceKey: PaceKey
@@ -98,7 +101,7 @@ internal class TrustedChannelScopeImpl(
         apduToEncrypt
             .copyOfRange(
                 commandApdu.dataOffset,
-                commandApdu.dataOffset + commandApdu.rawNc,
+                commandApdu.dataOffset + commandApdu.dataLength,
             ).takeIf { it.isNotEmpty() }
             ?.let {
                 var data = it
@@ -111,7 +114,7 @@ internal class TrustedChannelScopeImpl(
             }
 
         val le =
-            commandApdu.rawNe?.also {
+            commandApdu.expectedLength?.also {
                 // write length object to output
                 commandDataOutput += LengthObject(it).encoded
             } ?: -1

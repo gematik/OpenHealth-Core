@@ -25,7 +25,7 @@ private const val MODE_VERIFICATION_DATA = 0x00
 
 /**
  * Creates a [HealthCardCommand] for the VERIFY SECRET command.
- * (gemSpec_COS#14.6.6)
+ * (gemSpec_COS_3.14.0#14.6.6.1)
  *
  * @param passwordReference The password reference for the verification.
  * @param dfSpecific Indicates if the verification is DF-specific.

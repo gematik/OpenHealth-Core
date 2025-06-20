@@ -45,7 +45,15 @@ class DataObject(
                 }
             }
 
+    /**
+     * Companion object to create a DataObject with an encrypted context-specific tag.
+     */
     companion object {
+        /**
+         * Creates a DataObject with an encrypted context-specific tag.
+         *
+         * @param data the byte array to be used as the data for the DataObject
+         */
         fun encrypted(data: ByteArray) =
             DataObject(data, Asn1Tag(tagClass = Asn1Tag.CONTEXT_SPECIFIC, tagNumber = 0x07))
     }

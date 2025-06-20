@@ -39,7 +39,6 @@ import de.gematik.openhealth.crypto.key.generateKeyPair
 import de.gematik.openhealth.crypto.key.toEcPoint
 import de.gematik.openhealth.crypto.key.toEcPublicKey
 import de.gematik.openhealth.crypto.useCrypto
-import de.gematik.openhealth.smartcard.Requirement
 import de.gematik.openhealth.smartcard.card.CardKey
 import de.gematik.openhealth.smartcard.card.HealthCardScope
 import de.gematik.openhealth.smartcard.card.Mode
@@ -69,8 +68,9 @@ private const val SECRET_KEY_REFERENCE = 2 // Reference of secret key for PACE (
  * 3. Complete Mutual Authentication to establish shared keys.
  *
  * Relevant specifications:
- * - gemSpecObjSys: Section 5.3.2 (PACE protocol and EF.CardAccess).
- * - gemSpecCos: Sections 10.3.3 and 10.4.2 (command execution and response handling).
+ * - gemSpecObjSys#5.3.2 (PACE protocol and EF.CardAccess).
+ * - gemSpec_Cos_3.14.0#14.9.9 (MANAGE SECURITY ENVIRONMENT command).
+ * - gemSpec_COS_3.14.0#14.7.2.1 (GENERAL AUTHENTICATE command).
  *
  * @param cardAccessNumber The Card Access Number (CAN) for PACE initialization.
  * @return A trusted channel scope to communicate securely with the card.
@@ -127,12 +127,9 @@ suspend fun HealthCardScope.establishTrustedChannel(cardAccessNumber: String): T
                     .apdu.data,
             )
 
-        @Requirement(
-            "O.Cryp_3#2",
-            "O.Cryp_4#2",
-            sourceSpecification = "BSI-eRp-ePA",
-            rationale = "AES Key-Generation and one time usage",
-        )
+        // REQ-BEGIN: O.Cryp_3, O.Cryp_4
+        // | BSI-eRp-ePA
+        // | AES Key-Generation and one time usage
         val canKey = deriveAESKey(cardAccessNumber.encodeToByteArray(), Mode.PASSWORD)
         val nonceS =
             useCrypto {
@@ -166,6 +163,7 @@ suspend fun HealthCardScope.establishTrustedChannel(cardAccessNumber: String): T
 
         return Pair(epGsSharedSecret, epPrivateKey)
     }
+    // REQ-END: O.Cryp_3, O.Cryp_4
 
     // Step 3: Mutual Authentication
     suspend fun performMutualAuthentication(

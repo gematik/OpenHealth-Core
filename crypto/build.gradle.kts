@@ -19,7 +19,6 @@ import okio.Path.Companion.toPath
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidLibrary)
     alias(libs.plugins.vanniktech.mavenPublish)
 }
 
@@ -33,15 +32,6 @@ version = project.findProperty("gematik.version") as String
 
 kotlin {
     jvm()
-//    androidTarget {
-// //        publishLibraryVariants("release")
-//        compilerOptions {
-//            jvmTarget.set(JvmTarget.JVM_1_8)
-//        }
-//    }
-//    iosX64()
-//    iosArm64()
-//    iosSimulatorArm64()
     js {
         useEsModules()
         browser {
@@ -58,7 +48,6 @@ kotlin {
         generateTypeScriptDefinitions()
         binaries.library()
     }
-//    linuxX64()
 
     sourceSets {
         val commonMain by getting {
@@ -110,20 +99,6 @@ kotlin {
                 }
             }
         }
-    }
-}
-
-android {
-    namespace = "org.jetbrains.kotlinx.multiplatform.library.template"
-    compileSdk =
-        libs.versions.android.compileSdk
-            .get()
-            .toInt()
-    defaultConfig {
-        minSdk =
-            libs.versions.android.minSdk
-                .get()
-                .toInt()
     }
 }
 

@@ -42,10 +42,17 @@ class HealthCardCommand(
         }
     }
 
-    // Keep for extension functions
+    /**
+     * Companion object for extension functions and additional utilities.
+     */
     companion object
 }
 
+/**
+ * Converts the [HealthCardCommand] to a [CardCommandApdu].
+ *
+ * @param scopeSupportsExtendedLength Indicates if the scope supports extended length.
+ */
 fun HealthCardCommand.commandApdu(scopeSupportsExtendedLength: Boolean): CardCommandApdu {
     val expectedLength =
         if (ne != null && ne == EXPECT_ALL_WILDCARD) {

@@ -105,8 +105,15 @@ private fun appendModeByte(
     }
 }
 
+/**
+ * Mode for key derivation
+ *
+ * @property ENC Key for encryption/decryption
+ * @property MAC Key for MAC
+ * @property PASSWORD Key derived from password
+ */
 enum class Mode {
-    ENC, // Key for encryption/decryption
-    MAC, // Key for MAC
-    PASSWORD, // Key derived from password
+    ENC,
+    MAC,
+    PASSWORD,
 }

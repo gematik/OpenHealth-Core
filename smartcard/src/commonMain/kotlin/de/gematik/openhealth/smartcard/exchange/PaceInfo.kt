@@ -26,6 +26,9 @@ import de.gematik.openhealth.asn1.writeObjectIdentifier
 import de.gematik.openhealth.crypto.ExperimentalCryptoApi
 import de.gematik.openhealth.crypto.key.EcCurve
 
+/**
+ * Represents the PACE (Password Authenticated Connection Establishment) information.
+ */
 @OptIn(ExperimentalCryptoApi::class)
 class PaceInfo(
     val protocolId: String,
@@ -42,10 +45,8 @@ class PaceInfo(
  *
  * This function extracts:
  * 1. The protocol identifier (OID).
- * 2. The parameter ID, which determines the elliptic curve.
- *
- * References:
- * - gemSpec_COS#14.8.2.2: PACE Protocol Details
+ * 2. The parameter ID, which determines the elliptic curve
+ * as specified BSI TR-03110 Part 3 Section A.1.1.1
  *
  * @param asn1 The ASN.1 encoded PACE information.
  * @return A [PaceInfo] object containing the protocol ID and curve.
@@ -78,7 +79,11 @@ fun parsePaceInfo(asn1: ByteArray): PaceInfo =
         }
     }
 
-// Mapping of parameter IDs to supported elliptic curves
+/**
+ * Maps standardized parameter IDs to their corresponding elliptic curves
+ * as specified in BSI TR-03110 Part 3, Appendix A.2.1.1.
+ * The curves are defined in RFC 5639.
+ */
 @OptIn(ExperimentalCryptoApi::class)
 private val supportedCurves =
     mapOf(

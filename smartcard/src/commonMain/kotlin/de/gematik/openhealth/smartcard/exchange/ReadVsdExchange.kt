@@ -41,8 +41,6 @@ suspend fun TrustedChannelScope.readVsd(): ByteArray {
 
     HealthCardCommand.select(ApplicationIdentifier(Mf.Df.HCA.AID)).transmitSuccessfully()
 
-    // 5.4.9 MF / DF.HCA / EF.VD This file contains the VD of the cardholder.
-
     HealthCardCommand
         .select(
             FileIdentifier(Mf.Df.HCA.Ef.Vd.FID),

@@ -24,6 +24,9 @@ private const val UNLOCK_EGK_INS = 0x2C
 private const val MODE_VERIFICATION_DATA_NEW_SECRET = 0x00
 private const val MODE_VERIFICATION_DATA = 0x01
 
+/**
+ * Unlock methods for the eGK (electronic health card).
+ */
 enum class UnlockMethod {
     ChangeReferenceData,
     ResetRetryCounterWithNewSecret,
@@ -33,7 +36,7 @@ enum class UnlockMethod {
 
 /**
  * Creates a [HealthCardCommand] for the UNLOCK eGK command.
- * (gemSpec_COS#14.6.5.1, gemSpec_COS#14.6.5.2)
+ * (gemSpec_COS_3.14.0#14.6.5.1, gemSpec_COS_3.14.0#14.6.5.2)
  *
  * @param unlockMethod The method used to unlock the eGK.
  * @param passwordReference The password reference for the unlock operation.
@@ -42,7 +45,7 @@ enum class UnlockMethod {
  * @param newSecret The new secret (PIN) in encrypted format, if applicable.
  */
 fun HealthCardCommand.Companion.unlockEgk(
-    unlockMethod: String,
+    unlockMethod: UnlockMethod,
     passwordReference: PasswordReference,
     dfSpecific: Boolean,
     puk: EncryptedPinFormat2,
@@ -52,14 +55,14 @@ fun HealthCardCommand.Companion.unlockEgk(
     cla = CLA,
     ins = UNLOCK_EGK_INS,
     p1 =
-        if (unlockMethod == UnlockMethod.ResetRetryCounterWithNewSecret.name) {
+        if (unlockMethod == UnlockMethod.ResetRetryCounterWithNewSecret) {
             MODE_VERIFICATION_DATA_NEW_SECRET
         } else {
             MODE_VERIFICATION_DATA
         },
     p2 = passwordReference.calculateKeyReference(dfSpecific),
     data =
-        if (unlockMethod == UnlockMethod.ResetRetryCounterWithNewSecret.name) {
+        if (unlockMethod == UnlockMethod.ResetRetryCounterWithNewSecret) {
             puk.bytes + (newSecret?.bytes ?: byteArrayOf())
         } else {
             puk.bytes

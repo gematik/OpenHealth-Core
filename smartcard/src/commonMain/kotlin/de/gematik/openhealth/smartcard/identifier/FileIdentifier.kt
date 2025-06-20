@@ -42,11 +42,14 @@ class FileIdentifier {
         sanityCheck()
     }
 
+    /**
+     * Returns the file identifier as a byte array.
+     */
     fun getFid(): ByteArray = byteArrayOf((fid shr 8).toByte(), fid.toByte())
 
     @OptIn(ExperimentalStdlibApi::class)
     private fun sanityCheck() {
-        // gemSpec_COS#N006.700, N006.900
+        // gemSpec_COS_3.14.0#N006.700, N006.900
         require(!((fid < 0x1000 || fid > 0xFEFF) && fid != 0x011C || fid == 0x3FFF)) {
             "File Identifier is out of range: 0x" + getFid().toHexString()
         }

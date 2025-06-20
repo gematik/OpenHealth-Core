@@ -26,7 +26,7 @@ private const val MODE_VERIFICATION_DATA = 0x00
 /**
  * Creates a [HealthCardCommand] to change a secret.
  *
- * Use case change reference data  gemSpec_COS#14.6.1.1
+ * Use case change reference data  gemSpec_COS_3.14.0#14.6.1.1
  * @param passwordReference The [PasswordReference] to change.
  * @param dfSpecific `true` if the reference is DF-specific, `false` otherwise.
  * @param oldSecret The current secret.

@@ -25,8 +25,8 @@ import de.gematik.openhealth.smartcard.identifier.ApplicationIdentifier
 import de.gematik.openhealth.smartcard.identifier.FileIdentifier
 import de.gematik.openhealth.smartcard.parameter
 import de.gematik.openhealth.smartcard.runParametrizedTest
+import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
-import kotlin.test.DefaultAsserter.assertEquals
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -39,7 +39,7 @@ class SelectCommandTest {
     private val parameters = arrayOf(true, false)
 
     @Test
-    fun shouldEqualSelectCommand_SelectParentElseRoot_ReadFirst() {
+    fun shouldEqualSelectCommand_SelectParentElseRoot_ReadFirst(): TestResult {
         val parameterCombinations =
             listOf(
                 mapOf(SELECT_PARENT_ELSE_ROOT to true, READ_FIRST to true),
@@ -48,9 +48,9 @@ class SelectCommandTest {
                 mapOf(SELECT_PARENT_ELSE_ROOT to false, READ_FIRST to false),
             )
 
-        runParametrizedTest(*parameterCombinations.toTypedArray()) {
-            val selectParentElseRoot = parameter<Boolean>()
-            val readFirst = parameter<Boolean>()
+        return runParametrizedTest(*parameterCombinations.toTypedArray()) {
+            val selectParentElseRoot = parameter<Boolean>(SELECT_PARENT_ELSE_ROOT)
+            val readFirst = parameter<Boolean>(READ_FIRST)
 
             val expectedAPDU =
                 getExpectedApdu(
@@ -71,10 +71,10 @@ class SelectCommandTest {
     }
 
     @Test
-    fun shouldEqualSelectCommand_ApplicationIdentifier() {
+    fun shouldEqualSelectCommand_ApplicationIdentifier(): TestResult {
         val aid = ApplicationIdentifier(byteArrayOf(0xD2.toByte(), 0x76, 0x00, 0x00, 0x01, 0x02))
 
-        runTest {
+        return runTest {
             val expectedAPDU = getExpectedApdu("SELECTCOMMAND_APDU-2")
 
             val command = HealthCardCommand.select(aid)
@@ -87,8 +87,8 @@ class SelectCommandTest {
     }
 
     @Test
-    fun shouldEqualSelectCommand_FileIdentifier_SelectDfElseEf() {
-        runParametrizedTest(parameters) {
+    fun shouldEqualSelectCommand_FileIdentifier_SelectDfElseEf() =
+        runParametrizedTest(*parameters) {
             val selectDfElseEf = parameter<Boolean>()
 
             val fid = FileIdentifier(byteArrayOf(0x2F, 0x01))
@@ -106,21 +106,20 @@ class SelectCommandTest {
                 message,
             )
         }
-    }
 
     @Test
-    fun shouldEqualSelectCommand_ApplicationIdentifier_WithOptions() {
+    fun shouldEqualSelectCommand_ApplicationIdentifier_WithOptions(): TestResult {
         val parameterCombinations =
-            sequenceOf(
+            listOf(
                 mapOf(SELECT_NEXT_OCCURRENCE to true, REQUEST_FCP to true),
                 mapOf(SELECT_NEXT_OCCURRENCE to true, REQUEST_FCP to false),
                 mapOf(SELECT_NEXT_OCCURRENCE to false, REQUEST_FCP to true),
                 mapOf(SELECT_NEXT_OCCURRENCE to false, REQUEST_FCP to false),
             )
 
-        runParametrizedTest(*parameterCombinations.toList().toTypedArray()) {
-            val selectNextOccurrence = parameter<Boolean>()
-            val requestFCP = parameter<Boolean>()
+        return runParametrizedTest(*parameterCombinations.toTypedArray()) {
+            val selectNextOccurrence = parameter<Boolean>(SELECT_NEXT_OCCURRENCE)
+            val requestFCP = parameter<Boolean>(REQUEST_FCP)
 
             val aid =
                 ApplicationIdentifier(byteArrayOf(0xD2.toByte(), 0x76, 0x00, 0x00, 0x01, 0x02))
@@ -150,7 +149,7 @@ class SelectCommandTest {
     }
 
     @Test
-    fun shouldEqualSelectCommand_FileIdentifier_WithOptions() {
+    fun shouldEqualSelectCommand_FileIdentifier_WithOptions(): TestResult {
         val parameterCombinations =
             sequenceOf(
                 mapOf(SELECT_NEXT_OCCURRENCE to true, REQUEST_FCP to true),
@@ -159,9 +158,9 @@ class SelectCommandTest {
                 mapOf(SELECT_NEXT_OCCURRENCE to false, REQUEST_FCP to false),
             )
 
-        runParametrizedTest(*parameterCombinations.toList().toTypedArray()) {
-            val selectNextOccurrence = parameter<Boolean>()
-            val requestFCP = parameter<Boolean>()
+        return runParametrizedTest(*parameterCombinations.toList().toTypedArray()) {
+            val selectNextOccurrence = parameter<Boolean>(SELECT_NEXT_OCCURRENCE)
+            val requestFCP = parameter<Boolean>(REQUEST_FCP)
 
             val fid = FileIdentifier(byteArrayOf(0x2F, 0x01))
             val expectedAPDU =

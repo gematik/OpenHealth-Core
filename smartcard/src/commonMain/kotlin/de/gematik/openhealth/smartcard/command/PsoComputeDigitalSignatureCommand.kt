@@ -21,7 +21,7 @@ private const val INS = 0x2A
 
 /**
  * Creates a [HealthCardCommand] for the PSO COMPUTE DIGITAL SIGNATURE command.
- * (gemSpec_COS#14.8.2)
+ * (gemSpec_COS_3.14.0#14.8.2)
  *
  * @param dataToBeSigned The data to be signed.
  */

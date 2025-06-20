@@ -138,7 +138,7 @@ val getRandomValuesStatus =
 
 /**
  * All response status codes
- * @see "gemSpec_COS_16.2"
+ * gemSpec_COS_3.14.0#16.2
  */
 enum class HealthCardResponseStatus {
     SUCCESS,

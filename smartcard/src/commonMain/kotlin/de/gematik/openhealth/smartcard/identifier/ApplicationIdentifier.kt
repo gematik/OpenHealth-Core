@@ -33,7 +33,7 @@ class ApplicationIdentifier(
 
     init {
         require(!(aid.size < AID_MIN_LENGTH || aid.size > AID_MAX_LENGTH)) {
-            // gemSpec_COS#N010.200
+            // gemSpec_COS_3.14.0#N010.200
             "Application File Identifier length out of valid range [$AID_MIN_LENGTH,$AID_MAX_LENGTH]"
         }
     }

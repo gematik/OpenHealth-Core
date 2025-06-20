@@ -18,7 +18,9 @@ package de.gematik.openhealth.smartcard.model.command
 
 import de.gematik.openhealth.smartcard.HealthCardTestScope
 import de.gematik.openhealth.smartcard.card.CardKey
+import de.gematik.openhealth.smartcard.card.PsoAlgorithm
 import de.gematik.openhealth.smartcard.command.HealthCardCommand
+import de.gematik.openhealth.smartcard.command.manageSecEnvForSigning
 import de.gematik.openhealth.smartcard.command.manageSecEnvWithoutCurves
 import de.gematik.openhealth.smartcard.data.getExpectedApdu
 import de.gematik.openhealth.smartcard.data.getParameter
@@ -54,4 +56,27 @@ class ManageSecurityEnvironmentCommandTest {
                 HealthCardTestScope().test(command).toHexString(hexSpaceFormat),
             )
         }
+
+    @Test
+    fun shouldCreateValidManageSecurityEnvironmentCommandForSigning() {
+        val parameters = arrayOf(true, false)
+
+        runParametrizedTest(*parameters) {
+            val dfSpecific = parameter<Boolean>()
+            val expectedAPDU =
+                getExpectedApdu("MANAGESECURITYENVIRONMENTCOMMAND_APDU-4", dfSpecific)
+
+            val command =
+                HealthCardCommand.manageSecEnvForSigning(
+                    psoAlgorithm = PsoAlgorithm.SIGN_VERIFY_ECDSA,
+                    key = KEY_PRK_EGK_AUT_CVC_E256,
+                    dfSpecific = dfSpecific,
+                )
+
+            assertEquals(
+                expectedAPDU,
+                HealthCardTestScope().test(command).toHexString(hexSpaceFormat),
+            )
+        }
+    }
 }

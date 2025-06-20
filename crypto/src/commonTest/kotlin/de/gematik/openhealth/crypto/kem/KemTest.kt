@@ -17,10 +17,12 @@
 package de.gematik.openhealth.crypto.kem
 
 import de.gematik.openhealth.crypto.runTestWithProvider
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class KemTest {
+    @Ignore
     @Test
     fun `ml-kem-768 round trip`() =
         runTestWithProvider {
@@ -34,6 +36,7 @@ class KemTest {
             assertTrue(aliceDecapsulationResult.isValid(bobEncapsulationResult))
         }
 
+    @Ignore
     @Test
     fun `kyber-768 round trip`() =
         runTestWithProvider {

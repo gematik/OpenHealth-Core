@@ -19,7 +19,7 @@ package de.gematik.openhealth.smartcard.command
 import de.gematik.openhealth.smartcard.card.PasswordReference
 
 /**
- * Command representing Get Pin Status Command gemSpec_COS#14.6.4
+ * Command representing Get Pin Status Command gemSpec_COS_3.14.0#14.6.4
  */
 
 private const val CLA = 0x80
@@ -28,7 +28,7 @@ private const val NO_MEANING = 0x00
 
 /**
  * Creates a [HealthCardCommand] to get the pin status.
- * Use case gemSpec_COS#14.6.4.1
+ * Use case gemSpec_COS_3.14.0#14.6.4.1
  *
  * @param password the arguments for the Get Pin Status command
  * @param dfSpecific whether or not the password object specifies a Global or DF-specific.

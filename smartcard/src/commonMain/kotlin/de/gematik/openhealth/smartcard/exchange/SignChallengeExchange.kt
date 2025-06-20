@@ -16,7 +16,6 @@
 
 package de.gematik.openhealth.smartcard.exchange
 
-import de.gematik.openhealth.smartcard.Requirement
 import de.gematik.openhealth.smartcard.card.CardKey
 import de.gematik.openhealth.smartcard.card.PsoAlgorithm
 import de.gematik.openhealth.smartcard.card.TrustedChannelScope
@@ -27,28 +26,12 @@ import de.gematik.openhealth.smartcard.command.psoComputeDigitalSignature
 import de.gematik.openhealth.smartcard.command.select
 import de.gematik.openhealth.smartcard.identifier.ApplicationIdentifier
 
-@Requirement(
-    "A_20526-01",
-    "A_17205",
-    "A_17207",
-    "A_17359",
-    "A_20172#3",
-    "A_20700-07#1",
-    sourceSpecification = "gemF_Tokenverschlüsselung",
-    rationale = "Sign challenge using the health card certificate.",
-)
-@Requirement(
-    "O.Cryp_1#1",
-    "O.Cryp_4#1",
-    sourceSpecification = "BSI-eRp-ePA",
-    rationale = "Signature via ecdh ephemeral-static (one time usage)",
-)
 /**
  * Signs the given challenge using the card's private key for authentication.
  *
  * Relevant specifications:
- * - gemSpecObjSys: Section 5.3.5 (eSign application and signing process).
- * - gemSpecCos: Sections 10.4.4 and 10.4.5 (PSO: COMPUTE DIGITAL SIGNATURE command and
+ * - gemSpecObjSys#5.5 (eSign application).
+ * - gemSpecCos_3.14.0#14.8.2 and gemSpec_COS_3.14.0#14.9.9.9 (PSO: COMPUTE DIGITAL SIGNATURE command and
  *   security environment configuration).
  *
  * Steps:
@@ -59,7 +42,14 @@ import de.gematik.openhealth.smartcard.identifier.ApplicationIdentifier
  * @param challenge The challenge to be signed.
  * @return The computed digital signature.
  */
+
 suspend fun TrustedChannelScope.signChallenge(challenge: ByteArray): ByteArray {
+// REQ-BEGIN: A_20526-01, A_17205, A_17207, A_17359, A_20172, A_20700-07
+// | gemF_Tokenverschlüsselung
+// | Sign challenge using the health card certificate.
+// REQ-BEGIN: O.Cryp_1, O.Cryp_4
+// | BSI-eRp-ePA
+// | Signature via ecdh ephemeral-static (one time usage)
     HealthCardCommand
         .select(
             ApplicationIdentifier(Mf.Df.Esign.AID),
@@ -76,4 +66,5 @@ suspend fun TrustedChannelScope.signChallenge(challenge: ByteArray): ByteArray {
         .psoComputeDigitalSignature(challenge)
         .transmitSuccessfully()
         .apdu.data
+    // REQ-END: A_20526-01, A_17205, A_17207, A_17359, A_20172, A_20700-07, O.Cryp_1, O.Cryp_4
 }

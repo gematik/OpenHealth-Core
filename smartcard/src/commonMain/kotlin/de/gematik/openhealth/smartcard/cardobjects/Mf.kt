@@ -18,9 +18,8 @@ package de.gematik.openhealth.smartcard.cardobjects
 
 /**
  * eGK 2.1 file system objects as specified in the
- * "Spezifikation der eGK Objektsystem G2.1" (gemSpec_eGK_ObjSys_G2_1_4.7.1).
  *
- * @see <a href="https://gemspec.gematik.de/docs/gemSpec/gemSpec_eGK_ObjSys_G2_1/latest/">gemSpec_eGK_ObjSys_G2_1</a>
+ * gemSpec_eGK_ObjSys_G2_1_4.7.1
  */
 object Mf {
     /**
@@ -30,7 +29,7 @@ object Mf {
         /**
          * MF / EF.CardAccess is necessary for secure contactless communication using the PACE protocol.
          *
-         * @see gemSpec_eGK_ObjSys_G2_1 Section 5.3.2
+         * gemSpec_eGK_ObjSys_G2_1_4.7.1#5.3.2
          */
         object CardAccess {
             const val FID = 0x011C
@@ -40,7 +39,7 @@ object Mf {
         /**
          * MF / EF.Version2 contains the version numbers as well as product identifiers.
          *
-         * @see gemSpec_eGK_ObjSys_G2_1 Section 5.3.8
+         * gemSpec_eGK_ObjSys_G2_1_4.7.1#5.3.8
          */
         object Version2 {
             const val FID = 0x2F11
@@ -51,7 +50,7 @@ object Mf {
     /**
      * MF / MRPIN.home is a multi-reference password object for unlocking keys and content of the eGK.
      *
-     * @see gemSpec_eGK_ObjSys_G2_1 Section 5.3.10
+     * gemSpec_eGK_ObjSys_G2_1_4.7.1#5.3.10
      */
     object MrPinHome {
         const val PWID = 0x02
@@ -64,7 +63,7 @@ object Mf {
         /**
          * DF.ESIGN contains eSign-related objects.
          *
-         * @see gemSpec_eGK_ObjSys_G2_1 Section 5.5
+         * gemSpec_eGK_ObjSys_G2_1_4.7.1#5.5
          */
         object Esign {
             const val AID = "A000000167455349474E"
@@ -77,7 +76,7 @@ object Mf {
                  * MF / DF.ESIGN / EF.C.CH.AUT.E256 contains the X.509 authentication certificate
                  * for elliptic curve cryptography with the public key PuK.CH.AUT.E256.
                  *
-                 * @see gemSpec_eGK_ObjSys_G2_1 Section 5.5.9
+                 * gemSpec_eGK_ObjSys_G2_1_4.7.1#5.5.9
                  */
                 object CchAutE256 {
                     const val FID = 0xC504
@@ -93,7 +92,7 @@ object Mf {
                  * MF / DF.ESIGN / PrK.CH.AUT.E256 references the private key for elliptic curve cryptography.
                  * The public part corresponding to this private key is located in EF.C.CH.AUT.E256.
                  *
-                 * @see gemSpec_eGK_ObjSys_G2_1 Section 5.5.13
+                 * gemSpec_eGK_ObjSys_G2_1_4.7.1#5.5.13
                  */
                 object ChAutE256 {
                     const val KID = 0x04
@@ -104,7 +103,7 @@ object Mf {
         /**
          * DF.HCA contains health card application-related files.
          *
-         * @see gemSpec_eGK_ObjSys_G2_1 Section 5.4
+         * gemSpec_eGK_ObjSys_G2_1_4.7.1#5.4
          */
         object HCA {
             const val AID = "D27600000102"
@@ -116,7 +115,7 @@ object Mf {
                 /**
                  * MF / DF.HCA / EF.PD contains the personal data of the cardholder.
                  *
-                 * @see gemSpec_eGK_ObjSys_G2_1 Section 5.4.4
+                 * gemSpec_eGK_ObjSys_G2_1_4.7.1#5.4.4
                  */
                 object Pd {
                     const val FID = 0xD001
@@ -126,7 +125,7 @@ object Mf {
                 /**
                  * MF / DF.HCA / EF.StatusVD contains the status of VD and PD.
                  *
-                 * @see gemSpec_eGK_ObjSys_G2_1 Section 5.4.7
+                 * gemSpec_eGK_ObjSys_G2_1_4.7.1#5.4.7
                  */
                 object StatusVD {
                     const val FID = 0xD00C
@@ -136,7 +135,7 @@ object Mf {
                 /**
                  * MF / DF.HCA / EF.VD contains the VD of the cardholder.
                  *
-                 * @see gemSpec_eGK_ObjSys_G2_1 Section 5.4.9
+                 * gemSpec_eGK_ObjSys_G2_1_4.7.1#5.4.9
                  */
                 object Vd {
                     const val FID = 0xD002

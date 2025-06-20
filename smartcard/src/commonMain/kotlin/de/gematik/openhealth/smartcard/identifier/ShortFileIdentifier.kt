@@ -24,7 +24,7 @@ private const val MAX_VALUE = 30
  * Short file identifiers are used  for implicit file selection in the immediate context of a command.
  * The value of shortFileIdentifier MUST be an integer in the interval [1, 30]
  *
- * @see "ISO/IEC7816-4 und gemSpec_COS 'Spezifikation des Card Operating System'"
+ * ISO/IEC7816-4 and gemSpec_COS_3.14.0
  */
 class ShortFileIdentifier(
     val sfId: Int,
@@ -39,7 +39,7 @@ class ShortFileIdentifier(
     @Suppress("ImplicitDefaultLocale")
     private fun sanityCheck() {
         require(!(sfId < MIN_VALUE || sfId > MAX_VALUE)) {
-            // gemSpec_COS#N007.000
+            // gemSpec_COS_3.14.0#N007.000
             "Short File Identifier out of valid range [$MIN_VALUE,$MAX_VALUE]"
         }
     }

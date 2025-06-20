@@ -40,33 +40,31 @@ class ReadCommandTest {
         }
 
     @Test
-    fun shouldEqualReadCommand_WithOffset() {
+    fun shouldEqualReadCommand_WithOffset() =
         runTest {
             val expectedAPDU = getExpectedApdu("READCOMMAND_APDU-3")
-            val command = HealthCardCommand.read(2)
+            val command = HealthCardCommand.read(0)
 
             assertEquals(
                 expectedAPDU,
                 HealthCardTestScope().test(command).toHexString(hexSpaceFormat),
             )
         }
-    }
 
     @Test
-    fun shouldEqualReadCommand_WithOffsetAndNe() {
+    fun shouldEqualReadCommand_WithOffsetAndNe() =
         runTest {
             val expectedAPDU = getExpectedApdu("READCOMMAND_APDU-2")
-            val command = HealthCardCommand.read(2, 2)
+            val command = HealthCardCommand.read(0, 0)
 
             assertEquals(
                 expectedAPDU,
                 HealthCardTestScope().test(command).toHexString(hexSpaceFormat),
             )
         }
-    }
 
     @Test
-    fun shouldEqualReadCommand_WithSfi() {
+    fun shouldEqualReadCommand_WithSfi() =
         runTest {
             val expectedAPDU = getExpectedApdu("READCOMMAND_APDU-4")
             val sfi = ShortFileIdentifier(0x1D)
@@ -77,33 +75,30 @@ class ReadCommandTest {
                 HealthCardTestScope().test(command).toHexString(hexSpaceFormat),
             )
         }
-    }
 
     @Test
-    fun shouldEqualReadCommand_WithSfiAndOffset() {
+    fun shouldEqualReadCommand_WithSfiAndOffset() =
         runTest {
             val expectedAPDU = getExpectedApdu("READCOMMAND_APDU-5")
             val sfi = ShortFileIdentifier(0x1D)
-            val command = HealthCardCommand.read(sfi, 2)
+            val command = HealthCardCommand.read(sfi, 0)
 
             assertEquals(
                 expectedAPDU,
                 HealthCardTestScope().test(command).toHexString(hexSpaceFormat),
             )
         }
-    }
 
     @Test
-    fun shouldEqualReadCommand_WithSfiOffsetAndNe() {
+    fun shouldEqualReadCommand_WithSfiOffsetAndNe() =
         runTest {
             val expectedAPDU = getExpectedApdu("READCOMMAND_APDU-6")
             val sfi = ShortFileIdentifier(0x1D)
-            val command = HealthCardCommand.read(sfi, 2, 2)
+            val command = HealthCardCommand.read(sfi, 0, 0)
 
             assertEquals(
                 expectedAPDU,
                 HealthCardTestScope().test(command).toHexString(hexSpaceFormat),
             )
         }
-    }
 }

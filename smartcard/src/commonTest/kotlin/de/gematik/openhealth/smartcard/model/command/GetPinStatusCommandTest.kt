@@ -24,8 +24,8 @@ import de.gematik.openhealth.smartcard.data.getExpectedApdu
 import de.gematik.openhealth.smartcard.hexSpaceFormat
 import de.gematik.openhealth.smartcard.parameter
 import de.gematik.openhealth.smartcard.runParametrizedTest
-import kotlin.test.DefaultAsserter.assertEquals
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class GetPinStatusCommandTest {
     private val parameters = arrayOf(true, false)

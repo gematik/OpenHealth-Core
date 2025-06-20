@@ -40,7 +40,6 @@ fun getExpectedApdu(
 ): String {
     val keySuffix =
         values.entries
-            .sortedBy { it.key }
             .joinToString(separator = "-") { "${it.value?.toString()}" }
     return getExpectedApduInternal(command, keySuffix)
 }
@@ -48,13 +47,15 @@ fun getExpectedApdu(
 private fun getExpectedApduInternal(
     command: String,
     keySuffix: String,
-): String =
-    EXPECTED_APDU
-        .find { command in it }!!
-        .getValue(command)
+): String {
+    val cmd = command.uppercase()
+    return EXPECTED_APDU
+        .find { cmd in it }!!
+        .getValue(cmd)
         .getValue("apdu${if (keySuffix.isNotEmpty()) "-$keySuffix" else ""}")
         .hexToByteArray(hexUppercaseFormat)
         .toHexString(hexSpaceFormat)
+}
 
 private val EXPECTED_APDU =
     listOf(
@@ -266,7 +267,7 @@ private val EXPECTED_APDU =
         mapOf("GETRANDOMCOMMAND_APDU-1" to mapOf("apdu" to "8084000000")), // 0
         mapOf("GETRANDOMCOMMAND_APDU-2" to mapOf("apdu" to "8084000008")), // 8
         mapOf("GETRANDOMCOMMAND_APDU-3" to mapOf("apdu" to "8084000010")), // 16
-        mapOf("GETRANDOMCOMMAND_APDU-3" to mapOf("apdu" to "8084000020")), // 32
+        mapOf("GETRANDOMCOMMAND_APDU-4" to mapOf("apdu" to "8084000020")), // 32
         // --------------------------------------------------------------------------------
         // InternalAuthenticateCommand(PsoAlgorithm psoAlgorithm, byte[] token)
         mapOf("INTERNALAUTHENTICATECOMMAND_APDU" to mapOf("apdu" to "00880000000001000000")),
@@ -305,8 +306,8 @@ private val EXPECTED_APDU =
         mapOf(
             "MANAGESECURITYENVIRONMENTCOMMAND_APDU-4" to
                 mapOf(
-                    "apdu-true" to "0022C1A409800100830189840110",
-                    "apdu-false" to "0022C1A409800100830109840110",
+                    "apdu-true" to "002241B606840189800100",
+                    "apdu-false" to "002241B606840109800100",
                 ),
         ),
         // ManageSecurityEnvironmentCommand(de.gematik.ti.healthcardaccess.commands.ManageSecurityEnvironmentCommand$MseUseCase,de.gematik.ti.healthcardaccess.cardobjects.GemCvCertificate)
@@ -511,15 +512,15 @@ private val EXPECTED_APDU =
         mapOf(
             "UNLOCKEGKCOMMAND_APDU-1" to
                 mapOf(
-                    "apdu-true" to "002C01810812345678FFFFFFFF",
-                    "apdu-false" to "002C01010812345678FFFFFFFF",
+                    "apdu-true" to "002C0181082812345678FFFFFF",
+                    "apdu-false" to "002C0101082812345678FFFFFF",
                 ),
         ),
         mapOf(
             "UNLOCKEGKCOMMAND_APDU-2" to
                 mapOf(
-                    "apdu-true" to "002C00811012345678FFFFFFFF87654321FFFFFFFF",
-                    "apdu-false" to "002C00011012345678FFFFFFFF87654321FFFFFFFF",
+                    "apdu-true" to "002C0081102812345678FFFFFF2887654321FFFFFF",
+                    "apdu-false" to "002C0001102812345678FFFFFF2887654321FFFFFF",
                 ),
         ),
         // UpdateCommand(byte[])

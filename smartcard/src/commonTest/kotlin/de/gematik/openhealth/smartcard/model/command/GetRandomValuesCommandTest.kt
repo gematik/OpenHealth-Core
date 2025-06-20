@@ -27,7 +27,7 @@ import kotlin.test.assertEquals
 
 class GetRandomValuesCommandTest {
     @Test
-    fun shouldEqualGetRandomValuesCommand_WithLength0() {
+    fun shouldEqualGetRandomValuesCommand_WithLength0() =
         runTest {
             val expectedAPDU =
                 getExpectedApdu("GETRANDOMCOMMAND_APDU-1")
@@ -40,10 +40,9 @@ class GetRandomValuesCommandTest {
                 HealthCardTestScope().test(command).toHexString(hexSpaceFormat),
             )
         }
-    }
 
     @Test
-    fun shouldEqualGetRandomValuesCommand_WithLengthEight() {
+    fun shouldEqualGetRandomValuesCommand_WithLengthEight() =
         runTest {
             val expectedAPDU =
                 getExpectedApdu("GETRANDOMCOMMAND_APDU-2")
@@ -56,10 +55,9 @@ class GetRandomValuesCommandTest {
                 HealthCardTestScope().test(command).toHexString(hexSpaceFormat),
             )
         }
-    }
 
     @Test
-    fun shouldEqualGetRandomValuesCommand_WithLength16() {
+    fun shouldEqualGetRandomValuesCommand_WithLength16() =
         runTest {
             val expectedAPDU =
                 getExpectedApdu("GETRANDOMCOMMAND_APDU-3")
@@ -72,7 +70,6 @@ class GetRandomValuesCommandTest {
                 HealthCardTestScope().test(command).toHexString(hexSpaceFormat),
             )
         }
-    }
 
     @Test
     fun shouldEqualGetRandomValuesCommand_WithLength32() {

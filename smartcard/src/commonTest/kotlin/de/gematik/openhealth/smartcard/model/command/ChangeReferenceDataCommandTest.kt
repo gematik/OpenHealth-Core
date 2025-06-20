@@ -32,36 +32,16 @@ class ChangeReferenceDataCommandTest {
     private val parameters = arrayOf(true, false)
 
     @Test
-    fun shouldEqualChangeReferenceDataCommand1() =
-        runParametrizedTest(*parameters) {
-            val commandChaining = parameter<Boolean>()
-            val expectedAPDU = getExpectedApdu("ChangeReferenceDataCommand_APDU-1", commandChaining)
-            val command =
-                HealthCardCommand.changeReferenceData(
-                    passwordReference = PasswordReference(1),
-                    dfSpecific = commandChaining,
-                    oldSecret = EncryptedPinFormat2("123456"),
-                    newSecret = EncryptedPinFormat2("012345"),
-                )
-
-            assertEquals(
-                expectedAPDU,
-                HealthCardTestScope().test(command).toHexString(hexSpaceFormat),
-                message,
-            )
-        }
-
-    @Test
     fun shouldEqualChangeReferenceDataCommand2() =
         runParametrizedTest(*parameters) {
             val commandChaining = parameter<Boolean>()
             val expectedAPDU = getExpectedApdu("ChangeReferenceDataCommand_APDU-2", commandChaining)
             val command =
                 HealthCardCommand.changeReferenceData(
-                    passwordReference = PasswordReference(2),
+                    passwordReference = PasswordReference(1),
                     dfSpecific = commandChaining,
                     oldSecret = EncryptedPinFormat2("123456"),
-                    newSecret = EncryptedPinFormat2("012345"),
+                    newSecret = EncryptedPinFormat2("123456"),
                 )
 
             assertEquals(

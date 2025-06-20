@@ -32,7 +32,7 @@ import de.gematik.openhealth.smartcard.identifier.FileIdentifier
  * The process follows these steps:
  * 1. Selects the DF.ESIGN application using its AID (gemSpecObjSys, Section 5.5).
  * 2. Selects the EF.C.CH.AUT.E256 file using its FID (gemSpecObjSys, Section 5.5.9).
- * 3. Reads the certificate data incrementally from the file (gemSpecCos, Sections 10.3.3 and 10.4.2).
+ * 3. Reads the certificate data incrementally from the file (gemSpecCos, Section 14.9.5.1).
  *
  * @return The complete X.509 certificate as a byte array.
  */

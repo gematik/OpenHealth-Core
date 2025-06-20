@@ -50,7 +50,7 @@ private fun calculateP2(
 /**
  * Creates a [HealthCardCommand] for the SELECT command to select the root
  * of the object system or the parent folder.
- * (gemSpec_COS#14.2.6.1, gemSpec_COS#14.2.6.11, gemSpec_COS#14.2.6.2)
+ * (gemSpec_COS_3.14.0#14.2.6.1, gemSpec_COS_3.14.0#14.2.6.11, gemSpec_COS_3.14.0#14.2.6.2)
  *
  * @param selectParentElseRoot If true, selects the parent folder; otherwise, selects the root of the object system.
  * @param readFirst If true, requests the File Control Parameter (FCP); otherwise, only selects.
@@ -70,7 +70,7 @@ fun HealthCardCommand.Companion.select(
 /**
  * Creates a [HealthCardCommand] for the SELECT command to select a file with an
  * Application Identifier (AID), first occurrence, without File Control Parameter.
- * (gemSpec_COS#14.2.6.5)
+ * (gemSpec_COS_3.14.0#14.2.6.5)
  *
  * @param aid The Application Identifier.
  */
@@ -85,7 +85,7 @@ fun HealthCardCommand.Companion.select(aid: ApplicationIdentifier) =
 /**
  * Creates a [HealthCardCommand] for the SELECT command to select a file with an
  * Application Identifier (AID).
- * (gemSpec_COS#14.2.6.5 - 14.2.6.8)
+ * (gemSpec_COS_3.14.0#14.2.6.5 - 14.2.6.8)
  *
  * @param aid The Application Identifier.
  * @param selectNextElseFirstOccurrence If true, selects the next occurrence;
@@ -112,7 +112,7 @@ fun HealthCardCommand.Companion.select(
 /**
  * Creates a [HealthCardCommand] for the SELECT command to select a DF or EF with a
  * File Identifier (FID).
- * (gemSpec_COS#14.2.6.9, gemSpec_COS#14.2.6.13)
+ * (gemSpec_COS_3.14.0#14.2.6.9, gemSpec_COS_3.14.0#14.2.6.13)
  *
  * @param fid The File Identifier.
  * @param selectDfElseEf If true, selects a Dedicated File (DF);
@@ -126,7 +126,7 @@ fun HealthCardCommand.Companion.select(
 /**
  * Creates a [HealthCardCommand] for the SELECT command to select a DF or EF with a
  * File Identifier (FID).
- * (gemSpec_COS#14.2.6.9 - 14.2.6.10, gemSpec_COS#14.2.6.13 - 14.2.6.14)
+ * (gemSpec_COS_3.14.0#14.2.6.9 - 14.2.6.10, gemSpec_COS_3.14.0#14.2.6.13 - 14.2.6.14)
  *
  * @param fid The File Identifier.
  * @param selectDfElseEf If true, selects a Dedicated File (DF);

@@ -27,20 +27,15 @@ private const val MAX_OFFSET_WITHOUT_SFI_RANGE = 0x7FFF
 private const val MAX_OFFSET_WITH_SFI_RANGE = 255
 
 /**
- * Commands representing the Read Binary command in gemSpec_COS#14.3.2
- */
-
-/**
  * Creates a [HealthCardCommand] for the READ BINARY command without offset.
- * (gemSpec_COS#14.3.2)
+ * (gemSpec_COS_3.14.0#14.3.2)
  */
-@Suppress("ktlint:standard:no-consecutive-comments")
 fun HealthCardCommand.Companion.read(): HealthCardCommand =
     HealthCardCommand.read(0x00, EXPECT_ALL_WILDCARD)
 
 /**
  * Creates a[HealthCardCommand] for the READ BINARY command.
- * (gemSpec_COS#14.3.2)
+ * (gemSpec_COS_3.14.0#14.3.2)
  *
  * @param offset The offset from which to read.
  */
@@ -49,7 +44,7 @@ fun HealthCardCommand.Companion.read(offset: Int) =
 
 /**
  * Creates a [HealthCardCommand] for the READ BINARY command without ShortFileIdentifier.
- * (gemSpec_COS#14.3.2.1)
+ * (gemSpec_COS_3.14.0#14.3.2.1)
  *
  * @param offset The offset from which to read.
  * @param ne The maximum number of bytes to read.
@@ -75,7 +70,7 @@ fun HealthCardCommand.Companion.read(
 
 /**
  * Creates a [HealthCardCommand] for the READ BINARY command with ShortFileIdentifier.
- * (gemSpec_COS#14.3.2.2)
+ * (gemSpec_COS_3.14.0#14.3.2.2)
  *
  * @param sfi The ShortFileIdentifier.
  */
@@ -84,7 +79,7 @@ fun HealthCardCommand.Companion.read(sfi: ShortFileIdentifier) =
 
 /**
  * Creates a [HealthCardCommand] for the READ BINARY command with ShortFileIdentifier.
- * (gemSpec_COS#14.3.2.2)
+ * (gemSpec_COS_3.14.0#14.3.2.2)
  *
  * @param sfi The ShortFileIdentifier.
  * @param offset The offset from which to read.
@@ -96,7 +91,7 @@ fun HealthCardCommand.Companion.read(
 
 /**
  * Creates a [HealthCardCommand] for the READ BINARY command with ShortFileIdentifier.
- * (gemSpec_COS#14.3.2.2)
+ * (gemSpec_COS_3.14.0#14.3.2.2)
  *
  * @param sfi The ShortFileIdentifier.
  * @param offset The offset from which to read.

@@ -16,31 +16,22 @@
 
 package de.gematik.openhealth.smartcard.command
 
-import de.gematik.openhealth.smartcard.Requirement
-
-/**
- * Commands representing Get Random command in gemSpec_COS#14.9.5
- */
-
 private const val CLA = 0x80
 private const val INS = 0x84
 private const val NO_MEANING = 0x00
 
 /**
  * Creates a [HealthCardCommand] to request random values from the card.
+ * Use case gemSpec_COS_3.14.0#14.9.5.1
  *
  * @param length The number of random bytes to request.
  * @return A [HealthCardCommand] for requesting random values.
  */
-@Requirement(
-    "GS-A_4367#6",
-    "GS-A_4368#5",
-    sourceSpecification = "gemSpec_Krypt",
-    rationale =
-        "Random numbers are generated using the RNG of the health card." +
-            "This generator fulfills BSI-TR-03116#3.4 PTG.2 required by gemSpec_COS#14.9.5.1",
-)
 fun HealthCardCommand.Companion.getRandomValues(length: Int) =
+// REQ-BEGIN: GS-A_4367, GS-A_4368
+// | gemSpec_Krypt
+// | Random numbers are generated using the RNG of the health card.
+// This generator fulfills BSI-TR-03116#3.4 PTG.2 required by gemSpec_COS_3.14.0#14.9.5.1
     HealthCardCommand(
         expectedStatus = getRandomValuesStatus,
         cla = CLA,
@@ -49,3 +40,4 @@ fun HealthCardCommand.Companion.getRandomValues(length: Int) =
         p2 = NO_MEANING,
         ne = length,
     )
+// REQ-END: GS-A_4367, GS-A_4368

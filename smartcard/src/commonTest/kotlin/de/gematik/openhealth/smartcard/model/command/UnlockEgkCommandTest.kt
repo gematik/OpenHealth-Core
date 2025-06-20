@@ -26,8 +26,8 @@ import de.gematik.openhealth.smartcard.data.getExpectedApdu
 import de.gematik.openhealth.smartcard.hexSpaceFormat
 import de.gematik.openhealth.smartcard.parameter
 import de.gematik.openhealth.smartcard.runParametrizedTest
-import kotlin.test.DefaultAsserter.assertEquals
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class UnlockEgkCommandTest {
     private val parameters = arrayOf(true, false)
@@ -36,8 +36,7 @@ class UnlockEgkCommandTest {
     fun shouldEqualUnlockEgkCommandWithoutNewSecret() =
         runParametrizedTest(*parameters) {
             val dfSpecific = parameter<Boolean>()
-            val unlockMethod =
-                UnlockMethod.ResetRetryCounter.name
+            val unlockMethod = UnlockMethod.ResetRetryCounter
             val passwordReference = PasswordReference(1)
             val puk = EncryptedPinFormat2("12345678")
             val newSecret: EncryptedPinFormat2? = null
@@ -66,7 +65,7 @@ class UnlockEgkCommandTest {
     fun shouldEqualUnlockEgkCommandWithNewSecret() =
         runParametrizedTest(*parameters) {
             val dfSpecific = parameter<Boolean>()
-            val unlockMethod = UnlockMethod.ResetRetryCounterWithNewSecret.name
+            val unlockMethod = UnlockMethod.ResetRetryCounterWithNewSecret
             val passwordReference = PasswordReference(1)
             val puk = EncryptedPinFormat2("12345678")
             val newSecret = EncryptedPinFormat2("87654321")

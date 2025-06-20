@@ -25,7 +25,7 @@ import de.gematik.openhealth.smartcard.card.CardKey
 import de.gematik.openhealth.smartcard.card.PsoAlgorithm
 
 /**
- * Commands representing Manage Security Environment command in gemSpec_COS#14.9.9
+ * Commands representing Manage Security Environment command in gemSpec_COS_3.14.0#14.9.9
  */
 
 private const val CLA = 0x00
@@ -37,7 +37,7 @@ private const val MODE_AFFECTED_LIST_ELEMENT_IS_SIGNATURE_CREATION = 0xB6
 
 /**
  * Creates a [HealthCardCommand] for the MANAGE SECURITY ENVIRONMENT command
- * without curves. (gemSpec_COS#14.9.9.7)
+ * without curves. (gemSpec_COS_3.14.0#14.9.9.7)
  *
  * This command is used to set up the security environment for external
  * authentication.
@@ -71,7 +71,7 @@ fun HealthCardCommand.Companion.manageSecEnvWithoutCurves(
 
 /**
  * Creates a [HealthCardCommand] for the MANAGE SECURITY ENVIRONMENT command
- * for signing. (gemSpec_COS#14.9.9.9)
+ * for signing. (gemSpec_COS_3.14.0#14.9.9.9)
  *
  * This command is used to set up the security environment for external
  * authentication.

@@ -26,15 +26,16 @@ class ParametrizedTestScope(
 
 inline fun <reified R> ParametrizedTestScope.parameter(): R = parameter as R
 
+inline fun <reified R> ParametrizedTestScope.parameter(selector: Any): R =
+    (parameter as Map<*, *>)[selector]!! as R
+
 fun runParametrizedTest(
     vararg parameters: Any,
     block: suspend ParametrizedTestScope.(Any) -> Unit,
-) {
-    runTest {
-        initializeNativeCryptoProvider()
-        parameters.forEach {
-            ParametrizedTestScope(it, "Test with parameter `$it`").block(it)
-        }
+) = runTest {
+    initializeNativeCryptoProvider()
+    parameters.forEach {
+        ParametrizedTestScope(it, "Test with parameter `$it`").block(it)
     }
 }
 

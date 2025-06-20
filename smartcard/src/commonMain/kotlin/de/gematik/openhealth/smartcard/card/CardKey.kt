@@ -28,13 +28,13 @@ class CardKey(
 ) : ICardKeyReference {
     init {
         require(!(keyId < MIN_KEY_ID || keyId > MAX_KEY_ID)) {
-            // gemSpec_COS#N016.400 and #N017.100
+            // gemSpec_COS_3.14.0#N016.400 and #N017.100
             "Key ID out of range [$MIN_KEY_ID,$MAX_KEY_ID]"
         }
     }
 
     override fun calculateKeyReference(dfSpecific: Boolean): Int {
-        // gemSpec_COS#N099.600
+        // gemSpec_COS_3.14.0#N099.600
         var keyReference = keyId
         if (dfSpecific) {
             keyReference += ICardKeyReference.DF_SPECIFIC_PWD_MARKER

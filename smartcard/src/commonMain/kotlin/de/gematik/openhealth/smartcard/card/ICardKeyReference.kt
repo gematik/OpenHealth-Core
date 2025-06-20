@@ -24,8 +24,14 @@ package de.gematik.openhealth.smartcard.card
  * - or private key object
  */
 interface ICardKeyReference {
+    /**
+     * Calculate the key reference for the given object.
+     */
     fun calculateKeyReference(dfSpecific: Boolean): Int
 
+    /**
+     * DF Specific Password Marker
+     */
     companion object {
         const val DF_SPECIFIC_PWD_MARKER = 0x80
     }

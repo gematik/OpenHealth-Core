@@ -18,7 +18,6 @@ import com.vanniktech.maven.publish.SonatypeHost
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidLibrary)
     alias(libs.plugins.vanniktech.mavenPublish)
 }
 
@@ -27,15 +26,6 @@ version = project.findProperty("gematik.version") as String
 
 kotlin {
     jvm()
-//    androidTarget {
-// //        publishLibraryVariants("release")
-//        compilerOptions {
-//            jvmTarget.set(JvmTarget.JVM_1_8)
-//        }
-//    }
-//    iosX64()
-//    iosArm64()
-//    iosSimulatorArm64()
     js {
         browser {}
         nodejs {}
@@ -65,20 +55,6 @@ kotlin {
                 }
             }
         }
-    }
-}
-
-android {
-    namespace = "org.jetbrains.kotlinx.multiplatform.library.template"
-    compileSdk =
-        libs.versions.android.compileSdk
-            .get()
-            .toInt()
-    defaultConfig {
-        minSdk =
-            libs.versions.android.minSdk
-                .get()
-                .toInt()
     }
 }
 

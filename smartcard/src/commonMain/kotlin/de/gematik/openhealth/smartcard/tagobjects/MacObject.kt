@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package de.gematik.openhealth.smartcard.tagobjects
 
 import de.gematik.openhealth.asn1.Asn1Encoder
 import de.gematik.openhealth.asn1.Asn1Tag
@@ -32,7 +33,8 @@ private const val BLOCK_SIZE = 16
  *
  *
  * @param header byte array with extracted header from plain CommandApdu
- * @param commandDataOutput ByteArrayOutputStream with extracted data and expected length from plain CommandApdu
+ * @param commandDataOutput ByteArrayOutputStream with extracted data
+ * and expected length from plain CommandApdu
  * @param kMac byte array with Session key for message authentication
  * @param ssc byte array with send sequence counter
  */

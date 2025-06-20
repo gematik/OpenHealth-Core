@@ -17,9 +17,10 @@
 package de.gematik.openhealth.smartcard.card
 
 /**
- * Represent a specific PSO Algorithm
+ * Represents a specific PSO (Perform Security Operation) Algorithm
  *
- * @see "ISO/IEC7816-4 und gemSpec_COS 'Spezifikation des Card Operating System'"
+ * ISO/IEC7816-4
+ * gemSpec_COS_3.14.0#14.8 PSO Algorithm
  */
 enum class PsoAlgorithm(
     val identifier: Int,
