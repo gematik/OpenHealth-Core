@@ -60,7 +60,7 @@ kotlin {
 
 mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
-//    signAllPublications()
+    signAllPublications()
 
     coordinates(group.toString(), "asn1", version.toString())
 

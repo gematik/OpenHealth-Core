@@ -104,7 +104,7 @@ kotlin {
 
 mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
-//    signAllPublications()
+    signAllPublications()
 
     coordinates(group.toString(), "crypto", version.toString())
 
