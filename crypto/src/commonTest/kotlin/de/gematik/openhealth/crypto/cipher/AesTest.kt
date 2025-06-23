@@ -103,6 +103,7 @@ class AesTest {
                     16.bytes,
                     "1234567890123456".encodeToByteArray(),
                     byteArrayOf(),
+                    autoPadding = false
                 ).createCipher(
                     SecretKey("1234567890123456".encodeToByteArray()),
                 )
@@ -126,6 +127,7 @@ class AesTest {
                     "0F 98 50 42 1A DA DC FF 64 5F 7E 79 79 E2 E6 8A".hexToByteArray(
                         hexSpaceFormat,
                     ),
+                    autoPadding = false
                 ).createDecipher(
                     SecretKey("1234567890123456".encodeToByteArray()),
                 )

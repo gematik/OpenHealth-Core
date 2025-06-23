@@ -27,20 +27,20 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
 @OptIn(UnsafeCryptoApi::class)
-private fun AesCipherSpec.algorithmName(): String =
+private fun AesCipherSpec.algorithmName(autoPadding: Boolean): String =
     when (this) {
-        is AesEcbSpec -> if (autoPadding) "AES/ECB/PKCS5Padding" else "AES/ECB/NoPadding"
-        is AesCbcSpec -> if (autoPadding) "AES/CBC/PKCS5Padding" else "AES/CBC/NoPadding"
-        is AesGcmCipherSpec -> "AES/GCM/NoPadding"
-    }
+        is AesEcbSpec -> "AES/ECB/"
+        is AesCbcSpec -> "AES/CBC/"
+        is AesGcmCipherSpec -> "AES/GCM/"
+    } + if (autoPadding) "PKCS5Padding" else "NoPadding"
 
 @OptIn(UnsafeCryptoApi::class)
-private fun AesDecipherSpec.algorithmName(): String =
+private fun AesDecipherSpec.algorithmName(autoPadding: Boolean): String =
     when (this) {
-        is AesEcbSpec -> if (autoPadding) "AES/ECB/PKCS5Padding" else "AES/ECB/NoPadding"
-        is AesCbcSpec -> if (autoPadding) "AES/CBC/PKCS5Padding" else "AES/CBC/NoPadding"
-        is AesGcmDecipherSpec -> "AES/GCM/NoPadding"
-    }
+        is AesEcbSpec -> "AES/ECB/"
+        is AesCbcSpec -> "AES/CBC/"
+        is AesGcmDecipherSpec -> "AES/GCM/"
+    } + if (autoPadding) "PKCS5Padding" else "NoPadding"
 
 private class JvmAesCipher(
     override val spec: AesCipherSpec,
@@ -50,7 +50,7 @@ private class JvmAesCipher(
 
     @OptIn(UnsafeCryptoApi::class)
     private val cipher: Cipher =
-        Cipher.getInstance(spec.algorithmName()).apply {
+        Cipher.getInstance(spec.algorithmName(spec.autoPadding)).apply {
             val secretKey = SecretKeySpec(key.data, "AES")
             when (spec) {
                 is AesGcmCipherSpec -> {
@@ -59,7 +59,15 @@ private class JvmAesCipher(
                     updateAAD(spec.aad)
                 }
                 is AesCbcSpec -> {
-                    val ivSpec = IvParameterSpec(spec.iv)
+                    val iv =
+                        if (spec.iv.isEmpty()) {
+                            ByteArray(
+                                spec.tagLength.bytes,
+                            ) { 0x00 }
+                        } else {
+                            spec.iv
+                        }
+                    val ivSpec = IvParameterSpec(iv)
                     init(Cipher.ENCRYPT_MODE, secretKey, ivSpec)
                 }
                 else -> init(Cipher.ENCRYPT_MODE, secretKey)
@@ -87,7 +95,7 @@ private class JvmAesDecipher(
 ) : AesDecipher {
     @OptIn(UnsafeCryptoApi::class)
     private val cipher: Cipher =
-        Cipher.getInstance(spec.algorithmName()).apply {
+        Cipher.getInstance(spec.algorithmName(spec.autoPadding)).apply {
             val secretKey = SecretKeySpec(key.data, "AES")
             when (spec) {
                 is AesGcmDecipherSpec -> {
@@ -96,7 +104,15 @@ private class JvmAesDecipher(
                     updateAAD(spec.aad)
                 }
                 is AesCbcSpec -> {
-                    val ivSpec = IvParameterSpec(spec.iv)
+                    val iv =
+                        if (spec.iv.isEmpty()) {
+                            ByteArray(
+                                spec.tagLength.bytes,
+                            ) { 0x00 }
+                        } else {
+                            spec.iv
+                        }
+                    val ivSpec = IvParameterSpec(iv)
                     init(Cipher.DECRYPT_MODE, secretKey, ivSpec)
                 }
                 else -> init(Cipher.DECRYPT_MODE, secretKey)

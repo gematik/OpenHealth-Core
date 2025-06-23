@@ -22,7 +22,6 @@ import de.gematik.openhealth.smartcard.command.CardResponseApdu
 import de.gematik.openhealth.smartcard.command.HealthCardCommand
 
 class HealthCardTestScope(
-    override val cardIdentifier: String = "",
     override val supportsExtendedLength: Boolean = true,
 ) : HealthCardScope {
     private var lastCardCommandAPDU: CardCommandApdu? = null
@@ -30,9 +29,12 @@ class HealthCardTestScope(
     val lastCommandAPDUBytes: ByteArray
         get() = lastCardCommandAPDU?.apdu ?: ByteArray(0)
 
-    override suspend fun transmit(command: CardCommandApdu): CardResponseApdu {
-        lastCardCommandAPDU = command
-        return CardResponseApdu(byteArrayOf(0x90.toByte(), 0x00))
+    override fun transmit(
+        commandApdu: CardCommandApdu,
+        response: (CardResponseApdu) -> Unit,
+    ) {
+        lastCardCommandAPDU = commandApdu
+        response(CardResponseApdu(byteArrayOf(0x90.toByte(), 0x00)))
     }
 
     suspend fun test(cmd: HealthCardCommand): ByteArray {

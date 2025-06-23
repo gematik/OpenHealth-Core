@@ -22,17 +22,26 @@ import de.gematik.openhealth.smartcard.command.HealthCardResponseStatus
 import de.gematik.openhealth.smartcard.command.ResponseException
 import de.gematik.openhealth.smartcard.command.commandApdu
 import de.gematik.openhealth.smartcard.command.requireSuccess
+import kotlin.jvm.JvmSynthetic
 
-interface HealthCardScope : SmartCard.CommunicationScope {
+/**
+ * Scope for communicating with the health card.
+ */
+interface HealthCardScope : SmartCardCommunicationScope {
     /**
-     * Transmits the command on the given [SmartCard.CommunicationScope] and throws a [ResponseException]
+     * Transmits the command on the given [SmartCardCommunicationScope] and throws a [ResponseException]
      * if the command was not successful.
      */
+    @JvmSynthetic
     suspend fun HealthCardCommand.transmitSuccessfully(): HealthCardResponse =
         transmit().also {
             it.requireSuccess()
         }
 
+    /**
+     * Transmits the command on the given [SmartCardCommunicationScope] and returns the response.
+     */
+    @JvmSynthetic
     suspend fun HealthCardCommand.transmit(): HealthCardResponse {
         val commandApdu = this.commandApdu(supportsExtendedLength)
         return transmit(commandApdu).let {
@@ -45,13 +54,14 @@ interface HealthCardScope : SmartCard.CommunicationScope {
 }
 
 private class HealthCardScopeImpl(
-    scope: SmartCard.CommunicationScope,
+    scope: SmartCardCommunicationScope,
 ) : HealthCardScope,
-    SmartCard.CommunicationScope by scope
+    SmartCardCommunicationScope by scope
 
-suspend fun <R> SmartCard.CommunicationScope.useHealthCard(
-    block: suspend HealthCardScope.() -> R,
-): R = block(HealthCardScopeImpl(this))
-
-fun <R> SmartCard.CommunicationScope.useHealthCardBlocking(block: HealthCardScope.() -> R): R =
-    block(HealthCardScopeImpl(this))
+/**
+ * Creates a new [HealthCardScope] for the given [SmartCardCommunicationScope].
+ *
+ * @param scope The [SmartCardCommunicationScope] to use for communication.
+ *
+ */
+fun SmartCardCommunicationScope.healthCardScope(): HealthCardScope = HealthCardScopeImpl(this)

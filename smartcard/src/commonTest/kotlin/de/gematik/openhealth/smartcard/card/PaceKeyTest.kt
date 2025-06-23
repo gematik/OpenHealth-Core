@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.gematik.openhealth.smartcard.model.card
+package de.gematik.openhealth.smartcard.card
 
 import de.gematik.openhealth.crypto.ExperimentalCryptoApi
 import de.gematik.openhealth.crypto.key.EcCurve

@@ -60,15 +60,18 @@ internal class TrustedChannelScopeImpl(
     override val paceKey: PaceKey,
 ) : TrustedChannelScope,
     HealthCardScope {
-    override val cardIdentifier: String = scope.cardIdentifier
     override val supportsExtendedLength: Boolean = scope.supportsExtendedLength
 
     private val secureMessagingSequenceCounter: ByteArray = ByteArray(CIPHER_BLOCK_SIZE_BYTES)
 
-    override suspend fun transmit(commandApdu: CardCommandApdu): CardResponseApdu {
+    override fun transmit(
+        commandApdu: CardCommandApdu,
+        response: (responseApdu: CardResponseApdu) -> Unit,
+    ) {
         val encryptedCommandApdu = encrypt(commandApdu)
-        val encryptedResponseApdu = scope.transmit(encryptedCommandApdu)
-        return decrypt(encryptedResponseApdu)
+        scope.transmit(encryptedCommandApdu) { encryptedResponseApdu ->
+            response(decrypt(encryptedResponseApdu))
+        }
     }
 
     private fun incrementMsgSeqCounter() {

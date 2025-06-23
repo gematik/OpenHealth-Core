@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.gematik.openhealth.smartcard.model.command
+package de.gematik.openhealth.smartcard.command
 
 import de.gematik.openhealth.smartcard.HealthCardTestScope
 import de.gematik.openhealth.smartcard.card.PasswordReference

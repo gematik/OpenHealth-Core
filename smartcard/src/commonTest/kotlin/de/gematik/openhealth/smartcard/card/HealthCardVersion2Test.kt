@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.gematik.openhealth.smartcard.model.card
+package de.gematik.openhealth.smartcard.card
 
 import de.gematik.openhealth.smartcard.card.parseHealthCardVersion2
 import de.gematik.openhealth.smartcard.hexSpaceFormat
