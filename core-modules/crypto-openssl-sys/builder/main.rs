@@ -1,36 +1,160 @@
-use std::path::PathBuf;
+use std::{env, fs, path::PathBuf, process::Command};
 
 fn current_dir() -> PathBuf {
     std::env::current_dir().unwrap()
 }
 
 fn main() {
-    let manifest_dir = current_dir();
-    let target = std::env::var("TARGET").unwrap();
-    let openssl_target = match target.as_str() {
-        "aarch64-apple-darwin" => "openssl-darwin64-arm64-cc",
-        "aarch64-unknown-linux-gnu" => "openssl-linux-aarch64",
-        "x86_64-unknown-linux-gnu" => "openssl-linux-x86_64",
-        other => panic!("Unsupported target: {}", other),
-    };
+    build_openssl();
+    build_openssl_bindings();
+}
 
+fn build_openssl() {
+    const OPENSSL_VERSION: &str = "8fabfd81094d1d9f8890df4bee083aa6f77d769d";
+
+    let manifest = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
+    let target = env::var("TARGET").unwrap_or_else(|_| "aarch64-apple-darwin".to_string());
+
+    let openssl_target = get_openssl_target(&target);
+    let src = manifest.join("openssl-src");
+    let install = manifest.join(format!("openssl-{}", openssl_target));
+
+    // Clean & prepare
+    if src.exists() {
+        fs::remove_dir_all(&src)
+            .unwrap_or_else(|e| eprintln!("Warning: Failed to remove src dir: {}", e));
+    }
+    if install.exists() {
+        fs::remove_dir_all(&install)
+            .unwrap_or_else(|e| eprintln!("Warning: Failed to remove install dir: {}", e));
+    }
+    fs::create_dir_all(&install).unwrap();
+
+    // Clone & checkout
+    run_command(
+        "git",
+        &[
+            "clone",
+            "https://github.com/openssl/openssl.git",
+            src.to_str().unwrap(),
+        ],
+        None,
+    );
+    run_command("git", &["checkout", OPENSSL_VERSION], Some(&src));
+
+    // Configure
+    let configure_args = [
+        target.as_str(),
+        &format!("--prefix={}", install.display()),
+        "no-asm",
+        "no-async",
+        "no-egd",
+        "no-ktls",
+        "no-module",
+        "no-posix-io",
+        "no-secure-memory",
+        "no-shared",
+        "no-sock",
+        "no-stdio",
+        "no-thread-pool",
+        "no-threads",
+        "no-ui-console",
+        "no-docs",
+    ];
+    run_command(
+        &src.join("Configure").to_str().unwrap(),
+        &configure_args,
+        Some(&src),
+    );
+
+    // Build & install
+    let jobs = num_cpus::get().to_string();
+    run_command("make", &[&format!("-j{}", jobs)], Some(&src));
+    run_command("make", &["install"], Some(&src));
+
+    // Tell Cargo where to find the built libs
+    println!(
+        "cargo:rustc-link-search=native={}",
+        install.join("lib").display()
+    );
+    println!("cargo:rustc-link-lib=static=crypto");
+    println!("cargo:rustc-link-lib=static=ssl");
+}
+
+fn get_openssl_target(target: &str) -> &'static str {
+    match target {
+        "aarch64-apple-darwin" => "darwin64-arm64-cc",
+        "x86_64-apple-darwin" => "darwin64-x86_64-cc",
+        "aarch64-unknown-linux-gnu" => "linux-aarch64",
+        "x86_64-unknown-linux-gnu" => "linux-x86_64",
+        _ => "darwin64-arm64-cc", // fallback
+    }
+}
+
+fn build_configure_args(target: &str, install_dir: &PathBuf) -> Vec<String> {
+    vec![
+        target.to_string(),
+        format!("--prefix={}", install_dir.display()),
+        "no-asm".to_string(),
+        "no-async".to_string(),
+        "no-egd".to_string(),
+        "no-ktls".to_string(),
+        "no-module".to_string(),
+        "no-posix-io".to_string(),
+        "no-secure-memory".to_string(),
+        "no-shared".to_string(),
+        "no-sock".to_string(),
+        "no-stdio".to_string(),
+        "no-thread-pool".to_string(),
+        "no-threads".to_string(),
+        "no-ui-console".to_string(),
+        "no-docs".to_string(),
+    ]
+}
+
+fn run_command(prog: &str, args: &[&str], cwd: Option<&PathBuf>) {
+    let mut command = Command::new(prog);
+    command.args(args);
+
+    if let Some(dir) = cwd {
+        command.current_dir(dir);
+    }
+
+    let status = command
+        .status()
+        .unwrap_or_else(|e| panic!("Failed to execute command '{}': {}", prog, e));
+
+    if !status.success() {
+        panic!(
+            "Command failed: {} {:?} (exit code: {:?})",
+            prog,
+            args,
+            status.code()
+        );
+    }
+}
+
+fn build_openssl_bindings() {
+    let manifest_dir = current_dir();
+    let target = env::var("TARGET").unwrap_or_else(|_| "aarch64-apple-darwin".to_string());
+    let openssl_target = get_openssl_target(&target);
+    let openssl_dir = format!("openssl-{}", openssl_target);
+
+    // Set up library linking
     println!(
         "cargo:rustc-link-search=native={}/{}/lib",
         manifest_dir.display(),
-        openssl_target
+        openssl_dir
     );
     println!("cargo:rustc-link-lib=static=crypto");
+    println!("cargo:rustc-link-lib=static=ssl");
 
-    let mut clang_args: Vec<String> = Vec::new();
+    // Build clang args for bindgen
+    let include_path = format!("{}/{}/include/", manifest_dir.display(), openssl_dir);
+    let clang_args = vec!["-I".to_string(), include_path];
 
-    clang_args.push("-I".to_string());
-    clang_args.push(format!(
-        "{}/{}/include/",
-        manifest_dir.display(),
-        openssl_target
-    ).to_string());
-
-    bindgen::Builder::default()
+    // Generate bindings
+    let bindings = bindgen::Builder::default()
         .derive_copy(true)
         .derive_debug(true)
         .derive_default(true)
@@ -38,7 +162,6 @@ fn main() {
         .allowlist_file(r".*(/|\\)openssl((/|\\)[^/\\]+)+\.h")
         .allowlist_file(r".*(/|\\)rust_wrapper\.h")
         .rustified_enum(r"point_conversion_form_t")
-        // .rust_target(bindgen::RustTarget::Stable_1_59)
         .default_macro_constant_type(bindgen::MacroTypeVariation::Signed)
         .generate_comments(true)
         .fit_macro_constants(false)
@@ -46,13 +169,15 @@ fn main() {
         .layout_tests(true)
         .prepend_enum_name(true)
         .formatter(bindgen::Formatter::Rustfmt)
-        .header(format!(
-            "{}/include/rust_wrapper.h",
-            manifest_dir.display()
-        ))
+        .header(format!("{}/include/rust_wrapper.h", manifest_dir.display()))
         .clang_args(clang_args)
         .generate()
-        .expect("Unable to generate bindings")
-        .write_to_file(format!("{}/src/bindings.rs", manifest_dir.display()))
-        .expect("write bindings");
+        .expect("Unable to generate bindings");
+
+    let bindings_path = format!("{}/src/bindings.rs", manifest_dir.display());
+    bindings
+        .write_to_file(&bindings_path)
+        .expect("Failed to write bindings to file");
+
+    println!("cargo:rerun-if-changed=include/rust_wrapper.h");
 }
