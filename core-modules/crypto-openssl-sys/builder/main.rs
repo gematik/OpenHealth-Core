@@ -44,7 +44,8 @@ fn build_openssl() {
 
     // Configure
     let configure_args = [
-        target.as_str(),
+        // WICHTIG: Den OpenSSL-spezifischen Target-Namen verwenden, nicht den Rust-Triple
+        openssl_target,
         &format!("--prefix={}", install.display()),
         "no-asm",
         "no-async",
