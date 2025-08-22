@@ -196,8 +196,6 @@ impl<'a> Asn1Decoder<'a> {
                 }
             },
             true => {
-                // Bei unendiger Länge: nur wenn direkt 0x00 0x00 folgt, EOC konsumieren,
-                // sonst "Unparsed bytes remaining" melden.
                 if self.offset + 2 <= self.data.len()
                     && self.data[self.offset] == 0x00
                     && self.data[self.offset + 1] == 0x00

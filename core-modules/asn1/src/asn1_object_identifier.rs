@@ -97,11 +97,9 @@ pub fn write_object_identifier(encoder: &mut Asn1Encoder, oid: &str) -> Asn1Resu
             ));
         }
 
-        // Erste zwei Teile als eine Zahl (ggf. über Base-128 mit Fortsetzungsbits)
         let first_value = first * 40 + second;
         write_multi_byte(inner_encoder, first_value)?;
 
-        // Übrige Teile
         for i in 2..parts.len() {
             write_multi_byte(inner_encoder, parts[i])?;
         }
@@ -123,7 +121,6 @@ fn write_multi_byte(encoder: &mut Asn1Encoder, integer: u32) -> Asn1Result<()> {
         }
     }
 
-    // In umgekehrter Reihenfolge schreiben, mit gesetztem MSB für alle bis auf das letzte Byte
     for (index, byte) in bytes.iter().rev().enumerate() {
         if index < bytes.len() - 1 {
             encoder.write_byte(byte | 0x80);
