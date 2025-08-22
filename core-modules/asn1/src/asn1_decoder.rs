@@ -1,44 +1,25 @@
+/*
+ * Copyright 2025 gematik GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 use std::fmt::Debug;
 use std::str;
 use thiserror::Error;
 use crate::Asn1Tag;
-
-/// ASN.1 type identifiers as defined in ITU-T X.680.
-pub mod asn1_type {
-    pub const BOOLEAN: u32 = 0x01;
-    pub const INTEGER: u32 = 0x02;
-    pub const BIT_STRING: u32 = 0x03;
-    pub const OCTET_STRING: u32 = 0x04;
-    pub const NULL: u32 = 0x05;
-    pub const OBJECT_IDENTIFIER: u32 = 0x06;
-    pub const OBJECT_DESCRIPTOR: u32 = 0x07;
-    pub const EXTERNAL: u32 = 0x08;
-    pub const REAL: u32 = 0x09;
-    pub const ENUMERATED: u32 = 0x0A;
-    pub const EMBEDDED_PDV: u32 = 0x0B;
-    pub const UTF8_STRING: u32 = 0x0C;
-    pub const RELATIVE_OID: u32 = 0x0D;
-    pub const TIME: u32 = 0x0E;
-    pub const SEQUENCE: u32 = 0x10;
-    pub const SET: u32 = 0x11;
-    pub const NUMERIC_STRING: u32 = 0x12;
-    pub const PRINTABLE_STRING: u32 = 0x13;
-    pub const TELETEX_STRING: u32 = 0x14;
-    pub const VIDEOTEX_STRING: u32 = 0x15;
-    pub const IA5_STRING: u32 = 0x16;
-    pub const UTC_TIME: u32 = 0x17;
-    pub const GENERALIZED_TIME: u32 = 0x18;
-    pub const GRAPHIC_STRING: u32 = 0x19;
-    pub const VISIBLE_STRING: u32 = 0x1A;
-    pub const GENERAL_STRING: u32 = 0x1B;
-    pub const UNIVERSAL_STRING: u32 = 0x1C;
-    pub const CHARACTER_STRING: u32 = 0x1D;
-    pub const BMP_STRING: u32 = 0x1E;
-    pub const DATE: u32 = 0x1F;
-    pub const TIME_OF_DAY: u32 = 0x20;
-    pub const DATE_TIME: u32 = 0x21;
-    pub const DURATION: u32 = 0x22;
-}
+use crate::asn1_date_time::{Asn1GeneralizedTime, Asn1UtcTime};
+use crate::asn1_tag::asn1_type;
 
 /// Error type for ASN.1 decoder.
 #[derive(Error, Debug)]
@@ -92,7 +73,7 @@ impl<'a> Asn1Decoder<'a> {
     /// Sets the current offset.
     pub fn set_offset(&mut self, value: usize) -> Result<(), Asn1DecoderError> {
         if value > self.end_offset {
-            return Err(Asn1DecoderError::new("Offset must be <= `end_offset`"));
+            return Err(Asn1DecoderError::new("Offset must be <= `endOffset`"));
         }
         self.offset = value;
         Ok(())
@@ -181,7 +162,7 @@ impl<'a> Asn1Decoder<'a> {
     }
 
     /// Advances the decoder with the given tag and executes the provided block.
-    pub fn advance_with_tag<T, F>(&mut self, tag_number: u32, tag_class: u8, block: F) -> Result<T, Asn1DecoderError>
+    pub fn advance_with_tag<T, F>(&mut self, tag_number: u8, tag_class: u8, block: F) -> Result<T, Asn1DecoderError>
     where
         F: FnOnce(&mut Asn1Decoder<'a>) -> Result<T, Asn1DecoderError>,
     {
@@ -215,10 +196,15 @@ impl<'a> Asn1Decoder<'a> {
                 }
             },
             true => {
-                // Check end of content `0x00 0x00` on infinite length
-                let end_bytes = self.read_bytes(2)?;
-                if end_bytes != [0x00, 0x00] {
-                    return self.fail("Infinite length object must be finished with `0x00 0x00`");
+                // Bei unendiger Länge: nur wenn direkt 0x00 0x00 folgt, EOC konsumieren,
+                // sonst "Unparsed bytes remaining" melden.
+                if self.offset + 2 <= self.data.len()
+                    && self.data[self.offset] == 0x00
+                    && self.data[self.offset + 1] == 0x00
+                {
+                    self.offset += 2; // EOC konsumieren
+                } else {
+                    return self.fail("Unparsed bytes remaining");
                 }
             }
         }
@@ -242,7 +228,6 @@ impl<'a> Asn1Decoder<'a> {
 
     /// Read length bytes.
     pub fn read_bytes(&mut self, length: usize) -> Result<Vec<u8>, Asn1DecoderError> {
-
         if self.offset + length > self.end_offset {
             return self.fail("Not enough data to read requested bytes");
         }
@@ -256,19 +241,19 @@ impl<'a> Asn1Decoder<'a> {
     /// Reads the next tag from the data, handling multi-byte tags.
     pub fn read_tag(&mut self) -> Result<Asn1Tag, Asn1DecoderError> {
         // Read the first byte of the tag
-        let first_byte = self.read_byte()? as u32;
+        let first_byte = self.read_byte()?;
         let tag_class_and_constructed = (first_byte & 0xE0) as u8; // Class and constructed bits
         let tag_number = first_byte & 0x1F;
 
         if tag_number == 0x1F {
             // Multibyte tag: Read until MSB is 0
-            let mut value = 0u32;
+            let mut value: u8 = 0;
             loop {
                 if self.offset >= self.end_offset {
                     return self.fail("Unexpected end of data in tag");
                 }
 
-                let next_byte = self.read_byte()? as u32;
+                let next_byte = self.read_byte()?;
                 value = (value << 7) | (next_byte & 0x7F);
 
                 if next_byte & 0x80 == 0 {
@@ -420,59 +405,315 @@ pub fn read_octet_string(decoder: &mut Asn1Decoder) -> Result<Vec<u8>, Asn1Decod
     })
 }
 
+/// Read ASN.1 UTC_TIME.
+pub fn read_utc_time(decoder: &mut Asn1Decoder) -> Result<Asn1UtcTime, Asn1DecoderError> {
+    decoder.advance_with_tag(asn1_type::UTC_TIME, 0, |decoder| {
+        let bytes = decoder.read_bytes(decoder.remaining_length())?;
+        let s = match str::from_utf8(&bytes) {
+            Ok(s) => s,
+            Err(e) => return decoder.fail_with_cause(e, "Malformed UTCTime"),
+        };
+        match Asn1UtcTime::parse(s) {
+            Ok(t) => Ok(t),
+            Err(e) => decoder.fail(format!("Malformed UTCTime: {}", e)),
+        }
+    })
+}
+
+/// Read ASN.1 GENERALIZED_TIME.
+pub fn read_generalized_time(decoder: &mut Asn1Decoder) -> Result<Asn1GeneralizedTime, Asn1DecoderError> {
+    decoder.advance_with_tag(asn1_type::GENERALIZED_TIME, 0, |decoder| {
+        let bytes = decoder.read_bytes(decoder.remaining_length())?;
+        let s = match str::from_utf8(&bytes) {
+            Ok(s) => s,
+            Err(e) => return decoder.fail_with_cause(e, "Malformed GeneralizedTime"),
+        };
+        match Asn1GeneralizedTime::parse(s) {
+            Ok(t) => Ok(t),
+            Err(e) => decoder.fail(format!("Malformed GeneralizedTime: {}", e)),
+        }
+    })
+}
+
 #[cfg(test)]
 mod tests {
+    use crate::tag_class;
     use super::*;
 
-    #[test]
-    fn test_read_boolean() {
-        // Test true
-        let data = [0x01, 0x01, 0xFF];
-        let mut decoder = Asn1Decoder::new(&data).unwrap();
-        let result = read_boolean(&mut decoder).unwrap();
-        assert_eq!(result, true);
-
-        // Test false
-        let data = [0x01, 0x01, 0x00];
-        let mut decoder = Asn1Decoder::new(&data).unwrap();
-        let result = read_boolean(&mut decoder).unwrap();
-        assert_eq!(result, false);
+    fn hex_to_bytes(s: &str) -> Vec<u8> {
+        s.split_whitespace()
+            .filter(|p| !p.is_empty())
+            .map(|b| u8::from_str_radix(b, 16).unwrap())
+            .collect()
     }
 
     #[test]
-    fn test_read_integer() {
-        // Test positive
-        let data = [0x02, 0x01, 0x7F];
+    fn test_advance_with_tag_constructed_sequence() {
+        let data = hex_to_bytes("30 0A 04 03 66 6F 6F 04 03 62 61 72");
         let mut decoder = Asn1Decoder::new(&data).unwrap();
-        let result = read_int(&mut decoder).unwrap();
-        assert_eq!(result, 127);
 
-        // Test positive multi-byte
-        let data = [0x02, 0x02, 0x01, 0x00];
-        let mut decoder = Asn1Decoder::new(&data).unwrap();
-        let result = read_int(&mut decoder).unwrap();
-        assert_eq!(result, 256);
+        let result = decoder.read(|d| {
+            d.advance_with_tag(asn1_type::SEQUENCE, tag_class::CONSTRUCTED, |d| {
+                let mut out = Vec::new();
+                d.advance_with_tag(asn1_type::OCTET_STRING, 0, |d| {
+                    let v = d.read_bytes(3)?;
+                    out.push(String::from_utf8(v).unwrap());
+                    Ok(())
+                })?;
+                d.advance_with_tag(asn1_type::OCTET_STRING, 0, |d| {
+                    let v = d.read_bytes(3)?;
+                    out.push(String::from_utf8(v).unwrap());
+                    Ok(())
+                })?;
+                Ok(out)
+            })
+        }).unwrap();
 
-        // Test negative
-        let data = [0x02, 0x01, 0x80];
-        let mut decoder = Asn1Decoder::new(&data).unwrap();
-        let result = read_int(&mut decoder).unwrap();
-        assert_eq!(result, -128);
+        assert_eq!(result, vec!["foo".to_string(), "bar".to_string()]);
     }
 
     #[test]
-    fn test_read_octet_string() {
-        let data = [0x04, 0x03, 0x01, 0x02, 0x03];
+    fn test_advance_with_tag_infinite_length() {
+        let data = hex_to_bytes("30 80 04 03 66 6F 6F 04 03 62 61 72 00 00");
         let mut decoder = Asn1Decoder::new(&data).unwrap();
-        let result = read_octet_string(&mut decoder).unwrap();
-        assert_eq!(result, vec![0x01, 0x02, 0x03]);
+
+        let result = decoder.read(|d| {
+            d.advance_with_tag(asn1_type::SEQUENCE, tag_class::CONSTRUCTED, |d| {
+                let mut out = Vec::new();
+                d.advance_with_tag(asn1_type::OCTET_STRING, 0, |d| {
+                    let v = d.read_bytes(3)?;
+                    out.push(String::from_utf8(v).unwrap());
+                    Ok(())
+                })?;
+                d.advance_with_tag(asn1_type::OCTET_STRING, 0, |d| {
+                    let v = d.read_bytes(3)?;
+                    out.push(String::from_utf8(v).unwrap());
+                    Ok(())
+                })?;
+                Ok(out)
+            })
+        }).unwrap();
+
+        assert_eq!(result, vec!["foo".to_string(), "bar".to_string()]);
     }
 
     #[test]
-    fn test_read_utf8_string() {
-        let data = [0x0C, 0x04, 0x74, 0x65, 0x73, 0x74]; // "test"
+    fn test_advance_with_tag_unfinished_parsing_fails() {
+        let data = hex_to_bytes("30 80 04 03 66 6F 6F 04 03 62 61 72 00 00");
         let mut decoder = Asn1Decoder::new(&data).unwrap();
-        let result = read_utf8_string(&mut decoder).unwrap();
-        assert_eq!(result, "test");
+
+        let err = decoder.read(|d| {
+            d.advance_with_tag(asn1_type::SEQUENCE, tag_class::CONSTRUCTED, |d| {
+                d.advance_with_tag(asn1_type::OCTET_STRING, 0, |d| {
+                    let _ = d.read_bytes(3)?;
+                    Ok(())
+                })
+            })
+        }).err().expect("expected error");
+        match err {
+            Asn1DecoderError::Message(m) => assert!(m.contains("Unparsed bytes"), "unexpected: {}", m),
+            _ => panic!("unexpected error type"),
+        }
+    }
+
+    #[test]
+    fn test_advance_with_tag_skip_infinite_fails() {
+        let data = hex_to_bytes("30 80 04 03 66 6F 6F 04 03 62 61 72 00 00");
+        let mut decoder = Asn1Decoder::new(&data).unwrap();
+
+        let err = decoder.read(|d| {
+            d.advance_with_tag(asn1_type::SEQUENCE, tag_class::CONSTRUCTED, |d| {
+                d.advance_with_tag(asn1_type::OCTET_STRING, 0, |d| {
+                    let _ = d.read_bytes(3)?;
+                    Ok(())
+                })?;
+                d.skip_to_end()
+            })
+        }).err().expect("expected error");
+        match err {
+            Asn1DecoderError::Message(m) => assert!(m.contains("Can't skip bytes inside infinite length object"), "unexpected: {}", m),
+            _ => panic!("unexpected error type"),
+        }
+    }
+
+    #[test]
+    fn test_read_boolean_true_false() {
+        // true
+        let data = hex_to_bytes("01 01 FF");
+        let mut decoder = Asn1Decoder::new(&data).unwrap();
+        assert!(read_boolean(&mut decoder).unwrap());
+
+        // false
+        let data = hex_to_bytes("01 01 00");
+        let mut decoder = Asn1Decoder::new(&data).unwrap();
+        assert!(!read_boolean(&mut decoder).unwrap());
+    }
+
+    #[test]
+    fn test_read_integer_cases() {
+        // 127
+        let data = hex_to_bytes("02 01 7F");
+        let mut decoder = Asn1Decoder::new(&data).unwrap();
+        assert_eq!(read_int(&mut decoder).unwrap(), 127);
+
+        // -20 (0xEC)
+        let data = hex_to_bytes("02 01 EC");
+        let mut decoder = Asn1Decoder::new(&data).unwrap();
+        assert_eq!(read_int(&mut decoder).unwrap(), -20);
+
+        // -128 (0x80)
+        let data = hex_to_bytes("02 01 80");
+        let mut decoder = Asn1Decoder::new(&data).unwrap();
+        assert_eq!(read_int(&mut decoder).unwrap(), -128);
+
+        // 0x7F7F = 32639
+        let data = hex_to_bytes("02 02 7F 7F");
+        let mut decoder = Asn1Decoder::new(&data).unwrap();
+        assert_eq!(read_int(&mut decoder).unwrap(), 32639);
+
+        // 0x0100 = 256
+        let data = hex_to_bytes("02 02 01 00");
+        let mut decoder = Asn1Decoder::new(&data).unwrap();
+        assert_eq!(read_int(&mut decoder).unwrap(), 256);
+    }
+
+    #[test]
+    fn test_read_bit_string_cases() {
+        // No unused bits
+        let data = hex_to_bytes("03 05 00 FF AA BB CC");
+        let mut decoder = Asn1Decoder::new(&data).unwrap();
+        let v = read_bit_string(&mut decoder).unwrap();
+        assert_eq!(v, hex_to_bytes("FF AA BB CC"));
+
+        // Last 3 bits unused -> mask last byte (0xFF -> 0xF8)
+        let data = hex_to_bytes("03 05 03 FF AA BB FF");
+        let mut decoder = Asn1Decoder::new(&data).unwrap();
+        let v = read_bit_string(&mut decoder).unwrap();
+        assert_eq!(v, hex_to_bytes("FF AA BB F8"));
+
+        // Empty bit string (just unused bits byte 0)
+        let data = hex_to_bytes("03 01 00");
+        let mut decoder = Asn1Decoder::new(&data).unwrap();
+        let v = read_bit_string(&mut decoder).unwrap();
+        assert_eq!(v.len(), 0);
+
+        // Invalid unused bits > 7
+        let data = hex_to_bytes("03 04 08 FF AA BB CC");
+        let mut decoder = Asn1Decoder::new(&data).unwrap();
+        assert!(read_bit_string(&mut decoder).is_err());
+
+        // Within complex structure
+        let data = hex_to_bytes("30 0C 03 04 00 FF AA BB 03 04 01 CC DD 00");
+        let mut decoder = Asn1Decoder::new(&data).unwrap();
+        let result = decoder.read(|d| {
+            d.advance_with_tag(asn1_type::SEQUENCE, tag_class::CONSTRUCTED, |d| {
+                let first = read_bit_string(d)?;
+                let second = read_bit_string(d)?;
+                Ok(vec![first, second])
+            })
+        }).unwrap();
+        assert_eq!(result[0], hex_to_bytes("FF AA BB"));
+        assert_eq!(result[1], hex_to_bytes("CC DD 00"));
+    }
+
+    #[test]
+    fn test_read_utf8_and_visible_strings() {
+        // UTF8 "Hello"
+        let data = hex_to_bytes("0C 05 48 65 6C 6C 6F");
+        let mut decoder = Asn1Decoder::new(&data).unwrap();
+        assert_eq!(read_utf8_string(&mut decoder).unwrap(), "Hello");
+
+        // UTF8 empty
+        let data = hex_to_bytes("0C 00");
+        let mut decoder = Asn1Decoder::new(&data).unwrap();
+        assert_eq!(read_utf8_string(&mut decoder).unwrap(), "");
+
+        // UTF8 invalid bytes
+        let data = hex_to_bytes("0C 02 C3 28");
+        let mut decoder = Asn1Decoder::new(&data).unwrap();
+        assert!(read_utf8_string(&mut decoder).is_err());
+
+        // Visible "World"
+        let data = hex_to_bytes("1A 05 57 6F 72 6C 64");
+        let mut decoder = Asn1Decoder::new(&data).unwrap();
+        assert_eq!(read_visible_string(&mut decoder).unwrap(), "World");
+
+        // Visible with ASCII space/symbols "AB !@#"
+        let data = hex_to_bytes("1A 06 41 42 20 21 40 23");
+        let mut decoder = Asn1Decoder::new(&data).unwrap();
+        assert_eq!(read_visible_string(&mut decoder).unwrap(), "AB !@#");
+    }
+
+    #[test]
+    fn test_read_utc_time_cases() {
+        // 2023-05-12 14:39:45Z => "230512143945Z"
+        let data = hex_to_bytes("17 0D 32 33 30 35 31 32 31 34 33 39 34 35 5A");
+        let mut decoder = Asn1Decoder::new(&data).unwrap();
+        let t = read_utc_time(&mut decoder).unwrap();
+        assert_eq!(t.year, 2023);
+        assert_eq!(t.month, 5);
+        assert_eq!(t.day, 12);
+        assert_eq!(t.hour, 14);
+        assert_eq!(t.minute, 39);
+        assert_eq!(t.second, Some(45));
+        assert!(t.offset.is_none());
+
+        // with negative offset: "...-0500"
+        let data = hex_to_bytes("17 11 32 33 30 35 31 32 31 34 33 39 34 35 2D 30 35 30 30");
+        let mut decoder = Asn1Decoder::new(&data).unwrap();
+        let t = read_utc_time(&mut decoder).unwrap();
+        assert_eq!(t.year, 2023);
+        assert_eq!(t.month, 5);
+        assert_eq!(t.day, 12);
+        assert_eq!(t.hour, 14);
+        assert_eq!(t.minute, 39);
+        assert_eq!(t.second, Some(45));
+        if let Some(off) = t.offset {
+            assert_eq!(off.hours, -5);
+            assert_eq!(off.minutes, 0);
+        } else {
+            panic!("expected offset");
+        }
+
+        // missing seconds: "2305121439Z"
+        let data = hex_to_bytes("17 0B 32 33 30 35 31 32 31 34 33 39 5A");
+        let mut decoder = Asn1Decoder::new(&data).unwrap();
+        let t = read_utc_time(&mut decoder).unwrap();
+        assert_eq!(t.year, 2023);
+        assert_eq!(t.month, 5);
+        assert_eq!(t.day, 12);
+        assert_eq!(t.hour, 14);
+        assert_eq!(t.minute, 39);
+        assert_eq!(t.second, None);
+        assert!(t.offset.is_none());
+    }
+
+    #[test]
+    fn test_read_generalized_time_cases() {
+        // "20230512143945.123Z"
+        let data = hex_to_bytes("18 12 32 30 32 33 30 35 31 32 31 34 33 39 34 35 2E 31 32 33 5A");
+        let mut decoder = Asn1Decoder::new(&data).unwrap();
+        let t = read_generalized_time(&mut decoder).unwrap();
+        assert_eq!(t.year, 2023);
+        assert_eq!(t.month, 5);
+        assert_eq!(t.day, 12);
+        assert_eq!(t.hour, 14);
+        assert_eq!(t.minute, Some(39));
+        assert_eq!(t.second, Some(45));
+        assert_eq!(t.fraction_of_second, Some(123));
+        assert!(t.offset.is_none());
+
+        // "202305121439Z" (no seconds)
+        let data = hex_to_bytes("18 0D 32 30 32 33 30 35 31 32 31 34 33 39 5A");
+        let mut decoder = Asn1Decoder::new(&data).unwrap();
+        let t = read_generalized_time(&mut decoder).unwrap();
+        assert_eq!(t.year, 2023);
+        assert_eq!(t.month, 5);
+        assert_eq!(t.day, 12);
+        assert_eq!(t.hour, 14);
+        assert_eq!(t.minute, Some(39));
+        assert_eq!(t.second, None);
+        assert_eq!(t.fraction_of_second, None);
+        assert!(t.offset.is_none());
     }
 }

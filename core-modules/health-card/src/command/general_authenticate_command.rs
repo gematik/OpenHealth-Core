@@ -82,7 +82,7 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
             CLA_NO_COMMAND_CHAINING
         };
 
-        let data_to_write = data.to_vec(); // Create a copy of the data
+        let data_to_write = data.to_vec();
         let mut encoder = Asn1Encoder::new();
 
         let encoded_data = encoder.write(|encoder| {
@@ -235,10 +235,17 @@ mod tests {
         }
         let command = HealthCardCommand::general_authenticate_with_data(false, &large_data, 1);
         let data = command.data.unwrap();
+
         assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | tag_class::APPLICATION | tag_class::CONSTRUCTED);
-        assert_eq!(data[1], 130);
-        assert_eq!(data[2], 1 | tag_class::CONTEXT_SPECIFIC);
-        assert_eq!(data[3], 128);
-        assert_eq!(&data[4..132], &large_data);
+        assert_eq!(data[1], 0x81);
+        assert_eq!(data[2], 0x83);
+
+        assert_eq!(data[3], 1 | tag_class::CONTEXT_SPECIFIC);
+        assert_eq!(data[4], 0x81);
+        assert_eq!(data[5], 0x80);
+
+        assert_eq!(&data[6..(6 + 128)], &large_data[..]);
+        assert_eq!(data.len(), 134);
     }
+
 }

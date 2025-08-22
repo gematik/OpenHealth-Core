@@ -15,12 +15,13 @@
  */
 
 use crate::asn1_decoder::{Asn1Decoder, Asn1DecoderError};
-use crate::asn1_encoder::Asn1Encoder;
+use crate::asn1_encoder::{Asn1Encoder, write_tagged_object};
 use crate::asn1_tag::asn1_type;
+use crate::{Asn1Error, Result as Asn1Result};
 
 /// Read ASN.1 OBJECT_IDENTIFIER.
 pub fn read_object_identifier(decoder: &mut Asn1Decoder) -> Result<String, Asn1DecoderError> {
-    decoder.advance_with_tag(asn1_type::OBJECT_IDENTIFIER as u32, 0, |decoder| {
+    decoder.advance_with_tag(asn1_type::OBJECT_IDENTIFIER, 0, |decoder| {
         let bytes = decoder.read_bytes(decoder.remaining_length())?;
 
         if bytes.is_empty() {
@@ -53,7 +54,8 @@ pub fn read_object_identifier(decoder: &mut Asn1Decoder) -> Result<String, Asn1D
             return decoder.fail("Invalid OID encoding: unfinished encoding");
         }
 
-        Ok(parts.into_iter()
+        Ok(parts
+            .into_iter()
             .map(|part| part.to_string())
             .collect::<Vec<String>>()
             .join("."))
@@ -61,39 +63,45 @@ pub fn read_object_identifier(decoder: &mut Asn1Decoder) -> Result<String, Asn1D
 }
 
 /// Write ASN.1 OBJECT_IDENTIFIER.
-pub fn write_object_identifier(encoder: &mut Asn1Encoder, oid: &str) -> Result<(), Asn1DecoderError> {
-    crate::asn1_encoder::write_tagged_object(encoder, asn1_type::OBJECT_IDENTIFIER, 0, |inner_encoder| {
-        let parts: Result<Vec<u32>, _> = oid.split('.')
+pub fn write_object_identifier(encoder: &mut Asn1Encoder, oid: &str) -> Asn1Result<()> {
+    write_tagged_object(encoder, asn1_type::OBJECT_IDENTIFIER, 0, |inner_encoder| {
+        // Teile parsen und validieren
+        let parts: std::result::Result<Vec<u32>, _> = oid
+            .split('.')
             .map(|part| {
-                part.parse::<u32>().map_err(|_| {
-                    Asn1DecoderError::new(format!("Invalid OID part: {}", part))
-                })
+                part.parse::<u32>()
+                    .map_err(|_| Asn1Error::EncodingError(format!("Invalid OID part: {}", part)))
             })
             .collect();
 
         let parts = parts?;
 
         if parts.len() < 2 {
-            return Err(Asn1DecoderError::new("OID must have at least two components"));
+            return Err(Asn1Error::EncodingError(
+                "OID must have at least two components".to_string(),
+            ));
         }
 
         let first = parts[0];
         let second = parts[1];
 
         if first > 2 {
-            return Err(Asn1DecoderError::new("OID first part must be 0, 1, or 2"));
+            return Err(Asn1Error::EncodingError(
+                "OID first part must be 0, 1, or 2".to_string(),
+            ));
         }
 
         if second > 39 && first < 2 {
-            return Err(Asn1DecoderError::new("OID second part must be 0-39 for first part 0 or 1"));
+            return Err(Asn1Error::EncodingError(
+                "OID second part must be 0-39 for first part 0 or 1".to_string(),
+            ));
         }
 
-        // Encode the first two parts as a single byte
-        let first_byte = first * 40 + second;
+        // Erste zwei Teile als eine Zahl (ggf. über Base-128 mit Fortsetzungsbits)
+        let first_value = first * 40 + second;
+        write_multi_byte(inner_encoder, first_value)?;
 
-        write_multi_byte(inner_encoder, first_byte)?;
-
-        // Encode the remaining parts
+        // Übrige Teile
         for i in 2..parts.len() {
             write_multi_byte(inner_encoder, parts[i])?;
         }
@@ -102,8 +110,8 @@ pub fn write_object_identifier(encoder: &mut Asn1Encoder, oid: &str) -> Result<(
     })
 }
 
-/// Helper function to write a multi-byte integer value with 7 bits per byte.
-fn write_multi_byte(encoder: &mut Asn1Encoder, integer: u32) -> Result<(), Asn1DecoderError> {
+/// Helper: schreibe einen ganzzahligen Wert in Base-128 mit Fortsetzungsbits (7 Bit pro Byte).
+fn write_multi_byte(encoder: &mut Asn1Encoder, integer: u32) -> Asn1Result<()> {
     let mut value = integer;
     let mut bytes = Vec::new();
 
@@ -115,13 +123,11 @@ fn write_multi_byte(encoder: &mut Asn1Encoder, integer: u32) -> Result<(), Asn1D
         }
     }
 
-    // Write bytes in reverse order, setting the MSB for all but the last byte
+    // In umgekehrter Reihenfolge schreiben, mit gesetztem MSB für alle bis auf das letzte Byte
     for (index, byte) in bytes.iter().rev().enumerate() {
         if index < bytes.len() - 1 {
-            // All but the last byte have the high bit set
             encoder.write_byte(byte | 0x80);
         } else {
-            // Last byte has high bit clear
             encoder.write_byte(*byte);
         }
     }
@@ -132,11 +138,11 @@ fn write_multi_byte(encoder: &mut Asn1Encoder, integer: u32) -> Result<(), Asn1D
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::asn1_encoder::Asn1Encoder;
+    use crate::asn1_decoder::Asn1Decoder;
 
     #[test]
     fn test_read_object_identifier() {
-        // Test OID 1.2.840.113549.1.1.11 (sha256WithRSAEncryption)
+        // OID 1.2.840.113549.1.1.11 (sha256WithRSAEncryption)
         let data = [0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x0B];
         let mut decoder = Asn1Decoder::new(&data).unwrap();
         let result = decoder.read(read_object_identifier).unwrap();
@@ -144,16 +150,88 @@ mod tests {
     }
 
     #[test]
-    fn test_write_object_identifier() {
-        // Test OID 1.2.840.113549.1.1.11 (sha256WithRSAEncryption)
+    fn test_write_object_identifier_sha256withrsa() {
+        // OID 1.2.840.113549.1.1.11 (sha256WithRSAEncryption)
         let mut encoder = Asn1Encoder::new();
-        let result = encoder.write(|scope| {
-            write_object_identifier(scope, "1.2.840.113549.1.1.11")
-        }).unwrap();
+        let result = encoder
+            .write(|scope| write_object_identifier(scope, "1.2.840.113549.1.1.11"))
+            .unwrap();
 
         assert_eq!(
             result,
             [0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x0B]
         );
+    }
+
+    #[test]
+    fn test_write_object_identifier_simple() {
+        // OID 1.2.840.113549
+        let mut encoder = Asn1Encoder::new();
+        let result = encoder
+            .write(|scope| write_object_identifier(scope, "1.2.840.113549"))
+            .unwrap();
+        assert_eq!(result, [0x06, 0x06, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D]);
+    }
+
+    #[test]
+    fn test_write_object_identifier_single_part_beyond_40() {
+        // OID 2.100.3
+        let mut encoder = Asn1Encoder::new();
+        let result = encoder
+            .write(|scope| write_object_identifier(scope, "2.100.3"))
+            .unwrap();
+        assert_eq!(result, [0x06, 0x03, 0x81, 0x34, 0x03]);
+    }
+
+    #[test]
+    fn test_write_object_identifier_long_identifier() {
+        // OID 1.2.3.4.5.265566
+        let mut encoder = Asn1Encoder::new();
+        let result = encoder
+            .write(|scope| write_object_identifier(scope, "1.2.3.4.5.265566"))
+            .unwrap();
+        assert_eq!(result, [0x06, 0x07, 0x2A, 0x03, 0x04, 0x05, 0x90, 0x9A, 0x5E]);
+    }
+
+    #[test]
+    fn test_write_object_identifier_large_first_component() {
+        // OID 2.999.1
+        let mut encoder = Asn1Encoder::new();
+        let result = encoder
+            .write(|scope| write_object_identifier(scope, "2.999.1"))
+            .unwrap();
+        assert_eq!(result, [0x06, 0x03, 0x88, 0x37, 0x01]);
+    }
+
+    #[test]
+    fn test_write_object_identifier_invalid_first_part() {
+        // OID first part must be 0, 1, or 2
+        let mut encoder = Asn1Encoder::new();
+        let err = encoder
+            .write(|scope| write_object_identifier(scope, "3.1.2"))
+            .err()
+            .expect("expected error");
+        match err {
+            Asn1Error::EncodingError(msg) => {
+                assert!(msg.contains("first part"), "unexpected message: {}", msg);
+            }
+            _ => panic!("unexpected error type"),
+        }
+    }
+
+    #[test]
+    fn test_write_object_identifier_invalid_second_part_for_first() {
+        // second part must be 0-39 when first part is 0 or 1
+        let mut encoder = Asn1Encoder::new();
+        let err = encoder
+            .write(|scope| write_object_identifier(scope, "1.40.1"))
+            .err()
+            .expect("expected error");
+        match err {
+            Asn1Error::EncodingError(msg) => {
+                assert!(msg.contains("second part") || msg.contains("0-39"), "unexpected message: {}", msg);
+            }
+            _ => panic!("unexpected error type"),
+        }
     }
 }

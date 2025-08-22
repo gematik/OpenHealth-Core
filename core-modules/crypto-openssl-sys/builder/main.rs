@@ -91,27 +91,6 @@ fn get_openssl_target(target: &str) -> &'static str {
     }
 }
 
-fn build_configure_args(target: &str, install_dir: &PathBuf) -> Vec<String> {
-    vec![
-        target.to_string(),
-        format!("--prefix={}", install_dir.display()),
-        "no-asm".to_string(),
-        "no-async".to_string(),
-        "no-egd".to_string(),
-        "no-ktls".to_string(),
-        "no-module".to_string(),
-        "no-posix-io".to_string(),
-        "no-secure-memory".to_string(),
-        "no-shared".to_string(),
-        "no-sock".to_string(),
-        "no-stdio".to_string(),
-        "no-thread-pool".to_string(),
-        "no-threads".to_string(),
-        "no-ui-console".to_string(),
-        "no-docs".to_string(),
-    ]
-}
-
 fn run_command(prog: &str, args: &[&str], cwd: Option<&PathBuf>) {
     let mut command = Command::new(prog);
     command.args(args);

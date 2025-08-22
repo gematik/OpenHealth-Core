@@ -20,11 +20,11 @@ use std::fmt;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Asn1Tag {
     pub tag_class: u8,
-    pub tag_number: u32,
+    pub tag_number: u8,
 }
 
 impl Asn1Tag {
-    pub fn new(tag_class: u8, tag_number: u32) -> Self {
+    pub fn new(tag_class: u8, tag_number: u8) -> Self {
         Asn1Tag {
             tag_class,
             tag_number,

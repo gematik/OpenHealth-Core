@@ -4,9 +4,6 @@ members = [
     "core-modules/crypto",
     "core-modules/crypto-openssl-sys",
     "core-modules/health-card",
-    "binding-layers/asn1-jni",
-    "binding-layers/asn1-ffi",
-    "binding-layers/crypto-ffi",
 ]
 resolver = "2"
 [workspace.package]
