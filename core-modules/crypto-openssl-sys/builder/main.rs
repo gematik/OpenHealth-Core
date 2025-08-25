@@ -1,7 +1,7 @@
 use std::{env, fs, path::PathBuf, process::Command};
 
 fn current_dir() -> PathBuf {
-    std::env::current_dir().unwrap()
+    env::current_dir().unwrap()
 }
 
 fn main() {
@@ -44,7 +44,7 @@ fn build_openssl() {
 
     // Configure
     let configure_args = [
-        target.as_str(),
+        openssl_target,
         &format!("--prefix={}", install.display()),
         "no-asm",
         "no-async",
