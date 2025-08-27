@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-use std::fmt;
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TagClass {
     Universal,
@@ -34,25 +32,65 @@ impl TagClass {
             TagClass::Private => 0xC0,
         }
     }
+
+    /// Only class bits (primitive form)
+    #[inline]
+    pub const fn primitive(self) -> u8 { self.to_bits() }
+
+    /// Class bits with constructed (PC) bit set
+    #[inline]
+    pub const fn constructed(self) -> u8 { self.to_bits() | 0x20 }
+
+    /// Alias for to_bits(), for readability
+    #[inline]
+    pub const fn bits(self) -> u8 { self.to_bits() }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TagNumber {
+    /// Universal tag with strong typing
+    Universal(Asn1Type),
+    /// Any other tag number (Application/Context/Private or unknown universal)
+    Other(u32),
+}
+
+impl TagNumber {
+    #[inline]
+    pub const fn as_u32(self) -> u32 {
+        match self {
+            TagNumber::Universal(t) => t as u32,
+            TagNumber::Other(n) => n,
+        }
+    }
+
+    #[inline]
+    pub const fn is_universal(self) -> bool {
+        matches!(self, TagNumber::Universal(_))
+    }
+
+    #[inline]
+    pub const fn as_universal(self) -> Option<Asn1Type> {
+        match self { TagNumber::Universal(t) => Some(t), _ => None }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Asn1Tag {
     pub class: TagClass,
     pub constructed: bool,
-    pub asn1_type: Asn1Type,
+    pub number: TagNumber,
 }
 
 impl Asn1Tag {
-    /// Create a primitive tag.
-    pub const fn new(class: TagClass, number: Asn1Type) -> Self {
-        Self {
-            class,
-            constructed: false,
-            asn1_type: number,
-        }
+    /// Create a primitive tag for a Universal type (readable and type‑safe)
+    pub const fn new(class: TagClass, t: Asn1Type) -> Self {
+        Self { class, constructed: false, number: TagNumber::Universal(t) }
     }
 
+    /// Create a tag from a raw numeric tag number (for High‑Tag‑Number, context/application/private)
+    pub const fn from_number(class: TagClass, constructed: bool, n: u32) -> Self {
+        Self { class, constructed, number: TagNumber::Other(n) }
+    }
 
     /// Mark as constructed (or not) fluently.
     pub const fn with_constructed(mut self, constructed: bool) -> Self {
@@ -60,15 +98,29 @@ impl Asn1Tag {
         self
     }
 
-    /// First octet class/pc bits.
+    /// Class bits only (without PC and low‑5)
     #[inline]
-    pub const fn pc_bits(&self) -> u8 {
-        if self.constructed {
-            0x20
-        } else {
-            0x00
-        }
+    pub const fn class_bits(&self) -> u8 { self.class.to_bits() }
+
+    /// PC bit only (without class and low‑5)
+    #[inline]
+    pub const fn pc_bits(&self) -> u8 { if self.constructed { 0x20 } else { 0x00 } }
+
+    /// Returns the value to put into the low 5 bits of the first octet.
+    /// If the numeric tag is >= 31, this returns 0x1F (high‑tag form).
+    #[inline]
+    pub const fn low5(&self) -> u8 {
+        let n = self.number.as_u32();
+        if n < 31 { n as u8 } else { 0x1F }
     }
+
+    /// Returns the tag number as u32 (useful for encoder)
+    #[inline]
+    pub const fn number_u32(&self) -> u32 { self.number.as_u32() }
+
+    /// Convenience: is this a Universal tag, and which one?
+    #[inline]
+    pub const fn as_universal(&self) -> Option<Asn1Type> { self.number.as_universal() }
 }
 
 /// ASN.1 type identifiers as defined in ITU-T X.680 (strict enum form).
@@ -159,6 +211,11 @@ impl From<Asn1Type> for u8 {
     fn from(t: Asn1Type) -> Self { t as u8 }
 }
 
+impl From<Asn1Type> for u32 {
+    #[inline]
+    fn from(t: Asn1Type) -> Self { t as u32 }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -170,5 +227,18 @@ mod tests {
         let tag3 = Asn1Tag::new(TagClass::Universal, Asn1Type::Integer);
         assert_eq!(tag1, tag2);
         assert_ne!(tag1, tag3);
+    }
+
+    #[test]
+    fn test_asn1_tag_low5_and_number() {
+        let seq = Asn1Tag::new(TagClass::Universal, Asn1Type::Sequence);
+        assert_eq!(seq.low5(), Asn1Type::Sequence as u8);
+        assert_eq!(seq.number_u32(), Asn1Type::Sequence as u32);
+        assert!(seq.as_universal().is_some());
+
+        let ctx_high = Asn1Tag::from_number(TagClass::ContextSpecific, false, 0x201);
+        assert_eq!(ctx_high.low5(), 0x1F);
+        assert_eq!(ctx_high.number_u32(), 0x201);
+        assert!(ctx_high.as_universal().is_none());
     }
 }

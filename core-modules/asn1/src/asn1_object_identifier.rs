@@ -70,7 +70,7 @@ pub fn read_object_identifier(decoder: &mut Asn1Decoder) -> Asn1Result<String> {
 /// Write ASN.1 OBJECT_IDENTIFIER.
 pub fn write_object_identifier(w: &mut Asn1Encoder, oid: &str) -> Asn1Result<()> {
     w.write_tagged_object(
-        Asn1Type::ObjectIdentifier as u8,
+        Asn1Type::ObjectIdentifier,
         TagClass::Universal.to_bits(),
         |inner| {
             // Teile parsen und validieren

@@ -161,36 +161,32 @@ impl Asn1Encoder {
         Ok(())
     }
 
-    pub(crate) fn write_tag(&mut self, tag_number: u8, tag_class: u8) -> Asn1Result<()> {
+    pub(crate) fn write_tag<T: Into<u32>>(&mut self, tag_number: T, tag_class: u8) -> Asn1Result<()> {
+        let tag_number: u32 = tag_number.into();
         if tag_number < 0x1F {
-            // Single-byte tag
+            // Single-octet tag (low-tag-number form)
             self.write_byte((tag_number as u8) | tag_class);
         } else {
-            // Multi-byte tag
+            // High-Tag-Number form: first octet has 0x1F in the low 5 bits
             self.write_byte(0x1F | tag_class);
 
-            // Collect encoded bytes in reverse order
-            let mut encoded_bytes = Vec::new();
-            let mut value = tag_number;
-
-            while value > 0 {
-                encoded_bytes.push((value & 0x7F) as u8);
-                value >>= 7;
+            // Encode the tag number in base-128, big-endian, minimal form
+            let mut stack = [0u8; 5]; // enough for u32 (max 5 base-128 groups)
+            let mut n = tag_number;
+            let mut i = stack.len();
+            loop {
+                i -= 1;
+                stack[i] = (n as u8) & 0x7F;
+                n >>= 7;
+                if n == 0 { break; }
             }
-
-            // Get the length before moving the vector
-            let encoded_len = encoded_bytes.len();
-
-            // Write bytes in big-endian order with continuation bits
-            for (i, byte) in encoded_bytes.into_iter().rev().enumerate() {
-                if i < encoded_len - 1 {
-                    self.write_byte(byte | 0x80); // Set high bit for continuation
-                } else {
-                    self.write_byte(byte); // Last byte without continuation bit
-                }
+            // Write continuation bits: all but the last (rightmost) have 0x80 set
+            for j in i..stack.len() {
+                let is_last = j == stack.len() - 1;
+                let b = if is_last { stack[j] } else { stack[j] | 0x80 };
+                self.write_byte(b);
             }
         }
-
         Ok(())
     }
 
@@ -203,7 +199,7 @@ impl Asn1Encoder {
         Ok(self.buffer.clone())
     }
 
-    pub fn write_tagged_object<F>(&mut self, tag_number: u8, tag_class: u8, f: F) -> Asn1Result<()>
+    pub fn write_tagged_object<F, T: Into<u32>>(&mut self, tag_number: T, tag_class: u8, f: F) -> Asn1Result<()>
     where
         F: FnOnce(&mut Asn1Encoder) -> Asn1Result<()>,
     {
@@ -221,8 +217,7 @@ impl Asn1Encoder {
 
     /// Write a full ASN.1 tag (class + constructed + number) using the structured tag type.
     pub fn write_tag_struct(&mut self, tag: crate::asn1_tag::Asn1Tag) -> Asn1Result<()> {
-        self.write_bytes(&[tag.class.to_bits() | tag.pc_bits() | (tag.asn1_type as u8)]);
-        Ok(())
+        self.write_tag(tag.number_u32(), tag.class.to_bits() | tag.pc_bits())
     }
 
     /// Write a TLV using a structured tag and a closure for the value bytes.
@@ -301,9 +296,9 @@ impl Asn1Encoder {
 }
 
 /// Write an ASN.1 tagged object.
-pub fn write_tagged_object<F>(
+pub fn write_tagged_object<F, T: Into<u32>>(
     encoder: &mut Asn1Encoder,
-    tag_number: u8,
+    tag_number: T,
     tag_class: u8,
     block: F
 ) -> Asn1Result<()>
@@ -311,23 +306,21 @@ where
     F: FnOnce(&mut Asn1Encoder) -> Asn1Result<()>,
 {
     let mut inner_encoder = Asn1Encoder::new();
-
     block(&mut inner_encoder)?;
-
-    encoder.buffer.push(tag_number | tag_class);
+    // Proper tag encoding (supports high-tag-number)
+    encoder.write_tag(tag_number, tag_class)?;
     let inner_length = inner_encoder.buffer.len();
     encoder.write_length(inner_length)?;
     encoder.buffer.extend_from_slice(&inner_encoder.buffer);
-
     Ok(())
 }
 
 /// Write an ASN.1 tagged object with an inner tag.
-pub fn write_tagged_object_with_inner_tag(
+pub fn write_tagged_object_with_inner_tag<T1: Into<u32>, T2: Into<u32>>(
     encoder: &mut Asn1Encoder,
-    outer_tag: u8,
+    outer_tag: T1,
     outer_class: u8,
-    inner_tag: u8,
+    inner_tag: T2,
     inner_class: u8,
     data: &[u8]
 ) -> Asn1Result<()> {
@@ -461,7 +454,7 @@ mod tests {
         let mut encoder = Asn1Encoder::new();
 
         // Write a context-specific tagged object containing an integer
-        let tag_number = 3;
+        let tag_number: u32 = 3;
         let tag_class = 0x80; // CONTEXT_SPECIFIC
 
         let data = encoder.write(|encoder| {
@@ -471,7 +464,7 @@ mod tests {
         }).unwrap();
 
         // Verify outer tag
-        assert_eq!(data[0], tag_number | tag_class);
+        assert_eq!(data[0], (tag_number as u8) | tag_class);
         // Verify inner content starts with INTEGER (02 01 2A)
         assert_eq!(data[2], 0x02); // INTEGER tag
         assert_eq!(data[3], 0x01); // Length of integer value
@@ -483,9 +476,9 @@ mod tests {
         let mut encoder = Asn1Encoder::new();
 
         // Write a context-specific tagged object containing an octet string
-        let outer_tag = 3;
+        let outer_tag: u32 = 3;
         let outer_class = 0x80; // CONTEXT_SPECIFIC
-        let inner_tag = Asn1Type::OctetString as u8;
+        let inner_tag: u32 = Asn1Type::OctetString as u32;
         let inner_class = 0;
         let test_data = &[0x01, 0x02, 0x03];
 
@@ -501,7 +494,7 @@ mod tests {
         }).unwrap();
 
         // Verify outer tag
-        assert_eq!(data[0], outer_tag | outer_class);
+        assert_eq!(data[0], (outer_tag as u8) | outer_class);
 
         // Verify inner tag and length
         assert_eq!(data[2], (inner_tag as u8));
@@ -515,11 +508,55 @@ mod tests {
     fn test_public_encode_scope() {
         // Builds [APPLICATION|CONSTRUCTED 28] empty content
         let bytes = super::encode(|w| {
-            w.write_tagged_object(28, 0x40 | 0x20, |_inner| Ok(()))
+            w.write_tagged_object(28u32, 0x40 | 0x20, |_inner| Ok(()))
         }).unwrap();
         // Outer tag
         assert_eq!(bytes[0], (28u8 | (0x40 | 0x20)));
         // Empty length
         assert_eq!(bytes[1], 0x00);
+    }
+
+    #[test]
+    fn test_write_high_tag_number() {
+        let mut encoder = Asn1Encoder::new();
+        // Tag number 31 (0x1F) in context-specific primitive
+        let data = encoder.write(|enc| {
+            write_tagged_object(enc, 31u32, 0x80, |inner| {
+                inner.write_int(1)
+            })
+        }).unwrap();
+        // First octet: class bits (0x80) + 0x1F
+        assert_eq!(data[0], 0x80 | 0x1F);
+        // Next octet: base-128 encoding of 31
+        assert_eq!(data[1], 0x1F);
+        // Length octet of inner content (INTEGER tag + length + value = 3)
+        assert_eq!(data[2], 0x03);
+        // Inner INTEGER tag
+        assert_eq!(data[3], 0x02);
+        // Inner INTEGER length
+        assert_eq!(data[4], 0x01);
+        // Inner INTEGER value
+        assert_eq!(data[5], 0x01);
+
+        let mut encoder2 = Asn1Encoder::new();
+        // Tag number 513 (0x201) -> base-128 [0x84, 0x01]
+        let data2 = encoder2.write(|enc| {
+            write_tagged_object(enc, 0x201u32, 0x80, |inner| {
+                inner.write_int(2)
+            })
+        }).unwrap();
+        // First octet: class bits (0x80) + 0x1F
+        assert_eq!(data2[0], 0x80 | 0x1F);
+        // Tag number 513 encoded in base-128
+        assert_eq!(data2[1], 0x84);
+        assert_eq!(data2[2], 0x01);
+        // Length octet of inner content (INTEGER tag + length + value = 3)
+        assert_eq!(data2[3], 0x03);
+        // Inner INTEGER tag
+        assert_eq!(data2[4], 0x02);
+        // Inner INTEGER length
+        assert_eq!(data2[5], 0x01);
+        // Inner INTEGER value
+        assert_eq!(data2[6], 0x02);
     }
 }

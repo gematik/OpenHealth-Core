@@ -40,3 +40,56 @@ pub enum Asn1Error {
 
 /// Result type for ASN.1 operations
 pub type Result<T> = std::result::Result<T, Asn1Error>;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::error::Error as _;
+
+    #[test]
+    fn display_messages_are_correct() {
+        let e1 = Asn1Error::EncodingError("oops".to_string());
+        assert_eq!(e1.to_string(), "Encoding error: oops");
+
+        let e2 = Asn1Error::DecodingError("bad input".to_string());
+        assert_eq!(e2.to_string(), "Decoding error: bad input");
+
+        let e3 = Asn1Error::InvalidTag("tag 0x1F".to_string());
+        assert_eq!(e3.to_string(), "Invalid tag: tag 0x1F");
+
+        let e4 = Asn1Error::InvalidLength("len 999999".to_string());
+        assert_eq!(e4.to_string(), "Invalid length: len 999999");
+
+        let e5 = Asn1Error::InvalidFormat("not DER".to_string());
+        assert_eq!(e5.to_string(), "Invalid format: not DER");
+
+        let e6 = Asn1Error::UnexpectedError("boom".to_string());
+        assert_eq!(e6.to_string(), "Unexpected error: boom");
+    }
+
+    #[test]
+    fn error_source_is_none_for_all_variants() {
+        let errs: Vec<Asn1Error> = vec![
+            Asn1Error::EncodingError("e".into()),
+            Asn1Error::DecodingError("e".into()),
+            Asn1Error::InvalidTag("e".into()),
+            Asn1Error::InvalidLength("e".into()),
+            Asn1Error::InvalidFormat("e".into()),
+            Asn1Error::UnexpectedError("e".into()),
+        ];
+        for e in errs {
+            // Ensure std::error::Error::source() is None for string-only variants
+            assert!(std::error::Error::source(&e).is_none());
+        }
+    }
+
+    #[test]
+    fn result_alias_compiles_and_propagates() {
+        fn failing() -> Result<()> {
+            Err(Asn1Error::InvalidFormat("x".into()))
+        }
+        let err = failing().unwrap_err();
+        assert!(matches!(err, Asn1Error::InvalidFormat(_)));
+        assert_eq!(err.to_string(), "Invalid format: x");
+    }
+}

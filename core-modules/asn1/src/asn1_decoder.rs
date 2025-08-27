@@ -18,7 +18,6 @@ use crate::asn1_date_time::{Asn1GeneralizedTime, Asn1UtcTime};
 use crate::asn1_tag::{Asn1Type, TagClass};
 use crate::error::{Asn1Error, Result as Asn1Result};
 use crate::Asn1Tag;
-use std::fmt::Debug;
 use std::str;
 
 /// ASN.1 decoder for decoding data in ASN.1 format.
@@ -156,7 +155,7 @@ impl<'a> Asn1Decoder<'a> {
 
         if actual.class != expected.class
             || actual.constructed != expected.constructed
-            || actual.asn1_type != expected.asn1_type
+            || actual.number_u32() != expected.number_u32()
         {
             return self.fail(format!("Expected tag {:?} but got {:?}", expected, actual));
         }
@@ -254,14 +253,19 @@ impl<'a> Asn1Decoder<'a> {
             tag_number_low as u32
         };
 
-        let asn1_type = Asn1Type::try_from(number as u8).map_err(|raw| {
-            Asn1Error::DecodingError(format!("Unknown universal tag: 0x{:X}", raw))
-        })?;
+        let number = if class == TagClass::Universal {
+            match Asn1Type::try_from(number as u8) {
+                Ok(t) => crate::asn1_tag::TagNumber::Universal(t),
+                Err(_) => crate::asn1_tag::TagNumber::Other(number),
+            }
+        } else {
+            crate::asn1_tag::TagNumber::Other(number)
+        };
 
         Ok(Asn1Tag {
             class,
             constructed,
-            asn1_type,
+            number,
         })
     }
 

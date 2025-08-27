@@ -65,13 +65,13 @@ impl ManageSecurityEnvironmentCommand for HealthCardCommand {
     ) -> Result<HealthCardCommand, asn1::Asn1Error> {
         let data = encode(|w| {
             // '80 I2OS(OctetLength(OID), 1) || OID
-            w.write_tagged_object(0, TagClass::ContextSpecific.to_bits(), |inner| {
+            w.write_tagged_object(0u8, TagClass::ContextSpecific.primitive(), |inner| {
                 inner.write_bytes(oid);
                 Ok(())
             })?;
 
             // '83 01 || keyRef'
-            w.write_tagged_object(3, TagClass::ContextSpecific.to_bits(), |inner| {
+            w.write_tagged_object(3u8, TagClass::ContextSpecific.primitive(), |inner| {
                 inner.write_byte(card_key.calculate_key_reference(df_specific));
                 Ok(())
             })
@@ -95,13 +95,13 @@ impl ManageSecurityEnvironmentCommand for HealthCardCommand {
     ) -> Result<HealthCardCommand, asn1::Asn1Error> {
         let data = encode(|w| {
             // '8401 || keyRef'
-            w.write_tagged_object(4, TagClass::ContextSpecific.to_bits(), |inner| {
+            w.write_tagged_object(4u8, TagClass::ContextSpecific.primitive(), |inner| {
                 inner.write_byte(key.calculate_key_reference(df_specific));
                 Ok(())
             })?;
 
             // '8001 || algId'
-            w.write_tagged_object(0, TagClass::ContextSpecific.to_bits(), |inner| {
+            w.write_tagged_object(0u8, TagClass::ContextSpecific.primitive(), |inner| {
                 inner.write_byte(pso_algorithm.identifier());
                 Ok(())
             })
