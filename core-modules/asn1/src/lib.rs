@@ -21,7 +21,7 @@ pub mod asn1_date_time;
 pub mod asn1_object_identifier;
 
 // Public re-exports
-pub use asn1_tag::{Asn1Tag, tag_class, asn1_type};
+pub use asn1_tag::{Asn1Tag};
 
 pub use asn1_object_identifier::{read_object_identifier, write_object_identifier};
 pub use error::{Asn1Error, Result};
@@ -29,7 +29,7 @@ pub use asn1_date_time::{Asn1UtcTime, Asn1GeneralizedTime};
 
 pub use asn1_decoder::{
     Asn1Decoder, read_boolean, read_int, read_bit_string,
-    read_octet_string, read_utf8_string, Asn1DecoderError
+    read_octet_string, read_utf8_string
 };
 
 pub use asn1_encoder::{

@@ -1,7 +1,6 @@
 use crate::command::apdu::EXPECTED_LENGTH_WILDCARD_SHORT;
-use asn1::tag_class;
-use asn1::write_tagged_object;
-use asn1::Asn1Encoder;
+use asn1::asn1_encoder::encode;
+use asn1::asn1_tag::TagClass;
 
 use crate::command::health_card_command::HealthCardCommand;
 use crate::command::health_card_status::GENERAL_AUTHENTICATE_STATUS;
@@ -24,7 +23,7 @@ pub trait GeneralAuthenticateCommand {
     ///
     /// # Arguments
     /// * `command_chaining` - true for command chaining false if not
-    fn general_authenticate(command_chaining: bool) -> HealthCardCommand;
+    fn general_authenticate(command_chaining: bool) -> Result<HealthCardCommand, asn1::Asn1Error>;
 
     /// Creates a HealthCardCommand for the GENERAL AUTHENTICATE command
     /// UseCase: gemSpec_COS_3.14.0#14.7.2.1.1 PACE for end-user cards, Step 2a (tagNo 1), 3a (3), 5a (5)
@@ -37,30 +36,26 @@ pub trait GeneralAuthenticateCommand {
         command_chaining: bool,
         data: &[u8],
         tag_no: u8,
-    ) -> HealthCardCommand;
+    ) -> Result<HealthCardCommand, asn1::Asn1Error>;
 }
 
 impl GeneralAuthenticateCommand for HealthCardCommand {
-    fn general_authenticate(command_chaining: bool) -> HealthCardCommand {
+    fn general_authenticate(command_chaining: bool) -> Result<HealthCardCommand, asn1::Asn1Error> {
         let cla = if command_chaining {
             CLA_COMMAND_CHAINING
         } else {
             CLA_NO_COMMAND_CHAINING
         };
 
-        let mut encoder = Asn1Encoder::new();
-        let data = encoder.write(|encoder| {
-            write_tagged_object(
-                encoder,
+        let data = encode(|w| {
+            w.write_tagged_object(
                 GENERAL_AUTHENTICATE_TAG,
-                tag_class::APPLICATION | tag_class::CONSTRUCTED,
-                |_inner_encoder| {
-                    Ok(())
-                }
+                TagClass::Application.to_bits() | 0x20, // constructed
+                |_inner| Ok(())
             )
-        }).unwrap();
+        })?;
 
-        HealthCardCommand {
+        Ok(HealthCardCommand {
             expected_status: GENERAL_AUTHENTICATE_STATUS.clone(),
             cla,
             ins: INS,
@@ -68,14 +63,14 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
             p2: NO_MEANING,
             data: Some(data),
             ne: Some(EXPECTED_LENGTH_WILDCARD_SHORT),
-        }
+        })
     }
 
     fn general_authenticate_with_data(
         command_chaining: bool,
         data: &[u8],
         tag_no: u8,
-    ) -> HealthCardCommand {
+    ) -> Result<HealthCardCommand, asn1::Asn1Error> {
         let cla = if command_chaining {
             CLA_COMMAND_CHAINING
         } else {
@@ -83,28 +78,24 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
         };
 
         let data_to_write = data.to_vec();
-        let mut encoder = Asn1Encoder::new();
-
-        let encoded_data = encoder.write(|encoder| {
-            write_tagged_object(
-                encoder,
+        let encoded_data = encode(|w| {
+            w.write_tagged_object(
                 GENERAL_AUTHENTICATE_TAG,
-                tag_class::APPLICATION | tag_class::CONSTRUCTED,
-                |inner_encoder| {
-                    write_tagged_object(
-                        inner_encoder,
+                TagClass::Application.to_bits() | 0x20, // constructed
+                |inner| {
+                    inner.write_tagged_object(
                         tag_no,
-                        tag_class::CONTEXT_SPECIFIC,
-                        |innermost_encoder| {
-                            innermost_encoder.write_bytes(&data_to_write);
+                        TagClass::ContextSpecific.to_bits(),
+                        |innermost| {
+                            innermost.write_bytes(&data_to_write);
                             Ok(())
                         }
                     )
                 }
             )
-        }).unwrap();
+        })?;
 
-        HealthCardCommand {
+        Ok(HealthCardCommand {
             expected_status: GENERAL_AUTHENTICATE_STATUS.clone(),
             cla,
             ins: INS,
@@ -112,7 +103,7 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
             p2: NO_MEANING,
             data: Some(encoded_data),
             ne: Some(EXPECTED_LENGTH_WILDCARD_SHORT),
-        }
+        })
     }
 }
 
@@ -120,10 +111,11 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
 mod tests {
     use super::*;
     use crate::command::apdu::CardCommandApdu;
+    use asn1::asn1_tag::TagClass;
 
     #[test]
     fn test_general_authenticate_without_chaining() {
-        let command = HealthCardCommand::general_authenticate(false);
+        let command = HealthCardCommand::general_authenticate(false).unwrap();
 
         assert_eq!(command.cla, CLA_NO_COMMAND_CHAINING);
         assert_eq!(command.ins, INS);
@@ -133,14 +125,14 @@ mod tests {
 
         let data = command.data.unwrap();
 
-        assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | tag_class::APPLICATION | tag_class::CONSTRUCTED);
+        assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | TagClass::Application.to_bits() | 0x20);
         assert_eq!(data[1], 0);
         assert_eq!(data.len(), 2);
     }
 
     #[test]
     fn test_general_authenticate_with_chaining() {
-        let command = HealthCardCommand::general_authenticate(true);
+        let command = HealthCardCommand::general_authenticate(true).unwrap();
 
         assert_eq!(command.cla, CLA_COMMAND_CHAINING);
 
@@ -150,7 +142,7 @@ mod tests {
         assert_eq!(command.ne, Some(EXPECTED_LENGTH_WILDCARD_SHORT));
 
         let data = command.data.unwrap();
-        assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | tag_class::APPLICATION | tag_class::CONSTRUCTED);
+        assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | TagClass::Application.to_bits() | 0x20);
         assert_eq!(data[1], 0);
         assert_eq!(data.len(), 2);
     }
@@ -158,7 +150,7 @@ mod tests {
     #[test]
     fn test_general_authenticate_with_data_tag1() {
         let test_data = vec![0x01, 0x02, 0x03, 0x04];
-        let command = HealthCardCommand::general_authenticate_with_data(false, &test_data, 1);
+        let command = HealthCardCommand::general_authenticate_with_data(false, &test_data, 1).unwrap();
 
         assert_eq!(command.cla, CLA_NO_COMMAND_CHAINING);
         assert_eq!(command.ins, INS);
@@ -168,9 +160,9 @@ mod tests {
 
         let data = command.data.unwrap();
 
-        assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | tag_class::APPLICATION | tag_class::CONSTRUCTED);
+        assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | TagClass::Application.to_bits() | 0x20);
         assert_eq!(data[1], 6);
-        assert_eq!(data[2], 1 | tag_class::CONTEXT_SPECIFIC);
+        assert_eq!(data[2], 1 | TagClass::ContextSpecific.to_bits());
         assert_eq!(data[3], test_data.len() as u8);
         assert_eq!(&data[4..8], &test_data);
     }
@@ -178,15 +170,15 @@ mod tests {
     #[test]
     fn test_general_authenticate_with_data_tag3() {
         let test_data = vec![0x05, 0x06, 0x07, 0x08, 0x09];
-        let command = HealthCardCommand::general_authenticate_with_data(true, &test_data, 3);
+        let command = HealthCardCommand::general_authenticate_with_data(true, &test_data, 3).unwrap();
 
         assert_eq!(command.cla, CLA_COMMAND_CHAINING);
 
         let data = command.data.unwrap();
 
-        assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | tag_class::APPLICATION | tag_class::CONSTRUCTED);
+        assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | TagClass::Application.to_bits() | 0x20);
         assert_eq!(data[1], 7); // tag (1) + length (1) + data (5)
-        assert_eq!(data[2], 3 | tag_class::CONTEXT_SPECIFIC);
+        assert_eq!(data[2], 3 | TagClass::ContextSpecific.to_bits());
         assert_eq!(data[3], test_data.len() as u8);
         assert_eq!(&data[4..9], &test_data);
     }
@@ -194,18 +186,18 @@ mod tests {
     #[test]
     fn test_general_authenticate_with_data_tag5() {
         let test_data = vec![0x0A, 0x0B, 0x0C];
-        let command = HealthCardCommand::general_authenticate_with_data(false, &test_data, 5);
+        let command = HealthCardCommand::general_authenticate_with_data(false, &test_data, 5).unwrap();
         let data = command.data.unwrap();
-        assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | tag_class::APPLICATION | tag_class::CONSTRUCTED);
+        assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | TagClass::Application.to_bits() | 0x20);
         assert_eq!(data[1], 5);
-        assert_eq!(data[2], 5 | tag_class::CONTEXT_SPECIFIC);
+        assert_eq!(data[2], 5 | TagClass::ContextSpecific.to_bits());
         assert_eq!(data[3], test_data.len() as u8);
         assert_eq!(&data[4..7], &test_data);
     }
 
     #[test]
     fn test_command_apdu_generation() {
-        let command = HealthCardCommand::general_authenticate(false);
+        let command = HealthCardCommand::general_authenticate(false).unwrap();
         let apdu_result = CardCommandApdu::of_options(
             command.cla,
             command.ins,
@@ -233,14 +225,14 @@ mod tests {
         for i in 0..128 {
             large_data.push(i);
         }
-        let command = HealthCardCommand::general_authenticate_with_data(false, &large_data, 1);
+        let command = HealthCardCommand::general_authenticate_with_data(false, &large_data, 1).unwrap();
         let data = command.data.unwrap();
 
-        assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | tag_class::APPLICATION | tag_class::CONSTRUCTED);
+        assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | TagClass::Application.to_bits() | 0x20);
         assert_eq!(data[1], 0x81);
         assert_eq!(data[2], 0x83);
 
-        assert_eq!(data[3], 1 | tag_class::CONTEXT_SPECIFIC);
+        assert_eq!(data[3], 1 | TagClass::ContextSpecific.to_bits());
         assert_eq!(data[4], 0x81);
         assert_eq!(data[5], 0x80);
 

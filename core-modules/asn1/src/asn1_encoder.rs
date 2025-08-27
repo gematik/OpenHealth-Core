@@ -14,61 +14,128 @@
  * limitations under the License.
  */
 
-use crate::asn1_tag::asn1_type;
-use crate::asn1_date_time::{Asn1GeneralizedTime, Asn1UtcTime, GeneralizedOffset, UtcOffset};
+use crate::asn1_tag::Asn1Type;
 use crate::{Asn1Error, Result as Asn1Result};
+
+
+/// One-shot encoding entry point: creates a scoped writer and returns DER bytes
+pub fn encode<F>(f: F) -> Asn1Result<Vec<u8>>
+where
+    F: FnOnce(&mut Asn1Encoder) -> Asn1Result<()>,
+{
+    let mut w = Asn1Encoder::new();
+    f(&mut w)?;
+    Ok(w.finish())
+}
+
+/// Trait for values that can be encoded to DER (Distinguished Encoding Rules).
+pub trait Asn1Encode {
+    /// Write the *value* (V) part into the provided encoder. Tag & length are handled by `encode_der`.
+    fn encode_value(&self, encoder: &mut Asn1Encoder) -> Asn1Result<()>;
+    /// The ASN.1 universal tag for this type (e.g., 0x01 BOOL, 0x02 INTEGER, ...).
+    fn tag() -> u8;
+
+    /// Encode with tag + length + value into a fresh `Vec<u8>`.
+    fn encode_der(&self) -> Asn1Result<Vec<u8>> {
+        let mut e = Asn1Encoder::new();
+        e.write(|enc| {
+            enc.write_byte(Self::tag());
+            // write value to a temporary to compute length
+            let mut inner = Asn1Encoder::new();
+            self.encode_value(&mut inner)?;
+            enc.write_length(inner.buffer.len())?;
+            enc.write_bytes(&inner.buffer);
+            Ok(())
+        })
+    }
+}
+
+impl Asn1Encode for bool {
+    fn encode_value(&self, encoder: &mut Asn1Encoder) -> Asn1Result<()> {
+        encoder.write_byte(if *self { 0xFF } else { 0x00 });
+        Ok(())
+    }
+    fn tag() -> u8 { u8::from(Asn1Type::Boolean) }
+}
+
+impl Asn1Encode for i32 {
+    fn encode_value(&self, encoder: &mut Asn1Encoder) -> Asn1Result<()> {
+        if *self == 0 { encoder.write_byte(0x00); return Ok(()); }
+        let mut bytes = Vec::new();
+        let mut val = *self;
+        let is_negative = val < 0;
+        while val != 0 && val != -1 {
+            bytes.push((val & 0xFF) as u8);
+            val >>= 8;
+        }
+        if is_negative && (bytes.last().unwrap_or(&0) & 0x80) == 0 { bytes.push(0xFF); }
+        else if !is_negative && (bytes.last().unwrap_or(&0) & 0x80) != 0 { bytes.push(0x00); }
+        bytes.reverse();
+        for b in bytes { encoder.write_byte(b); }
+        Ok(())
+    }
+    fn tag() -> u8 { 0x02 }
+}
+
+impl Asn1Encode for &str {
+    fn encode_value(&self, encoder: &mut Asn1Encoder) -> Asn1Result<()> {
+        encoder.write_bytes(self.as_bytes());
+        Ok(())
+    }
+    fn tag() -> u8 { u8::from(Asn1Type::Utf8String) }
+}
+
+impl Asn1Encode for &[u8] {
+    fn encode_value(&self, encoder: &mut Asn1Encoder) -> Asn1Result<()> {
+        encoder.write_bytes(self);
+        Ok(())
+    }
+    fn tag() -> u8 { u8::from(Asn1Type::OctetString) }
+}
+
+/// Encodes a boolean to DER (01 01 FF/00)
+pub fn encode_boolean(value: bool) -> Asn1Result<Vec<u8>> { value.encode_der() }
+/// Encodes an INTEGER to DER
+pub fn encode_int(value: i32) -> Asn1Result<Vec<u8>> { value.encode_der() }
+/// Encodes an OCTET STRING to DER
+pub fn encode_octet_string(value: &[u8]) -> Asn1Result<Vec<u8>> { value.encode_der() }
+/// Encodes a UTF8String to DER
+pub fn encode_utf8_string(value: &str) -> Asn1Result<Vec<u8>> { value.encode_der() }
 
 /// ASN.1 encoder for encoding data in ASN.1 format.
 pub struct Asn1Encoder {
-    pub buffer: Vec<u8>,
+    buffer: Vec<u8>,
 }
 
 impl Asn1Encoder {
     /// Creates a new ASN.1 encoder.
-    pub fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Asn1Encoder {
             buffer: Vec::new(),
         }
     }
 
-    /// Returns the buffer.
-    pub fn get_buffer(&self) -> &[u8] {
+    /// Finish and return the encoded bytes (takes ownership)
+    pub fn finish(self) -> Vec<u8> { self.buffer }
+
+    pub(crate) fn get_buffer(&self) -> &[u8] {
         &self.buffer
     }
 
-    /// Clears the buffer.
-    pub fn clear(&mut self) {
+    pub(crate) fn clear(&mut self) {
         self.buffer.clear();
     }
 
-    /// Appends a byte to the buffer.
     pub fn write_byte(&mut self, byte: u8) {
         self.buffer.push(byte);
     }
 
-    /// Appends a byte array to the buffer.
     pub fn write_bytes(&mut self, bytes: &[u8]) {
         self.buffer.extend_from_slice(bytes);
     }
 
-    /// Writes an integer in big-endian format, using a variable-length encoding.
-    pub fn write_int_bytes(&mut self, integer: i32) {
-        let mut bytes = Vec::new();
-        let mut value = integer;
 
-        while value < -0x80 || value >= 0x80 {
-            bytes.push((value & 0xFF) as u8);
-            value /= 0x100;
-        }
-        bytes.push((value & 0xFF) as u8);
-
-        for byte in bytes.iter().rev() {
-            self.write_byte(*byte);
-        }
-    }
-
-    /// Writes a length in a variable-length encoding.
-    pub fn write_length(&mut self, length: usize) -> Asn1Result<()> {
+    pub(crate) fn write_length(&mut self, length: usize) -> Asn1Result<()> {
         if length < 0x80 {
             // Single-byte length
             self.write_byte(length as u8);
@@ -94,8 +161,7 @@ impl Asn1Encoder {
         Ok(())
     }
 
-    /// Writes a tag.
-    pub fn write_tag(&mut self, tag_number: u8, tag_class: u8) -> Asn1Result<()> {
+    pub(crate) fn write_tag(&mut self, tag_number: u8, tag_class: u8) -> Asn1Result<()> {
         if tag_number < 0x1F {
             // Single-byte tag
             self.write_byte((tag_number as u8) | tag_class);
@@ -128,24 +194,110 @@ impl Asn1Encoder {
         Ok(())
     }
 
-    /// Writes the length and value of another encoder.
-    pub fn write_encoder(&mut self, other: &Asn1Encoder) -> Asn1Result<()> {
-        // Write length
-        self.write_length(other.buffer.len())?;
-        // Write value
-        self.write_bytes(&other.buffer);
-        Ok(())
-    }
-
-    /// Writes data using the provided block and returns the resulting vector.
-    pub fn write<F>(&mut self, block: F) -> Asn1Result<Vec<u8>>
+    pub(crate) fn write<F>(&mut self, block: F) -> Asn1Result<Vec<u8>>
     where
         F: FnOnce(&mut Asn1Encoder) -> Asn1Result<()>,
     {
-        // Clear the buffer before writing
         self.clear();
         block(self)?;
         Ok(self.buffer.clone())
+    }
+
+    pub fn write_tagged_object<F>(&mut self, tag_number: u8, tag_class: u8, f: F) -> Asn1Result<()>
+    where
+        F: FnOnce(&mut Asn1Encoder) -> Asn1Result<()>,
+    {
+        // Tag
+        self.write_tag(tag_number, tag_class)?;
+        // Inner scope
+        let mut inner = Asn1Encoder::new();
+        f(&mut inner)?;
+        let inner_buf = inner.finish();
+        // Length + value
+        self.write_length(inner_buf.len())?;
+        self.write_bytes(&inner_buf);
+        Ok(())
+    }
+
+    /// Write a full ASN.1 tag (class + constructed + number) using the structured tag type.
+    pub fn write_tag_struct(&mut self, tag: crate::asn1_tag::Asn1Tag) -> Asn1Result<()> {
+        let bytes = tag.to_bytes();
+        self.write_bytes(&bytes);
+        Ok(())
+    }
+
+    /// Write a TLV using a structured tag and a closure for the value bytes.
+    /// The closure writes into a temporary inner encoder; its length is then encoded automatically.
+    pub fn write_tagged(
+        &mut self,
+        tag: crate::asn1_tag::Asn1Tag,
+        f: impl FnOnce(&mut Asn1Encoder) -> Asn1Result<()>,
+    ) -> Asn1Result<()> {
+        self.write_tag_struct(tag)?;
+        let mut inner = Asn1Encoder::new();
+        f(&mut inner)?;
+        let inner_buf = inner.finish();
+        self.write_length(inner_buf.len())?;
+        self.write_bytes(&inner_buf);
+        Ok(())
+    }
+    /// Write a primitive TLV directly from raw value bytes using a structured tag.
+    pub fn write_primitive(&mut self, tag: crate::asn1_tag::Asn1Tag, value: &[u8]) -> Asn1Result<()> {
+        self.write_tag_struct(tag)?;
+        self.write_length(value.len())?;
+        self.write_bytes(value);
+        Ok(())
+    }
+
+    /// Helper: DER-encode a signed 32-bit integer to minimal two's complement bytes.
+    fn encode_integer_i32_bytes(n: i32) -> Vec<u8> {
+        if n == 0 { return vec![0x00]; }
+        let mut bytes = n.to_be_bytes().to_vec();
+        if n >= 0 {
+            while bytes.len() > 1 && bytes[0] == 0x00 && (bytes[1] & 0x80) == 0 { bytes.remove(0); }
+        } else {
+            while bytes.len() > 1 && bytes[0] == 0xFF && (bytes[1] & 0x80) == 0x80 { bytes.remove(0); }
+        }
+        bytes
+    }
+
+    /// Write an ASN.1 INTEGER (UNIVERSAL 0x02) with minimal DER encoding.
+    pub fn write_int(&mut self, n: i32) -> Asn1Result<()> {
+        let value = Self::encode_integer_i32_bytes(n);
+        let tag = crate::asn1_tag::Asn1Tag::new(crate::asn1_tag::TagClass::Universal, Asn1Type::Integer);
+        self.write_primitive(tag, &value)
+    }
+
+    /// Write an ASN.1 OCTET STRING (UNIVERSAL 0x04).
+    pub fn write_octet_string(&mut self, data: &[u8]) -> Asn1Result<()> {
+        let tag = crate::asn1_tag::Asn1Tag::new(crate::asn1_tag::TagClass::Universal, Asn1Type::OctetString);
+        self.write_primitive(tag, data)
+    }
+
+    /// Write an ASN.1 BIT STRING (UNIVERSAL 0x03).
+    /// `unused_bits` must be 0..=7.
+    pub fn write_bit_string(&mut self, data: &[u8], unused_bits: u8) -> Asn1Result<()> {
+        if unused_bits > 7 {
+            return Err(Asn1Error::EncodingError("Invalid unused bit count (must be 0..7)".to_string()));
+        }
+        let mut value = Vec::with_capacity(1 + data.len());
+        value.push(unused_bits);
+        value.extend_from_slice(data);
+        let tag = crate::asn1_tag::Asn1Tag::new(crate::asn1_tag::TagClass::Universal, Asn1Type::BitString);
+        self.write_primitive(tag, &value)
+    }
+
+    /// Write an ASN.1 UTF8String (UNIVERSAL 0x0C).
+    pub fn write_utf8_string(&mut self, s: &str) -> Asn1Result<()> {
+        let tag = crate::asn1_tag::Asn1Tag::new(crate::asn1_tag::TagClass::Universal, Asn1Type::Utf8String);
+        self.write_primitive(tag, s.as_bytes())
+    }
+
+    /// Write an ASN.1 BOOLEAN (UNIVERSAL 0x01).
+    pub fn write_boolean(&mut self, b: bool) -> Asn1Result<()> {
+        let tag = crate::asn1_tag::Asn1Tag::new(crate::asn1_tag::TagClass::Universal, Asn1Type::Boolean);
+        let v = if b { [0xFF] } else { [0x00] };
+        self.write_primitive(tag, &v)
     }
 }
 
@@ -190,54 +342,12 @@ pub fn write_tagged_object_with_inner_tag(
 
 /// Write an ASN.1 boolean.
 pub fn write_boolean(encoder: &mut Asn1Encoder, value: bool) -> Asn1Result<()> {
-    write_tagged_object(encoder, asn1_type::BOOLEAN, 0, |inner_encoder| {
-        inner_encoder.write_byte(if value { 0xFF } else { 0x00 });
-        Ok(())
-    })
+    encoder.write_boolean(value)
 }
 
 /// Write an ASN.1 integer.
 pub fn write_int(encoder: &mut Asn1Encoder, value: i32) -> Asn1Result<()> {
-    // Start with INTEGER tag
-    encoder.write_byte(0x02); // ASN.1 INTEGER tag
-
-    // Handle special case for zero
-    if value == 0 {
-        encoder.write_byte(0x01); // Length 1
-        encoder.write_byte(0x00); // Value 0
-        return Ok(());
-    }
-
-    // Convert the integer to bytes in big-endian format
-    let mut bytes = Vec::new();
-    let mut val = value;
-    let is_negative = value < 0;
-
-    // Extract bytes one at a time
-    while val != 0 && val != -1 {
-        bytes.push((val & 0xFF) as u8);
-        val >>= 8;
-    }
-
-    // Add padding byte if needed to preserve sign
-    if is_negative && (bytes.last().unwrap_or(&0) & 0x80) == 0 {
-        bytes.push(0xFF);
-    } else if !is_negative && (bytes.last().unwrap_or(&0) & 0x80) != 0 {
-        bytes.push(0x00);
-    }
-
-    // Reverse to get big-endian order
-    bytes.reverse();
-
-    // Write length
-    encoder.write_length(bytes.len())?;
-
-    // Write integer bytes
-    for byte in bytes {
-        encoder.write_byte(byte);
-    }
-
-    Ok(())
+    encoder.write_int(value)
 }
 
 /// Write an ASN.1 bit string.
@@ -246,163 +356,21 @@ pub fn write_bit_string(
     value: &[u8],
     unused_bits: u8
 ) -> Asn1Result<()> {
-    if unused_bits > 7 {
-        return Err(Asn1Error::EncodingError(format!("Invalid unused bit count: {}", unused_bits)));
-    }
-
-    write_tagged_object(encoder, asn1_type::BIT_STRING, 0, |inner_encoder| {
-        inner_encoder.write_byte(unused_bits);
-        inner_encoder.write_bytes(value);
-        Ok(())
-    })
+    encoder.write_bit_string(value, unused_bits)
 }
 
 /// Write an ASN.1 octet string.
 pub fn write_octet_string(encoder: &mut Asn1Encoder, value: &[u8]) -> Asn1Result<()> {
-    write_tagged_object(encoder, asn1_type::OCTET_STRING, 0, |inner_encoder| {
-        inner_encoder.write_bytes(value);
-        Ok(())
-    })
+    encoder.write_octet_string(value)
 }
 
 /// Write an ASN.1 UTF8 string.
 pub fn write_utf8_string(encoder: &mut Asn1Encoder, value: &str) -> Asn1Result<()> {
-    write_tagged_object(encoder, asn1_type::UTF8_STRING, 0, |inner_encoder| {
-        inner_encoder.write_bytes(value.as_bytes());
-        Ok(())
-    })
+    encoder.write_utf8_string(value)
 }
 
-/// Write an ASN.1 OBJECT IDENTIFIER.
-pub fn write_object_identifier(encoder: &mut Asn1Encoder, oid: &str) -> Asn1Result<()> {
-    // Parse OID components
-    let parts: std::result::Result<Vec<u128>, _> = oid.split('.').map(|p| p.parse::<u128>()).collect();
-    let parts = match parts {
-        Ok(p) => p,
-        Err(_) => return Err(Asn1Error::EncodingError(format!("Invalid OID string `{}`", oid))),
-    };
 
-    if parts.len() < 2 {
-        return Err(Asn1Error::EncodingError("OID must have at least two parts".to_string()));
-    }
 
-    let first = parts[0];
-    let second = parts[1];
-
-    if first > 2 {
-        return Err(Asn1Error::EncodingError("First OID component must be 0, 1, or 2".to_string()));
-    }
-    if first < 2 && second >= 40 {
-        return Err(Asn1Error::EncodingError("Second OID component must be < 40 when first is 0 or 1".to_string()));
-    }
-
-    let mut encoded: Vec<u8> = Vec::new();
-
-    // First byte(s): 40*first + second
-    let first_value = 40u128 * first + second;
-    encode_base128(first_value, &mut encoded);
-
-    // Remaining components
-    for &value in parts.iter().skip(2) {
-        encode_base128(value, &mut encoded);
-    }
-
-    // Wrap with OBJECT IDENTIFIER tag (0x06)
-    write_tagged_object(encoder, asn1_type::OBJECT_IDENTIFIER, 0, |inner_encoder| {
-        inner_encoder.write_bytes(&encoded);
-        Ok(())
-    })
-}
-
-/// Helper: encode integer as base-128 with continuation bits.
-fn encode_base128(mut value: u128, out: &mut Vec<u8>) {
-    // At least one byte
-    let mut bytes = Vec::new();
-    bytes.push((value & 0x7F) as u8);
-    value >>= 7;
-    while value > 0 {
-        bytes.push(((value & 0x7F) as u8) | 0x80);
-        value >>= 7;
-    }
-    bytes.reverse();
-    out.extend_from_slice(&bytes);
-}
-
-/// Write an ASN.1 GeneralizedTime (0x18).
-pub fn write_generalized_time(encoder: &mut Asn1Encoder, t: Asn1GeneralizedTime) -> Asn1Result<()> {
-    let mut s = String::new();
-
-    // YYYYMMDD
-    s.push_str(&format!("{:04}{:02}{:02}", t.year, t.month, t.day));
-    // HH
-    s.push_str(&format!("{:02}", t.hour));
-    // MM and SS when present
-    if let Some(min) = t.minute {
-        s.push_str(&format!("{:02}", min));
-    }
-    if let Some(sec) = t.second {
-        s.push_str(&format!("{:02}", sec));
-    }
-
-    // Fraction
-    if let Some(frac) = t.fraction_of_second {
-        s.push('.');
-        s.push_str(&format!("{}", frac));
-    }
-
-    // Offset
-    match t.offset {
-        Some(GeneralizedOffset { hours, minutes }) => {
-            let sign = if hours >= 0 { '+' } else { '-' };
-            let abs_h = hours.abs();
-            let abs_m = minutes.abs();
-            s.push(sign);
-            s.push_str(&format!("{:02}{:02}", abs_h, abs_m));
-        }
-        None => {
-            // Default to Z (UTC) if no offset
-            s.push('Z');
-        }
-    }
-
-    // Tag and value
-    encoder.write_byte(0x18); // GeneralizedTime tag
-    encoder.write_length(s.len())?;
-    encoder.write_bytes(s.as_bytes());
-    Ok(())
-}
-
-/// Write an ASN.1 UTCTime (0x17).
-/// Write an ASN.1 UTCTime (0x17).
-pub fn write_utc_time(encoder: &mut Asn1Encoder, t: Asn1UtcTime) -> Asn1Result<()> {
-    let mut s = String::new();
-
-    // YYMMDDHH
-    s.push_str(&format!("{:02}{:02}{:02}{:02}", t.year, t.month, t.day, t.hour));
-    // Minuten sind beim UtcTime-Modell verpflichtend (i32)
-    s.push_str(&format!("{:02}", t.minute));
-    if let Some(sec) = t.second {
-        s.push_str(&format!("{:02}", sec));
-    }
-
-    match t.offset {
-        Some(UtcOffset { hours, minutes }) => {
-            let sign = if hours >= 0 { '+' } else { '-' };
-            let abs_h = hours.abs();
-            let abs_m = minutes.abs();
-            s.push(sign);
-            s.push_str(&format!("{:02}{:02}", abs_h, abs_m));
-        }
-        None => {
-            s.push('Z');
-        }
-    }
-
-    encoder.write_byte(0x17); // UTCTime tag
-    encoder.write_length(s.len())?;
-    encoder.write_bytes(s.as_bytes());
-    Ok(())
-}
 
 #[cfg(test)]
 mod tests {
@@ -414,7 +382,7 @@ mod tests {
         let mut encoder = Asn1Encoder::new();
 
         // Encode true
-        let data = encoder.write(|encoder| write_boolean(encoder, true)).unwrap();
+        let data = encoder.write(|encoder| encoder.write_boolean(true)).unwrap();
 
         // Verify encoding
         assert_eq!(data, [0x01, 0x01, 0xFF]);
@@ -425,7 +393,7 @@ mod tests {
         assert_eq!(result, true);
 
         // Encode false
-        let data = encoder.write(|encoder| write_boolean(encoder, false)).unwrap();
+        let data = encoder.write(|encoder| encoder.write_boolean(false)).unwrap();
 
         // Verify encoding
         assert_eq!(data, [0x01, 0x01, 0x00]);
@@ -518,7 +486,7 @@ mod tests {
         // Write a context-specific tagged object containing an octet string
         let outer_tag = 3;
         let outer_class = 0x80; // CONTEXT_SPECIFIC
-        let inner_tag = asn1_type::OCTET_STRING;
+        let inner_tag = Asn1Type::OctetString as u8;
         let inner_class = 0;
         let test_data = &[0x01, 0x02, 0x03];
 
@@ -542,5 +510,17 @@ mod tests {
 
         // Verify data
         assert_eq!(&data[4..], test_data);
+    }
+
+    #[test]
+    fn test_public_encode_scope() {
+        // Builds [APPLICATION|CONSTRUCTED 28] empty content
+        let bytes = super::encode(|w| {
+            w.write_tagged_object(28, 0x40 | 0x20, |_inner| Ok(()))
+        }).unwrap();
+        // Outer tag
+        assert_eq!(bytes[0], (28u8 | (0x40 | 0x20)));
+        // Empty length
+        assert_eq!(bytes[1], 0x00);
     }
 }

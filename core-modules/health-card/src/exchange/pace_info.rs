@@ -1,4 +1,13 @@
-use crate::asn1::{Asn1Decoder, Asn1Encoder, Asn1Error, Asn1Tag, Asn1Type};
+use crate::asn1::{
+    asn1_decoder::Asn1Decoder,
+    asn1_encoder::encode,
+    asn1_object_identifier::write_object_identifier,
+    read_int,
+    Asn1Error,
+    Asn1Tag,
+    TagClass,
+    asn1_type,
+};
 use crate::crypto::key::ec_key::EcCurve;
 use std::collections::HashMap;
 use std::fmt;
@@ -45,10 +54,24 @@ impl PaceInfo {
 
     /// Returns the protocol ID bytes without the tag and length
     pub fn protocol_id_bytes(&self) -> Vec<u8> {
-        let encoder = Asn1Encoder::new();
-        let encoded = encoder.write(|writer| writer.write_object_identifier(&self.protocol_id));
-        // Skip tag and length bytes (first 2 bytes)
-        encoded[2..].to_vec()
+        // Encode full TLV first
+        let encoded = encode(|w| {
+            write_object_identifier(w, &self.protocol_id)
+        }).expect("OID encoding must not fail");
+        // Strip tag (1+ bytes) + length (1+ bytes) in a DER-compliant way
+        // Tag is at least 1 byte; for UNIVERSAL OBJECT IDENTIFIER it's one byte (0x06),
+        // but we still parse length generically.
+        let mut idx = 1; // skip first tag octet; high-tag-number not expected for OID
+        // parse length octets
+        if encoded[idx] & 0x80 == 0 {
+            // short form: one length byte
+            idx += 1;
+        } else {
+            // long form
+            let n = (encoded[idx] & 0x7F) as usize; // number of subsequent length bytes
+            idx += 1 + n;
+        }
+        encoded[idx..].to_vec()
     }
 }
 
@@ -78,32 +101,42 @@ static SUPPORTED_CURVES: Lazy<HashMap<i64, EcCurve>> = Lazy::new(|| {
 ///
 /// A `Result` containing either a `PaceInfo` object or a `PaceInfoError`.
 pub fn parse_pace_info(asn1: &[u8]) -> Result<PaceInfo, PaceInfoError> {
-    let decoder = Asn1Decoder::new(asn1);
+    let mut decoder = Asn1Decoder::new(asn1)?;
 
     decoder.read(|reader| {
-        reader.advance_with_tag(Asn1Type::SET, Asn1Tag::CONSTRUCTED, |reader| {
-            reader.advance_with_tag(Asn1Type::SEQUENCE, Asn1Tag::CONSTRUCTED, |reader| {
-                // Step 1: Read protocol identifier (OID)
-                let protocol_id = reader.read_object_identifier()?;
+        // SET (constructed)
+        reader.advance_with_tag(
+            Asn1Tag::new(TagClass::Universal, asn1_type::SET as u32).with_constructed(true),
+            |reader| {
+                // SEQUENCE (constructed)
+                reader.advance_with_tag(
+                    Asn1Tag::new(TagClass::Universal, asn1_type::SEQUENCE as u32).with_constructed(true),
+                    |reader| {
+                        // 1) protocol identifier (OID)
+                        let protocol_id = {
+                            // use the free helper to read an OBJECT IDENTIFIER
+                            crate::asn1::asn1_object_identifier::read_object_identifier(reader)?
+                        };
 
-                // Step 2: Read and ignore the first integer
-                let _ = reader.read_int()?;
+                        // 2) ignore first INTEGER
+                        let _ = read_int(reader)?;
 
-                // Step 3: Read the parameter ID and map to an elliptic curve
-                let parameter_id = reader.read_int()?;
+                        // 3) read parameter-id INTEGER and map to curve
+                        let parameter_id = read_int(reader)? as i64;
+                        let curve = SUPPORTED_CURVES
+                            .get(&parameter_id)
+                            .cloned()
+                            .ok_or_else(|| PaceInfoError::UnsupportedParameterId(parameter_id))?;
 
-                let curve = SUPPORTED_CURVES.get(&parameter_id)
-                    .ok_or_else(|| PaceInfoError::UnsupportedParameterId(parameter_id))?
-                    .clone();
+                        // ensure we consumed the SEQUENCE fully
+                        reader.skip_to_end()?;
 
-                // Ensure no unexpected data exists
-                reader.skip_to_end()?;
-
-                // Step 4: Create and return the PACE info
-                Ok(PaceInfo::new(protocol_id, curve))
-            })
-        })
-    })
+                        Ok(PaceInfo::new(protocol_id, curve))
+                    },
+                )
+            },
+        )
+    }).map_err(PaceInfoError::from)
 }
 
 #[cfg(test)]

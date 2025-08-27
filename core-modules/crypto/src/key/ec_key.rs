@@ -1,14 +1,15 @@
+use crate::key::ec_point::EcPoint;
+use crate::utils::pem::{DecodeToPem, Pem};
+use asn1::Asn1Error;
 use asn1::{
-    asn1_decoder::{Asn1Decoder, Asn1DecoderError, read_bit_string, read_octet_string},
-    asn1_encoder::{Asn1Encoder, write_bit_string, write_octet_string},
+    asn1_decoder::{read_bit_string, read_octet_string, Asn1Decoder},
+    asn1_encoder::encode,
     asn1_object_identifier::{read_object_identifier, write_object_identifier},
-    asn1_tag::{asn1_type, tag_class},
+    asn1_tag::{Asn1Tag, TagClass},
 };
 use num_bigint::BigInt;
 use rand::RngCore;
-use asn1::Asn1Error;
-use crate::key::ec_point::EcPoint;
-use crate::utils::pem::{DecodeToPem, Pem};
+use asn1::tag::Asn1Type;
 
 /// Supported brainpool curves (RFC 5639).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -134,7 +135,7 @@ impl EcKeyPairSpec {
     }
 
     /// Generates a key pair
-    pub fn generate_key_pair(&self) -> Result<(EcPublicKey, EcPrivateKey), Asn1DecoderError> {
+    pub fn generate_key_pair(&self) -> Result<(EcPublicKey, EcPrivateKey), Asn1Error> {
         let coord = self.curve.coordinate_size();
 
         // Private scalar
@@ -178,15 +179,25 @@ impl EcPublicKey {
             EcCurve::BrainpoolP512r1 => 64,
         };
         let expected_len = 1 + (2 * point_size);
-        assert_eq!(data.len(), expected_len, "Invalid ec point length `{}`", data.len());
-        assert!(!data.is_empty() && data[0] == 0x04, "Default data must be an uncompressed ec point");
+        assert_eq!(
+            data.len(),
+            expected_len,
+            "Invalid ec point length `{}`",
+            data.len()
+        );
+        assert!(
+            !data.is_empty() && data[0] == 0x04,
+            "Default data must be an uncompressed ec point"
+        );
         Self { curve, data }
     }
 
     /// Creates an EcPublicKey from an uncompressed point.
-    pub fn from_uncompressed_point(curve: EcCurve, data: &[u8]) -> Result<Self, Asn1DecoderError> {
+    pub fn from_uncompressed_point(curve: EcCurve, data: &[u8]) -> Result<Self, Asn1Error> {
         if data.is_empty() || data[0] != 0x04 {
-            return Err(Asn1DecoderError::new("Invalid EC point format: must be uncompressed (starting with 0x04)"));
+            return Err(Asn1Error::DecodingError(
+                "Invalid EC point format: must be uncompressed (starting with 0x04)".to_string(),
+            ));
         }
         let point_size = match curve {
             EcCurve::BrainpoolP256r1 => 32,
@@ -195,38 +206,55 @@ impl EcPublicKey {
         };
         let expected_len = 1 + (2 * point_size);
         if data.len() != expected_len {
-            return Err(Asn1DecoderError::new(format!("Invalid ec point length `{}`", data.len())));
+            return Err(Asn1Error::DecodingError(format!(
+                "Invalid ec point length `{}`",
+                data.len()
+            )));
         }
-        Ok(Self { curve, data: data.to_vec() })
+        Ok(Self {
+            curve,
+            data: data.to_vec(),
+        })
     }
 
     /// SubjectPublicKeyInfo (DER) encoding.
     pub fn encode_to_asn1(&self) -> Result<Vec<u8>, Asn1Error> {
-        let mut encoder = Asn1Encoder::new();
-        encoder.write(|encoder| {
-            asn1::asn1_encoder::write_tagged_object(encoder, asn1_type::SEQUENCE, tag_class::CONSTRUCTED, |encoder| {
-                // AlgorithmIdentifier
-                asn1::asn1_encoder::write_tagged_object(encoder, asn1_type::SEQUENCE, tag_class::CONSTRUCTED, |encoder| {
-                    write_object_identifier(encoder, Self::OID)?;
-                    write_object_identifier(encoder, self.curve.oid())?;
+        encode(|w| {
+            // SubjectPublicKeyInfo ::= SEQUENCE
+            w.write_tagged(
+                Asn1Tag::new(TagClass::Universal, Asn1Type::Sequence)
+                    .with_constructed(true),
+                |w| {
+                    // AlgorithmIdentifier ::= SEQUENCE { algorithm OID, parameters OID }
+                    w.write_tagged(
+                        Asn1Tag::new(TagClass::Universal, Asn1Type::Sequence)
+                            .with_constructed(true),
+                        |w| {
+                            write_object_identifier(w, Self::OID)?;
+                            write_object_identifier(w, self.curve.oid())?;
+                            Ok(())
+                        },
+                    )?;
+                    // subjectPublicKey BIT STRING
+                    w.write_bit_string(&self.data, 0)?;
                     Ok(())
-                })?;
-                // subjectPublicKey BIT STRING
-                write_bit_string(encoder, &self.data, 0)?;
-                Ok(())
-            })
+                },
+            )
         })
     }
 
     /// Parses SubjectPublicKeyInfo (DER).
-    pub fn decode_from_asn1(data: &[u8]) -> Result<Self, Asn1DecoderError> {
+    pub fn decode_from_asn1(data: &[u8]) -> Result<Self, Asn1Error> {
         let mut decoder = Asn1Decoder::new(data)?;
-        decoder.advance_with_tag(asn1_type::SEQUENCE, tag_class::CONSTRUCTED, |decoder| {
-            let curve = read_ec_curve_from_algorithm_identifier(decoder)?;
-            let point_data = read_bit_string(decoder)?;
-            decoder.skip_to_end()?;
-            Self::from_uncompressed_point(curve, &point_data)
-        })
+        decoder.advance_with_tag(
+            Asn1Tag::new(TagClass::Universal, Asn1Type::Sequence).with_constructed(true),
+            |decoder| {
+                let curve = read_ec_curve_from_algorithm_identifier(decoder)?;
+                let point_data = read_bit_string(decoder)?;
+                decoder.skip_to_end()?;
+                Self::from_uncompressed_point(curve, &point_data)
+            },
+        )
     }
 
     /// Converts to EcPoint (x,y). Panics on invalid data.
@@ -236,7 +264,10 @@ impl EcPublicKey {
             EcCurve::BrainpoolP384r1 => 48,
             EcCurve::BrainpoolP512r1 => 64,
         };
-        assert!(self.data.len() == 1 + 2 * coordinate_size && self.data[0] == 0x04, "Invalid EC public key data format");
+        assert!(
+            self.data.len() == 1 + 2 * coordinate_size && self.data[0] == 0x04,
+            "Invalid EC public key data format"
+        );
         let x_bytes = &self.data[1..=coordinate_size];
         let y_bytes = &self.data[(coordinate_size + 1)..=(2 * coordinate_size)];
         let x = BigInt::from_bytes_be(num_bigint::Sign::Plus, x_bytes);
@@ -247,31 +278,42 @@ impl EcPublicKey {
     /// Encodes as PEM ("PUBLIC KEY").
     pub fn encode_to_pem(&self) -> Result<String, Asn1Error> {
         let der = self.encode_to_asn1()?;
-        let pem = Pem { r#type: "PUBLIC KEY".to_string(), data: der };
+        let pem = Pem {
+            r#type: "PUBLIC KEY".to_string(),
+            data: der,
+        };
         Ok(pem.encode_to_string())
     }
 
     /// Decodes from PEM ("PUBLIC KEY").
-    pub fn decode_from_pem(pem_str: &str) -> Result<Self, Asn1DecoderError> {
+    pub fn decode_from_pem(pem_str: &str) -> Result<Self, Asn1Error> {
         let pem = pem_str.decode_to_pem();
         Self::decode_from_asn1(&pem.data)
     }
 }
 
 /// Reads AlgorithmIdentifier and returns the named curve.
-fn read_ec_curve_from_algorithm_identifier(decoder: &mut Asn1Decoder) -> Result<EcCurve, Asn1DecoderError> {
-    decoder.advance_with_tag(asn1_type::SEQUENCE, tag_class::CONSTRUCTED, |decoder| {
-        let oid = read_object_identifier(decoder)?;
-        if oid != EcPublicKey::OID {
-            return Err(Asn1DecoderError::new(format!(
-                "Expected EC public key OID `{}` but got `{}`",
-                EcPublicKey::OID, oid
-            )));
-        }
-        let curve_oid = read_object_identifier(decoder)?;
-        decoder.skip_to_end()?;
-        EcCurve::from_oid(&curve_oid).ok_or_else(|| Asn1DecoderError::new(format!("Unknown curve with OID `{}`", curve_oid)))
-    })
+fn read_ec_curve_from_algorithm_identifier(
+    decoder: &mut Asn1Decoder,
+) -> Result<EcCurve, Asn1Error> {
+    decoder.advance_with_tag(
+        Asn1Tag::new(TagClass::Universal, Asn1Type::Sequence).with_constructed(true),
+        |decoder| {
+            let oid = read_object_identifier(decoder)?;
+            if oid != EcPublicKey::OID {
+                return Err(Asn1Error::DecodingError(format!(
+                    "Expected EC public key OID `{}` but got `{}`",
+                    EcPublicKey::OID,
+                    oid
+                )));
+            }
+            let curve_oid = read_object_identifier(decoder)?;
+            decoder.skip_to_end()?;
+            EcCurve::from_oid(&curve_oid).ok_or_else(|| {
+                Asn1Error::DecodingError(format!("Unknown curve with OID `{}`", curve_oid))
+            })
+        },
+    )
 }
 
 /// EC private key with curve and scalar.
@@ -287,9 +329,13 @@ impl EcPrivateKey {
     pub const OID: &'static str = "1.2.840.10045.2.1";
 
     /// Creates a private key from scalar bytes.
-    pub fn from_scalar(curve: EcCurve, data: &[u8]) -> Result<Self, Asn1DecoderError> {
+    pub fn from_scalar(curve: EcCurve, data: &[u8]) -> Result<Self, Asn1Error> {
         let s = BigInt::from_bytes_be(num_bigint::Sign::Plus, data);
-        Ok(Self { curve, data: data.to_vec(), s })
+        Ok(Self {
+            curve,
+            data: data.to_vec(),
+            s,
+        })
     }
 
     /// PrivateKeyInfo containing ECPrivateKey (DER) encoding.
@@ -305,93 +351,122 @@ impl EcPrivateKey {
     ///   privateKey     OCTET STRING
     /// }
     pub fn encode_to_asn1(&self) -> Result<Vec<u8>, Asn1Error> {
-        let mut encoder = Asn1Encoder::new();
-        encoder.write(|encoder| {
-            asn1::asn1_encoder::write_tagged_object(encoder, asn1_type::SEQUENCE, tag_class::CONSTRUCTED, |encoder| {
-                // version = 0
-                asn1::asn1_encoder::write_tagged_object(encoder, asn1_type::INTEGER, 0, |encoder| {
-                    encoder.write_byte(0x00);
-                    Ok(())
-                })?;
+        encode(|w| {
+            // PrivateKeyInfo ::= SEQUENCE
+            w.write_tagged(
+                Asn1Tag::new(TagClass::Universal, Asn1Type::Sequence)
+                    .with_constructed(true), // constructed
+                |w| {
+                    // version INTEGER (0)
+                    w.write_int(0)?;
 
-                // privateKeyAlgorithm = SEQUENCE { OID ecPublicKey, OID curve }
-                asn1::asn1_encoder::write_tagged_object(encoder, asn1_type::SEQUENCE, tag_class::CONSTRUCTED, |encoder| {
-                    write_object_identifier(encoder, EcPublicKey::OID)?;
-                    write_object_identifier(encoder, self.curve.oid())?;
-                    Ok(())
-                })?;
-
-                // privateKey = OCTET STRING { ECPrivateKey }
-                asn1::asn1_encoder::write_tagged_object(encoder, asn1_type::OCTET_STRING, 0, |encoder| {
-                    // ECPrivateKey
-                    asn1::asn1_encoder::write_tagged_object(encoder, asn1_type::SEQUENCE, tag_class::CONSTRUCTED, |encoder| {
-                        // version = 1
-                        asn1::asn1_encoder::write_tagged_object(encoder, asn1_type::INTEGER, 0, |encoder| {
-                            encoder.write_byte(0x01);
+                    // privateKeyAlgorithm = SEQUENCE { OID ecPublicKey, OID curve }
+                    w.write_tagged(
+                        Asn1Tag::new(TagClass::Universal, Asn1Type::Sequence)
+                            .with_constructed(true), // constructed
+                        |w| {
+                            write_object_identifier(w, EcPublicKey::OID)?;
+                            write_object_identifier(w, self.curve.oid())?;
                             Ok(())
-                        })?;
-                        // privateKey OCTET STRING
-                        write_octet_string(encoder, &self.data)?;
-                        Ok(())
-                    })
-                })?;
+                        },
+                    )?;
 
-                Ok(())
-            })
+                    // privateKey OCTET STRING that contains ECPrivateKey
+                    // Build ECPrivateKey DER bytes first
+                    let ec_priv_der = encode(|iw| {
+                        iw.write_tagged(
+                            Asn1Tag::new(TagClass::Universal, Asn1Type::Sequence).with_constructed(true),
+                            |iw| {
+                                // version INTEGER (1)
+                                iw.write_int(1)?;
+                                // privateKey OCTET STRING
+                                iw.write_octet_string(&self.data)?;
+                                Ok(())
+                            },
+                        )
+                    })?;
+                    w.write_octet_string(&ec_priv_der)?;
+
+                    Ok(())
+                },
+            )
         })
     }
 
     /// Parses PrivateKeyInfo (DER).
-    pub fn decode_from_asn1(data: &[u8]) -> Result<Self, Asn1DecoderError> {
+    pub fn decode_from_asn1(data: &[u8]) -> Result<Self, Asn1Error> {
         let mut decoder = Asn1Decoder::new(data)?;
-        decoder.advance_with_tag(asn1_type::SEQUENCE, tag_class::CONSTRUCTED, |decoder| {
-            // version INTEGER (0) — consume all value bytes
-            decoder.advance_with_tag(asn1_type::INTEGER, 0, |d| {
+        decoder.advance_with_tag(
+            Asn1Tag::new(TagClass::Universal, Asn1Type::Sequence).with_constructed(true),
+            |decoder| {
+                // version INTEGER (0) — consume all value bytes
+        decoder.advance_with_tag(
+            Asn1Tag::new(TagClass::Universal, Asn1Type::Integer),
+            |d| {
+                // version INTEGER(0) — we don't need the value beyond validation here
                 let _ = d.read_bytes(d.remaining_length())?;
                 Ok(())
-            })?;
+            },
+        )?;
 
-            // privateKeyAlgorithm -> curve
-            let curve = read_ec_curve_from_algorithm_identifier(decoder)?;
+                // privateKeyAlgorithm -> curve
+                let curve = read_ec_curve_from_algorithm_identifier(decoder)?;
 
-            // privateKey OCTET STRING with ECPrivateKey
-            let mut priv_bytes: Option<Vec<u8>> = None;
-            decoder.advance_with_tag(asn1_type::OCTET_STRING, 0, |d| {
-                d.advance_with_tag(asn1_type::SEQUENCE, tag_class::CONSTRUCTED, |d2| {
-                    // ECPrivateKey.version INTEGER(1)
-                    d2.advance_with_tag(asn1_type::INTEGER, 0, |d3| {
-                        let ver_bytes = d3.read_bytes(d3.remaining_length())?;
-                        let ver = *ver_bytes.get(0).unwrap_or(&0xFF);
-                        if ver != 1 {
-                            return Err(Asn1DecoderError::new("Unsupported ec private key version"));
-                        }
-                        Ok(())
-                    })?;
-                    // ECPrivateKey.privateKey OCTET STRING
-                    let pk = read_octet_string(d2)?;
-                    priv_bytes = Some(pk);
-                    d2.skip_to_end()
+                // privateKey OCTET STRING with ECPrivateKey
+                let mut priv_bytes: Option<Vec<u8>> = None;
+                decoder.advance_with_tag(
+                    Asn1Tag::new(TagClass::Universal, Asn1Type::OctetString),
+                    |d| {
+                        d.advance_with_tag(
+                            Asn1Tag::new(TagClass::Universal, Asn1Type::Sequence)
+                                .with_constructed(true),
+                            |d2| {
+                                // ECPrivateKey.version INTEGER(1)
+                                d2.advance_with_tag(
+                                    Asn1Tag::new(TagClass::Universal, Asn1Type::Integer),
+                                    |d3| {
+                                        let ver_bytes = d3.read_bytes(d3.remaining_length())?;
+                                        let ver = *ver_bytes.get(0).unwrap_or(&0xFF);
+                                        if ver != 1 {
+                                            return Err(Asn1Error::DecodingError(
+                                                "Unsupported ec private key version".to_string(),
+                                            ));
+                                        }
+                                        Ok(())
+                                    },
+                                )?;
+                                // ECPrivateKey.privateKey OCTET STRING
+                                let pk = read_octet_string(d2)?;
+                                priv_bytes = Some(pk);
+                                d2.skip_to_end()
+                            },
+                        )
+                    },
+                )?;
+
+                let private_key = priv_bytes
+                    .ok_or_else(|| Asn1Error::DecodingError("Missing EC private key data".to_string()))?;
+                Ok(EcPrivateKey {
+                    curve,
+                    s: BigInt::from_bytes_be(num_bigint::Sign::Plus, &private_key),
+                    data: private_key,
                 })
-            })?;
-
-            let private_key = priv_bytes.ok_or_else(|| Asn1DecoderError::new("Missing EC private key data"))?;
-            Ok(EcPrivateKey {
-                curve,
-                s: BigInt::from_bytes_be(num_bigint::Sign::Plus, &private_key),
-                data: private_key,
-            })
-        })
+            },
+        )
     }
 
     /// Encodes as PEM ("EC PRIVATE KEY").
     pub fn encode_to_pem(&self) -> Result<String, Asn1Error> {
         let der = self.encode_to_asn1()?;
-        let pem = Pem { r#type: "EC PRIVATE KEY".to_string(), data: der };
+        let pem = Pem {
+            r#type: "EC PRIVATE KEY".to_string(),
+            data: der,
+        };
         Ok(pem.encode_to_string())
     }
 
     /// Decodes from PEM ("EC PRIVATE KEY").
-    pub fn decode_from_pem(pem_str: &str) -> Result<Self, Asn1DecoderError> {
+    pub fn decode_from_pem(pem_str: &str) -> Result<Self, Asn1Error> {
         let pem = pem_str.decode_to_pem();
         Self::decode_from_asn1(&pem.data)
     }
@@ -400,11 +475,15 @@ impl EcPrivateKey {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rand::{RngCore, thread_rng, rng};
+    use rand::{rng, thread_rng, RngCore};
 
     #[test]
     fn test_create_ec_key_pair_with_different_curves() {
-        for curve in &[EcCurve::BrainpoolP256r1, EcCurve::BrainpoolP384r1, EcCurve::BrainpoolP512r1] {
+        for curve in &[
+            EcCurve::BrainpoolP256r1,
+            EcCurve::BrainpoolP384r1,
+            EcCurve::BrainpoolP512r1,
+        ] {
             let key_pair = EcKeyPairSpec::new(*curve).generate_key_pair().unwrap();
             let public_key = &key_pair.0;
             let private_key = &key_pair.1;
@@ -419,14 +498,23 @@ mod tests {
             };
             let expected_size = 1 + (2 * point_size);
 
-            assert_eq!(expected_size, public_key.data.len(), "Invalid point size for curve {:?}", curve);
+            assert_eq!(
+                expected_size,
+                public_key.data.len(),
+                "Invalid point size for curve {:?}",
+                curve
+            );
             assert_eq!(0x04, public_key.data[0]);
         }
     }
 
     #[test]
     fn test_encode_decode_ec_public_key_from_asn1() {
-        for curve in &[EcCurve::BrainpoolP256r1, EcCurve::BrainpoolP384r1, EcCurve::BrainpoolP512r1] {
+        for curve in &[
+            EcCurve::BrainpoolP256r1,
+            EcCurve::BrainpoolP384r1,
+            EcCurve::BrainpoolP512r1,
+        ] {
             let point_size = match *curve {
                 EcCurve::BrainpoolP256r1 => 32,
                 EcCurve::BrainpoolP384r1 => 48,
@@ -452,7 +540,11 @@ mod tests {
 
     #[test]
     fn test_encode_decode_ec_private_key_from_asn1() {
-        for curve in &[EcCurve::BrainpoolP256r1, EcCurve::BrainpoolP384r1, EcCurve::BrainpoolP512r1] {
+        for curve in &[
+            EcCurve::BrainpoolP256r1,
+            EcCurve::BrainpoolP384r1,
+            EcCurve::BrainpoolP512r1,
+        ] {
             let key_size = match *curve {
                 EcCurve::BrainpoolP256r1 => 32,
                 EcCurve::BrainpoolP384r1 => 48,
@@ -472,7 +564,11 @@ mod tests {
 
     #[test]
     fn test_public_key_pem_encoding_decoding() {
-        for curve in &[EcCurve::BrainpoolP256r1, EcCurve::BrainpoolP384r1, EcCurve::BrainpoolP512r1] {
+        for curve in &[
+            EcCurve::BrainpoolP256r1,
+            EcCurve::BrainpoolP384r1,
+            EcCurve::BrainpoolP512r1,
+        ] {
             let key_pair = EcKeyPairSpec::new(*curve).generate_key_pair().unwrap();
             let public_key = key_pair.0;
 
@@ -485,7 +581,11 @@ mod tests {
 
     #[test]
     fn test_private_key_pem_encoding_decoding() {
-        for curve in &[EcCurve::BrainpoolP256r1, EcCurve::BrainpoolP384r1, EcCurve::BrainpoolP512r1] {
+        for curve in &[
+            EcCurve::BrainpoolP256r1,
+            EcCurve::BrainpoolP384r1,
+            EcCurve::BrainpoolP512r1,
+        ] {
             let key_pair = EcKeyPairSpec::new(*curve).generate_key_pair().unwrap();
             let private_key = key_pair.1;
 
@@ -498,7 +598,11 @@ mod tests {
 
     #[test]
     fn test_public_key_equality() {
-        for curve in &[EcCurve::BrainpoolP256r1, EcCurve::BrainpoolP384r1, EcCurve::BrainpoolP512r1] {
+        for curve in &[
+            EcCurve::BrainpoolP256r1,
+            EcCurve::BrainpoolP384r1,
+            EcCurve::BrainpoolP512r1,
+        ] {
             let key_pair_spec = EcKeyPairSpec::new(*curve);
             let key_pair1 = key_pair_spec.generate_key_pair().unwrap();
             let key_pair2 = key_pair_spec.generate_key_pair().unwrap();
@@ -513,7 +617,11 @@ mod tests {
 
     #[test]
     fn test_private_key_equality() {
-        for curve in &[EcCurve::BrainpoolP256r1, EcCurve::BrainpoolP384r1, EcCurve::BrainpoolP512r1] {
+        for curve in &[
+            EcCurve::BrainpoolP256r1,
+            EcCurve::BrainpoolP384r1,
+            EcCurve::BrainpoolP512r1,
+        ] {
             let key_pair_spec = EcKeyPairSpec::new(*curve);
             let key_pair1 = key_pair_spec.generate_key_pair().unwrap();
             let key_pair2 = key_pair_spec.generate_key_pair().unwrap();
@@ -528,7 +636,11 @@ mod tests {
 
     #[test]
     fn test_invalid_public_key_length() {
-        for curve in &[EcCurve::BrainpoolP256r1, EcCurve::BrainpoolP384r1, EcCurve::BrainpoolP512r1] {
+        for curve in &[
+            EcCurve::BrainpoolP256r1,
+            EcCurve::BrainpoolP384r1,
+            EcCurve::BrainpoolP512r1,
+        ] {
             let invalid_data = vec![0x04; 64]; // invalid for all curves
             let result = EcPublicKey::from_uncompressed_point(*curve, &invalid_data);
             assert!(result.is_err());
@@ -545,7 +657,11 @@ mod tests {
 
     #[test]
     fn test_public_key_to_ec_point() {
-        for curve in &[EcCurve::BrainpoolP256r1, EcCurve::BrainpoolP384r1, EcCurve::BrainpoolP512r1] {
+        for curve in &[
+            EcCurve::BrainpoolP256r1,
+            EcCurve::BrainpoolP384r1,
+            EcCurve::BrainpoolP512r1,
+        ] {
             let key_pair = EcKeyPairSpec::new(*curve).generate_key_pair().unwrap();
             let public_key = key_pair.0;
 
@@ -559,7 +675,7 @@ mod tests {
             assert_eq!(public_key.curve, ec_point.curve);
 
             let x_bytes = &public_key.data[1..=point_size];
-            let y_bytes = &public_key.data[(point_size+1)..=(2*point_size)];
+            let y_bytes = &public_key.data[(point_size + 1)..=(2 * point_size)];
 
             let expected_x = num_bigint::BigInt::from_bytes_be(num_bigint::Sign::Plus, x_bytes);
             let expected_y = num_bigint::BigInt::from_bytes_be(num_bigint::Sign::Plus, y_bytes);
@@ -571,9 +687,24 @@ mod tests {
     #[test]
     fn test_curve_oid_and_from_oid_and_coordinate_size_and_display() {
         let cases = &[
-            (EcCurve::BrainpoolP256r1, "1.3.36.3.3.2.8.1.1.7", 32, "BrainpoolP256r1"),
-            (EcCurve::BrainpoolP384r1, "1.3.36.3.3.2.8.1.1.11", 48, "BrainpoolP384r1"),
-            (EcCurve::BrainpoolP512r1, "1.3.36.3.3.2.8.1.1.13", 64, "BrainpoolP512r1"),
+            (
+                EcCurve::BrainpoolP256r1,
+                "1.3.36.3.3.2.8.1.1.7",
+                32,
+                "BrainpoolP256r1",
+            ),
+            (
+                EcCurve::BrainpoolP384r1,
+                "1.3.36.3.3.2.8.1.1.11",
+                48,
+                "BrainpoolP384r1",
+            ),
+            (
+                EcCurve::BrainpoolP512r1,
+                "1.3.36.3.3.2.8.1.1.13",
+                64,
+                "BrainpoolP512r1",
+            ),
         ];
         for (curve, oid, size, disp) in cases {
             assert_eq!(curve.oid(), *oid);
@@ -591,7 +722,7 @@ mod tests {
         let curve = EcCurve::BrainpoolP256r1;
         let mut data = vec![0x00]; // invalid prefix
         data.extend_from_slice(&vec![0x00; 64]); // x(32) + y(32)
-        // Expect panic due to invalid uncompressed format
+                                                 // Expect panic due to invalid uncompressed format
         let result = std::panic::catch_unwind(|| EcPublicKey::new(curve, data));
         assert!(result.is_err());
     }
@@ -604,8 +735,12 @@ mod tests {
         let mut x = vec![0u8; coord];
         let mut y = vec![0u8; coord];
         // Fill with some pattern
-        for (i, b) in x.iter_mut().enumerate() { *b = (i as u8).wrapping_mul(3).wrapping_add(1); }
-        for (i, b) in y.iter_mut().enumerate() { *b = (i as u8).wrapping_mul(5).wrapping_add(2); }
+        for (i, b) in x.iter_mut().enumerate() {
+            *b = (i as u8).wrapping_mul(3).wrapping_add(1);
+        }
+        for (i, b) in y.iter_mut().enumerate() {
+            *b = (i as u8).wrapping_mul(5).wrapping_add(2);
+        }
 
         let mut point = Vec::with_capacity(1 + 2 * coord);
         point.push(0x04);
@@ -639,7 +774,11 @@ mod tests {
 
     #[test]
     fn test_private_key_encode_decode_pem_roundtrip_explicit() {
-        for curve in &[EcCurve::BrainpoolP256r1, EcCurve::BrainpoolP384r1, EcCurve::BrainpoolP512r1] {
+        for curve in &[
+            EcCurve::BrainpoolP256r1,
+            EcCurve::BrainpoolP384r1,
+            EcCurve::BrainpoolP512r1,
+        ] {
             let size = curve.coordinate_size();
             let mut s = vec![0u8; size];
             rng().fill_bytes(&mut s);
@@ -653,7 +792,11 @@ mod tests {
 
     #[test]
     fn test_public_key_encode_decode_pem_roundtrip_explicit() {
-        for curve in &[EcCurve::BrainpoolP256r1, EcCurve::BrainpoolP384r1, EcCurve::BrainpoolP512r1] {
+        for curve in &[
+            EcCurve::BrainpoolP256r1,
+            EcCurve::BrainpoolP384r1,
+            EcCurve::BrainpoolP512r1,
+        ] {
             let size = curve.coordinate_size();
             let mut x = vec![0u8; size];
             let mut y = vec![0u8; size];
@@ -675,7 +818,11 @@ mod tests {
     #[test]
     fn test_curve_parameters_non_empty() {
         // Ensure that p,a,b,x,y,q are non-zero and fit typical sizes
-        let curves = [EcCurve::BrainpoolP256r1, EcCurve::BrainpoolP384r1, EcCurve::BrainpoolP512r1];
+        let curves = [
+            EcCurve::BrainpoolP256r1,
+            EcCurve::BrainpoolP384r1,
+            EcCurve::BrainpoolP512r1,
+        ];
         for c in curves {
             let p = c.p();
             let a = c.a();
@@ -684,12 +831,11 @@ mod tests {
             let gy = c.y();
             let q = c.q();
             assert!(p > BigInt::from(0));
-            assert!(a >= BigInt::from(0)); // a can be large positive
+            assert!(a >= BigInt::from(0));
             assert!(b > BigInt::from(0));
             assert!(gx > BigInt::from(0));
             assert!(gy > BigInt::from(0));
             assert!(q > BigInt::from(0));
         }
     }
-
 }
