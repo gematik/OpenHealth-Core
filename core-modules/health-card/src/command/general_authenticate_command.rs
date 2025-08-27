@@ -19,7 +19,7 @@ const GENERAL_AUTHENTICATE_TAG: u8 = 28;
 /// Extension trait for HealthCardCommand to provide GENERAL AUTHENTICATE commands
 pub trait GeneralAuthenticateCommand {
     /// Creates a HealthCardCommand for the GENERAL AUTHENTICATE command
-    /// UseCase: gemSpec_COS_3.14.0#14.7.2.1.1 PACE for end-user cards, Step 1 a
+    /// UseCase: gemSpec_COS_3.14.0#14.7.2.1.1 PACE for end-user cards, Step 1a
     ///
     /// # Arguments
     /// * `command_chaining` - true for command chaining false if not

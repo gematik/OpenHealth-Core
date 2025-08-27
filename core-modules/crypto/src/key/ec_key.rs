@@ -1,5 +1,6 @@
 use crate::key::ec_point::EcPoint;
 use crate::utils::pem::{DecodeToPem, Pem};
+use asn1::tag::Asn1Type;
 use asn1::Asn1Error;
 use asn1::{
     asn1_decoder::{read_bit_string, read_octet_string, Asn1Decoder},
@@ -9,7 +10,6 @@ use asn1::{
 };
 use num_bigint::BigInt;
 use rand::RngCore;
-use asn1::tag::Asn1Type;
 
 /// Supported brainpool curves (RFC 5639).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -475,7 +475,7 @@ impl EcPrivateKey {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rand::{rng, thread_rng, RngCore};
+    use rand::{rng, RngCore};
 
     #[test]
     fn test_create_ec_key_pair_with_different_curves() {

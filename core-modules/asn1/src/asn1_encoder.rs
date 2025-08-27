@@ -221,8 +221,7 @@ impl Asn1Encoder {
 
     /// Write a full ASN.1 tag (class + constructed + number) using the structured tag type.
     pub fn write_tag_struct(&mut self, tag: crate::asn1_tag::Asn1Tag) -> Asn1Result<()> {
-        let bytes = tag.to_bytes();
-        self.write_bytes(&bytes);
+        self.write_bytes(&[tag.class.to_bits() | tag.pc_bits() | (tag.asn1_type as u8)]);
         Ok(())
     }
 

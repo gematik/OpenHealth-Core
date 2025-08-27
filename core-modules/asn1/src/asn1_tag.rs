@@ -69,56 +69,6 @@ impl Asn1Tag {
             0x00
         }
     }
-
-    /// Encode this tag to bytes according to X.690 (high-tag-number form supported).
-    pub fn to_bytes(self) -> Vec<u8> {
-        let mut out = Vec::with_capacity(4);
-        let class_bits = self.class.to_bits();
-        let pc = self.pc_bits();
-        let number: u8 = u8::from(self.asn1_type);
-        if number < 31 {
-            out.push(class_bits | pc | number);
-        } else {
-            out.push(class_bits | pc | 0x1F);
-            // base-128 big-endian with MSB as continuation
-            let mut stack: [u8; 10] = [0; 10];
-            let mut i = 0;
-            let mut n: u8 = number;
-            loop {
-                stack[i] = n & 0x7F;
-                i += 1;
-                n >>= 7;
-                if n == 0 {
-                    break;
-                }
-            }
-            // write in reverse with continuation bits
-            for j in (0..i).rev() {
-                let mut b = stack[j];
-                if j != 0 {
-                    b |= 0x80;
-                }
-                out.push(b);
-            }
-        }
-        out
-    }
-}
-
-impl fmt::Display for Asn1Tag {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let class = match self.class {
-            TagClass::Universal => "UNIVERSAL",
-            TagClass::Application => "APPLICATION",
-            TagClass::ContextSpecific => "CONTEXT_SPECIFIC",
-            TagClass::Private => "PRIVATE",
-        };
-        write!(
-            f,
-            "Asn1Tag(class={}, constructed={}, number=0x{:x})",
-            class, self.constructed, u8::from(self.asn1_type)
-        )
-    }
 }
 
 /// ASN.1 type identifiers as defined in ITU-T X.680 (strict enum form).
@@ -212,15 +162,6 @@ impl From<Asn1Type> for u8 {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_asn1_tag_display() {
-        let tag = Asn1Tag::new(TagClass::Universal, Asn1Type::Sequence).with_constructed(false);
-        assert_eq!(
-            format!("{}", tag),
-            "Asn1Tag(class=UNIVERSAL, constructed=false, number=0x10)"
-        );
-    }
 
     #[test]
     fn test_asn1_tag_equality() {
