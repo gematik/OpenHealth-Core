@@ -81,7 +81,7 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
         let encoded_data = encode(|w| {
             w.write_tagged_object(
                 GENERAL_AUTHENTICATE_TAG,
-                TagClass::Application.to_bits() | 0x20, // constructed
+                TagClass::Application.to_bits() | TagClass::Application.constructed(), // constructed
                 |inner| {
                     inner.write_tagged_object(
                         tag_no,

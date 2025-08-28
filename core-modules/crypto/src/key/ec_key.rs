@@ -1,12 +1,11 @@
 use crate::key::ec_point::EcPoint;
 use crate::utils::pem::{DecodeToPem, Pem};
-use asn1::tag::Asn1Type;
 use asn1::Asn1Error;
 use asn1::{
     asn1_decoder::{read_bit_string, read_octet_string, Asn1Decoder},
-    asn1_encoder::encode,
+    asn1_encoder:: { encode },
     asn1_object_identifier::{read_object_identifier, write_object_identifier},
-    asn1_tag::{Asn1Tag, TagClass},
+    asn1_tag::{Asn1Tag, TagClass, Asn1Type},
 };
 use num_bigint::BigInt;
 use rand::RngCore;
