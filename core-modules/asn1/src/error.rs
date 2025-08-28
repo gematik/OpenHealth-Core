@@ -78,7 +78,6 @@ mod tests {
             Asn1Error::UnexpectedError("e".into()),
         ];
         for e in errs {
-            // Ensure std::error::Error::source() is None for string-only variants
             assert!(std::error::Error::source(&e).is_none());
         }
     }
