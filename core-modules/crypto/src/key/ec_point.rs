@@ -70,7 +70,7 @@ impl EcPoint {
     }
 
     fn native_times(&self, k: &BigInt) -> EcPoint {
-        crate::bindings::ec::EcPoint::from_public(self.curve.to_string().as_str(), self.uncompressed().as_slice())
+        crate::ossl::ec::EcPoint::from_public(self.curve.to_string().as_str(), self.uncompressed().as_slice())
             .and_then(|ep| ep.mul(&k.to_signed_bytes_be()))
             .and_then(|ep| ep.to_bytes())
             .map(|bytes| EcPublicKey::new(self.curve.clone(), bytes).to_ec_point())
@@ -78,9 +78,9 @@ impl EcPoint {
     }
 
     fn native_plus(&self, other: &EcPoint) -> EcPoint {
-        let other_ec = crate::bindings::ec::EcPoint::from_public(other.curve.to_string().as_str(), other.uncompressed().as_slice()).unwrap();
+        let other_ec = crate::ossl::ec::EcPoint::from_public(other.curve.to_string().as_str(), other.uncompressed().as_slice()).unwrap();
 
-        crate::bindings::ec::EcPoint::from_public(self.curve.to_string().as_str(), self.uncompressed().as_slice())
+        crate::ossl::ec::EcPoint::from_public(self.curve.to_string().as_str(), self.uncompressed().as_slice())
             .and_then(|ep| ep.add(&other_ec))
             .and_then(|ep| ep.to_bytes())
             .map(|bytes| EcPublicKey::new(self.curve.clone(), bytes).to_ec_point())

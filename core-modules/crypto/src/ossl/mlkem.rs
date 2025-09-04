@@ -1,5 +1,5 @@
-use crate::bindings::api::{throw_openssl_error, OsslError};
-use crate::bindings::ec::*;
+use crate::ossl::api::{openssl_error, OsslError, OsslResult};
+use crate::ossl::ec::*;
 use crate::ossl_check;
 use crypto_openssl_sys::*;
 use std::{os::raw::c_int, ptr};
@@ -15,7 +15,7 @@ pub struct MlkemEncapsulation(PKey);
 
 impl MlkemEncapsulation {
     /// Create from a raw public key
-    pub fn create(algorithm: &str, encapsulation_key: &[u8]) -> Result<Self, OsslError> {
+    pub fn create(algorithm: &str, encapsulation_key: &[u8]) -> OsslResult<Self> {
         // EVP_PKEY_new_raw_public_key_ex(NULL, alg, NULL, key, key_len)
         let p = unsafe {
             EVP_PKEY_new_raw_public_key_ex(
@@ -27,18 +27,18 @@ impl MlkemEncapsulation {
             )
         };
         if p.is_null() {
-            return Err(throw_openssl_error("Key initialization failed"));
+            return Err(openssl_error("Key initialization failed"));
         }
         Ok(MlkemEncapsulation(PKey(p)))
     }
 
     /// Perform KEM
-    pub fn encapsulate(&self) -> Result<MlkemEncapsulationData, OsslError> {
+    pub fn encapsulate(&self) -> OsslResult<MlkemEncapsulationData> {
         let raw = unsafe {
             EVP_PKEY_CTX_new_from_pkey(std::ptr::null_mut(), self.0.as_ptr(), std::ptr::null_mut())
         };
         if raw.is_null() {
-            return Err(throw_openssl_error("Failed to create context from key"));
+            return Err(openssl_error("Failed to create context from key"));
         }
         let ctx = PKeyCtx(raw);
 
@@ -94,7 +94,7 @@ pub struct MlkemDecapsulation(PKey);
 
 impl MlkemDecapsulation {
     /// Generate a new keypair
-    pub fn create(algorithm: &str) -> Result<Self, OsslError> {
+    pub fn create(algorithm: &str) -> OsslResult<Self> {
         // keygen ctx
         let gen_ctx = unsafe {
             EVP_PKEY_CTX_new_from_name(
@@ -104,7 +104,7 @@ impl MlkemDecapsulation {
             )
         };
         if gen_ctx.is_null() {
-            return Err(throw_openssl_error("Keygen context init failed"));
+            return Err(openssl_error("Keygen context init failed"));
         }
         let gen_ctx = PKeyCtx(gen_ctx);
         ossl_check!(
@@ -119,13 +119,13 @@ impl MlkemDecapsulation {
             "Keygen failed"
         );
         if raw.is_null() {
-            return Err(throw_openssl_error("Keygen returned null"));
+            return Err(openssl_error("Keygen returned null"));
         }
         Ok(MlkemDecapsulation(PKey(raw)))
     }
 
     /// Import an existing private key
-    pub fn create_from_private_key(algorithm: &str, private_key: &[u8]) -> Result<Self, OsslError> {
+    pub fn create_from_private_key(algorithm: &str, private_key: &[u8]) -> OsslResult<Self> {
         let p = unsafe {
             EVP_PKEY_new_raw_private_key_ex(
                 ptr::null_mut(),
@@ -136,13 +136,13 @@ impl MlkemDecapsulation {
             )
         };
         if p.is_null() {
-            return Err(throw_openssl_error("Importing private key failed"));
+            return Err(openssl_error("Importing private key failed"));
         }
         Ok(MlkemDecapsulation(PKey(p)))
     }
 
     /// Recover shared secret from wrapped key
-    pub fn decapsulate(&self, wrapped_key: &[u8]) -> Result<Vec<u8>, OsslError> {
+    pub fn decapsulate(&self, wrapped_key: &[u8]) -> OsslResult<Vec<u8>> {
         let raw = unsafe {
             EVP_PKEY_CTX_new_from_pkey(
                 std::ptr::null_mut(), // no libctx
@@ -151,7 +151,7 @@ impl MlkemDecapsulation {
             )
         };
         if raw.is_null() {
-            return Err(throw_openssl_error("Failed to create context from key"));
+            return Err(openssl_error("Failed to create context from key"));
         }
         let ctx = PKeyCtx(raw);
         ossl_check!(
@@ -194,11 +194,11 @@ impl MlkemDecapsulation {
     }
 
     /// Get the public (encapsulation) key
-    pub fn get_encapsulation_key(&self) -> Result<Vec<u8>, OsslError> {
+    pub fn get_encapsulation_key(&self) -> OsslResult<Vec<u8>> {
         let mut buf: *mut u8 = ptr::null_mut();
         let len = unsafe { EVP_PKEY_get1_encoded_public_key(self.0.as_ptr(), &mut buf) };
         if len <= 0 {
-            return Err(throw_openssl_error("Extracting public key failed"));
+            return Err(openssl_error("Extracting public key failed"));
         }
         let slice = unsafe { std::slice::from_raw_parts(buf, len as usize) };
         let v = slice.to_vec();
@@ -207,7 +207,7 @@ impl MlkemDecapsulation {
     }
 
     /// Export the private key in PKCS8 DER form
-    pub fn get_private_key(&self) -> Result<Vec<u8>, OsslError> {
+    pub fn get_private_key(&self) -> OsslResult<Vec<u8>> {
         self.0.to_der_private()
     }
 }

@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 license = "Apache-2.0"
 
+[features]
+default = ["uniffi"]
+
 [dependencies]
 asn1 = { path = "../asn1" }
 crypto-openssl-sys = { path = "../crypto-openssl-sys" }
@@ -11,3 +14,6 @@ regex = "1.11.1"
 base64 = "0.22.1"
 num-bigint = "0.4"
 num-traits = "0.2.19"
+zeroize = "1.8.1"
+uniffi = "0.29.4"
+thiserror = "2.0.16"

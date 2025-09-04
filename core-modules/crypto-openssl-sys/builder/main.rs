@@ -153,7 +153,7 @@ fn build_openssl_bindings() {
     let include_path = format!("{}/{}/include/", manifest_dir.display(), openssl_dir);
     let clang_args = vec!["-I".to_string(), include_path];
 
-    // Generate bindings
+    // Generate ossl
     let bindings = bindgen::Builder::default()
         .derive_copy(true)
         .derive_debug(true)
@@ -172,12 +172,12 @@ fn build_openssl_bindings() {
         .header(format!("{}/include/rust_wrapper.h", manifest_dir.display()))
         .clang_args(clang_args)
         .generate()
-        .expect("Unable to generate bindings");
+        .expect("Unable to generate ossl");
 
-    let bindings_path = format!("{}/src/bindings.rs", manifest_dir.display());
+    let bindings_path = format!("{}/src/ossl.rs", manifest_dir.display());
     bindings
         .write_to_file(&bindings_path)
-        .expect("Failed to write bindings to file");
+        .expect("Failed to write ossl to file");
 
     println!("cargo:rerun-if-changed=include/rust_wrapper.h");
 }

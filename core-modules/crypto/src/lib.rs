@@ -1,6 +1,10 @@
+mod ossl;
+#[cfg(feature = "uniffi")]
+pub mod ffi;
 pub mod key;
-pub mod bindings;
 mod utils;
-mod cypher;
+mod cipher;
 mod exchange;
 mod kem;
+
+uniffi::setup_scaffolding!();

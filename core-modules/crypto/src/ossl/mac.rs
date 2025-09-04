@@ -1,6 +1,6 @@
 use std::{ffi::CString, ptr};
 use crypto_openssl_sys::*;
-use crate::bindings::api::{throw_openssl_error, OsslError};
+use crate::ossl::api::{openssl_error, OsslError, OsslResult};
 use crate::ossl_check;
 
 pub struct Cmac {
@@ -19,26 +19,27 @@ impl Drop for Cmac {
 
 impl Cmac {
     /// Fetches CMAC and allocates a new context.
-    pub fn new() -> Result<Self, OsslError> {
-        let mac = unsafe { EVP_MAC_fetch(ptr::null_mut(), CString::new("CMAC").unwrap().as_ptr(), ptr::null_mut()) };
+    pub fn new() -> OsslResult<Self> {
+        let name = CString::new("CMAC").unwrap();
+        let mac = unsafe { EVP_MAC_fetch(ptr::null_mut(), name.as_ptr(), ptr::null_mut()) };
         if mac.is_null() {
-            return Err(throw_openssl_error("EVP_MAC_fetch failed"));
+            return Err(openssl_error("EVP_MAC_fetch failed"));
         }
         let ctx = unsafe { EVP_MAC_CTX_new(mac) };
         if ctx.is_null() {
             unsafe { EVP_MAC_free(mac) };
-            return Err(throw_openssl_error("EVP_MAC_CTX_new failed"));
+            return Err(openssl_error("EVP_MAC_CTX_new failed"));
         }
         Ok(Cmac { mac, ctx })
     }
 
     /// Creates and initializes a CMAC with the given key and cipher name.
-    pub fn create(key: &[u8], cipher: &str) -> Result<Self, OsslError> {
-        let mut cm = Self::new()?;
+    pub fn create(key: &[u8], cipher: &str) -> OsslResult<Self> {
+        let cm = Self::new()?;
 
         let cname = CString::new("cipher").unwrap();
         let alg_c = CString::new(cipher).unwrap();
-        let mut params: [OSSL_PARAM; 2] = unsafe {
+        let params: [OSSL_PARAM; 2] = unsafe {
             [
                 OSSL_PARAM_construct_utf8_string(
                     cname.as_ptr(),
@@ -57,7 +58,7 @@ impl Cmac {
     }
 
     /// Feeds more data into the CMAC.
-    pub fn update(&mut self, data: &[u8]) -> Result<(), OsslError> {
+    pub fn update(&mut self, data: &[u8]) -> OsslResult<()> {
         ossl_check!(
             unsafe { EVP_MAC_update(self.ctx, data.as_ptr(), data.len()) },
             "EVP_MAC_update failed"
@@ -66,7 +67,7 @@ impl Cmac {
     }
 
     /// Finalizes and returns the MAC bytes.
-    pub fn finalize(&mut self) -> Result<Vec<u8>, OsslError> {
+    pub fn finalize(&mut self) -> OsslResult<Vec<u8>> {
         // first call to get output length
         let mut outl: usize = 0;
         ossl_check!(

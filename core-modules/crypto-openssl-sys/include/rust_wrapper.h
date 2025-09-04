@@ -4,6 +4,8 @@
 #include "openssl/pem.h"
 #include "openssl/bio.h"
 #include "openssl/err.h"
+#include "openssl/types.h"
+#include "openssl/core_names.h"
 
 void OPENSSL_free_fn(void *ptr) {
     if (ptr != NULL) {
