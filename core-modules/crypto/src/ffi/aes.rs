@@ -14,13 +14,6 @@ pub struct AesCipher {
     inner: Mutex<cipher::aes::AesCipher>
 }
 
-pub struct Secret(pub Vec<u8>);
-
-#[derive(uniffi::Object)]
-pub struct Secret2 {
-    inner: Secret
-}
-
 impl From<cipher::aes::AesCipher> for AesCipher {
     fn from(inner: cipher::aes::AesCipher) -> Self { Self { inner: Mutex::new(inner) } }
 }
