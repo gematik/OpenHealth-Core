@@ -1,5 +1,4 @@
 use std::ffi::CString;
-use std::os::raw::c_int;
 use std::ptr;
 use crypto_openssl_sys::*;
 use crate::ossl::api::*;

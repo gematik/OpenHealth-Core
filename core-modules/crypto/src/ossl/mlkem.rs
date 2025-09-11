@@ -197,7 +197,7 @@ impl MlkemDecapsulation {
     pub fn get_encapsulation_key(&self) -> OsslResult<Vec<u8>> {
         let mut buf: *mut u8 = ptr::null_mut();
         let len = unsafe { EVP_PKEY_get1_encoded_public_key(self.0.as_ptr(), &mut buf) };
-        if len <= 0 {
+        if len == 0 {
             return Err(openssl_error("Extracting public key failed"));
         }
         let slice = unsafe { std::slice::from_raw_parts(buf, len as usize) };

@@ -1,11 +1,11 @@
 // aes.rs
 use std::ffi::CString;
-use std::os::raw::{c_int};
+use std::os::raw::c_int;
 use std::ptr;
 
-use crate::{ossl_check};
-use crate::ossl::api::OsslResult;
 use crate::ossl::api::openssl_error;
+use crate::ossl::api::OsslResult;
+use crate::ossl_check;
 
 use crypto_openssl_sys::*;
 
@@ -48,13 +48,21 @@ impl AesCipher {
     ) -> OsslResult<Self> {
         let aes = AesCipher::new(algorithm)?;
 
-        ossl_check!(unsafe { init_fn(aes.ctx, aes.cipher, ptr::null(), ptr::null(), ptr::null()) }, "Failed to initialize cipher");
+        ossl_check!(
+            unsafe { init_fn(aes.ctx, aes.cipher, ptr::null(), ptr::null(), ptr::null()) },
+            "Failed to initialize cipher"
+        );
 
         let mode = unsafe { EVP_CIPHER_get_mode(EVP_CIPHER_CTX_get0_cipher(aes.ctx)) };
         if mode == EVP_CIPH_GCM_MODE as i32 || mode == EVP_CIPH_CCM_MODE as i32 {
             let mut iv_len = iv.len();
             let mut params = [
-                unsafe { OSSL_PARAM_construct_size_t(OSSL_CIPHER_PARAM_IVLEN.as_ptr() as *const _, &mut iv_len) },
+                unsafe {
+                    OSSL_PARAM_construct_size_t(
+                        OSSL_CIPHER_PARAM_IVLEN.as_ptr() as *const _,
+                        &mut iv_len,
+                    )
+                },
                 unsafe { OSSL_PARAM_construct_end() },
             ];
             ossl_check!(
@@ -88,12 +96,28 @@ impl AesCipher {
         unsafe { EVP_CIPHER_CTX_set_padding(self.ctx, if enabled { 1 } else { 0 }) };
     }
 
-    // Supply AAD (for AEAD modes)
     pub fn set_aad(&mut self, aad: &[u8]) -> OsslResult<()> {
-        let mut len = 0;
-        // OpenSSL accepts passing AAD through EncryptUpdate with out=NULL, regardless of enc/dec use
+        let mut out_len = 0;
         ossl_check!(
-            unsafe { EVP_EncryptUpdate(self.ctx, ptr::null_mut(), &mut len, aad.as_ptr(), aad.len() as c_int) },
+            unsafe {
+                if self.is_encrypting() {
+                    EVP_EncryptUpdate(
+                        self.ctx,
+                        ptr::null_mut(),
+                        &mut out_len,
+                        aad.as_ptr(),
+                        aad.len() as c_int,
+                    )
+                } else {
+                    EVP_DecryptUpdate(
+                        self.ctx,
+                        ptr::null_mut(),
+                        &mut out_len,
+                        aad.as_ptr(),
+                        aad.len() as c_int,
+                    )
+                }
+            },
             "Failed to set AAD"
         );
         Ok(())
@@ -120,7 +144,7 @@ impl AesCipher {
         Ok(())
     }
 
-    pub fn get_auth_tag(&mut self, tag_len: usize) -> OsslResult<Vec<u8>> {
+    pub fn get_auth_tag(&self, tag_len: usize) -> OsslResult<Vec<u8>> {
         let mut tag = vec![0u8; tag_len];
         let mut params = [
             unsafe {
@@ -142,7 +166,7 @@ impl AesCipher {
     pub fn update(&mut self, input: &[u8], output: &mut Vec<u8>) -> OsslResult<usize> {
         let block_size = unsafe { EVP_CIPHER_CTX_get_block_size(self.ctx) } as usize;
         let old_output_len = output.len();
-        output.reserve(input.len() + block_size);
+        output.resize(old_output_len + input.len() + block_size, 0);
 
         let mut out_len: c_int = 0;
         let rc = unsafe {
@@ -169,27 +193,42 @@ impl AesCipher {
                 Err(openssl_error("Encryption failed during update"))
             } else {
                 Err(openssl_error("Decryption failed during update"))
-            }
+            };
         }
-        output.truncate(out_len as usize);
+        output.truncate(old_output_len + out_len as usize);
         Ok(out_len as usize)
     }
 
     pub fn finalize(&mut self, output: &mut Vec<u8>) -> OsslResult<usize> {
         let block_size = unsafe { EVP_CIPHER_CTX_get_block_size(self.ctx) } as usize;
         let old_output_len = output.len();
-        output.reserve(block_size);
+        output.resize(old_output_len + block_size, 0);
 
         let mut out_len: c_int = 0;
         let rc = unsafe {
             if self.is_encrypting() {
-                EVP_EncryptFinal_ex(self.ctx, output.as_mut_ptr().add(old_output_len), &mut out_len)
+                EVP_EncryptFinal_ex(
+                    self.ctx,
+                    output.as_mut_ptr().add(old_output_len),
+                    &mut out_len,
+                )
             } else {
-                EVP_DecryptFinal_ex(self.ctx, output.as_mut_ptr().add(old_output_len), &mut out_len)
+                EVP_DecryptFinal_ex(
+                    self.ctx,
+                    output.as_mut_ptr().add(old_output_len),
+                    &mut out_len,
+                )
             }
         };
-        ossl_check!(rc, if self.is_encrypting() { "Encryption failed during finalization" } else { "Decryption failed during finalization" });
-        output.truncate(out_len as usize);
+        ossl_check!(
+            rc,
+            if self.is_encrypting() {
+                "Encryption failed during finalization"
+            } else {
+                "Decryption failed during finalization"
+            }
+        );
+        output.truncate(old_output_len + out_len as usize);
         Ok(out_len as usize)
     }
 

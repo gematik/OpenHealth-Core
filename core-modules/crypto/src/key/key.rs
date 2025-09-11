@@ -5,15 +5,17 @@ pub trait Key {
     fn bytes(&self) -> &[u8];
 }
 
-/// Represents a secret key in the cryptographic system.
 #[derive(Clone)]
-pub struct SecretKey(pub Vec<u8>);
-
-uniffi::custom_newtype!(SecretKey, Vec<u8>);
+#[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
+pub struct SecretKey(Vec<u8>);
 
 impl SecretKey {
-    pub fn length(&self) -> ByteUnit {
-        ByteUnit(self.0.len())
+    pub fn new(bytes: impl Into<Vec<u8>>) -> Self {
+        Self(bytes.into())
+    }
+    
+    pub fn size(&self) -> ByteUnit {
+        ByteUnit(self.0.len() as u64)
     }
 }
 

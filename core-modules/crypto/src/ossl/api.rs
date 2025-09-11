@@ -29,7 +29,7 @@ pub fn openssl_error(msg: &str) -> OsslError {
     } else {
         String::new()
     };
-    OsslError { msg: format!("{}: {}", msg, err_str) }
+    OsslError(format!("{}: {}", msg, err_str))
 }
 
 /// Check return code equals 1, else error
