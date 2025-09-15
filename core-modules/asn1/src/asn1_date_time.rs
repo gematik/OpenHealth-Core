@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-use regex::{Captures, Regex};
-use std::fmt;
-use std::io::{self, Write as IoWrite};
-use std::str::FromStr;
-use std::sync::LazyLock;
+use regex::Regex;
+use std::sync::OnceLock;
+use crate::asn1_tag::{asn1_type};
 
-#[derive(Debug, Clone, PartialEq)]
+use crate::asn1_decoder::ParserScope;
+use crate::asn1_encoder::WriterScope;
+
+/// Raw representation of an ASN.1 UTC_TIME.
+/// If `offset` is `None` this indicates that the time is in UTC.
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Asn1UtcTime {
     pub year: i32,
     pub month: i32,
@@ -28,10 +31,12 @@ pub struct Asn1UtcTime {
     pub hour: i32,
     pub minute: i32,
     pub second: Option<i32>,
-    pub offset: Option<Offset>,
+    pub offset: Option<Asn1Offset>, // corresponds to Asn1Offset.UtcOffset?
 }
 
-#[derive(Debug, Clone, PartialEq)]
+/// Raw representation of an ASN.1 GENERALIZED_TIME.
+/// If `offset` is `None` this indicates that the time is in UTC.
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Asn1GeneralizedTime {
     pub year: i32,
     pub month: i32,
@@ -40,382 +45,192 @@ pub struct Asn1GeneralizedTime {
     pub minute: Option<i32>,
     pub second: Option<i32>,
     pub fraction_of_second: Option<i32>,
-    pub offset: Option<Offset>,
+    pub offset: Option<Asn1Offset>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Offset {
-    pub hours: i8,
-    pub minutes: i8,
+/// Raw representation of an ASN.1 time offset.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Asn1Offset {
+    /// UTC offset in hours and minutes.
+    UtcOffset { hours: i32, minutes: i32 },
+    /// Generalized offset in hours and minutes.
+    GeneralizedOffset { hours: i32, minutes: i32 },
 }
 
-static UTC_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"^(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})?(Z|[+-]\d{2}\d{2})?$")
-        .expect("valid UTC regex")
-});
-
-static GEN_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})?(\d{2})?(\.\d{1,3})?(Z|[+-]\d{2}\d{2})?$")
-        .expect("valid generalized regex")
-});
-
-fn parse_captures<T: FromStr>(
-    captures: &Captures,
-    idx: usize,
-    field: &str,
-    input: &str,
-) -> Result<T, String> {
-    captures
-        .get(idx)
-        .ok_or_else(|| format!("Missing {} in `{}`", field, input))?
-        .as_str()
-        .parse::<T>()
-        .map_err(|_| format!("Invalid {} in `{}`", field, input))
+fn utc_time_regex() -> &'static Regex {
+    static RE: OnceLock<Regex> = OnceLock::new();
+    RE.get_or_init(|| {
+        Regex::new(r"(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})?(Z|[+-]\d{2}\d{2})")
+            .expect("valid regex")
+    })
 }
 
-fn parse_captures_opt<T: FromStr>(
-    captures: &Captures,
-    idx: usize,
-    field: &str,
-    input: &str,
-) -> Result<Option<T>, String> {
-    captures
-        .get(idx)
-        .map(|m| {
-            m.as_str()
-                .parse::<T>()
-                .map_err(|_| format!("Invalid {} in `{}`", field, input))
-        })
-        .transpose()
-}
-
-#[inline]
-fn fmt_two_opt(v: Option<i32>) -> String {
-    v.map_or(String::new(), |n| format!("{:02}", n))
-}
-
-#[inline]
-fn fmt_frac_millis_opt(v: Option<i32>) -> String {
-    v.map_or(String::new(), |n| format!(".{:03}", n))
-}
-
-/// Implementation of parser functions for utc time
-impl Asn1UtcTime {
-    pub fn parse(value: &str) -> Result<Self, String> {
-        let caps = UTC_RE
-            .captures(value)
-            .ok_or_else(|| format!("Wrong utc time format: `{}`", value))?;
-
-        // UTCTime encodes the year with two digits (YY).
-        let year_short: i32 = parse_captures(&caps, 1, "year", value)?;
-        let year = if year_short >= 50 {
-            1900 + year_short
-        } else {
-            2000 + year_short
-        };
-        let month: i32 = parse_captures(&caps, 2, "month", value)?;
-        let day: i32 = parse_captures(&caps, 3, "day", value)?;
-        let hour: i32 = parse_captures(&caps, 4, "hour", value)?;
-        let minute: i32 = parse_captures(&caps, 5, "minute", value)?;
-        let second: Option<i32> = parse_captures_opt(&caps, 6, "second", value)?;
-        let offset = caps
-            .get(7)
-            .map(|m| parse_offset(m.as_str()))
-            .transpose()?
-            .flatten();
-
-        Ok(Self {
-            year,
-            month,
-            day,
-            hour,
-            minute,
-            second,
-            offset,
-        })
-    }
-
-    pub fn format(&self) -> String {
-        format!(
-            "{:02}{:02}{:02}{:02}{:02}{}{}",
-            self.year % 100,
-            self.month,
-            self.day,
-            self.hour,
-            self.minute,
-            fmt_two_opt(self.second),
-            format_offset(self.offset.as_ref()),
+fn generalized_time_regex() -> &'static Regex {
+    static RE: OnceLock<Regex> = OnceLock::new();
+    RE.get_or_init(|| {
+        Regex::new(
+            r"(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})?(\d{2})?(\.\d{1,3})?(Z|[+-]\d{2}\d{2})?",
         )
-    }
+            .expect("valid regex")
+    })
+}
 
-    /// Writes the UTC time in ASN.1 textual form into a `String` buffer.
-    pub fn write_to_string(&self, out: &mut String) {
-        out.push_str(&self.format());
-    }
-
-    /// Writes the UTC time in ASN.1 textual form as bytes to an `io::Write` sink.
-    pub fn write_to_io<W: IoWrite>(&self, mut w: W) -> io::Result<()> {
-        w.write_all(self.format().as_bytes())
+/// Parses the offset string into an `Asn1Offset`.
+///
+/// The offset string can either be empty (no offset/UTC), 'Z' for UTC,
+/// or '+/-HHMM' for a specific time zone offset.
+fn parse_time_zone_or_offset(offset: &str) -> Option<Asn1Offset> {
+    if offset.is_empty() || offset.as_bytes()[0] == b'Z' {
+        None
+    } else {
+        let sign = if offset.as_bytes()[0] == b'-' { -1 } else { 1 };
+        let hours: i32 = offset[1..3].parse().unwrap();
+        let minutes: i32 = offset[3..5].parse().unwrap();
+        Some(Asn1Offset::UtcOffset {
+            hours: hours * sign,
+            minutes,
+        })
     }
 }
 
-fn parse_offset(value: &str) -> Result<Option<Offset>, String> {
-    if value == "Z" {
-        return Ok(None);
-    }
-    if value.len() != 5 {
-        return Err(format!("Invalid time zone format: {}", value));
-    }
-    let sign = match &value[..1] {
-        "+" => 1i16,
-        "-" => -1i16,
-        _ => return Err(format!("Invalid sign in offset: {}", value)),
-    };
-    let hours: i16 = value[1..3]
-        .parse()
-        .map_err(|_| format!("Invalid hour in offset: {}", value))?;
-    let minutes: i16 = value[3..5]
-        .parse()
-        .map_err(|_| format!("Invalid minute in offset: {}", value))?;
-    // Bounds check (RFC 5280 allows +/- 12:00 typical)
-    if hours.abs() > 23 || minutes.abs() > 59 {
-        return Err(format!("Out-of-range offset: {}", value));
-    }
-    Ok(Some(Offset {
-        hours: (sign * hours) as i8,
-        minutes: (sign * minutes) as i8,
-    }))
-}
-
-fn format_offset(offset: Option<&Offset>) -> String {
-    match offset {
-        None => "Z".to_string(),
-        Some(o) => format!(
+/// Returns the `Asn1Offset` as a string.
+fn format_offset(offset: &Option<Asn1Offset>) -> String {
+    if offset.is_none() {
+        "Z".to_string()
+    } else {
+        let (hours, minutes) = match offset.as_ref().unwrap() {
+            Asn1Offset::UtcOffset { hours, minutes } => (*hours, *minutes),
+            Asn1Offset::GeneralizedOffset { hours, minutes } => (*hours, *minutes),
+        };
+        let sign = if hours < 0 || minutes < 0 { "-" } else { "+" };
+        format!(
             "{}{:02}{:02}",
-            if o.hours >= 0 { "+" } else { "-" },
-            o.hours.abs(),
-            o.minutes.abs()
-        ),
+            sign,
+            hours.abs(),
+            minutes.abs()
+        )
     }
 }
 
-/// Implementation of parser functions for generalized time
-impl Asn1GeneralizedTime {
-    pub fn parse(value: &str) -> Result<Self, String> {
-        let caps = GEN_RE
-            .captures(value)
-            .ok_or_else(|| format!("Wrong generalized time format: `{}`", value))?;
+impl<'a> ParserScope<'a> {
+    /// Parses a UTC time string into an `Asn1UtcTime`.
+    fn parse_utc_time(&mut self, value: &str) -> Asn1UtcTime {
+        let re = utc_time_regex();
+        let caps = re.captures(value).unwrap_or_else(|| {
+            self.fail(|| format!("Wrong utc time format: `{}`", value));
+        });
 
-        let year: i32 = parse_captures(&caps, 1, "year", value)?;
-        let month: i32 = parse_captures(&caps, 2, "month", value)?;
-        let day: i32 = parse_captures(&caps, 3, "day", value)?;
-        let hour: i32 = parse_captures(&caps, 4, "hour", value)?;
-        let minute: Option<i32> = parse_captures_opt(&caps, 5, "minute", value)?;
-        let second: Option<i32> = parse_captures_opt(&caps, 6, "second", value)?;
-        let fraction_of_second = caps
-            .get(7)
-            .map(|m| {
-                m.as_str()[1..]
-                    .parse::<i32>()
-                    .map_err(|_| format!("Invalid fraction in `{}`", value))
-            })
-            .transpose()?;
-        let offset = caps
-            .get(8)
-            .map(|m| parse_offset(m.as_str()))
-            .transpose()?
-            .flatten();
+        let yy = &caps[1];
+        let mm = &caps[2];
+        let dd = &caps[3];
+        let hh = &caps[4];
+        let min = &caps[5];
+        let ss = caps.get(6).map(|m| m.as_str()).unwrap_or("");
+        let offset = &caps[7];
 
-        Ok(Self {
-            year,
-            month,
-            day,
-            hour,
-            minute,
-            second,
-            fraction_of_second,
-            offset,
+        Asn1UtcTime {
+            year: yy.parse::<i32>().unwrap(),
+            month: mm.parse::<i32>().unwrap(),
+            day: dd.parse::<i32>().unwrap(),
+            hour: hh.parse::<i32>().unwrap(),
+            minute: min.parse::<i32>().unwrap(),
+            second: if ss.is_empty() { None } else { Some(ss.parse::<i32>().unwrap()) },
+            offset: parse_time_zone_or_offset(offset),
+        }
+    }
+
+    /// Parses a GENERALIZED_TIME string.
+    fn parse_generalized_time(&mut self, value: &str) -> Asn1GeneralizedTime {
+        let re = generalized_time_regex();
+        let caps = re.captures(value).unwrap_or_else(|| {
+            self.fail(|| format!("Wrong generalized time format: `{}`", value));
+        });
+
+        let yyyy = &caps[1];
+        let mm = &caps[2];
+        let dd = &caps[3];
+        let hh = &caps[4];
+        let min = caps.get(5).map(|m| m.as_str()).unwrap_or("");
+        let ss = caps.get(6).map(|m| m.as_str()).unwrap_or("");
+        let fff = caps.get(7).map(|m| m.as_str()).unwrap_or("");
+        let offset = caps.get(8).map(|m| m.as_str()).unwrap_or("");
+
+        Asn1GeneralizedTime {
+            year: yyyy.parse::<i32>().unwrap(),
+            month: mm.parse::<i32>().unwrap(),
+            day: dd.parse::<i32>().unwrap(),
+            hour: hh.parse::<i32>().unwrap(),
+            minute: if min.is_empty() { None } else { Some(min.parse::<i32>().unwrap()) },
+            second: if ss.is_empty() { None } else { Some(ss.parse::<i32>().unwrap()) },
+            fraction_of_second: if fff.is_empty() {
+                None
+            } else {
+                // drop the leading '.'
+                Some(fff[1..].parse::<i32>().unwrap())
+            },
+            offset: parse_time_zone_or_offset(offset),
+        }
+    }
+
+    /// Read ASN.1 `UTC_TIME`.
+    pub fn read_utc_time(&mut self) -> Asn1UtcTime {
+        self.advance_with_tag(asn1_type::UTC_TIME, 0x00, |s| {
+            let len = s.remaining_length();
+            let bytes = s.read_bytes(len);
+            let value = String::from_utf8(bytes).unwrap();
+            s.parse_utc_time(&value)
         })
     }
 
-    pub fn format(&self) -> String {
-        format!(
-            "{:04}{:02}{:02}{:02}{}{}{}{}",
-            self.year,
-            self.month,
-            self.day,
-            self.hour,
-            self.minute.map_or(String::new(), |m| format!("{:02}", m)),
-            self.second.map_or(String::new(), |s| format!("{:02}", s)),
-            fmt_frac_millis_opt(self.fraction_of_second),
-            self.offset.as_ref().map_or("Z".to_string(), |o| format!(
-                "{}{:02}{:02}",
-                if o.hours >= 0 { "+" } else { "-" },
-                o.hours.abs(),
-                o.minutes.abs()
-            )),
-        )
-    }
-
-    /// Writes the GeneralizedTime in ASN.1 textual form into a `String` buffer.
-    pub fn write_to_string(&self, out: &mut String) {
-        out.push_str(&self.format());
-    }
-
-    /// Writes the GeneralizedTime in ASN.1 textual form as bytes to an `io::Write` sink.
-    pub fn write_to_io<W: IoWrite>(&self, mut w: W) -> io::Result<()> {
-        w.write_all(self.format().as_bytes())
+    /// Read ASN.1 `GENERALIZED_TIME`.
+    pub fn read_generalized_time(&mut self) -> Asn1GeneralizedTime {
+        self.advance_with_tag(asn1_type::GENERALIZED_TIME, 0x00, |s| {
+            let len = s.remaining_length();
+            let bytes = s.read_bytes(len);
+            let value = String::from_utf8(bytes).unwrap();
+            s.parse_generalized_time(&value)
+        })
     }
 }
 
-impl fmt::Display for Asn1UtcTime {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.format())
-    }
-}
+// --- WriterScope-Methoden ---
 
-impl fmt::Display for Asn1GeneralizedTime {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.format())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_parse_utc_time() {
-        let time = Asn1UtcTime::parse("010203040506Z").unwrap();
-        assert_eq!(time.year, 2001);
-        assert_eq!(time.month, 2);
-        assert_eq!(time.day, 3);
-        assert_eq!(time.hour, 4);
-        assert_eq!(time.minute, 5);
-        assert_eq!(time.second, Some(6));
-        assert_eq!(time.offset, None);
-
-        let time = Asn1UtcTime::parse("951230120000+0300").unwrap();
-        assert_eq!(time.year, 1995);
-        assert_eq!(time.month, 12);
-        assert_eq!(time.day, 30);
-        assert_eq!(time.hour, 12);
-        assert_eq!(time.minute, 0);
-        assert_eq!(time.second, Some(0));
-        assert_eq!(
-            time.offset,
-            Some(Offset {
-                hours: 3,
-                minutes: 0
-            })
-        );
+impl WriterScope {
+    /// Write ASN.1 `UTC_TIME`.
+    pub fn write_utc_time(&mut self, value: &Asn1UtcTime) {
+        self.write_tagged_object(asn1_type::UTC_TIME, 0x00, |w| {
+            let mut s = String::new();
+            // year % 100, zero-padded to 2
+            use core::fmt::Write as _;
+            let _ = write!(s, "{:02}", (value.year.rem_euclid(100)) as i32);
+            let _ = write!(s, "{:02}{:02}{:02}{:02}",
+                           value.month, value.day, value.hour, value.minute);
+            if let Some(sec) = value.second {
+                let _ = write!(s, "{:02}", sec);
+            }
+            s.push_str(&format_offset(&value.offset));
+            w.write_bytes(s.as_bytes());
+        });
     }
 
-    #[test]
-    fn test_format_utc_time() {
-        let time = Asn1UtcTime {
-            year: 2001,
-            month: 2,
-            day: 3,
-            hour: 4,
-            minute: 5,
-            second: Some(6),
-            offset: None,
-        };
-        assert_eq!(time.format(), "010203040506Z");
-
-        let time = Asn1UtcTime {
-            year: 1995,
-            month: 12,
-            day: 30,
-            hour: 12,
-            minute: 0,
-            second: Some(0),
-            offset: Some(Offset {
-                hours: 3,
-                minutes: 0,
-            }),
-        };
-        assert_eq!(time.format(), "951230120000+0300");
-    }
-
-    #[test]
-    fn test_parse_generalized_time() {
-        let time = Asn1GeneralizedTime::parse("20010203040506Z").unwrap();
-        assert_eq!(time.year, 2001);
-        assert_eq!(time.month, 2);
-        assert_eq!(time.day, 3);
-        assert_eq!(time.hour, 4);
-        assert_eq!(time.minute, Some(5));
-        assert_eq!(time.second, Some(6));
-        assert_eq!(time.fraction_of_second, None);
-        assert_eq!(time.offset, None);
-
-        let time = Asn1GeneralizedTime::parse("19951230120000.5+0300").unwrap();
-        assert_eq!(time.year, 1995);
-        assert_eq!(time.month, 12);
-        assert_eq!(time.day, 30);
-        assert_eq!(time.hour, 12);
-        assert_eq!(time.minute, Some(0));
-        assert_eq!(time.second, Some(0));
-        assert_eq!(time.fraction_of_second, Some(5));
-        assert_eq!(
-            time.offset,
-            Some(Offset {
-                hours: 3,
-                minutes: 0
-            })
-        );
-    }
-
-    #[test]
-    fn test_write_utc_time_to_string_and_io() {
-        let t = Asn1UtcTime {
-            year: 1995,
-            month: 12,
-            day: 30,
-            hour: 12,
-            minute: 0,
-            second: Some(0),
-            offset: Some(Offset {
-                hours: 3,
-                minutes: 0,
-            }),
-        };
-        let expected = "951230120000+0300".to_string();
-
-        let mut s = String::new();
-        t.write_to_string(&mut s);
-        assert_eq!(s, expected);
-
-        let mut cursor = std::io::Cursor::new(Vec::<u8>::new());
-        t.write_to_io(&mut cursor).unwrap();
-        assert_eq!(String::from_utf8(cursor.into_inner()).unwrap(), expected);
-    }
-
-    #[test]
-    fn test_write_generalized_time_to_string_and_io() {
-        let t = Asn1GeneralizedTime {
-            year: 1995,
-            month: 12,
-            day: 30,
-            hour: 12,
-            minute: Some(0),
-            second: Some(0),
-            fraction_of_second: Some(5),
-            offset: Some(Offset {
-                hours: 3,
-                minutes: 0,
-            }),
-        };
-        let expected = "19951230120000.005+0300".to_string();
-
-        let mut s = String::new();
-        t.write_to_string(&mut s);
-        assert_eq!(s, expected);
-
-        let mut cursor = std::io::Cursor::new(Vec::<u8>::new());
-        t.write_to_io(&mut cursor).unwrap();
-        assert_eq!(String::from_utf8(cursor.into_inner()).unwrap(), expected);
+    /// Write ASN.1 `GENERALIZED_TIME`.
+    pub fn write_generalized_time(&mut self, value: &Asn1GeneralizedTime) {
+        self.write_tagged_object(asn1_type::GENERALIZED_TIME, 0x00, |w| {
+            use core::fmt::Write as _;
+            let mut s = String::new();
+            let _ = write!(s, "{:04}{:02}{:02}{:02}",
+                           value.year, value.month, value.day, value.hour);
+            if let Some(min) = value.minute {
+                let _ = write!(s, "{:02}", min);
+            }
+            if let Some(sec) = value.second {
+                let _ = write!(s, "{:02}", sec);
+            }
+            if let Some(frac) = value.fraction_of_second {
+                let _ = write!(s, ".{}", frac);
+            }
+            s.push_str(&format_offset(&value.offset));
+            w.write_bytes(s.as_bytes());
+        });
     }
 }
