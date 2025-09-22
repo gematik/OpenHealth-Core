@@ -1,5 +1,5 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct ByteUnit(pub u64);
+pub struct ByteUnit(u64);
 
 #[cfg(feature = "uniffi")]
 uniffi::custom_newtype!(ByteUnit, u64);

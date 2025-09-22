@@ -46,8 +46,8 @@ fn build_openssl() {
     let configure_args = [
         openssl_target,
         &format!("--prefix={}", install.display()),
-        "no-asm",
-        "no-async",
+        // "no-asm",
+        // "no-async",
         "no-egd",
         "no-ktls",
         "no-module",
@@ -56,8 +56,8 @@ fn build_openssl() {
         "no-shared",
         "no-sock",
         "no-stdio",
-        "no-thread-pool",
-        "no-threads",
+        // "no-thread-pool",
+        // "no-threads",
         "no-ui-console",
         "no-docs",
     ];
@@ -80,7 +80,6 @@ fn build_openssl() {
     println!("cargo:rustc-link-lib=static=crypto");
     println!("cargo:rustc-link-lib=static=ssl");
 }
-
 fn get_openssl_target(target: &str) -> &'static str {
     match target {
         "aarch64-apple-darwin" => "darwin64-arm64-cc",
@@ -89,27 +88,6 @@ fn get_openssl_target(target: &str) -> &'static str {
         "x86_64-unknown-linux-gnu" => "linux-x86_64",
         _ => "darwin64-arm64-cc", // fallback
     }
-}
-
-fn build_configure_args(target: &str, install_dir: &PathBuf) -> Vec<String> {
-    vec![
-        target.to_string(),
-        format!("--prefix={}", install_dir.display()),
-        "no-asm".to_string(),
-        "no-async".to_string(),
-        "no-egd".to_string(),
-        "no-ktls".to_string(),
-        "no-module".to_string(),
-        "no-posix-io".to_string(),
-        "no-secure-memory".to_string(),
-        "no-shared".to_string(),
-        "no-sock".to_string(),
-        "no-stdio".to_string(),
-        "no-thread-pool".to_string(),
-        "no-threads".to_string(),
-        "no-ui-console".to_string(),
-        "no-docs".to_string(),
-    ]
 }
 
 fn run_command(prog: &str, args: &[&str], cwd: Option<&PathBuf>) {
@@ -151,7 +129,7 @@ fn build_openssl_bindings() {
 
     // Build clang args for bindgen
     let include_path = format!("{}/{}/include/", manifest_dir.display(), openssl_dir);
-    let clang_args = vec!["-I".to_string(), include_path];
+    let clang_args = vec!["-I".to_string(), include_path.clone()];
 
     // Generate ossl
     let bindings = bindgen::Builder::default()
@@ -169,7 +147,7 @@ fn build_openssl_bindings() {
         .layout_tests(true)
         .prepend_enum_name(true)
         .formatter(bindgen::Formatter::Rustfmt)
-        .header(format!("{}/include/rust_wrapper.h", manifest_dir.display()))
+        .header(format!("{}/wrapper/rust_wrapper.h", manifest_dir.display()))
         .clang_args(clang_args)
         .generate()
         .expect("Unable to generate ossl");
@@ -179,5 +157,12 @@ fn build_openssl_bindings() {
         .write_to_file(&bindings_path)
         .expect("Failed to write ossl to file");
 
-    println!("cargo:rerun-if-changed=include/rust_wrapper.h");
+    println!("cargo:rerun-if-changed=wrapper/rust_wrapper.h");
+
+    cc::Build::new()
+        .file(format!("{}/wrapper/rust_wrapper.c", manifest_dir.display()))
+        .include(include_path.clone())
+        .compile("rust_wrapper");
+
+    println!("cargo:rerun-if-changed=wrapper/rust_wrapper.c");
 }

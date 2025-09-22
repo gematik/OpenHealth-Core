@@ -1,3 +1,3 @@
-pub(crate) mod ec_point;
-pub(crate) mod ec_key;
-pub(crate) mod key;
+pub mod ec_point;
+pub mod ec_key;
+pub mod key;

@@ -1,4 +1,4 @@
-use crate::key::key::{Key, SecretKey};
+use crate::key::key::{PrivateKey};
 use crate::ossl;
 use crate::ossl::api::OsslError;
 use crate::utils::byte_unit::ByteUnit;
@@ -123,7 +123,7 @@ impl AesCipherSpec {
         }
     }
 
-    pub fn cipher(self, key: SecretKey) -> CryptoResult<AesCipher> {
+    pub fn cipher(self, key: PrivateKey) -> CryptoResult<AesCipher> {
         let mut cipher = ossl::cipher::AesCipher::create_encryptor(
             &*self.algorithm(&key.size()),
             key.as_ref(),
@@ -153,7 +153,7 @@ impl AesCipherSpec {
 pub struct AesCipher {
     cipher: ossl::cipher::AesCipher,
     spec: AesCipherSpec,
-    key: SecretKey,
+    key: PrivateKey,
 }
 
 #[derive(Clone)]
@@ -213,7 +213,7 @@ impl AesDecipherSpec {
         }
     }
 
-    pub fn cipher(self, key: SecretKey) -> CryptoResult<AesDecipher> {
+    pub fn cipher(self, key: PrivateKey) -> CryptoResult<AesDecipher> {
         let mut cipher = ossl::cipher::AesCipher::create_decryptor(
             &*self.algorithm(&key.size()),
             key.as_ref(),
@@ -243,7 +243,7 @@ impl AesDecipherSpec {
 pub struct AesDecipher {
     cipher: ossl::cipher::AesCipher,
     spec: AesDecipherSpec,
-    key: SecretKey,
+    key: PrivateKey,
 }
 
 /// Streaming cipher interface (encrypt/decrypt). Caller supplies output buffer.
@@ -292,7 +292,9 @@ impl Cipher for AesDecipher {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::key::key::SecretKey;
+    use crate::key::key::PrivateKey;
+    use crate::utils::byte_unit::BytesExt;
+    use crate::utils::test_utils::{hex_to_bytes, to_hex_string};
 
     const KEY_16: &[u8] = b"1234567890123456";
     const IV_16: &[u8] = b"1234567890123456";
@@ -303,22 +305,8 @@ mod tests {
     const GCM_CT_HEX: &str = "CE C1 89 D0 E8 4D EC A8 E6 08 DD";
     const GCM_TAG_HEX: &str = "0F 98 50 42 1A DA DC FF 64 5F 7E 79 79 E2 E6 8A";
 
-    fn key() -> SecretKey {
-        SecretKey::new(KEY_16)
-    }
-
-    fn hex_to_bytes(s: &str) -> Vec<u8> {
-        s.split_whitespace()
-            .map(|h| u8::from_str_radix(h, 16).unwrap())
-            .collect()
-    }
-
-    fn to_hex(bytes: &[u8]) -> String {
-        bytes
-            .iter()
-            .map(|b| format!("{:02X}", b))
-            .collect::<Vec<_>>()
-            .join(" ")
+    fn key() -> PrivateKey {
+        PrivateKey::new(KEY_16)
     }
 
     #[test]
@@ -333,7 +321,7 @@ mod tests {
         let l = cipher.update(b"Hello World", &mut ct).unwrap();
         cipher.finalize(&mut ct).unwrap();
 
-        assert_eq!(to_hex(&ct), ECB_HEX);
+        assert_eq!(to_hex_string(&ct), ECB_HEX);
     }
 
     #[test]
@@ -364,7 +352,7 @@ mod tests {
         cipher.update(b"Hello World", &mut ct).unwrap();
         cipher.finalize(&mut ct).unwrap();
 
-        assert_eq!(to_hex(&ct), CBC_HEX);
+        assert_eq!(to_hex_string(&ct), CBC_HEX);
     }
 
     #[test]
@@ -388,7 +376,7 @@ mod tests {
         let mut cipher = AesCipherSpec::Gcm {
             iv: Iv::new(IV_16),
             aad: Aad::default(),
-            tag_length: ByteUnit(16),
+            tag_length: 16.bytes(),
         }
             .cipher(key())
             .unwrap();
@@ -398,8 +386,8 @@ mod tests {
         cipher.finalize(&mut ct).unwrap();
         let tag = cipher.auth_tag().unwrap().unwrap();
 
-        assert_eq!(to_hex(&ct), GCM_CT_HEX);
-        assert_eq!(to_hex(tag.as_ref()), GCM_TAG_HEX);
+        assert_eq!(to_hex_string(&ct), GCM_CT_HEX);
+        assert_eq!(to_hex_string(tag.as_ref()), GCM_TAG_HEX);
     }
 
     #[test]
@@ -427,7 +415,7 @@ mod tests {
         let mut enc = AesCipherSpec::Gcm {
             iv: Iv::new(IV_16),
             aad: Aad::new(&b"AAD"[..]),
-            tag_length: ByteUnit(16),
+            tag_length: 16.bytes(),
         }
             .cipher(key())
             .unwrap();

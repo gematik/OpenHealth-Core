@@ -1,6 +1,6 @@
 use crate::cipher::aes::AesDecipherSpec;
 use crate::error::CryptoResult;
-use crate::key::key::SecretKey;
+use crate::key::key::PrivateKey;
 use crate::ossl;
 use crate::utils::byte_unit::ByteUnit;
 
@@ -29,7 +29,7 @@ impl MacSpec {
 }
 
 impl MacSpec {
-    pub fn create(self, secret: SecretKey) -> CryptoResult<Mac> {
+    pub fn create(self, secret: PrivateKey) -> CryptoResult<Mac> {
         let mac = ossl::mac::Mac::create(
             secret.as_ref(),
             "CMAC",
@@ -47,7 +47,7 @@ impl MacSpec {
 pub struct Mac {
     mac: ossl::mac::Mac,
     spec: MacSpec,
-    secret: SecretKey,
+    secret: PrivateKey,
 }
 
 impl Mac {
@@ -64,7 +64,7 @@ impl Mac {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::key::key::SecretKey;
+    use crate::key::key::PrivateKey;
 
     // RFC 4493 / SP 800-38B test key
     const K128_HEX: &str = "2B 7E 15 16 28 AE D2 A6 AB F7 15 88 09 CF 4F 3C";
@@ -100,7 +100,7 @@ mod tests {
     }
 
     fn mac_aes128_tag(msg_hex: &str) -> Vec<u8> {
-        let key = SecretKey::new(hex_to_bytes(K128_HEX));
+        let key = PrivateKey::new(hex_to_bytes(K128_HEX));
         let spec = MacSpec::Cmac {
             algorithm: CmacAlgorithm::Aes,
         };

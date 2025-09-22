@@ -6,7 +6,6 @@ members = [
     "core-modules/health-card",
     "binding-layers/asn1-jni",
     "binding-layers/asn1-ffi",
-    "binding-layers/crypto-ffi",
 ]
 resolver = "2"
 [workspace.package]

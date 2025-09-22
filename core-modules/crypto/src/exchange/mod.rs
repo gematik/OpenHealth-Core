@@ -1,1 +1,1 @@
-mod ecdh;
+pub mod ecdh;

@@ -1366,7 +1366,6 @@ pub const OPENSSL_INIT_ENGINE_AFALG: i32 = 32768;
 pub const OPENSSL_INIT_ATFORK: i32 = 131072;
 pub const OPENSSL_INIT_NO_ATEXIT: i32 = 524288;
 pub const OPENSSL_INIT_ENGINE_ALL_BUILTIN: i32 = 30208;
-pub const CRYPTO_ONCE_STATIC_INIT: i32 = 0;
 pub const BIO_R_ACCEPT_ERROR: i32 = 100;
 pub const BIO_R_ADDRINFO_ADDR_IS_NOT_AF_INET: i32 = 141;
 pub const BIO_R_AMBIGUOUS_HOST_OR_SERVICE: i32 = 129;
@@ -7823,7 +7822,85 @@ pub const OSSL_STORE_PARAM_PROPERTIES: &[u8; 11] = b"properties\0";
 pub const OSSL_STORE_PARAM_SERIAL: &[u8; 7] = b"serial\0";
 pub const OSSL_STORE_PARAM_SUBJECT: &[u8; 8] = b"subject\0";
 pub type __darwin_time_t = ::std::os::raw::c_long;
+#[repr(C)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct __darwin_pthread_handler_rec {
+    pub __routine: ::std::option::Option<unsafe extern "C" fn(arg1: *mut ::std::os::raw::c_void)>,
+    pub __arg: *mut ::std::os::raw::c_void,
+    pub __next: *mut __darwin_pthread_handler_rec,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of __darwin_pthread_handler_rec"]
+        [::std::mem::size_of::<__darwin_pthread_handler_rec>() - 24usize];
+    ["Alignment of __darwin_pthread_handler_rec"]
+        [::std::mem::align_of::<__darwin_pthread_handler_rec>() - 8usize];
+    ["Offset of field: __darwin_pthread_handler_rec::__routine"]
+        [::std::mem::offset_of!(__darwin_pthread_handler_rec, __routine) - 0usize];
+    ["Offset of field: __darwin_pthread_handler_rec::__arg"]
+        [::std::mem::offset_of!(__darwin_pthread_handler_rec, __arg) - 8usize];
+    ["Offset of field: __darwin_pthread_handler_rec::__next"]
+        [::std::mem::offset_of!(__darwin_pthread_handler_rec, __next) - 16usize];
+};
+impl Default for __darwin_pthread_handler_rec {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
+pub struct _opaque_pthread_once_t {
+    pub __sig: ::std::os::raw::c_long,
+    pub __opaque: [::std::os::raw::c_char; 8usize],
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of _opaque_pthread_once_t"][::std::mem::size_of::<_opaque_pthread_once_t>() - 16usize];
+    ["Alignment of _opaque_pthread_once_t"]
+        [::std::mem::align_of::<_opaque_pthread_once_t>() - 8usize];
+    ["Offset of field: _opaque_pthread_once_t::__sig"]
+        [::std::mem::offset_of!(_opaque_pthread_once_t, __sig) - 0usize];
+    ["Offset of field: _opaque_pthread_once_t::__opaque"]
+        [::std::mem::offset_of!(_opaque_pthread_once_t, __opaque) - 8usize];
+};
+#[repr(C)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct _opaque_pthread_t {
+    pub __sig: ::std::os::raw::c_long,
+    pub __cleanup_stack: *mut __darwin_pthread_handler_rec,
+    pub __opaque: [::std::os::raw::c_char; 8176usize],
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of _opaque_pthread_t"][::std::mem::size_of::<_opaque_pthread_t>() - 8192usize];
+    ["Alignment of _opaque_pthread_t"][::std::mem::align_of::<_opaque_pthread_t>() - 8usize];
+    ["Offset of field: _opaque_pthread_t::__sig"]
+        [::std::mem::offset_of!(_opaque_pthread_t, __sig) - 0usize];
+    ["Offset of field: _opaque_pthread_t::__cleanup_stack"]
+        [::std::mem::offset_of!(_opaque_pthread_t, __cleanup_stack) - 8usize];
+    ["Offset of field: _opaque_pthread_t::__opaque"]
+        [::std::mem::offset_of!(_opaque_pthread_t, __opaque) - 16usize];
+};
+impl Default for _opaque_pthread_t {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+pub type __darwin_pthread_key_t = ::std::os::raw::c_ulong;
+pub type __darwin_pthread_once_t = _opaque_pthread_once_t;
+pub type __darwin_pthread_t = *mut _opaque_pthread_t;
 pub type time_t = __darwin_time_t;
+pub type pthread_once_t = __darwin_pthread_once_t;
+pub type pthread_t = __darwin_pthread_t;
+pub type pthread_key_t = __darwin_pthread_key_t;
 pub type intmax_t = ::std::os::raw::c_long;
 pub type uintmax_t = ::std::os::raw::c_ulong;
 pub type ossl_intmax_t = intmax_t;
@@ -9555,9 +9632,9 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn OPENSSL_INIT_free(settings: *mut OPENSSL_INIT_SETTINGS);
 }
-pub type CRYPTO_ONCE = ::std::os::raw::c_uint;
-pub type CRYPTO_THREAD_LOCAL = ::std::os::raw::c_uint;
-pub type CRYPTO_THREAD_ID = ::std::os::raw::c_uint;
+pub type CRYPTO_ONCE = pthread_once_t;
+pub type CRYPTO_THREAD_LOCAL = pthread_key_t;
+pub type CRYPTO_THREAD_ID = pthread_t;
 unsafe extern "C" {
     pub fn CRYPTO_THREAD_run_once(
         once: *mut CRYPTO_ONCE,
@@ -31850,6 +31927,138 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn OSSL_ERR_STATE_free(es: *mut ERR_STATE);
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_set_default_search_path(
+        arg1: *mut OSSL_LIB_CTX,
+        path: *const ::std::os::raw::c_char,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_get0_default_search_path(
+        libctx: *mut OSSL_LIB_CTX,
+    ) -> *const ::std::os::raw::c_char;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_load(
+        arg1: *mut OSSL_LIB_CTX,
+        name: *const ::std::os::raw::c_char,
+    ) -> *mut OSSL_PROVIDER;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_load_ex(
+        arg1: *mut OSSL_LIB_CTX,
+        name: *const ::std::os::raw::c_char,
+        params: *mut OSSL_PARAM,
+    ) -> *mut OSSL_PROVIDER;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_try_load(
+        arg1: *mut OSSL_LIB_CTX,
+        name: *const ::std::os::raw::c_char,
+        retain_fallbacks: ::std::os::raw::c_int,
+    ) -> *mut OSSL_PROVIDER;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_try_load_ex(
+        arg1: *mut OSSL_LIB_CTX,
+        name: *const ::std::os::raw::c_char,
+        params: *mut OSSL_PARAM,
+        retain_fallbacks: ::std::os::raw::c_int,
+    ) -> *mut OSSL_PROVIDER;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_unload(prov: *mut OSSL_PROVIDER) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_available(
+        arg1: *mut OSSL_LIB_CTX,
+        name: *const ::std::os::raw::c_char,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_do_all(
+        ctx: *mut OSSL_LIB_CTX,
+        cb: ::std::option::Option<
+            unsafe extern "C" fn(
+                provider: *mut OSSL_PROVIDER,
+                cbdata: *mut ::std::os::raw::c_void,
+            ) -> ::std::os::raw::c_int,
+        >,
+        cbdata: *mut ::std::os::raw::c_void,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_gettable_params(prov: *const OSSL_PROVIDER) -> *const OSSL_PARAM;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_get_params(
+        prov: *const OSSL_PROVIDER,
+        params: *mut OSSL_PARAM,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_self_test(prov: *const OSSL_PROVIDER) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_get_capabilities(
+        prov: *const OSSL_PROVIDER,
+        capability: *const ::std::os::raw::c_char,
+        cb: OSSL_CALLBACK,
+        arg: *mut ::std::os::raw::c_void,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_add_conf_parameter(
+        prov: *mut OSSL_PROVIDER,
+        name: *const ::std::os::raw::c_char,
+        value: *const ::std::os::raw::c_char,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_get_conf_parameters(
+        prov: *const OSSL_PROVIDER,
+        params: *mut OSSL_PARAM,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_conf_get_bool(
+        prov: *const OSSL_PROVIDER,
+        name: *const ::std::os::raw::c_char,
+        defval: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_query_operation(
+        prov: *const OSSL_PROVIDER,
+        operation_id: ::std::os::raw::c_int,
+        no_cache: *mut ::std::os::raw::c_int,
+    ) -> *const OSSL_ALGORITHM;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_unquery_operation(
+        prov: *const OSSL_PROVIDER,
+        operation_id: ::std::os::raw::c_int,
+        algs: *const OSSL_ALGORITHM,
+    );
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_get0_provider_ctx(
+        prov: *const OSSL_PROVIDER,
+    ) -> *mut ::std::os::raw::c_void;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_get0_dispatch(prov: *const OSSL_PROVIDER) -> *const OSSL_DISPATCH;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_add_builtin(
+        arg1: *mut OSSL_LIB_CTX,
+        name: *const ::std::os::raw::c_char,
+        init_fn: OSSL_provider_init_fn,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_get0_name(prov: *const OSSL_PROVIDER) -> *const ::std::os::raw::c_char;
 }
 unsafe extern "C" {
     pub fn OPENSSL_free_fn(ptr: *mut ::std::os::raw::c_void);

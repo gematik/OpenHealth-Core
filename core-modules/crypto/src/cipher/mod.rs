@@ -1,1 +1,1 @@
-pub(crate) mod aes;
+pub mod aes;

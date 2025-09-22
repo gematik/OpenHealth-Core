@@ -3,24 +3,18 @@ use crate::ossl::ec::*;
 use crate::ossl_check;
 use crypto_openssl_sys::*;
 use std::{os::raw::c_int, ptr};
-
-/// Output of an encapsulation.
-pub struct MlkemEncapsulationData {
-    pub wrapped_key: Vec<u8>,
-    pub shared_secret: Vec<u8>,
-}
+use std::ffi::CString;
 
 /// KEM encapsulator
 pub struct MlkemEncapsulation(PKey);
 
 impl MlkemEncapsulation {
-    /// Create from a raw public key
     pub fn create(algorithm: &str, encapsulation_key: &[u8]) -> OsslResult<Self> {
-        // EVP_PKEY_new_raw_public_key_ex(NULL, alg, NULL, key, key_len)
+        let alg = CString::new(algorithm).unwrap();
         let p = unsafe {
             EVP_PKEY_new_raw_public_key_ex(
                 ptr::null_mut(),
-                algorithm.as_ptr() as *const _,
+                alg.as_ptr(),
                 ptr::null_mut(),
                 encapsulation_key.as_ptr(),
                 encapsulation_key.len(),
@@ -32,8 +26,8 @@ impl MlkemEncapsulation {
         Ok(MlkemEncapsulation(PKey(p)))
     }
 
-    /// Perform KEM
-    pub fn encapsulate(&self) -> OsslResult<MlkemEncapsulationData> {
+    /// Returns a tuple of wrapped key and secret key.
+    pub fn encapsulate(&self) -> OsslResult<(Vec<u8>, Vec<u8>)> {
         let raw = unsafe {
             EVP_PKEY_CTX_new_from_pkey(std::ptr::null_mut(), self.0.as_ptr(), std::ptr::null_mut())
         };
@@ -42,13 +36,11 @@ impl MlkemEncapsulation {
         }
         let ctx = PKeyCtx(raw);
 
-        // now you can call, e.g.:
         ossl_check!(
-            unsafe { EVP_PKEY_decapsulate_init(ctx.as_ptr(), std::ptr::null_mut()) },
-            "Failed to init decapsulation"
+            unsafe { EVP_PKEY_encapsulate_init(ctx.as_ptr(), std::ptr::null_mut()) },
+            "Failed to init encapsulation"
         );
 
-        // first call to get lengths
         let mut wlen = 0usize;
         let mut slen = 0usize;
         ossl_check!(
@@ -64,7 +56,6 @@ impl MlkemEncapsulation {
             "Failed to determine buffer sizes"
         );
 
-        // actual encapsulation
         let mut wrapped = vec![0u8; wlen];
         let mut secret = vec![0u8; slen];
         ossl_check!(
@@ -82,10 +73,7 @@ impl MlkemEncapsulation {
 
         wrapped.truncate(wlen);
         secret.truncate(slen);
-        Ok(MlkemEncapsulationData {
-            wrapped_key: wrapped,
-            shared_secret: secret,
-        })
+        Ok((wrapped, secret))
     }
 }
 
@@ -95,11 +83,11 @@ pub struct MlkemDecapsulation(PKey);
 impl MlkemDecapsulation {
     /// Generate a new keypair
     pub fn create(algorithm: &str) -> OsslResult<Self> {
-        // keygen ctx
+        let alg = CString::new(algorithm).unwrap();
         let gen_ctx = unsafe {
             EVP_PKEY_CTX_new_from_name(
                 ptr::null_mut(),
-                algorithm.as_ptr() as *const _,
+                alg.as_ptr(),
                 ptr::null_mut(),
             )
         };
@@ -126,10 +114,11 @@ impl MlkemDecapsulation {
 
     /// Import an existing private key
     pub fn create_from_private_key(algorithm: &str, private_key: &[u8]) -> OsslResult<Self> {
+        let alg = CString::new(algorithm).unwrap();
         let p = unsafe {
             EVP_PKEY_new_raw_private_key_ex(
                 ptr::null_mut(),
-                algorithm.as_ptr() as *const _,
+                alg.as_ptr(),
                 ptr::null_mut(),
                 private_key.as_ptr(),
                 private_key.len(),
@@ -145,9 +134,9 @@ impl MlkemDecapsulation {
     pub fn decapsulate(&self, wrapped_key: &[u8]) -> OsslResult<Vec<u8>> {
         let raw = unsafe {
             EVP_PKEY_CTX_new_from_pkey(
-                std::ptr::null_mut(), // no libctx
-                self.0.as_ptr(),      // inner EVP_PKEY*
-                std::ptr::null_mut(), // no propq
+                std::ptr::null_mut(),
+                self.0.as_ptr(),
+                std::ptr::null_mut(),
             )
         };
         if raw.is_null() {
@@ -159,7 +148,6 @@ impl MlkemDecapsulation {
             "Decapsulate init failed"
         );
 
-        // get length
         let mut klen = 0usize;
         ossl_check!(
             unsafe {
@@ -174,7 +162,6 @@ impl MlkemDecapsulation {
             "Length query failed"
         );
 
-        // actual decapsulation
         let mut key = vec![0u8; klen];
         ossl_check!(
             unsafe {
@@ -200,7 +187,7 @@ impl MlkemDecapsulation {
         if len == 0 {
             return Err(openssl_error("Extracting public key failed"));
         }
-        let slice = unsafe { std::slice::from_raw_parts(buf, len as usize) };
+        let slice = unsafe { std::slice::from_raw_parts(buf, len) };
         let v = slice.to_vec();
         unsafe { OPENSSL_free_fn(buf as *mut _) };
         Ok(v)
