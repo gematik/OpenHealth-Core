@@ -4,6 +4,7 @@ use crate::ossl_check;
 use crypto_openssl_sys::*;
 use std::{os::raw::c_int, ptr};
 use std::ffi::CString;
+use crate::ossl::key::PKey;
 
 /// KEM encapsulator
 pub struct MlkemEncapsulation(PKey);
@@ -23,13 +24,13 @@ impl MlkemEncapsulation {
         if p.is_null() {
             return Err(openssl_error("Key initialization failed"));
         }
-        Ok(MlkemEncapsulation(PKey(p)))
+        Ok(MlkemEncapsulation(PKey::new(p)))
     }
 
     /// Returns a tuple of wrapped key and secret key.
     pub fn encapsulate(&self) -> OsslResult<(Vec<u8>, Vec<u8>)> {
         let raw = unsafe {
-            EVP_PKEY_CTX_new_from_pkey(std::ptr::null_mut(), self.0.as_ptr(), std::ptr::null_mut())
+            EVP_PKEY_CTX_new_from_pkey(std::ptr::null_mut(), self.0.as_mut_ptr(), std::ptr::null_mut())
         };
         if raw.is_null() {
             return Err(openssl_error("Failed to create context from key"));
