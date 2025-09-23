@@ -5,6 +5,10 @@ use crate::ossl::api::{OsslError, OsslResult};
 pub enum CryptoError {
     #[error("cipher finalized twice")]
     FinalizedTwice,
+    #[error("invalid argument: {0}")]
+    InvalidArgument(String),
+    #[error("invalid ec point: {0}")]
+    InvalidEcPoint(String),
     #[error("openssl error: {0}")]
     Native(String),
 }

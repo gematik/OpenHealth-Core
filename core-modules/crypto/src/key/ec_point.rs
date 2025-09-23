@@ -1,97 +1,193 @@
-use num_bigint::BigInt;
+use crate::error::{CryptoError, CryptoResult};
 use crate::key::ec_key::{EcCurve, EcPublicKey};
+use num_bigint::BigInt;
 
+/// Elliptic curve point representation.
+///
+/// Supports:
+/// - Finite points with affine coordinates (x, y) on a specific curve
+/// - The point at infinity on a specific curve
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EcPoint {
-    pub curve: EcCurve,
-    pub x: Option<BigInt>,
-    pub y: Option<BigInt>,
+pub enum EcPoint {
+    /// A finite point with affine coordinates on the given curve.
+    Finite {
+        curve: EcCurve,
+        x: BigInt,
+        y: BigInt,
+    },
+    /// The point at infinity on the given curve.
+    Infinity {
+        curve: EcCurve,
+    },
 }
 
 impl EcPoint {
-    pub fn new(curve: EcCurve, x: Option<BigInt>, y: Option<BigInt>) -> Self {
-        assert!(
-            (x.is_none() && y.is_none()) || (x.is_some() && y.is_some()),
-            "X and Y must be both None or both Some"
-        );
-        EcPoint { curve, x, y }
+    /// Constructs a finite point on the given curve with the provided affine coordinates.
+    ///
+    /// Note: This function does not validate that (x, y) lies on the curve.
+    pub fn finite(curve: EcCurve, x: BigInt, y: BigInt) -> Self {
+        EcPoint::Finite { curve, x, y }
     }
 
-    /// Returns the uncompressed representation of the EC point.
-    /// Length: 65, 97, or 129 depending on the curve.
-    pub fn uncompressed(&self) -> Vec<u8> {
-        assert!(
-            !self.is_infinity(),
-            "Can't encode infinite ec point to its uncompressed representation"
-        );
-        let (size, coordinate_size) = match self.curve {
-            EcCurve::BrainpoolP256r1 => (65, 32),
-            EcCurve::BrainpoolP384r1 => (97, 48),
-            EcCurve::BrainpoolP512r1 => (129, 64),
-        };
-        let mut out = vec![0u8; size];
-        out[0] = 0x04;
-        let x_bytes = self.x.as_ref().unwrap().to_signed_bytes_be();
-        let y_bytes = self.y.as_ref().unwrap().to_signed_bytes_be();
-
-        let x_offset = 1 + coordinate_size - x_bytes.len();
-        let y_offset = 1 + 2 * coordinate_size - y_bytes.len();
-
-        out[x_offset..(x_offset + x_bytes.len())].copy_from_slice(&x_bytes);
-        out[y_offset..(y_offset + y_bytes.len())].copy_from_slice(&y_bytes);
-
-        out
+    /// Constructs the point at infinity on the given curve.
+    pub fn infinity(curve: EcCurve) -> Self {
+        EcPoint::Infinity { curve }
     }
 
-    /// Returns `true` if this represents an infinite point.
-    pub fn is_infinity(&self) -> bool {
-        self.x.is_none() && self.y.is_none()
-    }
-
-    /// Adds this EC point to another EC point.
-    pub fn add(&self, other: &EcPoint) -> EcPoint {
-        self.native_plus(other)
-    }
-
-    /// Multiplies this EC point by a scalar value.
-    pub fn mul(&self, k: &BigInt) -> EcPoint {
-        self.native_times(k)
-    }
-
-    /// Negates this EC point.
-    pub fn negate(&self) -> EcPoint {
-        if self.is_infinity() {
-            self.clone()
+    /// Returns references to (curve, x, y) if this is a finite point; otherwise None.
+    pub fn as_finite(&self) -> Option<(&EcCurve, &BigInt, &BigInt)> {
+        if let EcPoint::Finite { curve, x, y } = self {
+            Some((curve, x, y))
         } else {
-            let p = self.curve.p();
-            let y = ((&p - self.y.as_ref().unwrap()) % &p + &p) % &p;
-            self.curve.point(self.x.clone(), Some(y))
+            None
         }
     }
 
-    fn native_times(&self, k: &BigInt) -> EcPoint {
-        crate::ossl::ec::EcPoint::from_public(self.curve.to_string().as_str(), self.uncompressed().as_slice())
-            .and_then(|ep| ep.mul(&k.to_signed_bytes_be()))
-            .and_then(|ep| ep.to_bytes())
-            .map(|bytes| EcPublicKey::new(self.curve.clone(), bytes).to_ec_point())
-            .unwrap()
+    /// Returns a reference to the associated curve.
+    pub fn curve(&self) -> &EcCurve {
+        match self {
+            EcPoint::Finite { curve, .. } | EcPoint::Infinity { curve, .. } => curve,
+        }
     }
 
-    fn native_plus(&self, other: &EcPoint) -> EcPoint {
-        let other_ec = crate::ossl::ec::EcPoint::from_public(other.curve.to_string().as_str(), other.uncompressed().as_slice()).unwrap();
-
-        crate::ossl::ec::EcPoint::from_public(self.curve.to_string().as_str(), self.uncompressed().as_slice())
-            .and_then(|ep| ep.add(&other_ec))
-            .and_then(|ep| ep.to_bytes())
-            .map(|bytes| EcPublicKey::new(self.curve.clone(), bytes).to_ec_point())
-            .unwrap()
+    /// Returns the x coordinate if this is a finite point; otherwise None.
+    pub fn x_coord(&self) -> Option<&BigInt> {
+        match self {
+            EcPoint::Finite { x, .. } => Some(x),
+            EcPoint::Infinity { .. } => None,
+        }
     }
-}
 
-// Conversion to EcPublicKey
-impl EcPoint {
-    pub fn to_ec_public_key(&self) -> EcPublicKey {
-        EcPublicKey::new(self.curve.clone(), self.uncompressed())
+    /// Returns the y coordinate if this is a finite point; otherwise None.
+    pub fn y_coord(&self) -> Option<&BigInt> {
+        match self {
+            EcPoint::Finite { y, .. } => Some(y),
+            EcPoint::Infinity { .. } => None,
+        }
+    }
+
+    /// Returns true if this point is the point at infinity.
+    pub fn is_infinity(&self) -> bool {
+        matches!(self, EcPoint::Infinity { .. })
+    }
+
+    /// Returns the uncompressed SEC1 encoding of this point.
+    ///
+    /// Format:
+    /// - 0x04 || X || Y
+    /// - X and Y are big-endian, left-padded to the curve coordinate size.
+    ///
+    /// Errors:
+    /// - InvalidEcPoint if called on the point at infinity.
+    /// - InvalidEcPoint if any coordinate exceeds the curve's coordinate size.
+    pub fn uncompressed(&self) -> CryptoResult<Vec<u8>> {
+        match self {
+            EcPoint::Infinity { .. } => Err(CryptoError::InvalidEcPoint(
+                "cannot encode point at infinity".to_string(),
+            )),
+            EcPoint::Finite { x, y, .. } => {
+                let coordinate_size = match self.curve() {
+                    EcCurve::BrainpoolP256r1 => 32,
+                    EcCurve::BrainpoolP384r1 => 48,
+                    EcCurve::BrainpoolP512r1 => 64,
+                };
+                let size = 1 + 2 * coordinate_size;
+
+                let mut out = vec![0u8; size];
+
+
+                let x_bytes = x.to_signed_bytes_be();
+                let y_bytes = y.to_signed_bytes_be();
+
+                // Left-pad with zeros to fixed coordinate size
+                let x_offset = 1 + coordinate_size - x_bytes.len();
+                let y_offset = 1 + coordinate_size + coordinate_size - y_bytes.len();
+
+                out[y_offset..(y_offset + y_bytes.len())].copy_from_slice(&y_bytes);
+                out[x_offset..(x_offset + x_bytes.len())].copy_from_slice(&x_bytes);
+                out[0] = 0x04;
+
+                Ok(out)
+            }
+        }
+    }
+
+    /// Adds two EC points on the same curve.
+    ///
+    /// Returns:
+    /// - The sum as a new EcPoint.
+    ///
+    /// Errors:
+    /// - InvalidEcPoint if the points belong to different curves.
+    /// - Propagates lower-level errors from the underlying EC implementation.
+    pub fn add(&self, other: &EcPoint) -> CryptoResult<EcPoint> {
+        self.native_plus(other)
+    }
+
+    /// Multiplies this point by a scalar k (signed big-endian).
+    ///
+    /// Returns:
+    /// - k * self as a new EcPoint.
+    ///
+    /// Special cases:
+    /// - If self is infinity, returns infinity.
+    ///
+    /// Errors:
+    /// - Propagates lower-level errors from the underlying EC implementation.
+    pub fn mul(&self, k: &BigInt) -> CryptoResult<EcPoint> {
+        self.native_times(k)
+    }
+
+    /// Returns the negation of this point (x, -y mod p). Infinity negates to itself.
+    pub fn negate(&self) -> EcPoint {
+        match self {
+            EcPoint::Infinity { .. } => self.clone(),
+            EcPoint::Finite { curve, x, y } => {
+                let p = curve.p();
+                let y = ((&p - y) % &p + &p) % &p;
+                curve.point(x.clone(), y)
+            }
+        }
+    }
+
+    fn native_times(&self, k: &BigInt) -> CryptoResult<EcPoint> {
+        match self {
+            EcPoint::Infinity { .. } => Ok(self.clone()),
+            EcPoint::Finite { curve, .. } => {
+                let p = crate::ossl::ec::EcPoint::from_public(curve.name(), &self.uncompressed()?)?;
+                let pk = p.mul(&k.to_signed_bytes_be())?;
+                Ok(EcPublicKey::from_uncompressed(curve.clone(), pk.to_bytes()?)?.to_ec_point())
+            }
+        }
+    }
+
+    fn native_plus(&self, other: &EcPoint) -> CryptoResult<EcPoint> {
+        match (self, other) {
+            (EcPoint::Infinity { .. }, _) => Ok(other.clone()),
+            (_, EcPoint::Infinity { .. }) => Ok(self.clone()),
+            (EcPoint::Finite { curve: ca, .. }, EcPoint::Finite { curve: cb, .. }) => {
+                if ca != cb {
+                    return Err(CryptoError::InvalidEcPoint(
+                        "points are on different curves".to_string(),
+                    ));
+                }
+                let pa = crate::ossl::ec::EcPoint::from_public(ca.name(), &self.uncompressed()?)?;
+                let pb = crate::ossl::ec::EcPoint::from_public(cb.name(), &other.uncompressed()?)?;
+                let pr = pa.add(&pb)?;
+                Ok(EcPublicKey::from_uncompressed(ca.clone(), pr.to_bytes()?)?.to_ec_point())
+            }
+        }
+    }
+
+    /// Converts this point to an EcPublicKey using uncompressed SEC1 encoding.
+    ///
+    /// Errors:
+    /// - Propagates errors from uncompressed() and key construction.
+    pub fn to_ec_public_key(&self) -> CryptoResult<EcPublicKey> {
+        EcPublicKey::from_uncompressed(
+            self.curve().clone(),
+            &self.uncompressed()?,
+        )
     }
 }
 
@@ -108,7 +204,7 @@ mod tests {
     #[test]
     fn test_point_at_infinity() {
         let curve = EcCurve::BrainpoolP256r1;
-        let point = EcPoint::new(curve.clone(), None, None);
+        let point = EcPoint::infinity(curve.clone());
         assert!(point.is_infinity());
     }
 
@@ -117,24 +213,10 @@ mod tests {
         let curve = EcCurve::BrainpoolP256r1;
         let x = hex_bigint("78028496B5ECAAB3C8B6C12E45DB1E02C9E4D26B4113BC4F015F60C5CCC0D206");
         let y = hex_bigint("A2AE1762A3831C1D20F03F8D1E3C0C39AFE6F09B4D44BBE80CD100987B05F92B");
-        let point = EcPoint::new(curve.clone(), Some(x.clone()), Some(y.clone()));
+        let point = EcPoint::finite(curve.clone(), x.clone(), y.clone());
         assert!(!point.is_infinity());
-        assert_eq!(Some(x), point.x);
-        assert_eq!(Some(y), point.y);
-    }
-
-    #[test]
-    #[should_panic]
-    fn test_invalid_point_coordinates_x_none_y_some() {
-        let curve = EcCurve::BrainpoolP256r1;
-        EcPoint::new(curve.clone(), None, Some(BigInt::one()));
-    }
-
-    #[test]
-    #[should_panic]
-    fn test_invalid_point_coordinates_x_some_y_none() {
-        let curve = EcCurve::BrainpoolP256r1;
-        EcPoint::new(curve.clone(), Some(BigInt::one()), None);
+        assert_eq!(Some(&x), point.x_coord());
+        assert_eq!(Some(&y), point.y_coord());
     }
 
     #[test]
@@ -142,11 +224,15 @@ mod tests {
         let curve = EcCurve::BrainpoolP256r1;
         let x = hex_bigint("78028496B5ECAAB3C8B6C12E45DB1E02C9E4D26B4113BC4F015F60C5CCC0D206");
         let y = hex_bigint("A2AE1762A3831C1D20F03F8D1E3C0C39AFE6F09B4D44BBE80CD100987B05F92B");
-        let point = EcPoint::new(curve.clone(), Some(x.clone()), Some(y.clone()));
+        let point = EcPoint::finite(curve.clone(), x.clone(), y.clone());
         let negated = point.negate();
-        assert_eq!(point.x, negated.x);
-        let expected_y = ((curve.p() - &y) % curve.p() + curve.p()) % curve.p();
-        assert_eq!(Some(expected_y), negated.y);
+        if let EcPoint::Finite { x: nx, y: ny, .. } = negated {
+            assert_eq!(x, nx);
+            let expected_y = ((curve.p() - &y) % curve.p() + curve.p()) % curve.p();
+            assert_eq!(expected_y, ny);
+        } else {
+            panic!("negated point should be finite");
+        }
     }
 
     #[test]
@@ -154,8 +240,8 @@ mod tests {
         let curve = EcCurve::BrainpoolP256r1;
         let x = hex_bigint("78028496B5ECAAB3C8B6C12E45DB1E02C9E4D26B4113BC4F015F60C5CCC0D206");
         let y = hex_bigint("A2AE1762A3831C1D20F03F8D1E3C0C39AFE6F09B4D44BBE80CD100987B05F92B");
-        let point = EcPoint::new(curve, Some(x), Some(y));
-        let uncompressed = point.uncompressed();
+        let point = EcPoint::finite(curve, x, y);
+        let uncompressed = point.uncompressed().unwrap();
         assert_eq!(65, uncompressed.len());
         assert_eq!(0x04, uncompressed[0]);
     }
@@ -164,22 +250,22 @@ mod tests {
     #[should_panic]
     fn test_uncompressed_encoding_of_infinity() {
         let curve = EcCurve::BrainpoolP256r1;
-        let point = EcPoint::new(curve, None, None);
-        point.uncompressed();
+        let point = EcPoint::infinity(curve);
+        point.uncompressed().unwrap();
     }
 
     #[test]
     fn test_curve_coordinate_sizes() {
         let x = BigInt::one();
         let y = BigInt::one();
-        let p256_point = EcPoint::new(EcCurve::BrainpoolP256r1, Some(x.clone()), Some(y.clone()));
-        assert_eq!(65, p256_point.uncompressed().len());
+        let p256_point = EcPoint::finite(EcCurve::BrainpoolP256r1, x.clone(), y.clone());
+        assert_eq!(65, p256_point.uncompressed().unwrap().len());
 
-        let p384_point = EcPoint::new(EcCurve::BrainpoolP384r1, Some(x.clone()), Some(y.clone()));
-        assert_eq!(97, p384_point.uncompressed().len());
+        let p384_point = EcPoint::finite(EcCurve::BrainpoolP384r1, x.clone(), y.clone());
+        assert_eq!(97, p384_point.uncompressed().unwrap().len());
 
-        let p512_point = EcPoint::new(EcCurve::BrainpoolP512r1, Some(x), Some(y));
-        assert_eq!(129, p512_point.uncompressed().len());
+        let p512_point = EcPoint::finite(EcCurve::BrainpoolP512r1, x, y);
+        assert_eq!(129, p512_point.uncompressed().unwrap().len());
     }
 
     #[test]
@@ -187,9 +273,9 @@ mod tests {
         let curve = EcCurve::BrainpoolP256r1;
         let x = hex_bigint("78028496B5ECAAB3C8B6C12E45DB1E02C9E4D26B4113BC4F015F60C5CCC0D206");
         let y = hex_bigint("A2AE1762A3831C1D20F03F8D1E3C0C39AFE6F09B4D44BBE80CD100987B05F92B");
-        let point = EcPoint::new(curve.clone(), Some(x), Some(y));
-        let public_key = point.to_ec_public_key();
+        let point = EcPoint::finite(curve.clone(), x, y);
+        let public_key = point.to_ec_public_key().unwrap();
         assert_eq!(curve, public_key.curve);
-        assert_eq!(point.uncompressed(), public_key.data);
+        assert_eq!(point.uncompressed().unwrap(), public_key.data);
     }
 }

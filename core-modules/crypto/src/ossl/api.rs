@@ -2,7 +2,6 @@ use crypto_openssl_sys::*;
 use std::error;
 use std::ffi::CStr;
 use std::{fmt, ptr};
-use std::sync::OnceLock;
 
 /// OpenSSL error type
 #[derive(Debug)]

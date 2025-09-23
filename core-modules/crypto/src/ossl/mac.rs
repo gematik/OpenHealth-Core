@@ -1,4 +1,4 @@
-use crate::ossl::api::{openssl_error, OsslError, OsslResult};
+use crate::ossl::api::{openssl_error, OsslResult};
 use crate::ossl_check;
 use crypto_openssl_sys::*;
 use std::{ffi::CString, ptr};

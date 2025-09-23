@@ -7,7 +7,6 @@ use crate::ossl_check;
 pub struct PKeyCtx(pub *mut EVP_PKEY_CTX);
 
 impl PKeyCtx {
-    /// expose the raw EVP_PKEY_CTX pointer
     pub fn as_ptr(&self) -> *mut EVP_PKEY_CTX {
         self.0
     }
@@ -19,7 +18,6 @@ impl Drop for PKeyCtx {
     }
 }
 
-/// EVP_PKEY wrapper
 pub struct PKey(*mut EVP_PKEY);
 
 impl PKey {
@@ -75,7 +73,6 @@ impl PKey {
         Ok(bio.to_vec())
     }
 
-    /// expose the raw EVP_PKEY pointer
     pub fn as_mut_ptr(&self) -> *mut EVP_PKEY {
         self.0
     }

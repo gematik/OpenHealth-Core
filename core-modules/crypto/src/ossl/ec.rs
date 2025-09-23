@@ -2,11 +2,11 @@ use std::ffi::CString;
 use crate::ossl::api::*;
 use crate::ossl_check;
 use crypto_openssl_sys::*;
-use std::os::raw::{c_char, c_int};
+use std::os::raw::c_int;
 use std::ptr;
 use crypto_openssl_sys::point_conversion_form_t::POINT_CONVERSION_UNCOMPRESSED;
+use crate::ossl::key::{PKey, PKeyCtx};
 
-/// EC point wrapper
 pub struct EcPoint {
     group: *mut EC_GROUP,
     point: *mut EC_POINT,
@@ -32,7 +32,7 @@ impl EcPoint {
     }
 
     pub fn from_public(name: &str, data: &[u8]) -> OsslResult<Self> {
-        let mut ep = EcPoint::create_from_curve(name)?;
+        let ep = EcPoint::create_from_curve(name)?;
         ossl_check!(unsafe { EC_POINT_oct2point(ep.group, ep.point, data.as_ptr(), data.len() as usize, ptr::null_mut()) as c_int },
                     "Failed to create ec point from uncompressed public key");
         Ok(ep)
@@ -63,7 +63,7 @@ impl EcPoint {
         if bn.is_null() {
             return Err(openssl_error("Failed to convert scalar to BIGNUM"));
         }
-        let mut r = self.clone()?;
+        let r = self.clone()?;
         ossl_check!(unsafe { EC_POINT_mul(self.group, r.point, ptr::null_mut(), self.point, bn, ptr::null_mut()) },
                     "EC_POINT_mul failed");
         unsafe { BN_free(bn) };
@@ -115,7 +115,7 @@ impl EcKeypair {
         ossl_check!(unsafe { EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx.0, nid) }, "Failed to set EC curve");
         let mut raw: *mut EVP_PKEY = ptr::null_mut();
         ossl_check!(unsafe { EVP_PKEY_keygen(ctx.0, &mut raw) }, "Key generation failed");
-        Ok(EcKeypair { pkey: PKey(raw) })
+        Ok(EcKeypair { pkey: PKey::new(raw) })
     }
 
     pub fn private_key_der(&self) -> OsslResult<Vec<u8>> {
@@ -135,7 +135,7 @@ pub struct Ecdh {
 impl Ecdh {
     pub fn new(priv_der: &[u8]) -> OsslResult<Self> {
         let p = PKey::from_der_private(priv_der)?;
-        let raw = unsafe { EVP_PKEY_CTX_new(p.0, ptr::null_mut()) };
+        let raw = unsafe { EVP_PKEY_CTX_new(p.as_mut_ptr(), ptr::null_mut()) };
         if raw.is_null() {
             return Err(openssl_error("Failed to create ECDH context"));
         }
@@ -150,7 +150,7 @@ impl Ecdh {
     pub fn compute_secret(&self, pub_der: &[u8]) -> OsslResult<Vec<u8>> {
         let peer = PKey::from_der_public(pub_der)?;
         ossl_check!(
-            unsafe { EVP_PKEY_derive_set_peer(self.ctx.0, peer.0) },
+            unsafe { EVP_PKEY_derive_set_peer(self.ctx.0, peer.as_mut_ptr()) },
             "Failed to set peer"
         );
         let mut len: usize = 0;

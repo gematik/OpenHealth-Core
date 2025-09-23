@@ -1,5 +1,6 @@
 use crate::key::ec_point::EcPoint;
 use num_bigint::BigInt;
+use crate::error::{CryptoError, CryptoResult};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum EcCurve {
@@ -8,18 +9,15 @@ pub enum EcCurve {
     BrainpoolP512r1,
 }
 
-impl std::fmt::Display for EcCurve {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let curve_name = match self {
-            EcCurve::BrainpoolP256r1 => "BrainpoolP256r1",
-            EcCurve::BrainpoolP384r1 => "BrainpoolP384r1",
-            EcCurve::BrainpoolP512r1 => "BrainpoolP512r1",
-        };
-        write!(f, "{}", curve_name)
-    }
-}
-
 impl EcCurve {
+    pub fn name(&self) -> &'static str {
+        match self {
+            EcCurve::BrainpoolP256r1 => "brainpoolP256r1",
+            EcCurve::BrainpoolP384r1 => "brainpoolP384r1",
+            EcCurve::BrainpoolP512r1 => "brainpoolP512r1",
+        }
+    }
+    
     pub fn oid(&self) -> &'static str {
         match self {
             EcCurve::BrainpoolP256r1 => "1.3.36.3.3.2.8.1.1.7",
@@ -72,11 +70,11 @@ impl EcCurve {
     }
 
     pub fn g(&self) -> EcPoint {
-        EcPoint::new(self.clone(), Some(self.x()), Some(self.y()))
+        EcPoint::finite(self.clone(), self.x(), self.y())
     }
 
-    pub fn point(&self, x: Option<BigInt>, y: Option<BigInt>) -> EcPoint {
-        EcPoint::new(self.clone(), x, y)
+    pub fn point(&self, x: impl Into<BigInt>, y: impl Into<BigInt>) -> EcPoint {
+        EcPoint::finite(self.clone(), x.into(), y.into())
     }
 }
 
@@ -90,12 +88,6 @@ impl EcKeyPairSpec {
     }
 }
 
-// Trait and placeholder for generating key pairs (expect in Kotlin).
-pub trait EcKeyPairGenerator {
-    fn generate_key_pair(&self) -> (EcPublicKey, EcPrivateKey);
-}
-
-// ====== Public Key =======
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct EcPublicKey {
     pub curve: EcCurve,
@@ -105,21 +97,21 @@ pub struct EcPublicKey {
 impl EcPublicKey {
     pub const OID: &'static str = "1.2.840.10045.2.1";
 
-    pub fn new(curve: EcCurve, data: Vec<u8>) -> Self {
+    pub fn from_uncompressed(curve: EcCurve, data: impl AsRef<[u8]>) -> CryptoResult<Self> {
+        let bytes = data.as_ref();
+
         let required_len = match curve {
             EcCurve::BrainpoolP256r1 => 65,
             EcCurve::BrainpoolP384r1 => 97,
             EcCurve::BrainpoolP512r1 => 129,
         };
-        assert!(data.len() == required_len, "Invalid ec point length `{}`", data.len());
-        assert!(data[0] == 0x04, "Default data must be an uncompressed ec point");
-        Self { curve, data }
-    }
-}
-
-impl std::fmt::Debug for EcPublicKey {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "EcPublicKey(data={:?}, curve={:?})", self.data, self.curve)
+        if bytes.len() != required_len {
+            return Err(CryptoError::InvalidEcPoint(format!("required length {required_len} != actual length {}", bytes.len())));
+        }
+        if bytes[0] != 0x04 {
+            return Err(CryptoError::InvalidEcPoint("not an uncompressed ec point".to_string()));
+        }
+        Ok(Self { curve, data: bytes.to_vec() })
     }
 }
 
@@ -132,19 +124,16 @@ impl EcPublicKey {
         };
         let x = BigInt::from_bytes_be(num_bigint::Sign::Plus, &self.data[1..=coordinate_size]);
         let y = BigInt::from_bytes_be(num_bigint::Sign::Plus, &self.data[(coordinate_size + 1)..=(2 * coordinate_size)]);
-        EcPoint::new(self.curve.clone(), Some(x), Some(y))
+        EcPoint::finite(self.curve.clone(), x, y)
     }
 
-    // Placeholders for encode/decode
     pub fn encode_to_asn1(&self) -> Vec<u8> {
         unimplemented!()
     }
     pub fn encode_to_pem(&self) -> String {
         unimplemented!()
     }
-    pub fn decode_from_uncompressed_format(curve: EcCurve, data: Vec<u8>) -> EcPublicKey {
-        EcPublicKey::new(curve, data)
-    }
+
     pub fn decode_from_asn1(_data: &[u8]) -> EcPublicKey {
         unimplemented!()
     }
@@ -153,7 +142,6 @@ impl EcPublicKey {
     }
 }
 
-// ====== Private Key =======
 #[derive(Clone, PartialEq, Eq)]
 pub struct EcPrivateKey {
     pub curve: EcCurve,
@@ -171,7 +159,6 @@ impl EcPrivateKey {
         EcPrivateKey::new(curve, data)
     }
 
-    // Placeholders for encode/decode
     pub fn encode_to_asn1(&self) -> Vec<u8> {
         unimplemented!()
     }
@@ -185,165 +172,3 @@ impl EcPrivateKey {
         unimplemented!()
     }
 }
-
-// ====== ASN.1 function placeholders =======
-pub fn read_ec_curve_from_algorithm_identifier(_data: &[u8]) -> EcCurve {
-    unimplemented!()
-}
-
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//
-//     #[test]
-//     fn create_ec_key_pair_with_different_curves() {
-//         for curve in &[EcCurve::BrainpoolP256r1, EcCurve::BrainpoolP384r1, EcCurve::BrainpoolP512r1] {
-//             let (publicKey, privateKey) = EcKeyPairSpec::new(curve.clone()).generate_key_pair();
-//             assert_eq!(*curve, publicKey.curve);
-//             assert_eq!(*curve, privateKey.curve);
-//
-//             let pointSize = match curve {
-//                 EcCurve::BrainpoolP256r1 => 32,
-//                 EcCurve::BrainpoolP384r1 => 48,
-//                 EcCurve::BrainpoolP512r1 => 64,
-//             };
-//             let expectedSize = 1 + (2 * pointSize);
-//
-//             assert_eq!(expectedSize, publicKey.data.len(), "Invalid point size for curve {:?}", curve);
-//             assert_eq!(0x04, publicKey.data[0]);
-//         }
-//     }
-//
-//     #[test]
-//     fn encode_and_decode_ec_public_key_from_pem_for_each_curve() {
-//         for curve in &[EcCurve::BrainpoolP256r1, EcCurve::BrainpoolP384r1, EcCurve::BrainpoolP512r1] {
-//             let pointSize = match curve {
-//                 EcCurve::BrainpoolP256r1 => 32,
-//                 EcCurve::BrainpoolP384r1 => 48,
-//                 EcCurve::BrainpoolP512r1 => 64,
-//             };
-//
-//             let mut data = Vec::with_capacity(1 + 2 * pointSize);
-//             data.push(0x04);
-//             data.extend_from_slice(&TODO!()); // Punkt X: Byte-Array-Länge pointSize
-//             data.extend_from_slice(&TODO!()); // Punkt Y: Byte-Array-Länge pointSize
-//
-//             let ecPublicKey =
-//                 EcPublicKey::decode_from_uncompressed_format(curve.clone(), &data).unwrap();
-//             let ecPublicKeyResult =
-//                 EcPublicKey::decode_from_asn1(&ecPublicKey.encode_to_asn1()).unwrap();
-//
-//             assert_eq!(ecPublicKey, ecPublicKeyResult);
-//         }
-//     }
-//
-//     #[test]
-//     fn encode_and_decode_ec_private_key_from_pem_for_each_curve() {
-//         for curve in &[EcCurve::BrainpoolP256r1, EcCurve::BrainpoolP384r1, EcCurve::BrainpoolP512r1] {
-//             let keySize = match curve {
-//                 EcCurve::BrainpoolP256r1 => 32,
-//                 EcCurve::BrainpoolP384r1 => 48,
-//                 EcCurve::BrainpoolP512r1 => 64,
-//             };
-//
-//             let ecPrivateKey =
-//                 EcPrivateKey::from_scalar(curve.clone(), TODO!()).unwrap(); // Scalar als Byte-Array keySize
-//             let ecPrivateKeyResult =
-//                 EcPrivateKey::decode_from_asn1(&ecPrivateKey.encode_to_asn1()).unwrap();
-//
-//             assert_eq!(ecPrivateKey, ecPrivateKeyResult);
-//         }
-//     }
-//
-//     #[test]
-//     fn test_public_key_pem_encoding_and_decoding() {
-//         for curve in &[EcCurve::BrainpoolP256r1, EcCurve::BrainpoolP384r1, EcCurve::BrainpoolP512r1] {
-//             let keyPairSpec = EcKeyPairSpec::new(curve.clone());
-//             let (publicKey, _) = keyPairSpec.generate_key_pair();
-//
-//             let pem = publicKey.encode_to_pem();
-//             let decoded = EcPublicKey::decode_from_pem(&pem).unwrap();
-//
-//             assert_eq!(publicKey, decoded);
-//         }
-//     }
-//
-//     #[test]
-//     fn test_private_key_pem_encoding_and_decoding() {
-//         for curve in &[EcCurve::BrainpoolP256r1, EcCurve::BrainpoolP384r1, EcCurve::BrainpoolP512r1] {
-//             let keyPairSpec = EcKeyPairSpec::new(curve.clone());
-//             let (_, privateKey) = keyPairSpec.generate_key_pair();
-//
-//             let pem = privateKey.encode_to_pem();
-//             let decoded = EcPrivateKey::decode_from_pem(&pem).unwrap();
-//
-//             assert_eq!(privateKey, decoded);
-//         }
-//     }
-//
-//     #[test]
-//     fn test_public_key_equality() {
-//         for curve in &[EcCurve::BrainpoolP256r1, EcCurve::BrainpoolP384r1, EcCurve::BrainpoolP512r1] {
-//             let keyPairSpec = EcKeyPairSpec::new(curve.clone());
-//             let (publicKey1, _) = keyPairSpec.generate_key_pair();
-//             let (publicKey2, _) = keyPairSpec.generate_key_pair();
-//
-//             assert_ne!(publicKey1, publicKey2);
-//             assert_eq!(publicKey1, publicKey1);
-//         }
-//     }
-//
-//     #[test]
-//     fn test_private_key_equality() {
-//         for curve in &[EcCurve::BrainpoolP256r1, EcCurve::BrainpoolP384r1, EcCurve::BrainpoolP512r1] {
-//             let keyPairSpec = EcKeyPairSpec::new(curve.clone());
-//             let (_, privateKey1) = keyPairSpec.generate_key_pair();
-//             let (_, privateKey2) = keyPairSpec.generate_key_pair();
-//
-//             assert_ne!(privateKey1, privateKey2);
-//             assert_eq!(privateKey1, privateKey1);
-//         }
-//     }
-//
-//     #[test]
-//     fn test_invalid_public_key_length() {
-//         for curve in &[EcCurve::BrainpoolP256r1, EcCurve::BrainpoolP384r1, EcCurve::BrainpoolP512r1] {
-//             let invalidData = vec![0x04u8; 64];
-//             assert!(EcPublicKey::new(curve.clone(), invalidData).is_err());
-//         }
-//     }
-//
-//     #[test]
-//     fn test_invalid_private_key_version() {
-//         let invalidData = vec![0x01u8; 32];
-//         assert!(EcPrivateKey::decode_from_asn1(&invalidData).is_err());
-//     }
-//
-//     #[test]
-//     fn test_public_key_to_ec_point() {
-//         for curve in &[EcCurve::BrainpoolP256r1, EcCurve::BrainpoolP384r1, EcCurve::BrainpoolP512r1] {
-//             let keyPairSpec = EcKeyPairSpec::new(curve.clone());
-//             let (publicKey, _) = keyPairSpec.generate_key_pair();
-//
-//             let ecPoint = publicKey.to_ec_point();
-//             let pointSize = match curve {
-//                 EcCurve::BrainpoolP256r1 => 32,
-//                 EcCurve::BrainpoolP384r1 => 48,
-//                 EcCurve::BrainpoolP512r1 => 64,
-//             };
-//
-//             assert_eq!(curve, &ecPoint.curve);
-//
-//             let x = &publicKey.data[1..=pointSize];
-//             let y = &publicKey.data[pointSize + 1..=2 * pointSize];
-//             let ec_x = ecPoint.x.as_ref().unwrap();
-//             let ec_y = ecPoint.y.as_ref().unwrap();
-//
-//             let x_big = BigInt::from_signed_bytes_be(x);
-//             let y_big = BigInt::from_signed_bytes_be(y);
-//
-//             assert_eq!(&x_big, ec_x);
-//             assert_eq!(&y_big, ec_y);
-//         }
-//     }
-// }

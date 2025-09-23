@@ -1,12 +1,10 @@
-use crate::ossl::api::{openssl_error, OsslError, OsslResult};
-use crate::ossl::ec::*;
+use crate::ossl::api::{openssl_error, OsslResult};
 use crate::ossl_check;
 use crypto_openssl_sys::*;
-use std::{os::raw::c_int, ptr};
+use std::ptr;
 use std::ffi::CString;
-use crate::ossl::key::PKey;
+use crate::ossl::key::{PKey, PKeyCtx};
 
-/// KEM encapsulator
 pub struct MlkemEncapsulation(PKey);
 
 impl MlkemEncapsulation {
@@ -110,7 +108,7 @@ impl MlkemDecapsulation {
         if raw.is_null() {
             return Err(openssl_error("Keygen returned null"));
         }
-        Ok(MlkemDecapsulation(PKey(raw)))
+        Ok(MlkemDecapsulation(PKey::new(raw)))
     }
 
     /// Import an existing private key
@@ -128,16 +126,16 @@ impl MlkemDecapsulation {
         if p.is_null() {
             return Err(openssl_error("Importing private key failed"));
         }
-        Ok(MlkemDecapsulation(PKey(p)))
+        Ok(MlkemDecapsulation(PKey::new(p)))
     }
 
     /// Recover shared secret from wrapped key
     pub fn decapsulate(&self, wrapped_key: &[u8]) -> OsslResult<Vec<u8>> {
         let raw = unsafe {
             EVP_PKEY_CTX_new_from_pkey(
-                std::ptr::null_mut(),
-                self.0.as_ptr(),
-                std::ptr::null_mut(),
+                ptr::null_mut(),
+                self.0.as_mut_ptr(),
+                ptr::null_mut(),
             )
         };
         if raw.is_null() {
@@ -184,7 +182,7 @@ impl MlkemDecapsulation {
     /// Get the public (encapsulation) key
     pub fn get_encapsulation_key(&self) -> OsslResult<Vec<u8>> {
         let mut buf: *mut u8 = ptr::null_mut();
-        let len = unsafe { EVP_PKEY_get1_encoded_public_key(self.0.as_ptr(), &mut buf) };
+        let len = unsafe { EVP_PKEY_get1_encoded_public_key(self.0.as_mut_ptr(), &mut buf) };
         if len == 0 {
             return Err(openssl_error("Extracting public key failed"));
         }
