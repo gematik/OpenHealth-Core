@@ -51,20 +51,95 @@ pub enum UniversalTag {
     TimeOfDay          = 0x20,
     DateTime           = 0x21,
     Duration           = 0x22,
-}
-
-
-
-impl core::fmt::Display for UniversalTag {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(f, "{:02X}", *self as u8)
-    }
+    /// Any unknown/unsupported universal tag number
+    Unknown(u8),
 }
 
 impl From<UniversalTag> for u8 {
     #[inline]
-    fn from(t: UniversalTag) -> Self { t as u8 }
+    fn from(t: UniversalTag) -> Self {
+        match t {
+            UniversalTag::Unknown(x) => x,
+            UniversalTag::Boolean => 0x01,
+            UniversalTag::Integer => 0x02,
+            UniversalTag::BitString => 0x03,
+            UniversalTag::OctetString => 0x04,
+            UniversalTag::Null => 0x05,
+            UniversalTag::ObjectIdentifier => 0x06,
+            UniversalTag::ObjectDescriptor => 0x07,
+            UniversalTag::External => 0x08,
+            UniversalTag::Real => 0x09,
+            UniversalTag::Enumerated => 0x0A,
+            UniversalTag::EmbeddedPdv => 0x0B,
+            UniversalTag::Utf8String => 0x0C,
+            UniversalTag::RelativeOid => 0x0D,
+            UniversalTag::Time => 0x0E,
+            UniversalTag::Sequence => 0x10,
+            UniversalTag::Set => 0x11,
+            UniversalTag::NumericString => 0x12,
+            UniversalTag::PrintableString => 0x13,
+            UniversalTag::TeletexString => 0x14,
+            UniversalTag::VideotexString => 0x15,
+            UniversalTag::Ia5String => 0x16,
+            UniversalTag::UtcTime => 0x17,
+            UniversalTag::GeneralizedTime => 0x18,
+            UniversalTag::GraphicString => 0x19,
+            UniversalTag::VisibleString => 0x1A,
+            UniversalTag::GeneralString => 0x1B,
+            UniversalTag::UniversalString => 0x1C,
+            UniversalTag::CharacterString => 0x1D,
+            UniversalTag::BmpString => 0x1E,
+            UniversalTag::Date => 0x1F,
+            UniversalTag::TimeOfDay => 0x20,
+            UniversalTag::DateTime => 0x21,
+            UniversalTag::Duration => 0x22,
+        }
+    }
 }
+
+impl From<u8> for UniversalTag {
+    #[inline]
+    fn from(v: u8) -> Self {
+        use UniversalTag::*;
+        match v {
+            0x01 => Boolean,
+            0x02 => Integer,
+            0x03 => BitString,
+            0x04 => OctetString,
+            0x05 => Null,
+            0x06 => ObjectIdentifier,
+            0x07 => ObjectDescriptor,
+            0x08 => External,
+            0x09 => Real,
+            0x0A => Enumerated,
+            0x0B => EmbeddedPdv,
+            0x0C => Utf8String,
+            0x0D => RelativeOid,
+            0x0E => Time,
+            0x10 => Sequence,
+            0x11 => Set,
+            0x12 => NumericString,
+            0x13 => PrintableString,
+            0x14 => TeletexString,
+            0x15 => VideotexString,
+            0x16 => Ia5String,
+            0x17 => UtcTime,
+            0x18 => GeneralizedTime,
+            0x19 => GraphicString,
+            0x1A => VisibleString,
+            0x1B => GeneralString,
+            0x1C => UniversalString,
+            0x1D => CharacterString,
+            0x1E => BmpString,
+            0x1F => Date,
+            0x20 => TimeOfDay,
+            0x21 => DateTime,
+            0x22 => Duration,
+            other => Unknown(other),
+        }
+    }
+}
+
 
 /// ASN.1 tag as defined in ITU-T X.680.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
