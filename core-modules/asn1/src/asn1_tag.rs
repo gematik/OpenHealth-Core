@@ -15,41 +15,55 @@
  */
 
 /// ASN.1 type identifiers as defined in ITU-T X.680.
-#[allow(non_upper_case_globals)]
-pub mod asn1_type {
-    pub const BOOLEAN: u8 = 0x01;
-    pub const INTEGER: u8 = 0x02;
-    pub const BIT_STRING: u8= 0x03;
-    pub const OCTET_STRING: u8 = 0x04;
-    pub const NULL: u8 = 0x05;
-    pub const OBJECT_IDENTIFIER: u8 = 0x06;
-    pub const OBJECT_DESCRIPTOR: u8 = 0x07;
-    pub const EXTERNAL: u8 = 0x08;
-    pub const REAL: u8 = 0x09;
-    pub const ENUMERATED: u8 = 0x0A;
-    pub const EMBEDDED_PDV: u8 = 0x0B;
-    pub const UTF8_STRING: u8 = 0x0C;
-    pub const RELATIVE_OID: u8 = 0x0D;
-    pub const TIME: u8 = 0x0E;
-    pub const SEQUENCE: u8 = 0x10;
-    pub const SET: u8 = 0x11;
-    pub const NUMERIC_STRING: u8 = 0x12;
-    pub const PRINTABLE_STRING: u8 = 0x13;
-    pub const TELETEX_STRING: u8 = 0x14;
-    pub const VIDEOTEX_STRING: u8 = 0x15;
-    pub const IA5_STRING: u8 = 0x16;
-    pub const UTC_TIME: u8 = 0x17;
-    pub const GENERALIZED_TIME: u8 = 0x18;
-    pub const GRAPHIC_STRING: u8 = 0x19;
-    pub const VISIBLE_STRING: u8 = 0x1A;
-    pub const GENERAL_STRING: u8 = 0x1B;
-    pub const UNIVERSAL_STRING: u8 = 0x1C;
-    pub const CHARACTER_STRING: u8 = 0x1D;
-    pub const BMP_STRING: u8 = 0x1E;
-    pub const DATE: u8 = 0x1F;
-    pub const TIME_OF_DAY: u8 = 0x20;
-    pub const DATE_TIME: u8 = 0x21;
-    pub const DURATION: u8 = 0x22;
+#[repr(u8)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum UniversalTag {
+    Boolean            = 0x01,
+    Integer            = 0x02,
+    BitString          = 0x03,
+    OctetString        = 0x04,
+    Null               = 0x05,
+    ObjectIdentifier   = 0x06,
+    ObjectDescriptor   = 0x07,
+    External           = 0x08,
+    Real               = 0x09,
+    Enumerated         = 0x0A,
+    EmbeddedPdv        = 0x0B,
+    Utf8String         = 0x0C,
+    RelativeOid        = 0x0D,
+    Time               = 0x0E,
+    Sequence           = 0x10,
+    Set                = 0x11,
+    NumericString      = 0x12,
+    PrintableString    = 0x13,
+    TeletexString      = 0x14,
+    VideotexString     = 0x15,
+    Ia5String          = 0x16,
+    UtcTime            = 0x17,
+    GeneralizedTime    = 0x18,
+    GraphicString      = 0x19,
+    VisibleString      = 0x1A,
+    GeneralString      = 0x1B,
+    UniversalString    = 0x1C,
+    CharacterString    = 0x1D,
+    BmpString          = 0x1E,
+    Date               = 0x1F,
+    TimeOfDay          = 0x20,
+    DateTime           = 0x21,
+    Duration           = 0x22,
+}
+
+
+
+impl core::fmt::Display for UniversalTag {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "{:02X}", *self as u8)
+    }
+}
+
+impl From<UniversalTag> for u8 {
+    #[inline]
+    fn from(t: UniversalTag) -> Self { t as u8 }
 }
 
 /// ASN.1 tag as defined in ITU-T X.680.

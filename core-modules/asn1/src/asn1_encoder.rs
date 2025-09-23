@@ -15,7 +15,7 @@
  */
 
 
-use crate::asn1_tag::asn1_type;
+use crate::asn1_tag::UniversalTag;
 
 /// Exception thrown by the ASN.1 encoder.
 #[derive(Debug)]
@@ -29,7 +29,6 @@ impl Asn1EncoderError {
     }
 }
 
-/// Ergonomic result type for the ASN.1 encoder.
 pub type Result<T> = std::result::Result<T, Asn1EncoderError>;
 
 /// ASN.1 encoder for encoding data in ASN.1 format.
@@ -68,7 +67,7 @@ impl WriterScope {
         let mut value = integer;
         while value < -0x80 || value >= 0x80 {
             bytes.push((value & 0xFF) as u8);
-            value /= 0x100; // identisch zu Kotlin (Division mit Vorzeichen)
+            value /= 0x100;
         }
         bytes.push((value & 0xFF) as u8);
         // big endian ausgeben
@@ -107,8 +106,6 @@ impl WriterScope {
         self.write_bytes(&other.buffer);
     }
 
-    // ---------- Tagging / Primitives (Extensions im Kotlin-Stil) ----------
-
     /// Write the encoded tag directly, handling multi-byte encoding for large tags.
     pub fn write_tag(&mut self, tag_number: u8, tag_class: u8) {
         if tag_number < 0x1F {
@@ -143,11 +140,12 @@ impl WriterScope {
     /// Write an ASN.1 tagged object.
     pub fn write_tagged_object(
         &mut self,
-        tag_number: u8,
+        tag_number: impl Into<u8>,
         tag_class: u8,
         block: impl FnOnce(&mut WriterScope) -> Result<()>,
     ) -> Result<()> {
-        // TODO OPEN-2 (aus Kotlin-Kommentar): Overload mit `Asn1Tag` – unverändert nur notiert.
+        let tag_number: u8 = tag_number.into();
+
         // tag
         self.write_tag(tag_number, tag_class);
         // scope
@@ -160,12 +158,12 @@ impl WriterScope {
 
     /// Write an ASN.1 integer.
     pub fn write_asn1_int(&mut self, value: i32) -> Result<()> {
-        self.write_tagged_object(asn1_type::INTEGER, 0x00, |s| { s.write_int(value); Ok(()) })
+        self.write_tagged_object(UniversalTag::Integer, 0x00, |s| { s.write_int(value); Ok(()) })
     }
 
     /// Write an ASN.1 boolean.
     pub fn write_asn1_boolean(&mut self, value: bool) -> Result<()> {
-        self.write_tagged_object(asn1_type::BOOLEAN, 0x00, |s| { s.write_byte(if value { 0xFF } else { 0x00 }); Ok(()) })
+        self.write_tagged_object(UniversalTag::Boolean, 0x00, |s| { s.write_byte(if value { 0xFF } else { 0x00 }); Ok(()) })
     }
 
     /// Write an ASN.1 bit string.
@@ -173,7 +171,7 @@ impl WriterScope {
         if !(0..=7).contains(&unused_bits) {
             return Err(Asn1EncoderError::new(format!("Invalid unused bit count: {}", unused_bits)));
         }
-        self.write_tagged_object(asn1_type::BIT_STRING, 0x00, |s| {
+        self.write_tagged_object(UniversalTag::BitString, 0x00, |s| {
             s.write_byte(unused_bits);
             s.write_bytes(value);
             Ok(())
@@ -182,17 +180,17 @@ impl WriterScope {
 
     /// Write an ASN.1 octet string.
     pub fn write_asn1_octet_string(&mut self, value: &[u8]) -> Result<()> {
-        self.write_tagged_object(asn1_type::OCTET_STRING, 0x00, |s| { s.write_bytes(value); Ok(()) })
+        self.write_tagged_object(UniversalTag::OctetString, 0x00, |s| { s.write_bytes(value); Ok(()) })
     }
 
     /// Write an ASN.1 utf8 string.
     pub fn write_asn1_utf8_string(&mut self, value: &str) -> Result<()> {
-        self.write_tagged_object(asn1_type::UTF8_STRING, 0x00, |s| { s.write_bytes(value.as_bytes()); Ok(()) })
+        self.write_tagged_object(UniversalTag::Utf8String, 0x00, |s| { s.write_bytes(value.as_bytes()); Ok(()) })
     }
 
     /// Write [Asn1Type.OBJECT_IDENTIFIER].
     pub fn write_object_identifier(&mut self, oid: &str) -> Result<()> {
-        self.write_tagged_object(asn1_type::OBJECT_IDENTIFIER, 0x00, |s| {
+        self.write_tagged_object(UniversalTag::ObjectIdentifier, 0x00, |s| {
             let parts: Vec<i32> = oid
                 .split('.')
                 .map(|p| p.parse::<i32>().map_err(|_| Asn1EncoderError::new(format!("Invalid OID part: {}", p))))
@@ -273,7 +271,6 @@ impl Asn1Encoder {
 mod tests {
     use super::*;
     use crate::asn1_tag::Asn1Tag;
-    use std::panic::catch_unwind;
 
     fn hex(bytes: &[u8]) -> String {
         let mut out = String::new();
@@ -331,8 +328,6 @@ mod tests {
         .unwrap();
         assert_eq!(hex(&result), "84 07 5B CD 15");
     }
-
-    // Negative length test from Kotlin is not applicable in Rust since `write_length` takes `usize`.
 
     #[test]
     fn write_int_expected() {

@@ -4,7 +4,7 @@ use crate::command::health_card_status::MANAGE_SECURITY_ENVIRONMENT_STATUS;
 use crate::card::pso_algorithm::PsoAlgorithm;
 use asn1::asn1_encoder::Asn1Encoder;
 use asn1::asn1_encoder::Result;
-use asn1::asn1_tag::Asn1Tag;
+use asn1::asn1_tag::{Asn1Tag, UniversalTag};
 
 /// CLA byte for the MANAGE SECURITY ENVIRONMENT command
 const CLA: u8 = 0x00;
@@ -97,13 +97,13 @@ impl ManageSecurityEnvironmentCommand for HealthCardCommand {
     ) -> Result<HealthCardCommand> {
         let data = Asn1Encoder::write(|w| {
             // '8401 || keyRef'
-            w.write_tagged_object(4u8, Asn1Tag::CONTEXT_SPECIFIC, |inner| {
+            w.write_tagged_object(UniversalTag::OctetString, Asn1Tag::CONTEXT_SPECIFIC, |inner| {
                 inner.write_byte(key.calculate_key_reference(df_specific));
                 Ok(())
             })?;
 
             // '8001 || algId'
-            w.write_tagged_object(0u8, Asn1Tag::CONTEXT_SPECIFIC, |inner| {
+            w.write_tagged_object(UniversalTag::External, Asn1Tag::CONTEXT_SPECIFIC, |inner| {
                 inner.write_byte(pso_algorithm.identifier());
                 Ok(())
             })?;

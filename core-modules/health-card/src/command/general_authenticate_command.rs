@@ -117,6 +117,9 @@ mod tests {
     use crate::command::apdu::CardCommandApdu;
     use asn1::asn1_tag::Asn1Tag;
 
+    #[inline]
+    fn tag(t: impl Into<u8>) -> u8 { t.into() }
+
     #[test]
     fn test_general_authenticate_without_chaining() {
         let command = HealthCardCommand::general_authenticate(false).unwrap();

@@ -1,6 +1,4 @@
-use std::panic::panic_any;
-use crate::asn1_tag::{asn1_type, Asn1Tag};
-/// Exception class for ASN.1 decoding errors.
+use crate::asn1_tag::{UniversalTag, Asn1Tag};
 #[derive(Debug)]
 pub struct Asn1DecoderError {
     pub message: String,
@@ -12,7 +10,6 @@ impl Asn1DecoderError {
     }
 }
 
-/// Ergonomic result type for ASN.1 decoding.
 pub type Result<T> = std::result::Result<T, Asn1DecoderError>;
 
 /// Constructs an `Asn1Decoder` from the given data.
@@ -32,19 +29,6 @@ pub struct ParserScope<'a> {
 }
 
 impl<'a> ParserScope<'a> {
-    /// Throws an `Asn1DecoderError` with the result of calling `message`.
-    #[inline]
-    pub fn fail(&self, message: impl FnOnce() -> String) -> ! {
-        panic_any(Asn1DecoderError::new(message()))
-    }
-
-    /// Throws an `Asn1DecoderError` if `value` is false with the result of calling `message`.
-    #[inline]
-    pub fn check(&self, value: bool, message: impl FnOnce() -> String) {
-        if !value {
-            self.fail(message)
-        }
-    }
 
     #[inline]
     pub fn remaining_length(&self) -> usize {
@@ -55,10 +39,11 @@ impl<'a> ParserScope<'a> {
     /// Returns an error if the tag does not match or if the closure returns an error.
     pub fn advance_with_tag<T>(
         &mut self,
-        tag_number: u8,
+        tag_number: impl Into<u8>,
         tag_class: u8,
         mut block: impl FnMut(&mut ParserScope<'a>) -> Result<T>,
     ) -> Result<T> {
+        let tag_number: u8 = tag_number.into();
         let tag = self.read_tag()?;
         if tag.tag_number != (tag_number as u32) || tag.tag_class != tag_class {
             return Err(Asn1DecoderError::new(
@@ -190,18 +175,16 @@ impl<'a> ParserScope<'a> {
         Ok(())
     }
 
-    // ---------- High-level Leser wie in Kotlin ----------
-
     /// Read [Asn1Type.BOOLEAN].
     pub fn read_boolean(&mut self) -> Result<bool> {
-        self.advance_with_tag(asn1_type::BOOLEAN, 0x00, |s| {
+        self.advance_with_tag(UniversalTag::Boolean, 0x00, |s| {
             Ok(s.read_byte()? == 0xFF)
         })
     }
 
     /// Read [Asn1Type.INTEGER].
     pub fn read_int_tagged(&mut self) -> Result<i32> {
-        self.advance_with_tag(asn1_type::INTEGER, 0x00, |s| {
+        self.advance_with_tag(UniversalTag::Integer, 0x00, |s| {
             let len = s.remaining_length();
             s.read_int(len, true)
         })
@@ -209,7 +192,7 @@ impl<'a> ParserScope<'a> {
 
     /// Read [Asn1Type.BIT_STRING].
     pub fn read_bit_string(&mut self) -> Result<Vec<u8>> {
-        self.advance_with_tag(asn1_type::BIT_STRING, 0x00, |s| {
+        self.advance_with_tag(UniversalTag::BitString, 0x00, |s| {
             let unused_bits = s.read_byte()? as i32;
             if !(0..=7).contains(&unused_bits) {
                 return Err(Asn1DecoderError::new(format!("Invalid unused bit count: {}", unused_bits)));
@@ -232,7 +215,7 @@ impl<'a> ParserScope<'a> {
 
     /// Read [Asn1Type.UTF8_STRING].
     pub fn read_utf8_string(&mut self) -> Result<String> {
-        self.advance_with_tag(asn1_type::UTF8_STRING, 0x00, |s| {
+        self.advance_with_tag(UniversalTag::Utf8String, 0x00, |s| {
             let bytes = s.read_bytes(s.remaining_length())?;
             match String::from_utf8(bytes) {
                 Ok(v) => Ok(v),
@@ -243,7 +226,7 @@ impl<'a> ParserScope<'a> {
 
     /// Read [Asn1Type.VISIBLE_STRING].
     pub fn read_visible_string(&mut self) -> Result<String> {
-        self.advance_with_tag(asn1_type::VISIBLE_STRING, 0x00, |s| {
+        self.advance_with_tag(UniversalTag::VisibleString, 0x00, |s| {
             let bytes = s.read_bytes(s.remaining_length())?;
             match String::from_utf8(bytes) {
                 Ok(v) => Ok(v),
@@ -254,14 +237,14 @@ impl<'a> ParserScope<'a> {
 
     /// Read [Asn1Type.OCTET_STRING].
     pub fn read_octet_string(&mut self) -> Result<Vec<u8>> {
-        self.advance_with_tag(asn1_type::OCTET_STRING, 0x00, |s| {
+        self.advance_with_tag(UniversalTag::OctetString, 0x00, |s| {
             s.read_bytes(s.remaining_length())
         })
     }
 
     /// Read [Asn1Type.OBJECT_IDENTIFIER].
     pub fn read_object_identifier(&mut self) -> Result<String> {
-        self.advance_with_tag(asn1_type::OBJECT_IDENTIFIER, 0x00, |s| {
+        self.advance_with_tag(UniversalTag::ObjectIdentifier, 0x00, |s| {
             let bytes = s.read_bytes(s.remaining_length())?;
             if bytes.is_empty() {
                 return Err(Asn1DecoderError::new("Encoded OID cannot be empty".to_string()));
@@ -315,8 +298,7 @@ impl<'a> Asn1Decoder<'a> {
 mod tests {
     use super::*;
     use crate::asn1_tag::Asn1Tag;
-    use crate::asn1_date_time::{Asn1Offset, Asn1UtcTime, Asn1GeneralizedTime};
-    use std::panic::catch_unwind;
+    use crate::asn1_date_time::{Asn1Offset};
 
     fn hex_bytes(s: &str) -> Vec<u8> {
         s.split_whitespace()

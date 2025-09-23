@@ -16,7 +16,7 @@
 
 use regex::Regex;
 use std::sync::OnceLock;
-use crate::asn1_tag::{asn1_type};
+use crate::asn1_tag::UniversalTag;
 use crate::asn1_decoder::Asn1DecoderError;
 use crate::asn1_decoder::Result as DecoderResult;
 use crate::asn1_decoder::ParserScope;
@@ -33,7 +33,7 @@ pub struct Asn1UtcTime {
     pub hour: i32,
     pub minute: i32,
     pub second: Option<i32>,
-    pub offset: Option<Asn1Offset>, // corresponds to Asn1Offset.UtcOffset?
+    pub offset: Option<Asn1Offset>,
 }
 
 /// Raw representation of an ASN.1 GENERALIZED_TIME.
@@ -192,7 +192,7 @@ impl<'a> ParserScope<'a> {
 
     /// Read ASN.1 `UTC_TIME`.
     pub fn read_utc_time(&mut self) -> DecoderResult<Asn1UtcTime> {
-        self.advance_with_tag(asn1_type::UTC_TIME, 0x00, |s| {
+        self.advance_with_tag(UniversalTag::UtcTime, 0x00, |s| {
             let len = s.remaining_length();
             let bytes = s.read_bytes(len)?;
             let value = String::from_utf8(bytes)
@@ -203,7 +203,7 @@ impl<'a> ParserScope<'a> {
 
     /// Read ASN.1 `GENERALIZED_TIME`.
     pub fn read_generalized_time(&mut self) -> DecoderResult<Asn1GeneralizedTime> {
-        self.advance_with_tag(asn1_type::GENERALIZED_TIME, 0x00, |s| {
+        self.advance_with_tag(UniversalTag::GeneralizedTime, 0x00, |s| {
             let len = s.remaining_length();
             let bytes = s.read_bytes(len)?;
             let value = String::from_utf8(bytes)
@@ -218,7 +218,7 @@ impl<'a> ParserScope<'a> {
 impl WriterScope {
     /// Write ASN.1 `UTC_TIME`.
     pub fn write_utc_time(&mut self, value: &Asn1UtcTime) -> EncoderResult<()> {
-        self.write_tagged_object(asn1_type::UTC_TIME, 0x00, |w| {
+        self.write_tagged_object(UniversalTag::UtcTime, 0x00, |w| {
             let mut s = String::new();
             // year % 100, zero-padded to 2
             use core::fmt::Write as _;
@@ -236,7 +236,7 @@ impl WriterScope {
 
     /// Write ASN.1 `GENERALIZED_TIME`.
     pub fn write_generalized_time(&mut self, value: &Asn1GeneralizedTime) -> EncoderResult<()> {
-        self.write_tagged_object(asn1_type::GENERALIZED_TIME, 0x00, |w| {
+        self.write_tagged_object(UniversalTag::GeneralizedTime, 0x00, |w| {
             use core::fmt::Write as _;
             let mut s = String::new();
             let _ = write!(s, "{:04}{:02}{:02}{:02}",
@@ -261,10 +261,9 @@ impl WriterScope {
 mod tests {
     use super::*;
     use crate::asn1_decoder::Asn1Decoder;
-
-    fn hex(bytes: &[u8]) -> String {
-        bytes.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(" ")
-    }
+    
+    #[inline]
+    fn tag(t: impl Into<u8>) -> u8 { t.into() }
 
     #[test]
     fn write_utc_time_basic_z() {
@@ -284,7 +283,7 @@ mod tests {
 
         // Expect tag = UTC_TIME, length = payload length, payload = "2501011200Z"
         let expected_payload = b"2501011200Z".to_vec();
-        assert_eq!(out[0], asn1_type::UTC_TIME);
+        assert_eq!(out[0], tag(UniversalTag::UtcTime));
         assert_eq!(out[1] as usize, expected_payload.len());
         assert_eq!(&out[2..], &expected_payload[..]);
     }
@@ -307,7 +306,7 @@ mod tests {
 
         // 1999 % 100 = 99
         let expected_payload = b"991231235958+0230".to_vec();
-        assert_eq!(out[0], asn1_type::UTC_TIME);
+        assert_eq!(out[0], tag(UniversalTag::UtcTime));
         assert_eq!(out[1] as usize, expected_payload.len());
         assert_eq!(&out[2..], &expected_payload[..]);
     }
@@ -317,7 +316,7 @@ mod tests {
         // Build DER: tag, len, payload
         let payload = b"2501011200Z";
         let mut der = Vec::with_capacity(2 + payload.len());
-        der.push(asn1_type::UTC_TIME);
+        der.push(tag(UniversalTag::UtcTime));
         der.push(payload.len() as u8);
         der.extend_from_slice(payload);
 
@@ -337,7 +336,7 @@ mod tests {
         // invalid: missing minutes
         let payload = b"25010112Z"; // too short
         let mut der = Vec::with_capacity(2 + payload.len());
-        der.push(asn1_type::UTC_TIME);
+        der.push(tag(UniversalTag::UtcTime));
         der.push(payload.len() as u8);
         der.extend_from_slice(payload);
 
@@ -364,7 +363,7 @@ mod tests {
         }).unwrap();
 
         let expected_payload = b"20240615080910.123-0130".to_vec();
-        assert_eq!(out[0], asn1_type::GENERALIZED_TIME);
+        assert_eq!(out[0], tag(UniversalTag::GeneralizedTime));
         assert_eq!(out[1] as usize, expected_payload.len());
         assert_eq!(&out[2..], &expected_payload[..]);
     }
@@ -374,7 +373,7 @@ mod tests {
         // invalid: only year+month
         let payload = b"202406Z";
         let mut der = Vec::with_capacity(2 + payload.len());
-        der.push(asn1_type::GENERALIZED_TIME);
+        der.push(tag(UniversalTag::GeneralizedTime));
         der.push(payload.len() as u8);
         der.extend_from_slice(payload);
 
