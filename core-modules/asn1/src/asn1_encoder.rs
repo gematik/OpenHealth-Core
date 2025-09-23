@@ -141,10 +141,11 @@ impl WriterScope {
     pub fn write_tagged_object(
         &mut self,
         tag_number: impl Into<u8>,
-        tag_class: u8,
+        tag_class: impl Into<u8>,
         block: impl FnOnce(&mut WriterScope) -> Result<()>,
     ) -> Result<()> {
         let tag_number: u8 = tag_number.into();
+        let tag_class: u8 = tag_class.into();
 
         // tag
         self.write_tag(tag_number, tag_class);

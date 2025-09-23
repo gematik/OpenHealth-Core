@@ -148,11 +148,49 @@ pub struct Asn1Tag {
     pub tag_number: u32,
 }
 
+/// Primitive/Constructed bit (PC) in the identifier octet
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Asn1Form {
+    Primitive   = 0x00,
+    Constructed = 0x20,
+}
+
+impl From<Asn1Form> for u8 {
+    #[inline]
+    fn from(pc: Asn1Form) -> u8 { pc as u8 }
+}
+
+/// Tag class bits in the identifier octet
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Asn1Class {
+    Universal       = 0x00,
+    Application     = 0x40,
+    ContextSpecific = 0x80,
+    Private         = 0xC0,
+}
+
+impl From<Asn1Class> for u8 {
+    #[inline]
+    fn from(c: Asn1Class) -> u8 { c as u8 }
+}
+
+// Allow ergonomic `Class | Pc` combinations that yield the encoded class byte
+impl core::ops::BitOr<Asn1Form> for Asn1Class {
+    type Output = u8;
+    #[inline]
+    fn bitor(self, rhs: Asn1Form) -> Self::Output { (self as u8) | (rhs as u8) }
+}
+impl core::ops::BitOr<Asn1Class> for Asn1Form {
+    type Output = u8;
+    #[inline]
+    fn bitor(self, rhs: Asn1Class) -> Self::Output { (self as u8) | (rhs as u8) }
+}
+
 impl Asn1Tag {
-    pub const CONSTRUCTED: u8 = 0x20;
-    pub const APPLICATION: u8 = 0x40;
-    pub const CONTEXT_SPECIFIC: u8 = 0x80;
-    pub const PRIVATE: u8 = 0xC0;
+    pub const CONSTRUCTED: Asn1Form = Asn1Form::Constructed;
+    pub const APPLICATION: Asn1Class = Asn1Class::Application;
+    pub const CONTEXT_SPECIFIC: Asn1Class = Asn1Class::ContextSpecific;
+    pub const PRIVATE: Asn1Class = Asn1Class::Private;
 
     #[inline]
     pub const fn new(tag_class: u8, tag_number: u32) -> Self {

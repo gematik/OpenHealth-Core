@@ -40,10 +40,11 @@ impl<'a> ParserScope<'a> {
     pub fn advance_with_tag<T>(
         &mut self,
         tag_number: impl Into<u8>,
-        tag_class: u8,
+        tag_class: impl Into<u8>,
         mut block: impl FnMut(&mut ParserScope<'a>) -> Result<T>,
     ) -> Result<T> {
         let tag_number: u8 = tag_number.into();
+        let tag_class: u8 = tag_class.into();
         let tag = self.read_tag()?;
         if tag.tag_number != (tag_number as u32) || tag.tag_class != tag_class {
             return Err(Asn1DecoderError::new(

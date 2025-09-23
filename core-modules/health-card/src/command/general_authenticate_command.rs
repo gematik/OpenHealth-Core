@@ -132,7 +132,7 @@ mod tests {
 
         let data = command.data.unwrap();
 
-        assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | Asn1Tag::APPLICATION | Asn1Tag::CONSTRUCTED);
+        assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | (Asn1Tag::APPLICATION | Asn1Tag::CONSTRUCTED));
         assert_eq!(data[1], 0);
         assert_eq!(data.len(), 2);
     }
@@ -149,7 +149,7 @@ mod tests {
         assert_eq!(command.ne, Some(EXPECTED_LENGTH_WILDCARD_SHORT));
 
         let data = command.data.unwrap();
-        assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | Asn1Tag::APPLICATION | Asn1Tag::CONSTRUCTED);
+        assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | (Asn1Tag::APPLICATION | Asn1Tag::CONSTRUCTED));
         assert_eq!(data[1], 0);
         assert_eq!(data.len(), 2);
     }
@@ -167,9 +167,9 @@ mod tests {
 
         let data = command.data.unwrap();
 
-        assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | Asn1Tag::APPLICATION | Asn1Tag::CONSTRUCTED);
+        assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | (Asn1Tag::APPLICATION | Asn1Tag::CONSTRUCTED));
         assert_eq!(data[1], 6);
-        assert_eq!(data[2], 1 | Asn1Tag::CONTEXT_SPECIFIC);
+        assert_eq!(data[2], u8::from(Asn1Tag::CONTEXT_SPECIFIC) | 1);
         assert_eq!(data[3], test_data.len() as u8);
         assert_eq!(&data[4..8], &test_data);
     }
@@ -183,9 +183,9 @@ mod tests {
 
         let data = command.data.unwrap();
 
-        assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | Asn1Tag::APPLICATION | Asn1Tag::CONSTRUCTED);
+        assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | (Asn1Tag::APPLICATION | Asn1Tag::CONSTRUCTED));
         assert_eq!(data[1], 7); // tag (1) + length (1) + data (5)
-        assert_eq!(data[2], 3 | Asn1Tag::CONTEXT_SPECIFIC);
+        assert_eq!(data[2], u8::from(Asn1Tag::CONTEXT_SPECIFIC) | 3);
         assert_eq!(data[3], test_data.len() as u8);
         assert_eq!(&data[4..9], &test_data);
     }
@@ -195,9 +195,9 @@ mod tests {
         let test_data = vec![0x0A, 0x0B, 0x0C];
         let command = HealthCardCommand::general_authenticate_with_data(false, &test_data, 5).unwrap();
         let data = command.data.unwrap();
-        assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | Asn1Tag::APPLICATION | Asn1Tag::CONSTRUCTED);
+        assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | (Asn1Tag::APPLICATION | Asn1Tag::CONSTRUCTED));
         assert_eq!(data[1], 5);
-        assert_eq!(data[2], 5 | Asn1Tag::CONTEXT_SPECIFIC);
+        assert_eq!(data[2], u8::from(Asn1Tag::CONTEXT_SPECIFIC) | 5);
         assert_eq!(data[3], test_data.len() as u8);
         assert_eq!(&data[4..7], &test_data);
     }
@@ -235,11 +235,10 @@ mod tests {
         let command = HealthCardCommand::general_authenticate_with_data(false, &large_data, 1).unwrap();
         let data = command.data.unwrap();
 
-        assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | Asn1Tag::APPLICATION | Asn1Tag::CONSTRUCTED);
+        assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | (Asn1Tag::APPLICATION | Asn1Tag::CONSTRUCTED));
         assert_eq!(data[1], 0x81);
         assert_eq!(data[2], 0x83);
-
-        assert_eq!(data[3], 1 | Asn1Tag::CONTEXT_SPECIFIC);
+        assert_eq!(data[3], u8::from(Asn1Tag::CONTEXT_SPECIFIC) | 1);
         assert_eq!(data[4], 0x81);
         assert_eq!(data[5], 0x80);
 
