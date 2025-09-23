@@ -12,6 +12,9 @@ impl Asn1DecoderError {
     }
 }
 
+/// Ergonomic result type for ASN.1 decoding.
+pub type Result<T> = std::result::Result<T, Asn1DecoderError>;
+
 /// Constructs an `Asn1Decoder` from the given data.
 /// The data slice will not be copied!
 pub struct Asn1Decoder<'a> {
@@ -49,23 +52,23 @@ impl<'a> ParserScope<'a> {
     }
 
     /// Advances the parser with the given tag and executes the provided block.
-    /// Throws an `Asn1DecoderError` if the tag does not match.
+    /// Returns an error if the tag does not match or if the closure returns an error.
     pub fn advance_with_tag<T>(
         &mut self,
         tag_number: u8,
         tag_class: u8,
-        mut block: impl FnMut(&mut ParserScope<'a>) -> T,
-    ) -> T {
-        let tag = self.read_tag();
+        mut block: impl FnMut(&mut ParserScope<'a>) -> Result<T>,
+    ) -> Result<T> {
+        let tag = self.read_tag()?;
         if tag.tag_number != (tag_number as u32) || tag.tag_class != tag_class {
-            self.fail(|| {
+            return Err(Asn1DecoderError::new(
                 format!(
                     "Expected tag `Asn1Tag(tagClass=0x{:X}, tagNumber=0x{:X})` but got `Asn1Tag(tagClass=0x{:X}, tagNumber=0x{:X})`",
                     tag_class, tag_number, tag.tag_class, tag.tag_number
                 )
-            });
+            ));
         }
-        let length = self.read_length();
+        let length = self.read_length()?;
         let is_infinite = length == -1;
 
         let original_end = self.end_offset;
@@ -81,12 +84,14 @@ impl<'a> ParserScope<'a> {
 
         if !is_infinite {
             if self.end_offset != self.offset {
-                self.fail(|| "Unparsed bytes remaining".to_string());
+                self.end_offset = original_end;
+                return Err(Asn1DecoderError::new("Unparsed bytes remaining".to_string()));
             }
         } else {
-            let end = self.read_bytes(2);
+            let end = self.read_bytes(2)?;
             if end != [0x00, 0x00] {
-                self.fail(|| "Infinite length object must be finished with `0x00 0x00`".to_string());
+                self.end_offset = original_end;
+                return Err(Asn1DecoderError::new("Infinite length object must be finished with `0x00 0x00`".to_string()));
             }
         }
 
@@ -96,29 +101,30 @@ impl<'a> ParserScope<'a> {
 
     /// Read one byte.
     #[inline]
-    pub fn read_byte(&mut self) -> u8 {
+    pub fn read_byte(&mut self) -> Result<u8> {
+        if self.offset >= self.end_offset {
+            return Err(Asn1DecoderError::new("Unexpected end of data while reading byte".to_string()));
+        }
         let b = self.data[self.offset];
         self.offset += 1;
-        b
+        Ok(b)
     }
 
     /// Read `length` bytes.
-    pub fn read_bytes(&mut self, length: usize) -> Vec<u8> {
-        self.check(length as isize >= 0, || {
-            format!("Length must be >= `0`. Is `{}`", length)
-        });
-        let end = self.offset + length;
+    pub fn read_bytes(&mut self, length: usize) -> Result<Vec<u8>> {
+        let end = self.offset.checked_add(length)
+            .ok_or_else(|| Asn1DecoderError::new("Integer overflow computing slice end".to_string()))?;
+        if end > self.end_offset {
+            return Err(Asn1DecoderError::new("Unexpected end of data while reading bytes".to_string()));
+        }
         let data = &self.data[self.offset..end];
         self.offset = end;
-        data.to_vec()
+        Ok(data.to_vec())
     }
 
     /// Reads the next tag from the data, handling multi-byte tags.
-    pub fn read_tag(&mut self) -> Asn1Tag {
-        self.check(self.offset < self.end_offset, || "Unexpected end of data in tag".to_string());
-        let first = (self.data[self.offset] as u32) & 0xFF;
-        self.offset += 1;
-
+    pub fn read_tag(&mut self) -> Result<Asn1Tag> {
+        let first = (self.read_byte()? as u32) & 0xFF;
         let tag_class_and_constructed = (first & 0xE0) as u8; // Class + constructed
         let tag_number_low = first & 0x1F;
 
@@ -126,83 +132,75 @@ impl<'a> ParserScope<'a> {
             // High-tag-number form
             let mut value: u32 = 0;
             loop {
-                if self.offset >= self.end_offset {
-                    self.fail(|| "Unexpected end of data in tag".to_string());
-                }
-                let next = (self.data[self.offset] as u32) & 0xFF;
-                self.offset += 1;
+                let next = (self.read_byte()? as u32) & 0xFF;
                 value = (value << 7) | (next & 0x7F);
-                if (next & 0x80) == 0 {
-                    break;
-                }
+                if (next & 0x80) == 0 { break; }
             }
-            Asn1Tag::new(tag_class_and_constructed, value)
+            Ok(Asn1Tag::new(tag_class_and_constructed, value))
         } else {
-            Asn1Tag::new(tag_class_and_constructed, tag_number_low as u32)
+            Ok(Asn1Tag::new(tag_class_and_constructed, tag_number_low as u32))
         }
     }
 
     /// Read the length. Returns `-1` for infinite length.
-    pub fn read_length(&mut self) -> i32 {
-        let length_byte = (self.read_byte() as i32) & 0xFF;
+    pub fn read_length(&mut self) -> Result<i32> {
+        let length_byte = (self.read_byte()? as i32) & 0xFF;
         if length_byte == 0x80 {
-            -1
+            Ok(-1)
         } else if (length_byte & 0x80) == 0 {
             // short form
-            length_byte
+            Ok(length_byte)
         } else {
             // long form
-            let length_size = length_byte & 0x7F;
-            self.read_int(length_size as usize, false)
+            let length_size = (length_byte & 0x7F) as usize;
+            self.read_int(length_size, false)
         }
     }
 
     /// Read `length` bytes as an integer.
-    pub fn read_int(&mut self, length: usize, signed: bool) -> i32 {
-        self.check((1..=4).contains(&length), || {
-            format!("Length must be in range of [1, 4]. Is `{}`", length)
-        });
-        let end = self.offset + length;
-        let bytes = &self.data[self.offset..end];
-        self.offset = end;
-
-        let mut result = bytes[0] as i32;
-        result = if signed && (result & 0x80) != 0 {
-            result | -0x100 // sign extend
-        } else {
-            result & 0xFF
-        };
-        for i in 1..length {
-            result = (result << 8) | ((bytes[i] as i32) & 0xFF);
+    pub fn read_int(&mut self, length: usize, signed: bool) -> Result<i32> {
+        if !(1..=4).contains(&length) {
+            return Err(Asn1DecoderError::new(format!("Length must be in range of [1, 4]. Is `{}`", length)));
         }
-        result
+        let bytes = self.read_bytes(length)?;
+        let mut result = bytes[0] as i32;
+        result = if signed && (result & 0x80) != 0 { result | -0x100 } else { result & 0xFF };
+        for i in 1..length { result = (result << 8) | ((bytes[i] as i32) & 0xFF); }
+        Ok(result)
     }
 
     /// Skip `length` bytes.
     #[inline]
-    pub fn skip(&mut self, length: usize) {
-        self.offset += length;
+    pub fn skip(&mut self, length: usize) -> Result<()> {
+        let end = self.offset.checked_add(length)
+            .ok_or_else(|| Asn1DecoderError::new("Integer overflow computing skip end".to_string()))?;
+        if end > self.end_offset {
+            return Err(Asn1DecoderError::new("Skip exceeds available data".to_string()));
+        }
+        self.offset = end;
+        Ok(())
     }
 
     /// Skip to the `end_offset`.
-    pub fn skip_to_end(&mut self) {
-        self.check(self.end_offset != usize::MAX, || {
-            "Can't skip bytes inside infinite length object".to_string()
-        });
+    pub fn skip_to_end(&mut self) -> Result<()> {
+        if self.end_offset == usize::MAX {
+            return Err(Asn1DecoderError::new("Can't skip bytes inside infinite length object".to_string()));
+        }
         self.offset = self.end_offset;
+        Ok(())
     }
 
     // ---------- High-level Leser wie in Kotlin ----------
 
     /// Read [Asn1Type.BOOLEAN].
-    pub fn read_boolean(&mut self) -> bool {
+    pub fn read_boolean(&mut self) -> Result<bool> {
         self.advance_with_tag(asn1_type::BOOLEAN, 0x00, |s| {
-            s.read_byte() == 0xFF
+            Ok(s.read_byte()? == 0xFF)
         })
     }
 
     /// Read [Asn1Type.INTEGER].
-    pub fn read_int_tagged(&mut self) -> i32 {
+    pub fn read_int_tagged(&mut self) -> Result<i32> {
         self.advance_with_tag(asn1_type::INTEGER, 0x00, |s| {
             let len = s.remaining_length();
             s.read_int(len, true)
@@ -210,59 +208,63 @@ impl<'a> ParserScope<'a> {
     }
 
     /// Read [Asn1Type.BIT_STRING].
-    pub fn read_bit_string(&mut self) -> Vec<u8> {
+    pub fn read_bit_string(&mut self) -> Result<Vec<u8>> {
         self.advance_with_tag(asn1_type::BIT_STRING, 0x00, |s| {
-            let unused_bits = s.read_byte() as i32;
+            let unused_bits = s.read_byte()? as i32;
             if !(0..=7).contains(&unused_bits) {
-                s.fail(|| format!("Invalid unused bit count: {}", unused_bits));
+                return Err(Asn1DecoderError::new(format!("Invalid unused bit count: {}", unused_bits)));
             }
-            let mut bit_string = s.read_bytes(s.remaining_length());
+            let mut bit_string = s.read_bytes(s.remaining_length())?;
             if unused_bits == 0 {
-                bit_string
+                Ok(bit_string)
             } else {
-                // maskiere die ungenutzten Bits im letzten Byte
-                let last = *bit_string.last().unwrap();
+                if bit_string.is_empty() {
+                    return Err(Asn1DecoderError::new("BIT STRING content is empty but indicates unused bits".to_string()));
+                }
+                let last = bit_string[bit_string.len() - 1];
                 let mask = (((0xFFu16 << unused_bits) & 0xFF) as u8) & 0xFF;
                 bit_string.pop();
                 bit_string.push(last & mask);
-                bit_string
+                Ok(bit_string)
             }
         })
     }
 
     /// Read [Asn1Type.UTF8_STRING].
-    pub fn read_utf8_string(&mut self) -> String {
+    pub fn read_utf8_string(&mut self) -> Result<String> {
         self.advance_with_tag(asn1_type::UTF8_STRING, 0x00, |s| {
-            let bytes = s.read_bytes(s.remaining_length());
-            String::from_utf8(bytes).unwrap_or_else(|_| {
-                s.fail(|| "Malformed UTF-8 string".to_string());
-            })
+            let bytes = s.read_bytes(s.remaining_length())?;
+            match String::from_utf8(bytes) {
+                Ok(v) => Ok(v),
+                Err(_) => Err(Asn1DecoderError::new("Malformed UTF-8 string".to_string())),
+            }
         })
     }
 
     /// Read [Asn1Type.VISIBLE_STRING].
-    pub fn read_visible_string(&mut self) -> String {
+    pub fn read_visible_string(&mut self) -> Result<String> {
         self.advance_with_tag(asn1_type::VISIBLE_STRING, 0x00, |s| {
-            let bytes = s.read_bytes(s.remaining_length());
-            String::from_utf8(bytes).unwrap_or_else(|_| {
-                s.fail(|| "Malformed UTF-8 string".to_string());
-            })
+            let bytes = s.read_bytes(s.remaining_length())?;
+            match String::from_utf8(bytes) {
+                Ok(v) => Ok(v),
+                Err(_) => Err(Asn1DecoderError::new("Malformed UTF-8 string".to_string())),
+            }
         })
     }
 
     /// Read [Asn1Type.OCTET_STRING].
-    pub fn read_octet_string(&mut self) -> Vec<u8> {
+    pub fn read_octet_string(&mut self) -> Result<Vec<u8>> {
         self.advance_with_tag(asn1_type::OCTET_STRING, 0x00, |s| {
             s.read_bytes(s.remaining_length())
         })
     }
 
     /// Read [Asn1Type.OBJECT_IDENTIFIER].
-    pub fn read_object_identifier(&mut self) -> String {
+    pub fn read_object_identifier(&mut self) -> Result<String> {
         self.advance_with_tag(asn1_type::OBJECT_IDENTIFIER, 0x00, |s| {
-            let bytes = s.read_bytes(s.remaining_length());
+            let bytes = s.read_bytes(s.remaining_length())?;
             if bytes.is_empty() {
-                s.fail(|| "Encoded OID cannot be empty".to_string());
+                return Err(Asn1DecoderError::new("Encoded OID cannot be empty".to_string()));
             }
 
             let first_byte = (bytes[0] as i32) & 0xFF;
@@ -284,10 +286,10 @@ impl<'a> ParserScope<'a> {
                 }
             }
             if value != 0 {
-                s.fail(|| "Invalid OID encoding: unfinished encoding".to_string());
+                return Err(Asn1DecoderError::new("Invalid OID encoding: unfinished encoding".to_string()));
             }
 
-            parts.iter().map(|v| v.to_string()).collect::<Vec<_>>().join(".")
+            Ok(parts.iter().map(|v| v.to_string()).collect::<Vec<_>>().join("."))
         })
     }
 }
@@ -299,7 +301,7 @@ impl<'a> Asn1Decoder<'a> {
     }
 
     /// Reads the data using the provided `block` and returns the result.
-    pub fn read<T>(&self, mut block: impl FnMut(&mut ParserScope<'a>) -> T) -> T {
+    pub fn read<T>(&self, mut block: impl FnMut(&mut ParserScope<'a>) -> Result<T>) -> Result<T> {
         let mut scope = ParserScope {
             data: self.data,
             offset: 0,
@@ -331,16 +333,19 @@ mod tests {
             s.advance_with_tag(0x10, Asn1Tag::CONSTRUCTED, |s| {
                 let mut out = Vec::new();
                 s.advance_with_tag(0x04, 0x00, |s| {
-                    let v = String::from_utf8(s.read_bytes(3)).unwrap();
+                    let v = String::from_utf8(s.read_bytes(3)?).unwrap();
                     out.push(v);
-                });
+                    Ok(())
+                })?;
                 s.advance_with_tag(0x04, 0x00, |s| {
-                    let v = String::from_utf8(s.read_bytes(3)).unwrap();
+                    let v = String::from_utf8(s.read_bytes(3)?).unwrap();
                     out.push(v);
-                });
-                out
+                    Ok(())
+                })?;
+                Ok(out)
             })
-        });
+        })
+        .unwrap();
         assert_eq!(result, vec!["foo".to_string(), "bar".to_string()]);
     }
 
@@ -352,16 +357,19 @@ mod tests {
             s.advance_with_tag(0x10, Asn1Tag::CONSTRUCTED, |s| {
                 let mut out = Vec::new();
                 s.advance_with_tag(0x04, 0x00, |s| {
-                    let v = String::from_utf8(s.read_bytes(3)).unwrap();
+                    let v = String::from_utf8(s.read_bytes(3)?).unwrap();
                     out.push(v);
-                });
+                    Ok(())
+                })?;
                 s.advance_with_tag(0x04, 0x00, |s| {
-                    let v = String::from_utf8(s.read_bytes(3)).unwrap();
+                    let v = String::from_utf8(s.read_bytes(3)?).unwrap();
                     out.push(v);
-                });
-                out
+                    Ok(())
+                })?;
+                Ok(out)
             })
-        });
+        })
+        .unwrap();
         assert_eq!(result, vec!["foo".to_string(), "bar".to_string()]);
     }
 
@@ -369,13 +377,14 @@ mod tests {
     fn advance_with_tag_unfinished_parsing() {
         let data = hex_bytes("30 80 04 03 66 6F 6F 04 03 62 61 72 00 00");
         let parser = Asn1Decoder::new(&data);
-        let res = catch_unwind(|| {
-            parser.read(|s| {
-                s.advance_with_tag(0x30, 0x00, |s| {
-                    s.advance_with_tag(0x04, 0x00, |s| {
-                        let _ = s.read_bytes(3);
-                    });
-                })
+        let res = parser.read(|s| {
+            s.advance_with_tag(0x30, 0x00, |s| {
+                s.advance_with_tag(0x04, 0x00, |s| {
+                    let _ = s.read_bytes(3)?;
+                    Ok(())
+                })?;
+                // do not consume remaining content -> should cause error on closing tag scope
+                Ok(())
             })
         });
         assert!(res.is_err());
@@ -385,14 +394,14 @@ mod tests {
     fn advance_with_tag_skip_infinite() {
         let data = hex_bytes("30 80 04 03 66 6F 6F 04 03 62 61 72 00 00");
         let parser = Asn1Decoder::new(&data);
-        let res = catch_unwind(|| {
-            parser.read(|s| {
-                s.advance_with_tag(0x30, 0x00, |s| {
-                    s.advance_with_tag(0x04, 0x00, |s| {
-                        let _ = s.read_bytes(3);
-                    });
-                    s.skip_to_end();
-                })
+        let res = parser.read(|s| {
+            s.advance_with_tag(0x30, 0x00, |s| {
+                s.advance_with_tag(0x04, 0x00, |s| {
+                    let _ = s.read_bytes(3)?;
+                    Ok(())
+                })?;
+                s.skip_to_end()?;
+                Ok(())
             })
         });
         assert!(res.is_err());
@@ -402,7 +411,7 @@ mod tests {
     fn read_boolean_true() {
         let data = hex_bytes("01 01 FF");
         let parser = Asn1Decoder::new(&data);
-        let result = parser.read(|s| s.read_boolean());
+        let result = parser.read(|s| s.read_boolean()).unwrap();
         assert!(result);
     }
 
@@ -410,7 +419,7 @@ mod tests {
     fn read_boolean_false() {
         let data = hex_bytes("01 01 00");
         let parser = Asn1Decoder::new(&data);
-        let result = parser.read(|s| s.read_boolean());
+        let result = parser.read(|s| s.read_boolean()).unwrap();
         assert!(!result);
     }
 
@@ -418,7 +427,7 @@ mod tests {
     fn read_integer() {
         let data = hex_bytes("02 01 7F");
         let parser = Asn1Decoder::new(&data);
-        let result = parser.read(|s| s.read_int_tagged());
+        let result = parser.read(|s| s.read_int_tagged()).unwrap();
         assert_eq!(result, 127);
     }
 
@@ -426,7 +435,7 @@ mod tests {
     fn read_integer_negative() {
         let data = hex_bytes("02 01 EC");
         let parser = Asn1Decoder::new(&data);
-        let result = parser.read(|s| s.read_int_tagged());
+        let result = parser.read(|s| s.read_int_tagged()).unwrap();
         assert_eq!(result, -20);
     }
 
@@ -434,7 +443,7 @@ mod tests {
     fn read_integer_boundary() {
         let data = hex_bytes("02 01 80");
         let parser = Asn1Decoder::new(&data);
-        let result = parser.read(|s| s.read_int_tagged());
+        let result = parser.read(|s| s.read_int_tagged()).unwrap();
         assert_eq!(result, -128);
     }
 
@@ -442,7 +451,7 @@ mod tests {
     fn read_integer_multi_byte_length() {
         let data = hex_bytes("02 02 7F 7F");
         let parser = Asn1Decoder::new(&data);
-        let result = parser.read(|s| s.read_int_tagged());
+        let result = parser.read(|s| s.read_int_tagged()).unwrap();
         assert_eq!(result, 32639);
     }
 
@@ -450,7 +459,7 @@ mod tests {
     fn read_bit_string_no_unused() {
         let data = hex_bytes("03 05 00 FF AA BB CC");
         let parser = Asn1Decoder::new(&data);
-        let result = parser.read(|s| s.read_bit_string());
+        let result = parser.read(|s| s.read_bit_string()).unwrap();
         assert_eq!(result, hex_bytes("FF AA BB CC"));
     }
 
@@ -458,7 +467,7 @@ mod tests {
     fn read_bit_string_with_unused() {
         let data = hex_bytes("03 05 03 FF AA BB FF");
         let parser = Asn1Decoder::new(&data);
-        let result = parser.read(|s| s.read_bit_string());
+        let result = parser.read(|s| s.read_bit_string()).unwrap();
         assert_eq!(result, hex_bytes("FF AA BB F8"));
     }
 
@@ -466,7 +475,7 @@ mod tests {
     fn read_bit_string_empty() {
         let data = hex_bytes("03 01 00");
         let parser = Asn1Decoder::new(&data);
-        let result = parser.read(|s| s.read_bit_string());
+        let result = parser.read(|s| s.read_bit_string()).unwrap();
         assert!(result.is_empty());
     }
 
@@ -474,7 +483,7 @@ mod tests {
     fn read_bit_string_invalid_unused() {
         let data = hex_bytes("03 04 08 FF AA BB CC");
         let parser = Asn1Decoder::new(&data);
-        let res = catch_unwind(|| parser.read(|s| s.read_bit_string()));
+        let res = parser.read(|s| s.read_bit_string());
         assert!(res.is_err());
     }
 
@@ -484,12 +493,13 @@ mod tests {
         let parser = Asn1Decoder::new(&data);
         let result: Vec<String> = parser.read(|s| {
             s.advance_with_tag(0x10, Asn1Tag::CONSTRUCTED, |s| {
-                vec![
-                    s.read_bit_string().iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(" "),
-                    s.read_bit_string().iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(" "),
-                ]
+                Ok(vec![
+                    s.read_bit_string()?.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(" "),
+                    s.read_bit_string()?.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(" "),
+                ])
             })
-        });
+        })
+        .unwrap();
         assert_eq!(result, vec!["FF AA BB".to_string(), "CC DD 00".to_string()]);
     }
 
@@ -497,7 +507,7 @@ mod tests {
     fn read_utf8_string() {
         let data = hex_bytes("0C 05 48 65 6C 6C 6F");
         let parser = Asn1Decoder::new(&data);
-        let result = parser.read(|s| s.read_utf8_string());
+        let result = parser.read(|s| s.read_utf8_string()).unwrap();
         assert_eq!(result, "Hello");
     }
 
@@ -505,7 +515,7 @@ mod tests {
     fn read_utf8_string_empty() {
         let data = hex_bytes("0C 00");
         let parser = Asn1Decoder::new(&data);
-        let result = parser.read(|s| s.read_utf8_string());
+        let result = parser.read(|s| s.read_utf8_string()).unwrap();
         assert_eq!(result, "");
     }
 
@@ -514,7 +524,7 @@ mod tests {
         // Tag is OCTET STRING, decoder expects UTF8_STRING -> should error
         let data = hex_bytes("04 03 C3 28");
         let parser = Asn1Decoder::new(&data);
-        let res = catch_unwind(|| parser.read(|s| s.read_utf8_string()));
+        let res = parser.read(|s| s.read_utf8_string());
         assert!(res.is_err());
     }
 
@@ -522,7 +532,7 @@ mod tests {
     fn read_visible_string() {
         let data = hex_bytes("1A 05 57 6F 72 6C 64");
         let parser = Asn1Decoder::new(&data);
-        let result = parser.read(|s| s.read_visible_string());
+        let result = parser.read(|s| s.read_visible_string()).unwrap();
         assert_eq!(result, "World");
     }
 
@@ -530,7 +540,7 @@ mod tests {
     fn read_visible_string_special_chars() {
         let data = hex_bytes("1A 06 41 42 20 21 40 23");
         let parser = Asn1Decoder::new(&data);
-        let result = parser.read(|s| s.read_visible_string());
+        let result = parser.read(|s| s.read_visible_string()).unwrap();
         assert_eq!(result, "AB !@#");
     }
 
@@ -538,7 +548,7 @@ mod tests {
     fn read_utc_time() {
         let data = hex_bytes("17 0D 32 33 30 35 31 32 31 34 33 39 34 35 5A");
         let parser = Asn1Decoder::new(&data);
-        let t = parser.read(|s| s.read_utc_time());
+        let t = parser.read(|s| s.read_utc_time()).unwrap();
         assert_eq!(t.year, 23);
         assert_eq!(t.month, 5);
         assert_eq!(t.day, 12);
@@ -552,7 +562,7 @@ mod tests {
     fn read_utc_time_negative_offset() {
         let data = hex_bytes("17 11 32 33 30 35 31 32 31 34 33 39 34 35 2D 30 35 30 30");
         let parser = Asn1Decoder::new(&data);
-        let t = parser.read(|s| s.read_utc_time());
+        let t = parser.read(|s| s.read_utc_time()).unwrap();
         assert_eq!(t.year, 23);
         assert_eq!(t.month, 5);
         assert_eq!(t.day, 12);
@@ -572,7 +582,7 @@ mod tests {
     fn read_utc_time_missing_seconds() {
         let data = hex_bytes("17 0B 32 33 30 35 31 32 31 34 33 39 5A");
         let parser = Asn1Decoder::new(&data);
-        let t = parser.read(|s| s.read_utc_time());
+        let t = parser.read(|s| s.read_utc_time()).unwrap();
         assert_eq!(t.year, 23);
         assert_eq!(t.month, 5);
         assert_eq!(t.day, 12);
@@ -586,7 +596,7 @@ mod tests {
     fn read_generalized_time() {
         let data = hex_bytes("18 12 32 30 32 33 30 35 31 32 31 34 33 39 34 35 2E 31 32 33 5A");
         let parser = Asn1Decoder::new(&data);
-        let t = parser.read(|s| s.read_generalized_time());
+        let t = parser.read(|s| s.read_generalized_time()).unwrap();
         assert_eq!(t.year, 2023);
         assert_eq!(t.month, 5);
         assert_eq!(t.day, 12);
@@ -601,7 +611,7 @@ mod tests {
     fn read_generalized_time_no_fraction() {
         let data = hex_bytes("18 0D 32 30 32 33 30 35 31 32 31 34 33 39 5A");
         let parser = Asn1Decoder::new(&data);
-        let t = parser.read(|s| s.read_generalized_time());
+        let t = parser.read(|s| s.read_generalized_time()).unwrap();
         assert_eq!(t.year, 2023);
         assert_eq!(t.month, 5);
         assert_eq!(t.day, 12);
@@ -616,7 +626,7 @@ mod tests {
     fn read_valid_simple_oid() {
         let data = hex_bytes("06 03 2A 03 04");
         let parser = Asn1Decoder::new(&data);
-        let result = parser.read(|s| s.read_object_identifier());
+        let result = parser.read(|s| s.read_object_identifier()).unwrap();
         assert_eq!(result, "1.2.3.4");
     }
 
@@ -624,7 +634,7 @@ mod tests {
     fn read_valid_complex_oid() {
         let data = hex_bytes("06 05 55 04 06 82 03");
         let parser = Asn1Decoder::new(&data);
-        let result = parser.read(|s| s.read_object_identifier());
+        let result = parser.read(|s| s.read_object_identifier()).unwrap();
         assert_eq!(result, "2.5.4.6.259");
     }
 
@@ -632,7 +642,7 @@ mod tests {
     fn read_empty_oid_throws() {
         let data = hex_bytes("06 00");
         let parser = Asn1Decoder::new(&data);
-        let res = catch_unwind(|| parser.read(|s| s.read_object_identifier()));
+        let res = parser.read(|s| s.read_object_identifier());
         assert!(res.is_err());
     }
 
@@ -640,7 +650,7 @@ mod tests {
     fn read_single_byte_oid() {
         let data = hex_bytes("06 01 06");
         let parser = Asn1Decoder::new(&data);
-        let result = parser.read(|s| s.read_object_identifier());
+        let result = parser.read(|s| s.read_object_identifier()).unwrap();
         assert_eq!(result, "0.6");
     }
 
@@ -648,7 +658,7 @@ mod tests {
     fn read_oid_with_high_value_bytes() {
         let data = hex_bytes("06 03 82 86 05");
         let parser = Asn1Decoder::new(&data);
-        let result = parser.read(|s| s.read_object_identifier());
+        let result = parser.read(|s| s.read_object_identifier()).unwrap();
         assert_eq!(result, "3.10.773");
     }
 
@@ -656,7 +666,7 @@ mod tests {
     fn read_oid_overflow_in_intermediate_value() {
         let data = hex_bytes("06 04 2B 81 80 02");
         let parser = Asn1Decoder::new(&data);
-        let result = parser.read(|s| s.read_object_identifier());
+        let result = parser.read(|s| s.read_object_identifier()).unwrap();
         assert_eq!(result, "1.3.16386");
     }
 
@@ -664,7 +674,7 @@ mod tests {
     fn read_oid_trailing_continuation_bit_throws() {
         let data = hex_bytes("06 02 2B 81");
         let parser = Asn1Decoder::new(&data);
-        let res = catch_unwind(|| parser.read(|s| s.read_object_identifier()));
+        let res = parser.read(|s| s.read_object_identifier());
         assert!(res.is_err());
     }
 }

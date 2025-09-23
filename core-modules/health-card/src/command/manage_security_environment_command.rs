@@ -3,6 +3,7 @@ use crate::command::health_card_command::HealthCardCommand;
 use crate::command::health_card_status::MANAGE_SECURITY_ENVIRONMENT_STATUS;
 use crate::card::pso_algorithm::PsoAlgorithm;
 use asn1::asn1_encoder::Asn1Encoder;
+use asn1::asn1_encoder::Result;
 use asn1::asn1_tag::Asn1Tag;
 
 /// CLA byte for the MANAGE SECURITY ENVIRONMENT command
@@ -39,7 +40,7 @@ pub trait ManageSecurityEnvironmentCommand {
         card_key: &K,
         df_specific: bool,
         oid: &[u8],
-    ) -> HealthCardCommand;
+    ) -> Result<HealthCardCommand>;
 
     /// Creates a HealthCardCommand for the MANAGE SECURITY ENVIRONMENT command
     /// for signing. (gemSpec_COS_3.14.0#14.9.9.9)
@@ -54,7 +55,7 @@ pub trait ManageSecurityEnvironmentCommand {
         pso_algorithm: PsoAlgorithm,
         key: &K,
         df_specific: bool,
-    ) -> HealthCardCommand;
+    ) -> Result<HealthCardCommand>;
 }
 
 impl ManageSecurityEnvironmentCommand for HealthCardCommand {
@@ -62,20 +63,23 @@ impl ManageSecurityEnvironmentCommand for HealthCardCommand {
         card_key: &K,
         df_specific: bool,
         oid: &[u8],
-    ) -> HealthCardCommand {
+    ) -> Result<HealthCardCommand> {
         let data = Asn1Encoder::write(|w| {
             // '80 I2OS(OctetLength(OID), 1) || OID
             w.write_tagged_object(0u8, Asn1Tag::CONTEXT_SPECIFIC, |inner| {
                 inner.write_bytes(oid);
-            });
+                Ok(())
+            })?;
 
             // '83 01 || keyRef'
             w.write_tagged_object(3u8, Asn1Tag::CONTEXT_SPECIFIC, |inner| {
                 inner.write_byte(card_key.calculate_key_reference(df_specific));
-            });
-        });
+                Ok(())
+            })?;
+            Ok(())
+        })?;
 
-        HealthCardCommand {
+        Ok(HealthCardCommand {
             expected_status: MANAGE_SECURITY_ENVIRONMENT_STATUS.clone(),
             cla: CLA,
             ins: INS,
@@ -83,27 +87,30 @@ impl ManageSecurityEnvironmentCommand for HealthCardCommand {
             p2: MODE_AFFECTED_LIST_ELEMENT_IS_EXT_AUTH_P2,
             data: Some(data),
             ne: None,
-        }
+        })
     }
 
     fn manage_sec_env_for_signing<K: CardKeyReference>(
         pso_algorithm: PsoAlgorithm,
         key: &K,
         df_specific: bool,
-    ) -> HealthCardCommand {
+    ) -> Result<HealthCardCommand> {
         let data = Asn1Encoder::write(|w| {
             // '8401 || keyRef'
             w.write_tagged_object(4u8, Asn1Tag::CONTEXT_SPECIFIC, |inner| {
                 inner.write_byte(key.calculate_key_reference(df_specific));
-            });
+                Ok(())
+            })?;
 
             // '8001 || algId'
             w.write_tagged_object(0u8, Asn1Tag::CONTEXT_SPECIFIC, |inner| {
                 inner.write_byte(pso_algorithm.identifier());
-            });
-        });
+                Ok(())
+            })?;
+            Ok(())
+        })?;
 
-        HealthCardCommand {
+        Ok(HealthCardCommand {
             expected_status: MANAGE_SECURITY_ENVIRONMENT_STATUS.clone(),
             cla: CLA,
             ins: INS,
@@ -111,7 +118,7 @@ impl ManageSecurityEnvironmentCommand for HealthCardCommand {
             p2: MODE_AFFECTED_LIST_ELEMENT_IS_SIGNATURE_CREATION,
             data: Some(data),
             ne: None,
-        }
+        })
     }
 }
 
@@ -127,7 +134,7 @@ mod tests {
         let oid = [0x06, 0x07, 0x2A, 0x86, 0x48, 0xCE, 0x3D, 0x02, 0x01]; // Example OID
 
         // Test with df_specific = true
-        let cmd = HealthCardCommand::manage_sec_env_without_curves(&password_ref, true, &oid);
+        let cmd = HealthCardCommand::manage_sec_env_without_curves(&password_ref, true, &oid).unwrap();
         assert_eq!(cmd.cla, CLA);
         assert_eq!(cmd.ins, INS);
         assert_eq!(cmd.p1, MODE_SET_SECRET_KEY_OBJECT_P1);
@@ -140,7 +147,7 @@ mod tests {
         assert!(data.len() > 0);
 
         // Test with df_specific = false
-        let cmd = HealthCardCommand::manage_sec_env_without_curves(&password_ref, false, &oid);
+        let cmd = HealthCardCommand::manage_sec_env_without_curves(&password_ref, false, &oid).unwrap();
         assert_eq!(cmd.cla, CLA);
         assert_eq!(cmd.ins, INS);
         assert_eq!(cmd.p1, MODE_SET_SECRET_KEY_OBJECT_P1);
@@ -156,7 +163,7 @@ mod tests {
         let pso_algorithm = PsoAlgorithm::SignVerifyEcdsa;
 
         // Test with df_specific = true
-        let cmd = HealthCardCommand::manage_sec_env_for_signing(pso_algorithm, &password_ref, true);
+        let cmd = HealthCardCommand::manage_sec_env_for_signing(pso_algorithm, &password_ref, true).unwrap();
         assert_eq!(cmd.cla, CLA);
         assert_eq!(cmd.ins, INS);
         assert_eq!(cmd.p1, MODE_SET_PRIVATE_KEY_P1);
@@ -169,7 +176,7 @@ mod tests {
         assert!(data.len() > 0);
 
         // Test with df_specific = false
-        let cmd = HealthCardCommand::manage_sec_env_for_signing(pso_algorithm, &password_ref, false);
+        let cmd = HealthCardCommand::manage_sec_env_for_signing(pso_algorithm, &password_ref, false).unwrap();
         assert_eq!(cmd.cla, CLA);
         assert_eq!(cmd.ins, INS);
         assert_eq!(cmd.p1, MODE_SET_PRIVATE_KEY_P1);
