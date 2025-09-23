@@ -159,3 +159,45 @@ impl Asn1Tag {
         Asn1Tag { tag_class, tag_number }
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn known_tags_roundtrip() {
+        let cases: &[(u8, UniversalTag)] = &[
+            (0x01, UniversalTag::Boolean),
+            (0x02, UniversalTag::Integer),
+            (0x04, UniversalTag::OctetString),
+            (0x06, UniversalTag::ObjectIdentifier),
+            (0x0C, UniversalTag::Utf8String),
+            (0x10, UniversalTag::Sequence),
+            (0x11, UniversalTag::Set),
+            (0x17, UniversalTag::UtcTime),
+            (0x18, UniversalTag::GeneralizedTime),
+        ];
+        for (byte, tag) in cases {
+            // u8 -> enum
+            let from_b = UniversalTag::from(*byte);
+            assert_eq!(&from_b, tag, "from({byte:02X}) should map to {:?}", tag);
+            // enum -> u8
+            let to_b: u8 = (*tag).into();
+            assert_eq!(to_b, *byte, "into() should produce {byte:02X}");
+        }
+    }
+
+    #[test]
+    fn unknown_is_preserved_both_ways() {
+        for b in [0x00u8, 0x0F, 0x12, 0x1F, 0x23, 0xFE, 0xFF] {
+            let e = UniversalTag::from(b);
+            match e {
+                UniversalTag::Unknown(x) => assert_eq!(x, b),
+                _ => { }
+            }
+            let back: u8 = e.into();
+            assert_eq!(back, b, "roundtrip must preserve the original byte");
+        }
+    }
+}
