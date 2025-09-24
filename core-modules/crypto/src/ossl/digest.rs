@@ -1,9 +1,11 @@
-use crate::ossl::api::*;
-use crate::{ossl_check, ossl_require};
-use crypto_openssl_sys::*;
 use std::ffi::CString;
 use std::ptr;
 
+use crate::ossl::api::{openssl_error, OsslResult};
+use crate::{ossl_check, ossl_require};
+use crypto_openssl_sys::*;
+
+/// RAII wrapper around `EVP_MD_CTX` for hashing operations.
 pub struct Digest {
     ctx: *mut EVP_MD_CTX,
 }
@@ -32,14 +34,9 @@ impl Digest {
 
         let init_res = unsafe { EVP_DigestInit_ex(ctx, md, ptr::null_mut()) };
         unsafe { EVP_MD_free(md) };
-        ossl_check!(
-            init_res,
-            "Failed to initialize digest"
-        );
+        ossl_check!(init_res, "Failed to initialize digest");
 
-        Ok(Digest {
-            ctx,
-        })
+        Ok(Self { ctx })
     }
 
     /// Feeds more data into the digest.
@@ -58,9 +55,7 @@ impl Digest {
         if flags & EVP_MD_FLAG_XOF as u64 != 0 {
             let mut out = vec![0u8; output_length];
             ossl_check!(
-                unsafe {
-                    EVP_DigestFinalXOF(self.ctx, out.as_mut_ptr() as *mut _, output_length)
-                },
+                unsafe { EVP_DigestFinalXOF(self.ctx, out.as_mut_ptr() as *mut _, output_length) },
                 "Failed to finalize XOF digest"
             );
             return Ok(out);

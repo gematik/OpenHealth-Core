@@ -2,6 +2,7 @@ use crate::error::CryptoResult;
 use crate::ossl;
 use crate::utils::byte_unit::ByteUnit;
 
+/// Supported hash algorithms (and XOFs) for streaming digests.
 #[derive(Clone)]
 pub enum DigestSpec {
     Sha256,
@@ -10,54 +11,66 @@ pub enum DigestSpec {
     Sha3_256,
     Sha3_512,
     Blake2b512,
-    Shake128 { output_length: ByteUnit },
-    Shake256 { output_length: ByteUnit },
+    /// SHAKE128 with caller-specified output length (in bytes).
+    Shake128 {
+        output_length: ByteUnit,
+    },
+    /// SHAKE256 with caller-specified output length (in bytes).
+    Shake256 {
+        output_length: ByteUnit,
+    },
 }
 
 impl DigestSpec {
     fn algorithm(&self) -> &'static str {
         match self {
-            DigestSpec::Sha256 => "SHA256",
-            DigestSpec::Sha384 => "SHA384",
-            DigestSpec::Sha512 => "SHA512",
-            DigestSpec::Sha3_256 => "SHA3-256",
-            DigestSpec::Sha3_512 => "SHA3-512",
-            DigestSpec::Blake2b512 => "BLAKE2b512",
-            DigestSpec::Shake128 { .. } => "SHAKE128",
-            DigestSpec::Shake256 { .. } => "SHAKE256",
+            Self::Sha256 => "SHA256",
+            Self::Sha384 => "SHA384",
+            Self::Sha512 => "SHA512",
+            Self::Sha3_256 => "SHA3-256",
+            Self::Sha3_512 => "SHA3-512",
+            Self::Blake2b512 => "BLAKE2b512",
+            Self::Shake128 { .. } => "SHAKE128",
+            Self::Shake256 { .. } => "SHAKE256",
         }
     }
 
     fn xof_output_len(&self) -> Option<usize> {
         match self {
-            DigestSpec::Shake128 { output_length } | DigestSpec::Shake256 { output_length } => {
+            Self::Shake128 { output_length } | Self::Shake256 { output_length } => {
                 Some(output_length.bytes() as usize)
             }
             _ => None,
         }
     }
 
+    /// Create a new streaming digest for this algorithm.
     pub fn create(self) -> CryptoResult<Digest> {
         let digest = ossl::digest::Digest::create(self.algorithm())?;
         Ok(Digest { digest, spec: self })
     }
 }
 
+/// Streaming digest computation.
+///
+/// - Feed data with `update`.
+/// - Call `finalize` to get the digest (or XOF) output.
 pub struct Digest {
     digest: ossl::digest::Digest,
     spec: DigestSpec,
 }
 
 impl Digest {
+    /// Feed more message bytes into the digest.
     pub fn update(&mut self, input: &[u8]) -> CryptoResult<()> {
-        self.digest.update(input)?;
-        Ok(())
+        self.digest.update(input).map_err(Into::into)
     }
 
+    /// Finalize and return the digest/XOF output.
+    /// For SHAKE, the output length is taken from the `DigestSpec`.
     pub fn finalize(&mut self) -> CryptoResult<Vec<u8>> {
-        Ok(self
-            .digest
-            .finalize(self.spec.xof_output_len().unwrap_or(0))?)
+        let output_len = self.spec.xof_output_len().unwrap_or(0);
+        self.digest.finalize(output_len).map_err(Into::into)
     }
 }
 

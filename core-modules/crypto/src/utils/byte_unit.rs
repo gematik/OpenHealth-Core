@@ -1,4 +1,5 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+/// Strongly typed representation of lengths measured in bytes.
 pub struct ByteUnit(u64);
 
 #[cfg(feature = "uniffi")]
@@ -16,50 +17,55 @@ impl ByteUnit {
     }
 }
 
-/// Returns a `ByteUnit` instance representing the specified number of bytes.
+/// Extension methods to easily construct `ByteUnit` values from integers.
 pub trait BytesExt {
+    /// Interpret the integer as a count of bytes.
     fn bytes(self) -> ByteUnit;
+    /// Interpret the integer as a count of bits, converting to bytes.
+    /// Panics if not a multiple of 8.
     fn bits(self) -> ByteUnit;
 }
 
-impl BytesExt for usize {
-    fn bytes(self) -> ByteUnit {
-        ByteUnit(self as u64)
-    }
+const MULTIPLE_OF_EIGHT_MSG: &str = "Value must be multiple of 8";
 
-    fn bits(self) -> ByteUnit {
-        if self % 8 == 0 {
-            ByteUnit((self / 8) as u64)
-        } else {
-            panic!("Value must be multiple of 8")
+macro_rules! impl_bytes_ext_unsigned {
+    ($ty:ty) => {
+        impl BytesExt for $ty {
+            fn bytes(self) -> ByteUnit {
+                ByteUnit(self as u64)
+            }
+
+            fn bits(self) -> ByteUnit {
+                if self % 8 == 0 {
+                    ByteUnit((self / 8) as u64)
+                } else {
+                    panic!("{}", MULTIPLE_OF_EIGHT_MSG)
+                }
+            }
         }
-    }
+    };
 }
 
-impl BytesExt for u32 {
-    fn bytes(self) -> ByteUnit {
-        ByteUnit(self as u64)
-    }
+macro_rules! impl_bytes_ext_signed {
+    ($ty:ty) => {
+        impl BytesExt for $ty {
+            fn bytes(self) -> ByteUnit {
+                assert!(self >= 0, "value must be non-negative");
+                ByteUnit(self as u64)
+            }
 
-    fn bits(self) -> ByteUnit {
-        if self % 8 == 0 {
-            ByteUnit((self / 8) as u64)
-        } else {
-            panic!("Value must be multiple of 8")
+            fn bits(self) -> ByteUnit {
+                assert!(self >= 0, "value must be non-negative");
+                if self % 8 == 0 {
+                    ByteUnit((self / 8) as u64)
+                } else {
+                    panic!("{}", MULTIPLE_OF_EIGHT_MSG)
+                }
+            }
         }
-    }
+    };
 }
 
-impl BytesExt for i32 {
-    fn bytes(self) -> ByteUnit {
-        ByteUnit(self as u64)
-    }
-
-    fn bits(self) -> ByteUnit {
-        if self % 8 == 0 {
-            ByteUnit((self / 8) as u64)
-        } else {
-            panic!("Value must be multiple of 8")
-        }
-    }
-}
+impl_bytes_ext_unsigned!(usize);
+impl_bytes_ext_unsigned!(u32);
+impl_bytes_ext_signed!(i32);

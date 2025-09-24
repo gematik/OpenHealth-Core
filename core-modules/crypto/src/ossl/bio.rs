@@ -1,6 +1,7 @@
+use std::os::raw::{c_char, c_int};
+
 use crate::ossl::api::{openssl_error, OsslResult};
 use crypto_openssl_sys::{BIO_free, BIO_get_mem_data, BIO_new, BIO_new_mem_buf, BIO_s_mem, BIO};
-use std::os::raw::{c_char, c_int};
 
 /// BIO wrapper
 pub struct Bio(*mut BIO);
@@ -43,9 +44,6 @@ impl Bio {
         self.0
     }
 }
-
-
-
 impl Drop for Bio {
     fn drop(&mut self) {
         unsafe { BIO_free(self.0) };

@@ -1,9 +1,9 @@
-use std::sync::Arc;
 use crate::error::CryptoResult;
-use crate::key::key::{KeySize, PrivateKey, PublicKey};
+use crate::key::key::{KeySize, PublicKey};
 use crate::ossl;
 use crate::utils::byte_unit::{ByteUnit, BytesExt};
 
+/// Wrapped KEM ciphertext returned by encapsulation.
 #[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
 pub struct WrappedKey(Vec<u8>);
 
@@ -13,18 +13,18 @@ impl AsRef<[u8]> for WrappedKey {
     }
 }
 
-#[cfg_attr(feature = "uniffi", uniffi::export)]
 impl KeySize for WrappedKey {
     fn size(&self) -> ByteUnit {
         self.0.len().bytes()
     }
 }
 
-
+/// Shared secret derived from ML-KEM operations.
 #[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
 pub struct SharedSecret(Vec<u8>);
 
 impl SharedSecret {
+    /// Create a shared secret from raw bytes.
     pub fn new(bytes: Vec<u8>) -> Self {
         Self(bytes)
     }
@@ -33,14 +33,19 @@ impl SharedSecret {
 #[cfg_attr(feature = "uniffi", uniffi::export)]
 impl SharedSecret {
     #[cfg_attr(feature = "uniffi", uniffi::constructor)]
+    /// Construct a shared secret from bytes (UniFFI-friendly constructor).
     pub fn from_bytes(bytes: Vec<u8>) -> Self {
         Self(bytes)
     }
 
-    pub fn as_bytes(&self) -> Vec<u8> { self.0.clone() }
+    /// Return the secret bytes.
+    pub fn as_bytes(&self) -> Vec<u8> {
+        self.0.clone()
+    }
 }
 
-#[derive(Clone)]
+/// ML-KEM parameter sets.
+#[derive(Debug, Clone)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 pub enum MlkemSpec {
     MlKem512,
@@ -51,46 +56,53 @@ pub enum MlkemSpec {
 impl MlkemSpec {
     fn algorithm(&self) -> &'static str {
         match self {
-            MlkemSpec::MlKem512 => "ML-KEM-512",
-            MlkemSpec::MlKem768 => "ML-KEM-768",
-            MlkemSpec::MlKem1024 => "ML-KEM-1024",
+            Self::MlKem512 => "ML-KEM-512",
+            Self::MlKem768 => "ML-KEM-768",
+            Self::MlKem1024 => "ML-KEM-1024",
         }
     }
 
+    /// Create a decapsulator holding a freshly generated ML-KEM private key.
     pub fn decapsulator(self) -> CryptoResult<MlkemDecapsulator> {
         let dec = ossl::mlkem::MlkemDecapsulation::create(self.algorithm())?;
         Ok(MlkemDecapsulator { spec: self, dec })
     }
 
+    /// Create an encapsulator from a public (encapsulation) key.
     pub fn encapsulator(self, public_key: PublicKey) -> CryptoResult<MlkemEncapsulator> {
         let enc = ossl::mlkem::MlkemEncapsulation::create(self.algorithm(), public_key.as_ref())?;
         Ok(MlkemEncapsulator { spec: self, enc })
     }
 }
 
+/// Encapsulation helper for ML-KEM.
 pub struct MlkemEncapsulator {
     spec: MlkemSpec,
     enc: ossl::mlkem::MlkemEncapsulation,
 }
 
 impl MlkemEncapsulator {
+    /// Perform KEM encapsulation, returning `(wrapped_key, shared_secret)`.
     pub fn encapsulate(&self) -> CryptoResult<(WrappedKey, SharedSecret)> {
         let (wrapped, secret) = self.enc.encapsulate()?;
         Ok((WrappedKey(wrapped), SharedSecret(secret)))
     }
 }
 
+/// Decapsulation helper for ML-KEM.
 pub struct MlkemDecapsulator {
     spec: MlkemSpec,
     dec: ossl::mlkem::MlkemDecapsulation,
 }
 
 impl MlkemDecapsulator {
+    /// Recover the shared secret from a `WrappedKey` produced by encapsulation.
     pub fn decapsulate(&self, wrapped_key: WrappedKey) -> CryptoResult<SharedSecret> {
         let secret = self.dec.decapsulate(wrapped_key.as_ref())?;
         Ok(SharedSecret::new(secret))
     }
 
+    /// Export the public (encapsulation) key corresponding to this decapsulator.
     pub fn public_key(&self) -> CryptoResult<PublicKey> {
         Ok(PublicKey::new(self.dec.get_encapsulation_key()?))
     }
@@ -110,7 +122,11 @@ mod tests {
         let ss_dec = dec.decapsulate(wrapped).expect("decapsulate");
 
         // Shared secret must match
-        assert_eq!(ss_enc.as_bytes(), ss_dec.as_bytes(), "shared secret equality");
+        assert_eq!(
+            ss_enc.as_bytes(),
+            ss_dec.as_bytes(),
+            "shared secret equality"
+        );
     }
 
     #[test]

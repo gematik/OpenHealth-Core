@@ -1,11 +1,12 @@
 use std::ffi::CString;
-use crate::ossl::api::*;
-use crate::ossl_check;
-use crypto_openssl_sys::*;
 use std::os::raw::c_int;
 use std::ptr;
-use crypto_openssl_sys::point_conversion_form_t::POINT_CONVERSION_UNCOMPRESSED;
+
+use crate::ossl::api::{openssl_error, OsslResult};
 use crate::ossl::key::{PKey, PKeyCtx};
+use crate::ossl_check;
+use crypto_openssl_sys::point_conversion_form_t::POINT_CONVERSION_UNCOMPRESSED;
+use crypto_openssl_sys::*;
 
 pub struct EcPoint {
     group: *mut EC_GROUP,
@@ -17,7 +18,9 @@ impl EcPoint {
         let cstr = CString::new(name).unwrap();
         let nid = unsafe { OBJ_txt2nid(cstr.as_ptr()) };
         if nid == NID_undef {
-            return Err(openssl_error(&format!("Failed to get nid for curve {}", name)));
+            return Err(openssl_error(&format!(
+                "Failed to get nid for curve {name}"
+            )));
         }
         let grp = unsafe { EC_GROUP_new_by_curve_name(nid) };
         if grp.is_null() {
@@ -28,13 +31,26 @@ impl EcPoint {
             unsafe { EC_GROUP_free(grp) };
             return Err(openssl_error("Failed to create EC_POINT"));
         }
-        Ok(EcPoint { group: grp, point: pt })
+        Ok(EcPoint {
+            group: grp,
+            point: pt,
+        })
     }
 
     pub fn from_public(name: &str, data: &[u8]) -> OsslResult<Self> {
         let ep = EcPoint::create_from_curve(name)?;
-        ossl_check!(unsafe { EC_POINT_oct2point(ep.group, ep.point, data.as_ptr(), data.len() as usize, ptr::null_mut()) as c_int },
-                    "Failed to create ec point from uncompressed public key");
+        ossl_check!(
+            unsafe {
+                EC_POINT_oct2point(
+                    ep.group,
+                    ep.point,
+                    data.as_ptr(),
+                    data.len() as usize,
+                    ptr::null_mut(),
+                ) as c_int
+            },
+            "Failed to create ec point from uncompressed public key"
+        );
         Ok(ep)
     }
 
@@ -48,35 +64,78 @@ impl EcPoint {
             unsafe { EC_GROUP_free(g2) };
             return Err(openssl_error("Failed to dup EC_POINT"));
         }
-        Ok(EcPoint { group: g2, point: p2 })
+        Ok(EcPoint {
+            group: g2,
+            point: p2,
+        })
     }
 
     pub fn add(&self, other: &EcPoint) -> OsslResult<Self> {
         let mut r = self.clone()?;
-        ossl_check!(unsafe { EC_POINT_add(self.group, r.point, self.point, other.point, ptr::null_mut()) },
-                    "EC_POINT_add failed");
+        ossl_check!(
+            unsafe {
+                EC_POINT_add(
+                    self.group,
+                    r.point,
+                    self.point,
+                    other.point,
+                    ptr::null_mut(),
+                )
+            },
+            "EC_POINT_add failed"
+        );
         Ok(r)
     }
 
     pub fn mul(&self, scalar: &[u8]) -> OsslResult<Self> {
-        let bn = unsafe { BN_signed_bin2bn(scalar.as_ptr(), scalar.len() as c_int, ptr::null_mut()) };
+        let bn =
+            unsafe { BN_signed_bin2bn(scalar.as_ptr(), scalar.len() as c_int, ptr::null_mut()) };
         if bn.is_null() {
             return Err(openssl_error("Failed to convert scalar to BIGNUM"));
         }
         let r = self.clone()?;
-        ossl_check!(unsafe { EC_POINT_mul(self.group, r.point, ptr::null_mut(), self.point, bn, ptr::null_mut()) },
-                    "EC_POINT_mul failed");
+        ossl_check!(
+            unsafe {
+                EC_POINT_mul(
+                    self.group,
+                    r.point,
+                    ptr::null_mut(),
+                    self.point,
+                    bn,
+                    ptr::null_mut(),
+                )
+            },
+            "EC_POINT_mul failed"
+        );
         unsafe { BN_free(bn) };
         Ok(r)
     }
 
     pub fn to_bytes(&self) -> OsslResult<Vec<u8>> {
-        let len = unsafe { EC_POINT_point2oct(self.group, self.point, POINT_CONVERSION_UNCOMPRESSED, ptr::null_mut(), 0, ptr::null_mut()) };
+        let len = unsafe {
+            EC_POINT_point2oct(
+                self.group,
+                self.point,
+                POINT_CONVERSION_UNCOMPRESSED,
+                ptr::null_mut(),
+                0,
+                ptr::null_mut(),
+            )
+        };
         if len == 0 {
             return Err(openssl_error("Failed to get public key size"));
         }
         let mut buf = vec![0u8; len as usize];
-        let out = unsafe { EC_POINT_point2oct(self.group, self.point, POINT_CONVERSION_UNCOMPRESSED, buf.as_mut_ptr(), len, ptr::null_mut()) };
+        let out = unsafe {
+            EC_POINT_point2oct(
+                self.group,
+                self.point,
+                POINT_CONVERSION_UNCOMPRESSED,
+                buf.as_mut_ptr(),
+                len,
+                ptr::null_mut(),
+            )
+        };
         if out == 0 {
             return Err(openssl_error("Error during ec point conversion"));
         }
@@ -106,16 +165,27 @@ impl EcKeypair {
             return Err(openssl_error("Failed to create EVP_PKEY_CTX"));
         }
         let ctx = PKeyCtx(ctx);
-        ossl_check!(unsafe { EVP_PKEY_keygen_init(ctx.0) }, "Failed to init keygen");
+        ossl_check!(
+            unsafe { EVP_PKEY_keygen_init(ctx.0) },
+            "Failed to init keygen"
+        );
         let cs = CString::new(curve).unwrap();
         let nid = unsafe { OBJ_sn2nid(cs.as_ptr()) };
         if nid == NID_undef {
             return Err(openssl_error(&format!("Invalid curve name: {}", curve)));
         }
-        ossl_check!(unsafe { EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx.0, nid) }, "Failed to set EC curve");
+        ossl_check!(
+            unsafe { EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx.0, nid) },
+            "Failed to set EC curve"
+        );
         let mut raw: *mut EVP_PKEY = ptr::null_mut();
-        ossl_check!(unsafe { EVP_PKEY_keygen(ctx.0, &mut raw) }, "Key generation failed");
-        Ok(EcKeypair { pkey: PKey::new(raw) })
+        ossl_check!(
+            unsafe { EVP_PKEY_keygen(ctx.0, &mut raw) },
+            "Key generation failed"
+        );
+        Ok(EcKeypair {
+            pkey: PKey::new(raw),
+        })
     }
 
     pub fn private_key_der(&self) -> OsslResult<Vec<u8>> {

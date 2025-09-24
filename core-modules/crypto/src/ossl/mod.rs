@@ -1,8 +1,8 @@
 pub(crate) mod api;
-pub(crate) mod ec;
+mod bio;
+pub(crate) mod cipher;
 pub(crate) mod digest;
+pub(crate) mod ec;
+mod key;
 pub(crate) mod mac;
 pub(crate) mod mlkem;
-pub(crate) mod cipher;
-mod bio;
-mod key;

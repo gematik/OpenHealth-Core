@@ -2,8 +2,7 @@ use std::ffi::CString;
 use std::os::raw::c_int;
 use std::ptr;
 
-use crate::ossl::api::openssl_error;
-use crate::ossl::api::OsslResult;
+use crate::ossl::api::{openssl_error, OsslResult};
 use crate::ossl_check;
 
 use crypto_openssl_sys::*;
@@ -45,7 +44,7 @@ impl AesCipher {
             params: *const OSSL_PARAM,
         ) -> c_int,
     ) -> OsslResult<Self> {
-        let aes = AesCipher::new(algorithm)?;
+        let aes = Self::new(algorithm)?;
 
         ossl_check!(
             unsafe { init_fn(aes.ctx, aes.cipher, ptr::null(), ptr::null(), ptr::null()) },

@@ -1,8 +1,11 @@
+use std::sync::OnceLock;
+
 use base64::Engine;
+use regex::Regex;
 
 const PEM_DATA_MAX_LENGTH_PER_LINE: usize = 64;
 
-static PEM_REGEX: &str = r"^-----BEGIN (.*)-----(.*)-----END (.*)-----$";
+static PEM_REGEX: OnceLock<Regex> = OnceLock::new();
 
 /// Represents a Privacy Enhanced Mail (PEM) formatted cryptographic object.
 pub struct Pem {
@@ -34,7 +37,9 @@ pub trait DecodeToPem {
 impl DecodeToPem for str {
     fn decode_to_pem(&self) -> Pem {
         let s = self.replace('\n', "").trim().to_owned();
-        let re = regex::Regex::new(PEM_REGEX).unwrap();
+        let re = PEM_REGEX.get_or_init(|| {
+            Regex::new(r"^-----BEGIN (.*)-----(.*)-----END (.*)-----$").expect("compile PEM regex")
+        });
         let captures = re.captures(&s).expect("Invalid PEM format");
         let header_type = captures.get(1).unwrap().as_str();
         let data = captures.get(2).unwrap().as_str();
@@ -42,7 +47,9 @@ impl DecodeToPem for str {
         assert_eq!(header_type, footer_type, "Invalid PEM type format");
         Pem {
             r#type: header_type.to_string(),
-            data: base64::engine::general_purpose::STANDARD.decode(data).expect("Base64 decoding failed"),
+            data: base64::engine::general_purpose::STANDARD
+                .decode(data)
+                .expect("Base64 decoding failed"),
         }
     }
 }
@@ -55,7 +62,10 @@ mod tests {
     fn encode_and_decode_pem_with_short_data() {
         let typ = "TEST CERTIFICATE";
         let data = b"Hello World".to_vec();
-        let pem = Pem { r#type: typ.to_string(), data: data.clone() };
+        let pem = Pem {
+            r#type: typ.to_string(),
+            data: data.clone(),
+        };
 
         let encoded = pem.encode_to_string();
         let decoded = encoded.decode_to_pem();
@@ -68,7 +78,10 @@ mod tests {
     fn encode_and_decode_pem_with_long_data() {
         let typ = "LONG CERTIFICATE";
         let data: Vec<u8> = (0..100).collect();
-        let pem = Pem { r#type: typ.to_string(), data: data.clone() };
+        let pem = Pem {
+            r#type: typ.to_string(),
+            data: data.clone(),
+        };
 
         let encoded = pem.encode_to_string();
         let decoded = encoded.decode_to_pem();
@@ -82,18 +95,19 @@ mod tests {
     fn encode_pem_respects_line_length_limit() {
         let typ = "TEST";
         let data = vec![65u8; 100]; // 100 x 'A'
-        let pem = Pem { r#type: typ.to_string(), data };
+        let pem = Pem {
+            r#type: typ.to_string(),
+            data,
+        };
 
         let encoded = pem.encode_to_string();
         let lines: Vec<&str> = encoded.lines().collect();
 
-        for line in lines.iter()
+        for line in lines
+            .iter()
             .filter(|l| !l.is_empty() && !l.starts_with("-----"))
         {
-            assert!(
-                line.len() <= 64,
-                "Line exceeds 64 characters: {line}"
-            );
+            assert!(line.len() <= 64, "Line exceeds 64 characters: {line}");
         }
     }
 
@@ -118,9 +132,7 @@ mod tests {
         let typ = "CERTIFICATE";
         let content = "Hello World";
         let encoded_content = base64::engine::general_purpose::STANDARD.encode(content.as_bytes());
-        let pem_string = format!(
-            "-----BEGIN {typ}-----\n{encoded_content}\n-----END {typ}-----\n"
-        );
+        let pem_string = format!("-----BEGIN {typ}-----\n{encoded_content}\n-----END {typ}-----\n");
 
         let decoded = pem_string.decode_to_pem();
         assert_eq!(typ, decoded.r#type);

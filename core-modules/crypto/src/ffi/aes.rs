@@ -1,7 +1,9 @@
-use crate::cipher::aes::Cipher;
-pub use crate::error::CryptoResult;
-use crate::{cipher, ossl};
 use std::sync::Mutex;
+
+use crate::cipher::aes::Cipher;
+use crate::{cipher, ossl};
+
+pub use crate::error::CryptoResult;
 
 // Safety: OpenSSL EVP cipher contexts are not thread-safe for concurrent use.
 // In this crate, all access goes through a Mutex (no concurrent use), and the
@@ -9,6 +11,7 @@ use std::sync::Mutex;
 unsafe impl Send for ossl::cipher::AesCipher {}
 
 #[derive(uniffi::Object)]
+/// Thread-safe wrapper around the high-level AES cipher for UniFFI consumers.
 pub struct AesCipher {
     inner: Mutex<cipher::aes::AesCipher>,
 }
@@ -23,6 +26,7 @@ impl From<cipher::aes::AesCipher> for AesCipher {
 
 #[uniffi::export]
 impl AesCipher {
+    /// Process more input and return produced output bytes.
     fn update(&self, input: &[u8]) -> CryptoResult<Vec<u8>> {
         let mut cipher = self.inner.lock().unwrap();
         let mut output = Vec::new();
@@ -30,6 +34,7 @@ impl AesCipher {
         Ok(output)
     }
 
+    /// Finalize the operation and return any remaining output bytes.
     fn finalize(&self) -> CryptoResult<Vec<u8>> {
         let mut cipher = self.inner.lock().unwrap();
         let mut output = Vec::new();

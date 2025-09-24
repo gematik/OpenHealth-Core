@@ -16,9 +16,7 @@ pub enum EcPoint {
         y: BigInt,
     },
     /// The point at infinity on the given curve.
-    Infinity {
-        curve: EcCurve,
-    },
+    Infinity { curve: EcCurve },
 }
 
 impl EcPoint {
@@ -94,7 +92,6 @@ impl EcPoint {
                 let size = 1 + 2 * coordinate_size;
 
                 let mut out = vec![0u8; size];
-
 
                 let x_bytes = x.to_signed_bytes_be();
                 let y_bytes = y.to_signed_bytes_be();
@@ -184,10 +181,7 @@ impl EcPoint {
     /// Errors:
     /// - Propagates errors from uncompressed() and key construction.
     pub fn to_ec_public_key(&self) -> CryptoResult<EcPublicKey> {
-        EcPublicKey::from_uncompressed(
-            self.curve().clone(),
-            &self.uncompressed()?,
-        )
+        EcPublicKey::from_uncompressed(self.curve().clone(), &self.uncompressed()?)
     }
 }
 

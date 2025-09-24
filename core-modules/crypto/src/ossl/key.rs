@@ -1,9 +1,14 @@
 use std::ptr;
-use crypto_openssl_sys::{d2i_PUBKEY_bio, d2i_PrivateKey_bio, i2d_PKCS8PrivateKey_bio, i2d_PUBKEY_bio, EVP_PKEY_CTX_free, EVP_PKEY_free, EVP_PKEY, EVP_PKEY_CTX};
+
 use crate::ossl::api::{openssl_error, OsslResult};
 use crate::ossl::bio::Bio;
 use crate::ossl_check;
+use crypto_openssl_sys::{
+    d2i_PUBKEY_bio, d2i_PrivateKey_bio, i2d_PKCS8PrivateKey_bio, i2d_PUBKEY_bio, EVP_PKEY_CTX_free,
+    EVP_PKEY_free, EVP_PKEY, EVP_PKEY_CTX,
+};
 
+/// Wrapper around `EVP_PKEY_CTX` that frees the context on drop.
 pub struct PKeyCtx(pub *mut EVP_PKEY_CTX);
 
 impl PKeyCtx {
@@ -18,11 +23,12 @@ impl Drop for PKeyCtx {
     }
 }
 
+/// Wrapper around `EVP_PKEY` with automatic resource management.
 pub struct PKey(*mut EVP_PKEY);
 
 impl PKey {
     pub fn new(pkey: *mut EVP_PKEY) -> Self {
-        PKey(pkey)
+        Self(pkey)
     }
 
     pub fn from_der_private(data: &[u8]) -> OsslResult<Self> {
@@ -31,7 +37,7 @@ impl PKey {
         if p.is_null() {
             Err(openssl_error("Failed to load private key from DER"))
         } else {
-            Ok(PKey(p))
+            Ok(Self(p))
         }
     }
 
@@ -41,7 +47,7 @@ impl PKey {
         if p.is_null() {
             Err(openssl_error("Failed to load public key from DER"))
         } else {
-            Ok(PKey(p))
+            Ok(Self(p))
         }
     }
 

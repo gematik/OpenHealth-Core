@@ -1,9 +1,9 @@
-use crate::cipher::aes::AesDecipherSpec;
 use crate::error::CryptoResult;
 use crate::key::key::PrivateKey;
 use crate::ossl;
 use crate::utils::byte_unit::ByteUnit;
 
+/// Algorithms supported with CMAC.
 pub enum CmacAlgorithm {
     Aes,
 }
@@ -11,11 +11,12 @@ pub enum CmacAlgorithm {
 impl CmacAlgorithm {
     fn name(&self, key_size: &ByteUnit) -> String {
         match self {
-            CmacAlgorithm::Aes => format!("aes-{}-cbc", key_size.bits()),
+            Self::Aes => format!("aes-{}-cbc", key_size.bits()),
         }
     }
 }
 
+/// Specification for creating a MAC instance.
 pub enum MacSpec {
     Cmac { algorithm: CmacAlgorithm },
 }
@@ -23,12 +24,13 @@ pub enum MacSpec {
 impl MacSpec {
     fn cipher(&self, key_size: &ByteUnit) -> String {
         match self {
-            MacSpec::Cmac { algorithm } => algorithm.name(key_size),
+            Self::Cmac { algorithm } => algorithm.name(key_size),
         }
     }
 }
 
 impl MacSpec {
+    /// Create a MAC instance with the given secret key.
     pub fn create(self, secret: PrivateKey) -> CryptoResult<Mac> {
         let mac = ossl::mac::Mac::create(
             secret.as_ref(),
@@ -44,6 +46,7 @@ impl MacSpec {
     }
 }
 
+/// Message Authentication Code (MAC) context.
 pub struct Mac {
     mac: ossl::mac::Mac,
     spec: MacSpec,
@@ -51,13 +54,14 @@ pub struct Mac {
 }
 
 impl Mac {
+    /// Feed additional data into the MAC computation.
     pub fn update(&mut self, data: &[u8]) -> CryptoResult<()> {
-        self.mac.update(data)?;
-        Ok(())
+        self.mac.update(data).map_err(Into::into)
     }
-    
+
+    /// Finalize and return the computed MAC tag.
     pub fn finalize(&mut self) -> CryptoResult<Vec<u8>> {
-        Ok(self.mac.finalize()?)
+        self.mac.finalize().map_err(Into::into)
     }
 }
 

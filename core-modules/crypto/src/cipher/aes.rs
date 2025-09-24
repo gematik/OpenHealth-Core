@@ -1,11 +1,11 @@
-use crate::key::key::{PrivateKey};
+use crate::key::key::PrivateKey;
 use crate::ossl;
-use crate::ossl::api::OsslError;
 use crate::utils::byte_unit::ByteUnit;
-use std::sync::{Arc, Mutex};
+
 pub use crate::error::CryptoResult;
 
-#[derive(Clone)]
+/// Initialization vector for AES-based operations.
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Iv(pub Vec<u8>);
 
 #[cfg(feature = "uniffi")]
@@ -23,7 +23,8 @@ impl AsRef<[u8]> for Iv {
     }
 }
 
-#[derive(Clone, Default)]
+/// Additional authenticated data for AEAD ciphers.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Aad(pub Vec<u8>);
 
 #[cfg(feature = "uniffi")]
@@ -41,8 +42,10 @@ impl AsRef<[u8]> for Aad {
     }
 }
 
-#[derive(Clone)]
+/// Authentication tag produced or consumed by AEAD modes.
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Tag(pub Vec<u8>);
+
 impl Tag {
     pub fn new(tag: impl Into<Vec<u8>>) -> Self {
         Self(tag.into())
@@ -66,6 +69,10 @@ pub enum Padding {
     None,
 }
 
+/// Specification for AES encryption.
+///
+/// - `Ecb`/`Cbc` support optional PKCS#7 padding.
+/// - `Gcm` is an AEAD mode requiring an IV (nonce), optional AAD and a tag length.
 #[derive(Clone, uniffi::Enum)]
 pub enum AesCipherSpec {
     Ecb {
@@ -85,53 +92,53 @@ pub enum AesCipherSpec {
 impl AesCipherSpec {
     fn algorithm(&self, key_size: &ByteUnit) -> String {
         match self {
-            AesCipherSpec::Ecb { .. } => format!("aes-{}-ecb", key_size.bits()),
-            AesCipherSpec::Cbc { .. } => format!("aes-{}-cbc", key_size.bits()),
-            AesCipherSpec::Gcm { .. } => format!("aes-{}-gcm", key_size.bits()),
+            Self::Ecb { .. } => format!("aes-{}-ecb", key_size.bits()),
+            Self::Cbc { .. } => format!("aes-{}-cbc", key_size.bits()),
+            Self::Gcm { .. } => format!("aes-{}-gcm", key_size.bits()),
         }
     }
 
     fn iv_bytes(&self) -> Option<&[u8]> {
         match self {
-            AesCipherSpec::Ecb { .. } => None,
-            AesCipherSpec::Cbc { iv, .. } => Some(iv.as_ref()),
-            AesCipherSpec::Gcm { iv, .. } => Some(iv.as_ref()),
+            Self::Ecb { .. } => None,
+            Self::Cbc { iv, .. } | Self::Gcm { iv, .. } => Some(iv.as_ref()),
         }
     }
 
     fn aad_bytes(&self) -> Option<&[u8]> {
         match self {
-            AesCipherSpec::Ecb { .. } => None,
-            AesCipherSpec::Cbc { .. } => None,
-            AesCipherSpec::Gcm { aad, .. } => Some(aad.as_ref()),
+            Self::Ecb { .. } | Self::Cbc { .. } => None,
+            Self::Gcm { aad, .. } => Some(aad.as_ref()),
         }
     }
 
     fn auto_padding(&self) -> Option<bool> {
         match self {
-            AesCipherSpec::Ecb { padding, .. } => Some(*padding == Padding::Pkcs7),
-            AesCipherSpec::Cbc { padding, .. } => Some(*padding == Padding::Pkcs7),
-            AesCipherSpec::Gcm { .. } => None,
+            Self::Ecb { padding, .. } | Self::Cbc { padding, .. } => {
+                Some(*padding == Padding::Pkcs7)
+            }
+            Self::Gcm { .. } => None,
         }
     }
 
     fn tag_length(&self) -> Option<ByteUnit> {
         match self {
-            AesCipherSpec::Ecb { .. } => None,
-            AesCipherSpec::Cbc { .. } => None,
-            AesCipherSpec::Gcm { tag_length, .. } => Some(*tag_length),
+            Self::Ecb { .. } | Self::Cbc { .. } => None,
+            Self::Gcm { tag_length, .. } => Some(*tag_length),
         }
     }
 
+    /// Create an encryptor for the given key and spec.
     pub fn cipher(self, key: PrivateKey) -> CryptoResult<AesCipher> {
+        let algorithm = self.algorithm(&key.size());
         let mut cipher = ossl::cipher::AesCipher::create_encryptor(
-            &*self.algorithm(&key.size()),
+            &algorithm,
             key.as_ref(),
             self.iv_bytes().unwrap_or(&[]),
         )?;
 
-        if let Some(pad) = self.auto_padding() {
-            cipher.set_auto_padding(pad);
+        if let Some(padding_enabled) = self.auto_padding() {
+            cipher.set_auto_padding(padding_enabled);
         }
 
         if let Some(aad) = self.aad_bytes() {
@@ -139,7 +146,7 @@ impl AesCipherSpec {
         }
 
         Ok(AesCipher {
-            cipher: cipher,
+            cipher,
             spec: self,
             key,
         })
@@ -150,78 +157,74 @@ impl AesCipherSpec {
 // unsafe impl Send for ossl::cipher::AesCipher {}
 // unsafe impl Sync for ossl::cipher::AesCipher {}
 
+/// Streaming AES encryptor.
+///
+/// - Feed plaintext via `update` and finalize with `finalize`.
+/// - For GCM, retrieve the authentication tag via `Cipher::auth_tag()`.
 pub struct AesCipher {
     cipher: ossl::cipher::AesCipher,
     spec: AesCipherSpec,
     key: PrivateKey,
 }
 
+/// Specification for AES decryption.
 #[derive(Clone)]
 pub enum AesDecipherSpec {
-    Ecb {
-        padding: Padding,
-    },
-    Cbc {
-        iv: Iv,
-        padding: Padding,
-    },
-    Gcm {
-        iv: Iv,
-        aad: Aad,
-        auth_tag: Tag,
-    },
+    Ecb { padding: Padding },
+    Cbc { iv: Iv, padding: Padding },
+    Gcm { iv: Iv, aad: Aad, auth_tag: Tag },
 }
 
 impl AesDecipherSpec {
     fn algorithm(&self, key_size: &ByteUnit) -> String {
         match self {
-            AesDecipherSpec::Ecb { .. } => format!("aes-{}-ecb", key_size.bits()),
-            AesDecipherSpec::Cbc { .. } => format!("aes-{}-cbc", key_size.bits()),
-            AesDecipherSpec::Gcm { .. } => format!("aes-{}-gcm", key_size.bits()),
+            Self::Ecb { .. } => format!("aes-{}-ecb", key_size.bits()),
+            Self::Cbc { .. } => format!("aes-{}-cbc", key_size.bits()),
+            Self::Gcm { .. } => format!("aes-{}-gcm", key_size.bits()),
         }
     }
 
     fn iv_bytes(&self) -> Option<&[u8]> {
         match self {
-            AesDecipherSpec::Ecb { .. } => None,
-            AesDecipherSpec::Cbc { iv, .. } => Some(iv.as_ref()),
-            AesDecipherSpec::Gcm { iv, .. } => Some(iv.as_ref()),
+            Self::Ecb { .. } => None,
+            Self::Cbc { iv, .. } | Self::Gcm { iv, .. } => Some(iv.as_ref()),
         }
     }
 
     fn aad_bytes(&self) -> Option<&[u8]> {
         match self {
-            AesDecipherSpec::Ecb { .. } => None,
-            AesDecipherSpec::Cbc { .. } => None,
-            AesDecipherSpec::Gcm { aad, .. } => Some(aad.as_ref()),
+            Self::Ecb { .. } | Self::Cbc { .. } => None,
+            Self::Gcm { aad, .. } => Some(aad.as_ref()),
         }
     }
 
     fn auto_padding(&self) -> Option<bool> {
         match self {
-            AesDecipherSpec::Ecb { padding, .. } => Some(*padding == Padding::Pkcs7),
-            AesDecipherSpec::Cbc { padding, .. } => Some(*padding == Padding::Pkcs7),
-            AesDecipherSpec::Gcm { .. } => None,
+            Self::Ecb { padding, .. } | Self::Cbc { padding, .. } => {
+                Some(*padding == Padding::Pkcs7)
+            }
+            Self::Gcm { .. } => None,
         }
     }
 
     fn auth_tag(&self) -> Option<&Tag> {
         match self {
-            AesDecipherSpec::Ecb { .. } => None,
-            AesDecipherSpec::Cbc { .. } => None,
-            AesDecipherSpec::Gcm { auth_tag, .. } => Some(auth_tag),
+            Self::Ecb { .. } | Self::Cbc { .. } => None,
+            Self::Gcm { auth_tag, .. } => Some(auth_tag),
         }
     }
 
+    /// Create a decryptor for the given key and spec.
     pub fn cipher(self, key: PrivateKey) -> CryptoResult<AesDecipher> {
+        let algorithm = self.algorithm(&key.size());
         let mut cipher = ossl::cipher::AesCipher::create_decryptor(
-            &*self.algorithm(&key.size()),
+            &algorithm,
             key.as_ref(),
             self.iv_bytes().unwrap_or(&[]),
         )?;
 
-        if let Some(pad) = self.auto_padding() {
-            cipher.set_auto_padding(pad);
+        if let Some(padding_enabled) = self.auto_padding() {
+            cipher.set_auto_padding(padding_enabled);
         }
 
         if let Some(aad) = self.aad_bytes() {
@@ -233,13 +236,16 @@ impl AesDecipherSpec {
         }
 
         Ok(AesDecipher {
-            cipher: cipher,
+            cipher,
             spec: self,
             key,
         })
     }
 }
 
+/// Streaming AES decryptor.
+///
+/// Feed ciphertext via `update`, then call `finalize`.
 pub struct AesDecipher {
     cipher: ossl::cipher::AesCipher,
     spec: AesDecipherSpec,
@@ -256,32 +262,31 @@ pub trait Cipher {
 
 impl Cipher for AesCipher {
     fn update(&mut self, input: &[u8], output: &mut Vec<u8>) -> CryptoResult<usize> {
-        let len = self.cipher.update(input, output)?;
-        Ok(len)
+        self.cipher.update(input, output).map_err(Into::into)
     }
 
     fn finalize(&mut self, output: &mut Vec<u8>) -> CryptoResult<usize> {
-        let len = self.cipher.finalize(output)?;
-        Ok(len)
+        self.cipher.finalize(output).map_err(Into::into)
     }
 
     fn auth_tag(&self) -> CryptoResult<Option<Tag>> {
-        Ok(self
-            .spec
+        self.spec
             .tag_length()
-            .map(|tag_length| Tag::new(self.cipher.get_auth_tag(tag_length.bytes() as usize).unwrap())))
+            .map(|tag_length| {
+                let len = tag_length.bytes() as usize;
+                Ok(Tag::new(self.cipher.get_auth_tag(len)?))
+            })
+            .transpose()
     }
 }
 
 impl Cipher for AesDecipher {
     fn update(&mut self, input: &[u8], output: &mut Vec<u8>) -> CryptoResult<usize> {
-        let len = self.cipher.update(input, output)?;
-        Ok(len)
+        self.cipher.update(input, output).map_err(Into::into)
     }
 
     fn finalize(&mut self, output: &mut Vec<u8>) -> CryptoResult<usize> {
-        let len = self.cipher.finalize(output)?;
-        Ok(len)
+        self.cipher.finalize(output).map_err(Into::into)
     }
 
     fn auth_tag(&self) -> CryptoResult<Option<Tag>> {
@@ -314,8 +319,8 @@ mod tests {
         let mut cipher = AesCipherSpec::Ecb {
             padding: Padding::Pkcs7,
         }
-            .cipher(key())
-            .unwrap();
+        .cipher(key())
+        .unwrap();
 
         let mut ct = Vec::new();
         let l = cipher.update(b"Hello World", &mut ct).unwrap();
@@ -329,8 +334,8 @@ mod tests {
         let mut decipher = AesDecipherSpec::Ecb {
             padding: Padding::Pkcs7,
         }
-            .cipher(key())
-            .unwrap();
+        .cipher(key())
+        .unwrap();
 
         let mut pt = Vec::new();
         decipher.update(&hex_to_bytes(ECB_HEX), &mut pt).unwrap();
@@ -345,8 +350,8 @@ mod tests {
             iv: Iv::new(IV_16),
             padding: Padding::Pkcs7,
         }
-            .cipher(key())
-            .unwrap();
+        .cipher(key())
+        .unwrap();
 
         let mut ct = Vec::new();
         cipher.update(b"Hello World", &mut ct).unwrap();
@@ -361,8 +366,8 @@ mod tests {
             iv: Iv::new(IV_16),
             padding: Padding::Pkcs7,
         }
-            .cipher(key())
-            .unwrap();
+        .cipher(key())
+        .unwrap();
 
         let mut pt = Vec::new();
         decipher.update(&hex_to_bytes(CBC_HEX), &mut pt).unwrap();
@@ -378,8 +383,8 @@ mod tests {
             aad: Aad::default(),
             tag_length: 16.bytes(),
         }
-            .cipher(key())
-            .unwrap();
+        .cipher(key())
+        .unwrap();
 
         let mut ct = Vec::new();
         cipher.update(b"Hello World", &mut ct).unwrap();
@@ -397,8 +402,8 @@ mod tests {
             aad: Aad::default(),
             auth_tag: Tag::new(hex_to_bytes(GCM_TAG_HEX)),
         }
-            .cipher(key())
-            .unwrap();
+        .cipher(key())
+        .unwrap();
 
         let mut pt = Vec::new();
         decipher.update(&hex_to_bytes(GCM_CT_HEX), &mut pt).unwrap();
@@ -417,8 +422,8 @@ mod tests {
             aad: Aad::new(&b"AAD"[..]),
             tag_length: 16.bytes(),
         }
-            .cipher(key())
-            .unwrap();
+        .cipher(key())
+        .unwrap();
 
         let mut ct = Vec::new();
         enc.update(msg, &mut ct).unwrap();
@@ -431,8 +436,8 @@ mod tests {
             aad: Aad::new(&b"AAD"[..]),
             auth_tag: tag,
         }
-            .cipher(key())
-            .unwrap();
+        .cipher(key())
+        .unwrap();
 
         let mut pt = Vec::new();
         dec.update(&ct, &mut pt).unwrap();

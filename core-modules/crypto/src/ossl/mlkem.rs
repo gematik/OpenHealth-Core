@@ -1,10 +1,12 @@
+use std::ffi::CString;
+use std::ptr;
+
 use crate::ossl::api::{openssl_error, OsslResult};
+use crate::ossl::key::{PKey, PKeyCtx};
 use crate::ossl_check;
 use crypto_openssl_sys::*;
-use std::ptr;
-use std::ffi::CString;
-use crate::ossl::key::{PKey, PKeyCtx};
 
+/// Wrapper for ML-KEM encapsulation using OpenSSL EVP APIs.
 pub struct MlkemEncapsulation(PKey);
 
 impl MlkemEncapsulation {
@@ -28,7 +30,11 @@ impl MlkemEncapsulation {
     /// Returns a tuple of wrapped key and secret key.
     pub fn encapsulate(&self) -> OsslResult<(Vec<u8>, Vec<u8>)> {
         let raw = unsafe {
-            EVP_PKEY_CTX_new_from_pkey(std::ptr::null_mut(), self.0.as_mut_ptr(), std::ptr::null_mut())
+            EVP_PKEY_CTX_new_from_pkey(
+                std::ptr::null_mut(),
+                self.0.as_mut_ptr(),
+                std::ptr::null_mut(),
+            )
         };
         if raw.is_null() {
             return Err(openssl_error("Failed to create context from key"));
@@ -77,19 +83,15 @@ impl MlkemEncapsulation {
 }
 
 /// KEM decapsulator
+/// Wrapper for ML-KEM decapsulation using OpenSSL EVP APIs.
 pub struct MlkemDecapsulation(PKey);
 
 impl MlkemDecapsulation {
     /// Generate a new keypair
     pub fn create(algorithm: &str) -> OsslResult<Self> {
         let alg = CString::new(algorithm).unwrap();
-        let gen_ctx = unsafe {
-            EVP_PKEY_CTX_new_from_name(
-                ptr::null_mut(),
-                alg.as_ptr(),
-                ptr::null_mut(),
-            )
-        };
+        let gen_ctx =
+            unsafe { EVP_PKEY_CTX_new_from_name(ptr::null_mut(), alg.as_ptr(), ptr::null_mut()) };
         if gen_ctx.is_null() {
             return Err(openssl_error("Keygen context init failed"));
         }
@@ -132,11 +134,7 @@ impl MlkemDecapsulation {
     /// Recover shared secret from wrapped key
     pub fn decapsulate(&self, wrapped_key: &[u8]) -> OsslResult<Vec<u8>> {
         let raw = unsafe {
-            EVP_PKEY_CTX_new_from_pkey(
-                ptr::null_mut(),
-                self.0.as_mut_ptr(),
-                ptr::null_mut(),
-            )
+            EVP_PKEY_CTX_new_from_pkey(ptr::null_mut(), self.0.as_mut_ptr(), ptr::null_mut())
         };
         if raw.is_null() {
             return Err(openssl_error("Failed to create context from key"));

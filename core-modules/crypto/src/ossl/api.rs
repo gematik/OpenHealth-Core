@@ -1,7 +1,8 @@
-use crypto_openssl_sys::*;
 use std::error;
 use std::ffi::CStr;
 use std::{fmt, ptr};
+
+use crypto_openssl_sys::*;
 
 /// OpenSSL error type
 #[derive(Debug)]
@@ -29,7 +30,10 @@ pub fn openssl_error(msg: &str) -> OsslError {
     } else {
         None
     };
-    OsslError(format!("{msg}{}", err_str.map(|s| format!(": {s}")).unwrap_or_default()))
+    OsslError(format!(
+        "{msg}{}",
+        err_str.map(|s| format!(": {s}")).unwrap_or_default()
+    ))
 }
 
 /// Check return code equals 1, else error

@@ -5,9 +5,17 @@ pub fn content_constant_time_equals(a: &[u8], b: &[u8]) -> bool {
 
 /// Constant time equals for byte arrays.
 fn native_constant_time_equals(array_a: &[u8], array_b: &[u8]) -> bool {
-    unimplemented!()
-}
+    if array_a.len() != array_b.len() {
+        return false;
+    }
 
+    let mut diff = 0u8;
+    for (&lhs, &rhs) in array_a.iter().zip(array_b) {
+        diff |= lhs ^ rhs;
+    }
+
+    diff == 0
+}
 
 #[cfg(test)]
 mod tests {
