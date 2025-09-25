@@ -19,13 +19,16 @@
 # For additional notes and disclaimer from gematik and in case of changes by gematik,
 # find details in the "Readme" file.
 
-[package]
-name = "crypto-openssl-sys"
-version = "0.1.0"
-edition = "2024"
-build = "builder/main.rs"
+version = 1
 
-[build-dependencies]
-bindgen = "0.72.0"
-num_cpus = "1.17.0"
-cc = "1.2.38"
+[[annotations]]
+path = ["*"]
+SPDX-FileCopyrightText = "2025 gematik GmbH"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = [
+    "core-modules/crypto-openssl-sys/src/bindings.rs",
+]
+SPDX-FileCopyrightText = "NONE"
+SPDX-License-Identifier = "CC0-1.0"
