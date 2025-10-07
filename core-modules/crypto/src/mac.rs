@@ -20,7 +20,7 @@
 // find details in the "Readme" file.
 
 use crate::error::CryptoResult;
-use crate::key::key::PrivateKey;
+use crate::key::PrivateKey;
 use crate::ossl;
 use crate::utils::byte_unit::ByteUnit;
 
@@ -89,7 +89,7 @@ impl Mac {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::key::key::PrivateKey;
+    use crate::key::PrivateKey;
 
     // RFC 4493 / SP 800-38B test key
     const K128_HEX: &str = "2B 7E 15 16 28 AE D2 A6 AB F7 15 88 09 CF 4F 3C";
@@ -125,7 +125,7 @@ mod tests {
     }
 
     fn mac_aes128_tag(msg_hex: &str) -> Vec<u8> {
-        let key = PrivateKey::new(hex_to_bytes(K128_HEX));
+        let key = PrivateKey::new_secret(hex_to_bytes(K128_HEX));
         let spec = MacSpec::Cmac {
             algorithm: CmacAlgorithm::Aes,
         };

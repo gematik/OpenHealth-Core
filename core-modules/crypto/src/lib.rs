@@ -53,6 +53,7 @@ pub mod utils;
 
 #[cfg(feature = "uniffi")]
 pub mod ffi;
+mod ec;
 
 #[cfg(feature = "uniffi")]
 uniffi::setup_scaffolding!();

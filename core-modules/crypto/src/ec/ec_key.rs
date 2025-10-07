@@ -20,7 +20,7 @@
 // find details in the "Readme" file.
 
 use crate::error::{CryptoError, CryptoResult};
-use crate::key::ec_point::EcPoint;
+use crate::ec::ec_point::EcPoint;
 use num_bigint::BigInt;
 
 /// Supported elliptic curves.

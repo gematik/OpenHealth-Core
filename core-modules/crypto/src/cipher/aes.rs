@@ -19,7 +19,7 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use crate::key::key::PrivateKey;
+use crate::key::PrivateKey;
 use crate::ossl;
 use crate::utils::byte_unit::ByteUnit;
 
@@ -318,7 +318,7 @@ impl Cipher for AesDecipher {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::key::key::PrivateKey;
+    use crate::key::PrivateKey;
     use crate::utils::byte_unit::BytesExt;
     use crate::utils::test_utils::{hex_to_bytes, to_hex_string};
 
@@ -332,7 +332,7 @@ mod tests {
     const GCM_TAG_HEX: &str = "0F 98 50 42 1A DA DC FF 64 5F 7E 79 79 E2 E6 8A";
 
     fn key() -> PrivateKey {
-        PrivateKey::new(KEY_16)
+        PrivateKey::new_secret(KEY_16)
     }
 
     #[test]

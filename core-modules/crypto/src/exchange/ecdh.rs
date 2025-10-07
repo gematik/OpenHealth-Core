@@ -19,35 +19,16 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
+use zeroize::Zeroizing;
 use crate::error::CryptoResult;
-use crate::key::key::{PrivateKey, PublicKey};
-use crate::key::ec_key::EcCurve;
+use crate::ec::ec_key::EcCurve;
+use crate::key::{KeyMaterial, PrivateKey, PublicKey};
 use crate::ossl;
 
-/// Shared secret derived from ECDH operations.
-#[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
-pub struct SharedSecret(Vec<u8>);
+struct EcdhSecret;
+impl crate::key::Role for EcdhSecret {}
 
-impl SharedSecret {
-    /// Create a shared secret from raw bytes.
-    pub fn new(bytes: Vec<u8>) -> Self {
-        Self(bytes)
-    }
-}
-
-#[cfg_attr(feature = "uniffi", uniffi::export)]
-impl SharedSecret {
-    #[uniffi::constructor]
-    /// Construct a shared secret from bytes (UniFFI-friendly constructor).
-    pub fn from_bytes(bytes: Vec<u8>) -> Self {
-        Self(bytes)
-    }
-
-    /// Return the secret bytes.
-    pub fn as_bytes(&self) -> Vec<u8> {
-        self.0.clone()
-    }
-}
+pub type EcdhSharedSecret = KeyMaterial<EcdhSecret, Zeroizing<Vec<u8>>>;
 
 /// ECDH curves supported at the high level.
 #[derive(Clone, Debug)]
@@ -61,7 +42,7 @@ impl EcdhSpec {
         let keypair = ossl::ec::EcKeypair::generate(self.curve.name())?;
         let priv_der = keypair.private_key_der()?;
         let pub_der = keypair.public_key_der()?;
-        Ok((PrivateKey::new(priv_der), PublicKey::new(pub_der)))
+        Ok((PrivateKey::new_secret(priv_der), PublicKey::new(pub_der)))
     }
 }
 
@@ -82,9 +63,9 @@ impl Ecdh {
     }
 
     /// Derive the ECDH shared secret from the peer's public key (DER SPKI).
-    pub fn derive(&self, peer_public_key: PublicKey) -> CryptoResult<SharedSecret> {
+    pub fn derive(&self, peer_public_key: PublicKey) -> CryptoResult<EcdhSharedSecret> {
         let secret = self.ctx.compute_secret(peer_public_key.as_ref())?;
-        Ok(SharedSecret::new(secret))
+        Ok(EcdhSharedSecret::new_secret(secret))
     }
 }
 
@@ -99,8 +80,11 @@ mod tests {
         let a = Ecdh::new(a_priv).expect("ecdh a");
         let b = Ecdh::new(b_priv).expect("ecdh b");
 
-        let s_ab = a.derive(b_pub).expect("derive A with B").as_bytes();
-        let s_ba = b.derive(a_pub).expect("derive B with A").as_bytes();
+        let secret_ab = a.derive(b_pub).expect("derive A with B");
+        let secret_ba = b.derive(a_pub).expect("derive B with A");
+
+        let s_ab = secret_ab.as_bytes();
+        let s_ba = secret_ba.as_bytes();
 
         assert_eq!(s_ab, s_ba, "shared secret equality");
         assert!(s_ab.len() > 0);
@@ -108,16 +92,16 @@ mod tests {
 
     #[test]
     fn ecdh_roundtrip_bp256() {
-        roundtrip(EcdhSpec::BrainpoolP256r1);
+        roundtrip(EcdhSpec { curve: EcCurve::BrainpoolP256r1 });
     }
 
     #[test]
     fn ecdh_roundtrip_bp384() {
-        roundtrip(EcdhSpec::BrainpoolP384r1);
+        roundtrip(EcdhSpec { curve: EcCurve::BrainpoolP384r1 } );
     }
 
     #[test]
     fn ecdh_roundtrip_bp512() {
-        roundtrip(EcdhSpec::BrainpoolP512r1);
+        roundtrip(EcdhSpec { curve: EcCurve::BrainpoolP512r1 });
     }
 }
