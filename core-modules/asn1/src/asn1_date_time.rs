@@ -218,8 +218,6 @@ impl<'a> ParserScope<'a> {
     }
 }
 
-// --- WriterScope-Methoden ---
-
 impl WriterScope {
     /// Write ASN.1 `UTC_TIME`.
     pub fn write_utc_time(&mut self, value: &Asn1UtcTime) -> EncoderResult<()> {

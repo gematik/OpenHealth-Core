@@ -20,93 +20,90 @@
 // find details in the "Readme" file.
 
 /// ASN.1 type identifiers as defined in ITU-T X.680.
-#[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum UniversalTag {
-    Boolean            = 0x01,
-    Integer            = 0x02,
-    BitString          = 0x03,
-    OctetString        = 0x04,
-    Null               = 0x05,
-    ObjectIdentifier   = 0x06,
-    ObjectDescriptor   = 0x07,
-    External           = 0x08,
-    Real               = 0x09,
-    Enumerated         = 0x0A,
-    EmbeddedPdv        = 0x0B,
-    Utf8String         = 0x0C,
-    RelativeOid        = 0x0D,
-    Time               = 0x0E,
-    Sequence           = 0x10,
-    Set                = 0x11,
-    NumericString      = 0x12,
-    PrintableString    = 0x13,
-    TeletexString      = 0x14,
-    VideotexString     = 0x15,
-    Ia5String          = 0x16,
-    UtcTime            = 0x17,
-    GeneralizedTime    = 0x18,
-    GraphicString      = 0x19,
-    VisibleString      = 0x1A,
-    GeneralString      = 0x1B,
-    UniversalString    = 0x1C,
-    CharacterString    = 0x1D,
-    BmpString          = 0x1E,
-    Date               = 0x1F,
-    TimeOfDay          = 0x20,
-    DateTime           = 0x21,
-    Duration           = 0x22,
-    /// Any unknown/unsupported universal tag number
-    Unknown(u8),
+    Boolean,
+    Integer,
+    BitString,
+    OctetString,
+    Null,
+    ObjectIdentifier,
+    ObjectDescriptor,
+    External,
+    Real,
+    Enumerated,
+    EmbeddedPdv,
+    Utf8String,
+    RelativeOid,
+    Time,
+    Sequence,
+    Set,
+    NumericString,
+    PrintableString,
+    TeletexString,
+    VideotexString,
+    Ia5String,
+    UtcTime,
+    GeneralizedTime,
+    GraphicString,
+    VisibleString,
+    GeneralString,
+    UniversalString,
+    CharacterString,
+    BmpString,
+    Date,
+    TimeOfDay,
+    DateTime,
+    Duration,
+    Unknown(u32),
 }
 
-impl From<UniversalTag> for u8 {
+impl UniversalTag {
     #[inline]
-    fn from(t: UniversalTag) -> Self {
-        match t {
-            UniversalTag::Unknown(x) => x,
-            UniversalTag::Boolean => 0x01,
-            UniversalTag::Integer => 0x02,
-            UniversalTag::BitString => 0x03,
-            UniversalTag::OctetString => 0x04,
-            UniversalTag::Null => 0x05,
-            UniversalTag::ObjectIdentifier => 0x06,
-            UniversalTag::ObjectDescriptor => 0x07,
-            UniversalTag::External => 0x08,
-            UniversalTag::Real => 0x09,
-            UniversalTag::Enumerated => 0x0A,
-            UniversalTag::EmbeddedPdv => 0x0B,
-            UniversalTag::Utf8String => 0x0C,
-            UniversalTag::RelativeOid => 0x0D,
-            UniversalTag::Time => 0x0E,
-            UniversalTag::Sequence => 0x10,
-            UniversalTag::Set => 0x11,
-            UniversalTag::NumericString => 0x12,
-            UniversalTag::PrintableString => 0x13,
-            UniversalTag::TeletexString => 0x14,
-            UniversalTag::VideotexString => 0x15,
-            UniversalTag::Ia5String => 0x16,
-            UniversalTag::UtcTime => 0x17,
-            UniversalTag::GeneralizedTime => 0x18,
-            UniversalTag::GraphicString => 0x19,
-            UniversalTag::VisibleString => 0x1A,
-            UniversalTag::GeneralString => 0x1B,
-            UniversalTag::UniversalString => 0x1C,
-            UniversalTag::CharacterString => 0x1D,
-            UniversalTag::BmpString => 0x1E,
-            UniversalTag::Date => 0x1F,
-            UniversalTag::TimeOfDay => 0x20,
-            UniversalTag::DateTime => 0x21,
-            UniversalTag::Duration => 0x22,
+    pub const fn number(self) -> u32 {
+        use UniversalTag::*;
+        match self {
+            Boolean => 0x01,
+            Integer => 0x02,
+            BitString => 0x03,
+            OctetString => 0x04,
+            Null => 0x05,
+            ObjectIdentifier => 0x06,
+            ObjectDescriptor => 0x07,
+            External => 0x08,
+            Real => 0x09,
+            Enumerated => 0x0A,
+            EmbeddedPdv => 0x0B,
+            Utf8String => 0x0C,
+            RelativeOid => 0x0D,
+            Time => 0x0E,
+            Sequence => 0x10,
+            Set => 0x11,
+            NumericString => 0x12,
+            PrintableString => 0x13,
+            TeletexString => 0x14,
+            VideotexString => 0x15,
+            Ia5String => 0x16,
+            UtcTime => 0x17,
+            GeneralizedTime => 0x18,
+            GraphicString => 0x19,
+            VisibleString => 0x1A,
+            GeneralString => 0x1B,
+            UniversalString => 0x1C,
+            CharacterString => 0x1D,
+            BmpString => 0x1E,
+            Date => 0x1F,
+            TimeOfDay => 0x20,
+            DateTime => 0x21,
+            Duration => 0x22,
+            Unknown(n) => n,
         }
     }
-}
 
-impl From<u8> for UniversalTag {
     #[inline]
-    fn from(v: u8) -> Self {
+    pub const fn from_number(n: u32) -> Self {
         use UniversalTag::*;
-        match v {
+        match n {
             0x01 => Boolean,
             0x02 => Integer,
             0x03 => BitString,
@@ -145,64 +142,76 @@ impl From<u8> for UniversalTag {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct Asn1Id {
+    pub class: Asn1Class,
+    pub form: Asn1Form,
+    pub number: u32,
+}
 
-/// ASN.1 tag as defined in ITU-T X.680.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Asn1Tag {
-    pub tag_class: u8,
-    pub tag_number: u32,
+impl Asn1Id {
+    pub const fn new(class: Asn1Class, form: Asn1Form, number: u32) -> Self {
+        Self { class, form, number }
+    }
+
+    pub const fn uni(n: u32, form: Asn1Form) -> Self { Self::new(Asn1Class::Universal, form, n) }
+    pub const fn app(n: u32, form: Asn1Form) -> Self { Self::new(Asn1Class::Application, form, n) }
+    pub const fn ctx(n: u32, form: Asn1Form) -> Self { Self::new(Asn1Class::ContextSpecific, form, n) }
+    pub const fn prv(n: u32, form: Asn1Form) -> Self { Self::new(Asn1Class::Private, form, n) }
+
+    pub const fn primitive(mut self) -> Self { self.form = Asn1Form::Primitive; self }
+    pub const fn constructed(mut self) -> Self { self.form = Asn1Form::Constructed; self }
+
+    pub fn as_universal(&self) -> Option<UniversalTag> {
+        (self.class == Asn1Class::Universal).then(|| UniversalTag::from_number(self.number))
+    }
 }
 
 /// Primitive/Constructed bit (PC) in the identifier octet
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Asn1Form {
-    Primitive   = 0x00,
+    Primitive = 0x00,
     Constructed = 0x20,
 }
 
 impl From<Asn1Form> for u8 {
     #[inline]
-    fn from(pc: Asn1Form) -> u8 { pc as u8 }
+    fn from(pc: Asn1Form) -> u8 {
+        pc as u8
+    }
 }
 
 /// Tag class bits in the identifier octet
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Asn1Class {
-    Universal       = 0x00,
-    Application     = 0x40,
+    Universal = 0x00,
+    Application = 0x40,
     ContextSpecific = 0x80,
-    Private         = 0xC0,
+    Private = 0xC0,
 }
 
 impl From<Asn1Class> for u8 {
     #[inline]
-    fn from(c: Asn1Class) -> u8 { c as u8 }
+    fn from(c: Asn1Class) -> u8 {
+        c as u8
+    }
 }
 
 // Allow ergonomic `Class | Pc` combinations that yield the encoded class byte
 impl core::ops::BitOr<Asn1Form> for Asn1Class {
     type Output = u8;
     #[inline]
-    fn bitor(self, rhs: Asn1Form) -> Self::Output { (self as u8) | (rhs as u8) }
+    fn bitor(self, rhs: Asn1Form) -> Self::Output {
+        (self as u8) | (rhs as u8)
+    }
 }
 impl core::ops::BitOr<Asn1Class> for Asn1Form {
     type Output = u8;
     #[inline]
-    fn bitor(self, rhs: Asn1Class) -> Self::Output { (self as u8) | (rhs as u8) }
-}
-
-impl Asn1Tag {
-    pub const CONSTRUCTED: Asn1Form = Asn1Form::Constructed;
-    pub const APPLICATION: Asn1Class = Asn1Class::Application;
-    pub const CONTEXT_SPECIFIC: Asn1Class = Asn1Class::ContextSpecific;
-    pub const PRIVATE: Asn1Class = Asn1Class::Private;
-
-    #[inline]
-    pub const fn new(tag_class: u8, tag_number: u32) -> Self {
-        Asn1Tag { tag_class, tag_number }
+    fn bitor(self, rhs: Asn1Class) -> Self::Output {
+        (self as u8) | (rhs as u8)
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -237,7 +246,7 @@ mod tests {
             let e = UniversalTag::from(b);
             match e {
                 UniversalTag::Unknown(x) => assert_eq!(x, b),
-                _ => { }
+                _ => {}
             }
             let back: u8 = e.into();
             assert_eq!(back, b, "roundtrip must preserve the original byte");

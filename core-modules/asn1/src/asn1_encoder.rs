@@ -20,7 +20,7 @@
 // find details in the "Readme" file.
 
 
-use crate::asn1_tag::UniversalTag;
+use crate::asn1_tag::{Asn1Class, Asn1Form, Asn1Id, Asn1Tag, UniversalTag};
 
 /// Exception thrown by the ASN.1 encoder.
 #[derive(Debug)]
@@ -112,32 +112,28 @@ impl WriterScope {
     }
 
     /// Write the encoded tag directly, handling multi-byte encoding for large tags.
-    pub fn write_tag(&mut self, tag_number: u8, tag_class: u8) {
-        if tag_number < 0x1F {
-            // Single-byte tag
-            self.write_byte((tag_class | (tag_number as u8)) as u8);
+    fn write_tag(&mut self, number: u32, class: Asn1Class, form: Asn1Form) {
+        let first = (class as u8) | (form as u8);
+
+        if number < 31 {
+            // Short form - encoded in one byte
+            self.write_byte(first | (number as u8));
         } else {
-            // Multi-byte tag
-            self.write_byte(tag_class | 0x1F);
+            // Long form - first byte indicates extended tag number
+            self.write_byte(first | 0x1F);
 
-            // Collect encoded bytes in reverse order (base-128)
-            let mut encoded: Vec<u8> = Vec::new();
-            let mut value = tag_number;
-            loop {
-                encoded.push((value & 0x7F) as u8);
-                value >>= 7;
-                if value == 0 {
-                    break;
-                }
+            // Encode tag number in base-128, big-endian, MSB=1 except last
+            let mut buf = [0u8; 5]; // enough for 32-bit
+            let mut i = buf.len();
+            let mut n = number;
+            while n > 0 {
+                buf[i - 1] = (n as u8) & 0x7F;
+                n >>= 7;
+                i -= 1;
             }
-
-            // Write bytes in big endian order, set MSB for all but the last byte
-            for (i, b) in encoded.iter().rev().enumerate() {
-                if i < encoded.len() - 1 {
-                    self.write_byte(*b | 0x80);
-                } else {
-                    self.write_byte(*b);
-                }
+            for (j, b) in buf[i..].iter().enumerate() {
+                let last = j == (buf.len() - i - 1);
+                self.write_byte(if last { *b } else { *b | 0x80 });
             }
         }
     }
@@ -145,15 +141,11 @@ impl WriterScope {
     /// Write an ASN.1 tagged object.
     pub fn write_tagged_object(
         &mut self,
-        tag_number: impl Into<u8>,
-        tag_class: impl Into<u8>,
+        id: Asn1Id,
         block: impl FnOnce(&mut WriterScope) -> Result<()>,
     ) -> Result<()> {
-        let tag_number: u8 = tag_number.into();
-        let tag_class: u8 = tag_class.into();
-
         // tag
-        self.write_tag(tag_number, tag_class);
+        self.write_tag(id.number, id.class, id.form);
         // scope
         let mut scope = WriterScope::new();
         block(&mut scope)?;
