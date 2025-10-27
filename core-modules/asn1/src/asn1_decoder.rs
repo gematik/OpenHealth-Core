@@ -19,7 +19,7 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use crate::asn1_tag::{UniversalTag, Asn1Tag};
+use crate::asn1_tag::{Asn1Class, Asn1Form, Asn1Id, UniversalTag};
 #[derive(Debug)]
 pub struct Asn1DecoderError {
     pub message: String,
@@ -50,7 +50,6 @@ pub struct ParserScope<'a> {
 }
 
 impl<'a> ParserScope<'a> {
-
     #[inline]
     pub fn remaining_length(&self) -> usize {
         self.end_offset - self.offset
@@ -60,20 +59,24 @@ impl<'a> ParserScope<'a> {
     /// Returns an error if the tag does not match or if the closure returns an error.
     pub fn advance_with_tag<T>(
         &mut self,
-        tag_number: impl Into<u8>,
-        tag_class: impl Into<u8>,
+        expected: Asn1Id,
         mut block: impl FnMut(&mut ParserScope<'a>) -> Result<T>,
     ) -> Result<T> {
-        let tag_number: u8 = tag_number.into();
-        let tag_class: u8 = tag_class.into();
         let tag = self.read_tag()?;
-        if tag.tag_number != (tag_number as u32) || tag.tag_class != tag_class {
-            return Err(Asn1DecoderError::new(
+        if tag != expected {
+            let describe = |id: &Asn1Id| {
+                let class: u8 = id.class.into();
+                let form: u8 = id.form.into();
                 format!(
-                    "Expected tag `Asn1Tag(tagClass=0x{:X}, tagNumber=0x{:X})` but got `Asn1Tag(tagClass=0x{:X}, tagNumber=0x{:X})`",
-                    tag_class, tag_number, tag.tag_class, tag.tag_number
+                    "Asn1Id(class=0x{class:02X}, form=0x{form:02X}, number=0x{:X})",
+                    id.number
                 )
-            ));
+            };
+            return Err(Asn1DecoderError::new(format!(
+                "Expected tag `{}` but got `{}`",
+                describe(&expected),
+                describe(&tag)
+            )));
         }
         let length = self.read_length()?;
         let is_infinite = length == -1;
@@ -92,13 +95,17 @@ impl<'a> ParserScope<'a> {
         if !is_infinite {
             if self.end_offset != self.offset {
                 self.end_offset = original_end;
-                return Err(Asn1DecoderError::new("Unparsed bytes remaining".to_string()));
+                return Err(Asn1DecoderError::new(
+                    "Unparsed bytes remaining".to_string(),
+                ));
             }
         } else {
             let end = self.read_bytes(2)?;
             if end != [0x00, 0x00] {
                 self.end_offset = original_end;
-                return Err(Asn1DecoderError::new("Infinite length object must be finished with `0x00 0x00`".to_string()));
+                return Err(Asn1DecoderError::new(
+                    "Infinite length object must be finished with `0x00 0x00`".to_string(),
+                ));
             }
         }
 
@@ -110,7 +117,9 @@ impl<'a> ParserScope<'a> {
     #[inline]
     pub fn read_byte(&mut self) -> Result<u8> {
         if self.offset >= self.end_offset {
-            return Err(Asn1DecoderError::new("Unexpected end of data while reading byte".to_string()));
+            return Err(Asn1DecoderError::new(
+                "Unexpected end of data while reading byte".to_string(),
+            ));
         }
         let b = self.data[self.offset];
         self.offset += 1;
@@ -119,10 +128,13 @@ impl<'a> ParserScope<'a> {
 
     /// Read `length` bytes.
     pub fn read_bytes(&mut self, length: usize) -> Result<Vec<u8>> {
-        let end = self.offset.checked_add(length)
-            .ok_or_else(|| Asn1DecoderError::new("Integer overflow computing slice end".to_string()))?;
+        let end = self.offset.checked_add(length).ok_or_else(|| {
+            Asn1DecoderError::new("Integer overflow computing slice end".to_string())
+        })?;
         if end > self.end_offset {
-            return Err(Asn1DecoderError::new("Unexpected end of data while reading bytes".to_string()));
+            return Err(Asn1DecoderError::new(
+                "Unexpected end of data while reading bytes".to_string(),
+            ));
         }
         let data = &self.data[self.offset..end];
         self.offset = end;
@@ -130,23 +142,35 @@ impl<'a> ParserScope<'a> {
     }
 
     /// Reads the next tag from the data, handling multi-byte tags.
-    pub fn read_tag(&mut self) -> Result<Asn1Tag> {
-        let first = (self.read_byte()? as u32) & 0xFF;
-        let tag_class_and_constructed = (first & 0xE0) as u8; // Class + constructed
-        let tag_number_low = first & 0x1F;
-
-        if tag_number_low == 0x1F {
-            // High-tag-number form
-            let mut value: u32 = 0;
-            loop {
-                let next = (self.read_byte()? as u32) & 0xFF;
-                value = (value << 7) | (next & 0x7F);
-                if (next & 0x80) == 0 { break; }
-            }
-            Ok(Asn1Tag::new(tag_class_and_constructed, value))
+    pub fn read_tag(&mut self) -> Result<Asn1Id> {
+        let first = self.read_byte()?;
+        let class = match first & 0xC0 {
+            0x00 => Asn1Class::Universal,
+            0x40 => Asn1Class::Application,
+            0x80 => Asn1Class::ContextSpecific,
+            0xC0 => Asn1Class::Private,
+            _ => unreachable!(),
+        };
+        let form = if (first & 0x20) != 0 {
+            Asn1Form::Constructed
         } else {
-            Ok(Asn1Tag::new(tag_class_and_constructed, tag_number_low as u32))
+            Asn1Form::Primitive
+        };
+        let mut number = (first & 0x1F) as u32;
+
+        if number == 0x1F {
+            // High-tag-number form
+            number = 0;
+            loop {
+                let next = self.read_byte()?;
+                number = (number << 7) | ((next & 0x7F) as u32);
+                if (next & 0x80) == 0 {
+                    break;
+                }
+            }
         }
+
+        Ok(Asn1Id::new(class, form, number))
     }
 
     /// Read the length. Returns `-1` for infinite length.
@@ -167,22 +191,34 @@ impl<'a> ParserScope<'a> {
     /// Read `length` bytes as an integer.
     pub fn read_int(&mut self, length: usize, signed: bool) -> Result<i32> {
         if !(1..=4).contains(&length) {
-            return Err(Asn1DecoderError::new(format!("Length must be in range of [1, 4]. Is `{}`", length)));
+            return Err(Asn1DecoderError::new(format!(
+                "Length must be in range of [1, 4]. Is `{}`",
+                length
+            )));
         }
         let bytes = self.read_bytes(length)?;
         let mut result = bytes[0] as i32;
-        result = if signed && (result & 0x80) != 0 { result | -0x100 } else { result & 0xFF };
-        for i in 1..length { result = (result << 8) | ((bytes[i] as i32) & 0xFF); }
+        result = if signed && (result & 0x80) != 0 {
+            result | -0x100
+        } else {
+            result & 0xFF
+        };
+        for i in 1..length {
+            result = (result << 8) | ((bytes[i] as i32) & 0xFF);
+        }
         Ok(result)
     }
 
     /// Skip `length` bytes.
     #[inline]
     pub fn skip(&mut self, length: usize) -> Result<()> {
-        let end = self.offset.checked_add(length)
-            .ok_or_else(|| Asn1DecoderError::new("Integer overflow computing skip end".to_string()))?;
+        let end = self.offset.checked_add(length).ok_or_else(|| {
+            Asn1DecoderError::new("Integer overflow computing skip end".to_string())
+        })?;
         if end > self.end_offset {
-            return Err(Asn1DecoderError::new("Skip exceeds available data".to_string()));
+            return Err(Asn1DecoderError::new(
+                "Skip exceeds available data".to_string(),
+            ));
         }
         self.offset = end;
         Ok(())
@@ -191,7 +227,9 @@ impl<'a> ParserScope<'a> {
     /// Skip to the `end_offset`.
     pub fn skip_to_end(&mut self) -> Result<()> {
         if self.end_offset == usize::MAX {
-            return Err(Asn1DecoderError::new("Can't skip bytes inside infinite length object".to_string()));
+            return Err(Asn1DecoderError::new(
+                "Can't skip bytes inside infinite length object".to_string(),
+            ));
         }
         self.offset = self.end_offset;
         Ok(())
@@ -199,14 +237,14 @@ impl<'a> ParserScope<'a> {
 
     /// Read [Asn1Type.BOOLEAN].
     pub fn read_boolean(&mut self) -> Result<bool> {
-        self.advance_with_tag(UniversalTag::Boolean, 0x00, |s| {
+        self.advance_with_tag(UniversalTag::Boolean.primitive(), |s| {
             Ok(s.read_byte()? == 0xFF)
         })
     }
 
     /// Read [Asn1Type.INTEGER].
     pub fn read_int_tagged(&mut self) -> Result<i32> {
-        self.advance_with_tag(UniversalTag::Integer, 0x00, |s| {
+        self.advance_with_tag(UniversalTag::Integer.primitive(), |s| {
             let len = s.remaining_length();
             s.read_int(len, true)
         })
@@ -214,17 +252,22 @@ impl<'a> ParserScope<'a> {
 
     /// Read [Asn1Type.BIT_STRING].
     pub fn read_bit_string(&mut self) -> Result<Vec<u8>> {
-        self.advance_with_tag(UniversalTag::BitString, 0x00, |s| {
+        self.advance_with_tag(UniversalTag::BitString.primitive(), |s| {
             let unused_bits = s.read_byte()? as i32;
             if !(0..=7).contains(&unused_bits) {
-                return Err(Asn1DecoderError::new(format!("Invalid unused bit count: {}", unused_bits)));
+                return Err(Asn1DecoderError::new(format!(
+                    "Invalid unused bit count: {}",
+                    unused_bits
+                )));
             }
             let mut bit_string = s.read_bytes(s.remaining_length())?;
             if unused_bits == 0 {
                 Ok(bit_string)
             } else {
                 if bit_string.is_empty() {
-                    return Err(Asn1DecoderError::new("BIT STRING content is empty but indicates unused bits".to_string()));
+                    return Err(Asn1DecoderError::new(
+                        "BIT STRING content is empty but indicates unused bits".to_string(),
+                    ));
                 }
                 let last = bit_string[bit_string.len() - 1];
                 let mask = (((0xFFu16 << unused_bits) & 0xFF) as u8) & 0xFF;
@@ -237,7 +280,7 @@ impl<'a> ParserScope<'a> {
 
     /// Read [Asn1Type.UTF8_STRING].
     pub fn read_utf8_string(&mut self) -> Result<String> {
-        self.advance_with_tag(UniversalTag::Utf8String, 0x00, |s| {
+        self.advance_with_tag(UniversalTag::Utf8String.primitive(), |s| {
             let bytes = s.read_bytes(s.remaining_length())?;
             match String::from_utf8(bytes) {
                 Ok(v) => Ok(v),
@@ -248,7 +291,7 @@ impl<'a> ParserScope<'a> {
 
     /// Read [Asn1Type.VISIBLE_STRING].
     pub fn read_visible_string(&mut self) -> Result<String> {
-        self.advance_with_tag(UniversalTag::VisibleString, 0x00, |s| {
+        self.advance_with_tag(UniversalTag::VisibleString.primitive(), |s| {
             let bytes = s.read_bytes(s.remaining_length())?;
             match String::from_utf8(bytes) {
                 Ok(v) => Ok(v),
@@ -259,17 +302,19 @@ impl<'a> ParserScope<'a> {
 
     /// Read [Asn1Type.OCTET_STRING].
     pub fn read_octet_string(&mut self) -> Result<Vec<u8>> {
-        self.advance_with_tag(UniversalTag::OctetString, 0x00, |s| {
+        self.advance_with_tag(UniversalTag::OctetString.primitive(), |s| {
             s.read_bytes(s.remaining_length())
         })
     }
 
     /// Read [Asn1Type.OBJECT_IDENTIFIER].
     pub fn read_object_identifier(&mut self) -> Result<String> {
-        self.advance_with_tag(UniversalTag::ObjectIdentifier, 0x00, |s| {
+        self.advance_with_tag(UniversalTag::ObjectIdentifier.primitive(), |s| {
             let bytes = s.read_bytes(s.remaining_length())?;
             if bytes.is_empty() {
-                return Err(Asn1DecoderError::new("Encoded OID cannot be empty".to_string()));
+                return Err(Asn1DecoderError::new(
+                    "Encoded OID cannot be empty".to_string(),
+                ));
             }
 
             let first_byte = (bytes[0] as i32) & 0xFF;
@@ -291,10 +336,16 @@ impl<'a> ParserScope<'a> {
                 }
             }
             if value != 0 {
-                return Err(Asn1DecoderError::new("Invalid OID encoding: unfinished encoding".to_string()));
+                return Err(Asn1DecoderError::new(
+                    "Invalid OID encoding: unfinished encoding".to_string(),
+                ));
             }
 
-            Ok(parts.iter().map(|v| v.to_string()).collect::<Vec<_>>().join("."))
+            Ok(parts
+                .iter()
+                .map(|v| v.to_string())
+                .collect::<Vec<_>>()
+                .join("."))
         })
     }
 }
@@ -319,8 +370,8 @@ impl<'a> Asn1Decoder<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::asn1_tag::Asn1Tag;
-    use crate::asn1_date_time::{Asn1Offset};
+    use crate::asn1_date_time::Asn1Offset;
+    use crate::asn1_tag::UniversalTag;
 
     fn hex_bytes(s: &str) -> Vec<u8> {
         s.split_whitespace()
@@ -333,23 +384,24 @@ mod tests {
     fn advance_with_tag() {
         let data = hex_bytes("30 0A 04 03 66 6F 6F 04 03 62 61 72");
         let parser = Asn1Decoder::new(&data);
-        let result: Vec<String> = parser.read(|s| {
-            s.advance_with_tag(0x10, Asn1Tag::CONSTRUCTED, |s| {
-                let mut out = Vec::new();
-                s.advance_with_tag(0x04, 0x00, |s| {
-                    let v = String::from_utf8(s.read_bytes(3)?).unwrap();
-                    out.push(v);
-                    Ok(())
-                })?;
-                s.advance_with_tag(0x04, 0x00, |s| {
-                    let v = String::from_utf8(s.read_bytes(3)?).unwrap();
-                    out.push(v);
-                    Ok(())
-                })?;
-                Ok(out)
+        let result: Vec<String> = parser
+            .read(|s| {
+                s.advance_with_tag(UniversalTag::Sequence.constructed(), |s| {
+                    let mut out = Vec::new();
+                    s.advance_with_tag(UniversalTag::OctetString.primitive(), |s| {
+                        let v = String::from_utf8(s.read_bytes(3)?).unwrap();
+                        out.push(v);
+                        Ok(())
+                    })?;
+                    s.advance_with_tag(UniversalTag::OctetString.primitive(), |s| {
+                        let v = String::from_utf8(s.read_bytes(3)?).unwrap();
+                        out.push(v);
+                        Ok(())
+                    })?;
+                    Ok(out)
+                })
             })
-        })
-        .unwrap();
+            .unwrap();
         assert_eq!(result, vec!["foo".to_string(), "bar".to_string()]);
     }
 
@@ -357,23 +409,24 @@ mod tests {
     fn advance_with_tag_infinite_length() {
         let data = hex_bytes("30 80 04 03 66 6F 6F 04 03 62 61 72 00 00");
         let parser = Asn1Decoder::new(&data);
-        let result: Vec<String> = parser.read(|s| {
-            s.advance_with_tag(0x10, Asn1Tag::CONSTRUCTED, |s| {
-                let mut out = Vec::new();
-                s.advance_with_tag(0x04, 0x00, |s| {
-                    let v = String::from_utf8(s.read_bytes(3)?).unwrap();
-                    out.push(v);
-                    Ok(())
-                })?;
-                s.advance_with_tag(0x04, 0x00, |s| {
-                    let v = String::from_utf8(s.read_bytes(3)?).unwrap();
-                    out.push(v);
-                    Ok(())
-                })?;
-                Ok(out)
+        let result: Vec<String> = parser
+            .read(|s| {
+                s.advance_with_tag(UniversalTag::Sequence.constructed(), |s| {
+                    let mut out = Vec::new();
+                    s.advance_with_tag(UniversalTag::OctetString.primitive(), |s| {
+                        let v = String::from_utf8(s.read_bytes(3)?).unwrap();
+                        out.push(v);
+                        Ok(())
+                    })?;
+                    s.advance_with_tag(UniversalTag::OctetString.primitive(), |s| {
+                        let v = String::from_utf8(s.read_bytes(3)?).unwrap();
+                        out.push(v);
+                        Ok(())
+                    })?;
+                    Ok(out)
+                })
             })
-        })
-        .unwrap();
+            .unwrap();
         assert_eq!(result, vec!["foo".to_string(), "bar".to_string()]);
     }
 
@@ -382,8 +435,8 @@ mod tests {
         let data = hex_bytes("30 80 04 03 66 6F 6F 04 03 62 61 72 00 00");
         let parser = Asn1Decoder::new(&data);
         let res = parser.read(|s| {
-            s.advance_with_tag(0x30, 0x00, |s| {
-                s.advance_with_tag(0x04, 0x00, |s| {
+            s.advance_with_tag(UniversalTag::Sequence.constructed(), |s| {
+                s.advance_with_tag(UniversalTag::OctetString.primitive(), |s| {
                     let _ = s.read_bytes(3)?;
                     Ok(())
                 })?;
@@ -399,8 +452,8 @@ mod tests {
         let data = hex_bytes("30 80 04 03 66 6F 6F 04 03 62 61 72 00 00");
         let parser = Asn1Decoder::new(&data);
         let res = parser.read(|s| {
-            s.advance_with_tag(0x30, 0x00, |s| {
-                s.advance_with_tag(0x04, 0x00, |s| {
+            s.advance_with_tag(UniversalTag::Sequence.constructed(), |s| {
+                s.advance_with_tag(UniversalTag::OctetString.primitive(), |s| {
                     let _ = s.read_bytes(3)?;
                     Ok(())
                 })?;
@@ -495,15 +548,24 @@ mod tests {
     fn read_bit_string_in_structure() {
         let data = hex_bytes("30 0C 03 04 00 FF AA BB 03 04 01 CC DD 00");
         let parser = Asn1Decoder::new(&data);
-        let result: Vec<String> = parser.read(|s| {
-            s.advance_with_tag(0x10, Asn1Tag::CONSTRUCTED, |s| {
-                Ok(vec![
-                    s.read_bit_string()?.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(" "),
-                    s.read_bit_string()?.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(" "),
-                ])
+        let result: Vec<String> = parser
+            .read(|s| {
+                s.advance_with_tag(UniversalTag::Sequence.constructed(), |s| {
+                    Ok(vec![
+                        s.read_bit_string()?
+                            .iter()
+                            .map(|b| format!("{:02X}", b))
+                            .collect::<Vec<_>>()
+                            .join(" "),
+                        s.read_bit_string()?
+                            .iter()
+                            .map(|b| format!("{:02X}", b))
+                            .collect::<Vec<_>>()
+                            .join(" "),
+                    ])
+                })
             })
-        })
-        .unwrap();
+            .unwrap();
         assert_eq!(result, vec!["FF AA BB".to_string(), "CC DD 00".to_string()]);
     }
 
@@ -574,7 +636,7 @@ mod tests {
         assert_eq!(t.minute, 39);
         assert_eq!(t.second, Some(45));
         match t.offset {
-            Some(Asn1Offset::UtcOffset{hours, minutes}) => {
+            Some(Asn1Offset::UtcOffset { hours, minutes }) => {
                 assert_eq!(hours, -5);
                 assert_eq!(minutes, 0);
             }

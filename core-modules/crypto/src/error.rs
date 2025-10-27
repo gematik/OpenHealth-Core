@@ -37,6 +37,12 @@ pub enum CryptoError {
     /// Underlying native cryptographic failure with original message.
     #[error("native error: {0}")]
     Native(String),
+    /// ASN.1 encoding failed in dependent module.
+    #[error("asn1 encoding error: {0}")]
+    Asn1Encoding(String),
+    /// ASN.1 decoding failed in dependent module.
+    #[error("asn1 decoding error: {0}")]
+    Asn1Decoding(String),
 }
 
 impl From<OsslError> for CryptoError {

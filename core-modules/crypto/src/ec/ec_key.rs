@@ -23,6 +23,7 @@ use crate::error::{CryptoError, CryptoResult};
 use crate::ec::ec_point::EcPoint;
 use num_bigint::BigInt;
 use asn1::asn1_decoder::Asn1Decoder;
+use asn1::asn1_encoder::Asn1Encoder;
 use asn1::asn1_tag::UniversalTag;
 
 /// Supported elliptic curves.
@@ -191,9 +192,9 @@ impl EcPublicKey {
     pub fn encode_to_asn1(&self) -> CryptoResult<Vec<u8>> {
         Asn1Encoder::write(|scope| {
             // SEQUENCE (SubjectPublicKeyInfo)
-            scope.write_tagged_object(UniversalTag::Sequence, UniversalTag::Constructed, |scope| {
+            scope.write_tagged_object(UniversalTag::Sequence.constructed(), |scope| {
                 // SEQUENCE (AlgorithmIdentifier)
-                scope.write_tagged_object(UniversalTag::Sequence, UniversalTag::Constructed, |scope| {
+                scope.write_tagged_object(UniversalTag::Sequence.constructed(), |scope| {
                     // OID for id-ecPublicKey
                     scope.write_object_identifier(Self::OID)?;
                     // OID for the curve
@@ -218,7 +219,7 @@ impl EcPublicKey {
     pub fn decode_from_asn1(data: &[u8]) -> CryptoResult<Self> {
         Asn1Decoder::new(data).read(|scope| {
             // SEQUENCE (SubjectPublicKeyInfo)
-            scope.advance_with_tag(UniversalTag::Sequence, UniversalTag::Constructed, |scope| {
+            scope.advance_with_tag(UniversalTag::Sequence.constructed(), |scope| {
                 // Parse AlgorithmIdentifier to get the curve
                 let curve = read_ec_curve_from_algorithm_identifier(scope)?;
                 // Read the public key point as BIT STRING
@@ -255,12 +256,12 @@ impl EcPrivateKey {
     pub fn encode_to_asn1(&self) -> CryptoResult<Vec<u8>> {
         Asn1Encoder::write(|scope| {
             // SEQUENCE (PrivateKeyInfo)
-            scope.write_tagged_object(UniversalTag::Sequence, UniversalTag::Constructed, |scope| {
+            scope.write_tagged_object(UniversalTag::Sequence.constructed(), |scope| {
                 // version (INTEGER 0)
                 scope.write_asn1_int(0)?;
 
                 // SEQUENCE (AlgorithmIdentifier)
-                scope.write_tagged_object(UniversalTag::Sequence, UniversalTag::Constructed, |scope| {
+                scope.write_tagged_object(UniversalTag::Sequence.constructed(), |scope| {
                     // OID for id-ecPublicKey
                     scope.write_object_identifier(EcPublicKey::OID)?;
                     // OID for the curve
@@ -269,9 +270,9 @@ impl EcPrivateKey {
                 })?;
 
                 // privateKey (OCTET STRING containing ECPrivateKey)
-                scope.write_tagged_object(UniversalTag::OctetString, 0, |scope| {
+                scope.write_tagged_object(UniversalTag::OctetString.primitive(), |scope| {
                     // SEQUENCE (ECPrivateKey)
-                    scope.write_tagged_object(UniversalTag::Sequence, UniversalTag::Constructed, |scope| {
+                    scope.write_tagged_object(UniversalTag::Sequence.constructed(), |scope| {
                         // version (INTEGER 1)
                         scope.write_asn1_int(1)?;
                         // privateKey (OCTET STRING)
@@ -309,7 +310,7 @@ impl EcPrivateKey {
     pub fn decode_from_asn1(data: &[u8]) -> CryptoResult<Self> {
         Asn1Decoder::new(data).read(|scope| {
             // SEQUENCE (PrivateKeyInfo)
-            scope.advance_with_tag(UniversalTag::Sequence, UniversalTag::Constructed, |scope| {
+            scope.advance_with_tag(UniversalTag::Sequence.constructed(), |scope| {
                 // version
                 scope.read_int_tagged()?;
 
@@ -317,9 +318,9 @@ impl EcPrivateKey {
                 let curve = read_ec_curve_from_algorithm_identifier(scope)?;
 
                 // privateKey (OCTET STRING containing ECPrivateKey)
-                scope.advance_with_tag(UniversalTag::OctetString, 0, |scope| {
+                scope.advance_with_tag(UniversalTag::OctetString.primitive(), |scope| {
                     // SEQUENCE (ECPrivateKey)
-                    scope.advance_with_tag(UniversalTag::Sequence, UniversalTag::Constructed, |scope| {
+                    scope.advance_with_tag(UniversalTag::Sequence.constructed(), |scope| {
                         // version (must be 1)
                         let version = scope.read_int_tagged()?;
                         if version != 1 {
@@ -333,7 +334,7 @@ impl EcPrivateKey {
                         scope.skip_to_end()?;
 
                         Ok(EcPrivateKey {
-                            curve,
+                            curve: curve.clone(),
                             s: BigInt::from_bytes_be(num_bigint::Sign::Plus, &private_key),
                             data: private_key,
                         })
@@ -352,7 +353,7 @@ impl EcPrivateKey {
 ///   parameters  ANY DEFINED BY algorithm OPTIONAL
 /// }
 fn read_ec_curve_from_algorithm_identifier(scope: &mut asn1::asn1_decoder::ParserScope) -> Result<EcCurve, asn1::asn1_decoder::Asn1DecoderError> {
-    scope.advance_with_tag(UniversalTag::Sequence, UniversalTag::Constructed, |scope| {
+    scope.advance_with_tag(UniversalTag::Sequence.constructed(), |scope| {
         // Read algorithm OID (should be id-ecPublicKey)
         let oid = scope.read_object_identifier()?;
         if oid != EcPublicKey::OID {
@@ -375,4 +376,74 @@ fn read_ec_curve_from_algorithm_identifier(scope: &mut asn1::asn1_decoder::Parse
             )),
         }
     })
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn sample_pub(curve: EcCurve) -> Vec<u8> {
+        match curve {
+            EcCurve::BrainpoolP256r1 => hex::decode("04\
+                8BD2AEB9CB7E57CB2C4B482FFC81B7AFB9DE27E1E3BD23C23A4453BD9ACE3262\
+                547EF835C3DAC4FD97F8461A14611DC9C27745132DED8E545C1D54C72F046997").unwrap(),
+            EcCurve::BrainpoolP384r1 => hex::decode("04\
+                1D1C64F068CF45FFA2A63A81B7C13F6B8847A3E77EF14FE3DB7FCAFE0CBD10E8E826E03436D646AAEF87B2E247D4AF1E\
+                8ABE1D7520F9C2A45CB1EB8E95CFD55262B70B29FEEC5864E19C054FF99129280E4646217791811142820341263C5315").unwrap(),
+            EcCurve::BrainpoolP512r1 => hex::decode("04\
+                81AEE4BDD82ED9645A21322E9C4C6A9385ED9F70B5D916C1B43B62EEF4D0098EFF3B1F78E2D0D48D50D1687B93B97D5F7C6D5047406A5E688B352209BCB9F822\
+                7DDE385D566332ECC0EABFA9CF7822FDF209F70024A57B1AA000C55B881F8111B2DCDE494A5F485E5BCA4BD88A2763AED1CA2B2FA8F0540678CD1E0F3AD80892").unwrap(),
+        }
+    }
+
+    fn sample_priv_bytes(curve: EcCurve) -> Vec<u8> {
+        match curve {
+            EcCurve::BrainpoolP256r1 => vec![0x01; 32],
+            EcCurve::BrainpoolP384r1 => vec![0x02; 48],
+            EcCurve::BrainpoolP512r1 => vec![0x03; 64],
+        }
+    }
+
+    fn roundtrip_public(curve: EcCurve) {
+        let pk = EcPublicKey::from_uncompressed(curve.clone(), sample_pub(curve.clone())).unwrap();
+        let der = pk.encode_to_asn1().unwrap();
+        let decoded = EcPublicKey::decode_from_asn1(&der).unwrap();
+        assert_eq!(decoded.curve, curve);
+        assert_eq!(decoded.data, pk.data);
+        // also check converting to EcPoint is stable
+        assert_eq!(decoded.to_ec_point(), pk.to_ec_point());
+    }
+
+    fn roundtrip_private(curve: EcCurve) {
+        let sk_bytes = sample_priv_bytes(curve.clone());
+        let sk = EcPrivateKey {
+            curve: curve.clone(),
+            s: BigInt::from_bytes_be(num_bigint::Sign::Plus, &sk_bytes),
+            data: sk_bytes.clone(),
+        };
+        let der = sk.encode_to_asn1().unwrap();
+        let decoded = EcPrivateKey::decode_from_asn1(&der).unwrap();
+        assert_eq!(decoded.curve, curve);
+        assert_eq!(decoded.data, sk_bytes);
+        assert_eq!(decoded.s, sk.s);
+    }
+
+    #[test]
+    fn eckey_roundtrip_bp256() {
+        roundtrip_public(EcCurve::BrainpoolP256r1);
+        roundtrip_private(EcCurve::BrainpoolP256r1);
+    }
+
+    #[test]
+    fn eckey_roundtrip_bp384() {
+        roundtrip_public(EcCurve::BrainpoolP384r1);
+        roundtrip_private(EcCurve::BrainpoolP384r1);
+    }
+
+    #[test]
+    fn eckey_roundtrip_bp512() {
+        roundtrip_public(EcCurve::BrainpoolP512r1);
+        roundtrip_private(EcCurve::BrainpoolP512r1);
+    }
 }

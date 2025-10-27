@@ -19,8 +19,7 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-
-use crate::asn1_tag::{Asn1Class, Asn1Form, Asn1Id, Asn1Tag, UniversalTag};
+use crate::asn1_tag::{Asn1Class, Asn1Form, Asn1Id, UniversalTag};
 
 /// Exception thrown by the ASN.1 encoder.
 #[derive(Debug)]
@@ -52,7 +51,6 @@ impl WriterScope {
     pub fn buffer(&self) -> &[u8] {
         &self.buffer
     }
-
 
     /// Appends a byte to the buffer.
     #[inline]
@@ -156,20 +154,29 @@ impl WriterScope {
 
     /// Write an ASN.1 integer.
     pub fn write_asn1_int(&mut self, value: i32) -> Result<()> {
-        self.write_tagged_object(UniversalTag::Integer, 0x00, |s| { s.write_int(value); Ok(()) })
+        self.write_tagged_object(UniversalTag::Integer.primitive(), |s| {
+            s.write_int(value);
+            Ok(())
+        })
     }
 
     /// Write an ASN.1 boolean.
     pub fn write_asn1_boolean(&mut self, value: bool) -> Result<()> {
-        self.write_tagged_object(UniversalTag::Boolean, 0x00, |s| { s.write_byte(if value { 0xFF } else { 0x00 }); Ok(()) })
+        self.write_tagged_object(UniversalTag::Boolean.primitive(), |s| {
+            s.write_byte(if value { 0xFF } else { 0x00 });
+            Ok(())
+        })
     }
 
     /// Write an ASN.1 bit string.
     pub fn write_asn1_bit_string(&mut self, value: &[u8], unused_bits: u8) -> Result<()> {
         if !(0..=7).contains(&unused_bits) {
-            return Err(Asn1EncoderError::new(format!("Invalid unused bit count: {}", unused_bits)));
+            return Err(Asn1EncoderError::new(format!(
+                "Invalid unused bit count: {}",
+                unused_bits
+            )));
         }
-        self.write_tagged_object(UniversalTag::BitString, 0x00, |s| {
+        self.write_tagged_object(UniversalTag::BitString.primitive(), |s| {
             s.write_byte(unused_bits);
             s.write_bytes(value);
             Ok(())
@@ -178,44 +185,62 @@ impl WriterScope {
 
     /// Write an ASN.1 octet string.
     pub fn write_asn1_octet_string(&mut self, value: &[u8]) -> Result<()> {
-        self.write_tagged_object(UniversalTag::OctetString, 0x00, |s| { s.write_bytes(value); Ok(()) })
+        self.write_tagged_object(UniversalTag::OctetString.primitive(), |s| {
+            s.write_bytes(value);
+            Ok(())
+        })
     }
 
     /// Write an ASN.1 utf8 string.
     pub fn write_asn1_utf8_string(&mut self, value: &str) -> Result<()> {
-        self.write_tagged_object(UniversalTag::Utf8String, 0x00, |s| { s.write_bytes(value.as_bytes()); Ok(()) })
+        self.write_tagged_object(UniversalTag::Utf8String.primitive(), |s| {
+            s.write_bytes(value.as_bytes());
+            Ok(())
+        })
     }
 
     /// Write [Asn1Type.OBJECT_IDENTIFIER].
     pub fn write_object_identifier(&mut self, oid: &str) -> Result<()> {
-        self.write_tagged_object(UniversalTag::ObjectIdentifier, 0x00, |s| {
-            let parts: Vec<i32> = oid
-                .split('.')
-                .map(|p| p.parse::<i32>().map_err(|_| Asn1EncoderError::new(format!("Invalid OID part: {}", p))))
-                .collect::<std::result::Result<_, _>>()?;
+        self.write_tagged_object(
+            UniversalTag::ObjectIdentifier.primitive(),
+            |s| {
+                let parts: Vec<i32> = oid
+                    .split('.')
+                    .map(|p| {
+                        p.parse::<i32>()
+                            .map_err(|_| Asn1EncoderError::new(format!("Invalid OID part: {}", p)))
+                    })
+                    .collect::<std::result::Result<_, _>>()?;
 
-            if parts.len() < 2 {
-                return Err(Asn1EncoderError::new("OID must have at least two components".to_string()));
-            }
+                if parts.len() < 2 {
+                    return Err(Asn1EncoderError::new(
+                        "OID must have at least two components".to_string(),
+                    ));
+                }
 
-            let first = parts[0];
-            let second = parts[1];
+                let first = parts[0];
+                let second = parts[1];
 
-            if !(0..=2).contains(&first) {
-                return Err(Asn1EncoderError::new("OID first part must be 0, 1, or 2".to_string()));
-            }
-            if first < 2 && !(0..=39).contains(&second) {
-                return Err(Asn1EncoderError::new("OID second part must be 0-39 for first part 0 or 1".to_string()));
-            }
+                if !(0..=2).contains(&first) {
+                    return Err(Asn1EncoderError::new(
+                        "OID first part must be 0, 1, or 2".to_string(),
+                    ));
+                }
+                if first < 2 && !(0..=39).contains(&second) {
+                    return Err(Asn1EncoderError::new(
+                        "OID second part must be 0-39 for first part 0 or 1".to_string(),
+                    ));
+                }
 
-            let first_byte = first * 40 + second;
-            s.write_multi_byte(first_byte);
+                let first_byte = first * 40 + second;
+                s.write_multi_byte(first_byte);
 
-            for part in parts.iter().skip(2) {
-                s.write_multi_byte(*part);
-            }
-            Ok(())
-        })
+                for part in parts.iter().skip(2) {
+                    s.write_multi_byte(*part);
+                }
+                Ok(())
+            },
+        )
     }
 
     fn write_multi_byte(&mut self, mut integer: i32) {
@@ -268,7 +293,7 @@ impl Asn1Encoder {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::asn1_tag::Asn1Tag;
+    use crate::asn1_tag::TagNumberExt;
 
     fn hex(bytes: &[u8]) -> String {
         let mut out = String::new();
@@ -284,7 +309,7 @@ mod tests {
     #[test]
     fn write_multi_byte_tag_small_value() {
         let result = Asn1Encoder::write(|w| {
-            w.write_tagged_object(33, Asn1Tag::APPLICATION, |inner| {
+            w.write_tagged_object(33u8.app_tag(), |inner| {
                 inner.write_byte(0x05);
                 Ok(())
             })
@@ -296,7 +321,7 @@ mod tests {
     #[test]
     fn write_multi_byte_tag_larger_value() {
         let result = Asn1Encoder::write(|w| {
-            w.write_tagged_object(128, Asn1Tag::APPLICATION, |inner| {
+            w.write_tagged_object(128u32.app_tag(), |inner| {
                 inner.write_byte(0x05);
                 Ok(())
             })
@@ -308,7 +333,7 @@ mod tests {
     #[test]
     fn write_multi_byte_tag_max_single_byte() {
         let result = Asn1Encoder::write(|w| {
-            w.write_tagged_object(30, Asn1Tag::APPLICATION, |inner| {
+            w.write_tagged_object(30u8.app_tag(), |inner| {
                 inner.write_byte(0x05);
                 Ok(())
             })
@@ -401,7 +426,7 @@ mod tests {
     fn write_with_nested_tags() {
         let result = Asn1Encoder::write(|w| {
             // Universal constructed SEQUENCE (0x10 with constructed bit)
-            w.write_tagged_object(0x10, Asn1Tag::CONSTRUCTED, |inner| {
+            w.write_tagged_object(0x10u8.uni_tag().constructed(), |inner| {
                 inner.write_asn1_int(42)?;
                 inner.write_asn1_utf8_string("test")?;
                 Ok(())
