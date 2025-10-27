@@ -62,7 +62,7 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
         let cla = if command_chaining { CLA_COMMAND_CHAINING } else { CLA_NO_COMMAND_CHAINING };
 
         let data = Asn1Encoder::write(|w| {
-            w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.app_tag().constructed(), |_inner| Ok(()))?;
+            w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |_inner| Ok(()))?;
             Ok(())
         })?;
 
@@ -82,8 +82,8 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
 
         let data_to_write = data.to_vec();
         let encoded_data = Asn1Encoder::write(|w| {
-            w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.app_tag().constructed(), |inner| {
-                inner.write_tagged_object(tag_no.ctx_tag(), |innermost| {
+            w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |inner| {
+                inner.write_tagged_object(tag_no.context_tag(), |innermost| {
                     innermost.write_bytes(&data_to_write);
                     Ok(())
                 })?;

@@ -176,65 +176,65 @@ impl Asn1Id {
 
 /// Extension methods to build [`Asn1Id`] values directly from tag numbers.
 pub trait TagNumberExt {
-    fn uni_tag(self) -> Asn1Id;
-    fn app_tag(self) -> Asn1Id;
-    fn ctx_tag(self) -> Asn1Id;
-    fn prv_tag(self) -> Asn1Id;
+    fn universal_tag(self) -> Asn1Id;
+    fn application_tag(self) -> Asn1Id;
+    fn context_tag(self) -> Asn1Id;
+    fn private_tag(self) -> Asn1Id;
 }
 
 impl TagNumberExt for u8 {
     #[inline]
-    fn uni_tag(self) -> Asn1Id {
-        (self as u32).uni_tag()
+    fn universal_tag(self) -> Asn1Id {
+        (self as u32).universal_tag()
     }
     #[inline]
-    fn app_tag(self) -> Asn1Id {
-        (self as u32).app_tag()
+    fn application_tag(self) -> Asn1Id {
+        (self as u32).application_tag()
     }
     #[inline]
-    fn ctx_tag(self) -> Asn1Id {
-        (self as u32).ctx_tag()
+    fn context_tag(self) -> Asn1Id {
+        (self as u32).context_tag()
     }
     #[inline]
-    fn prv_tag(self) -> Asn1Id {
-        (self as u32).prv_tag()
+    fn private_tag(self) -> Asn1Id {
+        (self as u32).private_tag()
     }
 }
 
 impl TagNumberExt for u16 {
     #[inline]
-    fn uni_tag(self) -> Asn1Id {
-        (self as u32).uni_tag()
+    fn universal_tag(self) -> Asn1Id {
+        (self as u32).universal_tag()
     }
     #[inline]
-    fn app_tag(self) -> Asn1Id {
-        (self as u32).app_tag()
+    fn application_tag(self) -> Asn1Id {
+        (self as u32).application_tag()
     }
     #[inline]
-    fn ctx_tag(self) -> Asn1Id {
-        (self as u32).ctx_tag()
+    fn context_tag(self) -> Asn1Id {
+        (self as u32).context_tag()
     }
     #[inline]
-    fn prv_tag(self) -> Asn1Id {
-        (self as u32).prv_tag()
+    fn private_tag(self) -> Asn1Id {
+        (self as u32).private_tag()
     }
 }
 
 impl TagNumberExt for u32 {
     #[inline]
-    fn uni_tag(self) -> Asn1Id {
+    fn universal_tag(self) -> Asn1Id {
         Asn1Id::uni(self)
     }
     #[inline]
-    fn app_tag(self) -> Asn1Id {
+    fn application_tag(self) -> Asn1Id {
         Asn1Id::app(self)
     }
     #[inline]
-    fn ctx_tag(self) -> Asn1Id {
+    fn context_tag(self) -> Asn1Id {
         Asn1Id::ctx(self)
     }
     #[inline]
-    fn prv_tag(self) -> Asn1Id {
+    fn private_tag(self) -> Asn1Id {
         Asn1Id::prv(self)
     }
 }

@@ -294,7 +294,7 @@ mod tests {
     #[test]
     fn write_multi_byte_tag_small_value() {
         let result = Asn1Encoder::write(|w| {
-            w.write_tagged_object(33u8.app_tag(), |inner| {
+            w.write_tagged_object(33u8.application_tag(), |inner| {
                 inner.write_byte(0x05);
                 Ok(())
             })
@@ -306,7 +306,7 @@ mod tests {
     #[test]
     fn write_multi_byte_tag_larger_value() {
         let result = Asn1Encoder::write(|w| {
-            w.write_tagged_object(128u32.app_tag(), |inner| {
+            w.write_tagged_object(128u32.application_tag(), |inner| {
                 inner.write_byte(0x05);
                 Ok(())
             })
@@ -318,7 +318,7 @@ mod tests {
     #[test]
     fn write_multi_byte_tag_max_single_byte() {
         let result = Asn1Encoder::write(|w| {
-            w.write_tagged_object(30u8.app_tag(), |inner| {
+            w.write_tagged_object(30u8.application_tag(), |inner| {
                 inner.write_byte(0x05);
                 Ok(())
             })
@@ -411,7 +411,7 @@ mod tests {
     fn write_with_nested_tags() {
         let result = Asn1Encoder::write(|w| {
             // Universal constructed SEQUENCE (0x10 with constructed bit)
-            w.write_tagged_object(0x10u8.uni_tag().constructed(), |inner| {
+            w.write_tagged_object(0x10u8.universal_tag().constructed(), |inner| {
                 inner.write_asn1_int(42)?;
                 inner.write_asn1_utf8_string("test")?;
                 Ok(())

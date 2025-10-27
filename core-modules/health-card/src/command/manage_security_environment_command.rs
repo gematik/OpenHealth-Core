@@ -87,13 +87,13 @@ impl ManageSecurityEnvironmentCommand for HealthCardCommand {
     ) -> Result<HealthCardCommand> {
         let data = Asn1Encoder::write(|w| {
             // '80 I2OS(OctetLength(OID), 1) || OID
-            w.write_tagged_object(0u8.ctx_tag(), |inner| {
+            w.write_tagged_object(0u8.context_tag(), |inner| {
                 inner.write_bytes(oid);
                 Ok(())
             })?;
 
             // '83 01 || keyRef'
-            w.write_tagged_object(3u8.ctx_tag(), |inner| {
+            w.write_tagged_object(3u8.context_tag(), |inner| {
                 inner.write_byte(card_key.calculate_key_reference(df_specific));
                 Ok(())
             })?;
@@ -118,13 +118,13 @@ impl ManageSecurityEnvironmentCommand for HealthCardCommand {
     ) -> Result<HealthCardCommand> {
         let data = Asn1Encoder::write(|w| {
             // '8401 || keyRef'
-            w.write_tagged_object(UniversalTag::OctetString.number().ctx_tag(), |inner| {
+            w.write_tagged_object(UniversalTag::OctetString.number().context_tag(), |inner| {
                 inner.write_byte(key.calculate_key_reference(df_specific));
                 Ok(())
             })?;
 
             // '8001 || algId'
-            w.write_tagged_object(UniversalTag::External.number().ctx_tag(), |inner| {
+            w.write_tagged_object(UniversalTag::External.number().context_tag(), |inner| {
                 inner.write_byte(pso_algorithm.identifier());
                 Ok(())
             })?;
