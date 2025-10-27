@@ -52,7 +52,15 @@ Ensure all the following pre-requirements are done:
 
 ## Code Style
 
-TODO
+Formatting:
+```shell
+cargo +nightly fmt
+```
+
+Linting:
+```shell
+cargo clippy
+```
 
 ## Handling TODOs
 
@@ -66,7 +74,7 @@ This ensures proper tracking and management of open `TODOs`.
 
 Annotate all files with the following command:
 
-```bash
+```shell
 git ls-files -z -- ':(exclude)LICENSES/**' \
   | xargs -0 reuse annotate \
       --license Apache-2.0 \
