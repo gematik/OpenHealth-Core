@@ -19,6 +19,6 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-pub mod identifier;
-pub mod command;
 mod card;
+pub mod command;
+pub mod identifier;

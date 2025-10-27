@@ -53,17 +53,8 @@ impl MacSpec {
 impl MacSpec {
     /// Create a MAC instance with the given secret key.
     pub fn create(self, secret: PrivateKey) -> CryptoResult<Mac> {
-        let mac = ossl::mac::Mac::create(
-            secret.as_ref(),
-            "CMAC",
-            Some(self.cipher(&secret.size()).as_str()),
-            None,
-        )?;
-        Ok(Mac {
-            mac,
-            spec: self,
-            secret,
-        })
+        let mac = ossl::mac::Mac::create(secret.as_ref(), "CMAC", Some(self.cipher(&secret.size()).as_str()), None)?;
+        Ok(Mac { mac, spec: self, secret })
     }
 }
 
@@ -110,25 +101,16 @@ mod tests {
     const T_M64_HEX: &str = "51 F0 BE BF 7E 3B 9D 92 FC 49 74 17 79 36 3C FE";
 
     fn hex_to_bytes(s: &str) -> Vec<u8> {
-        s.split_whitespace()
-            .filter(|h| !h.is_empty())
-            .map(|h| u8::from_str_radix(h, 16).unwrap())
-            .collect()
+        s.split_whitespace().filter(|h| !h.is_empty()).map(|h| u8::from_str_radix(h, 16).unwrap()).collect()
     }
 
     fn to_hex(bytes: &[u8]) -> String {
-        bytes
-            .iter()
-            .map(|b| format!("{:02X}", b))
-            .collect::<Vec<_>>()
-            .join(" ")
+        bytes.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(" ")
     }
 
     fn mac_aes128_tag(msg_hex: &str) -> Vec<u8> {
         let key = PrivateKey::new_secret(hex_to_bytes(K128_HEX));
-        let spec = MacSpec::Cmac {
-            algorithm: CmacAlgorithm::Aes,
-        };
+        let spec = MacSpec::Cmac { algorithm: CmacAlgorithm::Aes };
         let mut mac = spec.create(key).unwrap();
 
         // NOTE: `Mac` currently wraps `ossl::mac::Mac` without passthrough methods.

@@ -42,25 +42,15 @@ fn build_openssl() {
 
     // Clean & prepare
     if src.exists() {
-        fs::remove_dir_all(&src)
-            .unwrap_or_else(|e| eprintln!("Warning: Failed to remove src dir: {}", e));
+        fs::remove_dir_all(&src).unwrap_or_else(|e| eprintln!("Warning: Failed to remove src dir: {}", e));
     }
     if install.exists() {
-        fs::remove_dir_all(&install)
-            .unwrap_or_else(|e| eprintln!("Warning: Failed to remove install dir: {}", e));
+        fs::remove_dir_all(&install).unwrap_or_else(|e| eprintln!("Warning: Failed to remove install dir: {}", e));
     }
     fs::create_dir_all(&install).unwrap();
 
     // Clone & checkout
-    run_command(
-        "git",
-        &[
-            "clone",
-            "https://github.com/openssl/openssl.git",
-            src.to_str().unwrap(),
-        ],
-        None,
-    );
+    run_command("git", &["clone", "https://github.com/openssl/openssl.git", src.to_str().unwrap()], None);
     run_command("git", &["checkout", OPENSSL_VERSION], Some(&src));
 
     // Configure
@@ -82,11 +72,7 @@ fn build_openssl() {
         "no-ui-console",
         "no-docs",
     ];
-    run_command(
-        &src.join("Configure").to_str().unwrap(),
-        &configure_args,
-        Some(&src),
-    );
+    run_command(&src.join("Configure").to_str().unwrap(), &configure_args, Some(&src));
 
     // Build & install
     let jobs = num_cpus::get().to_string();
@@ -94,10 +80,7 @@ fn build_openssl() {
     run_command("make", &["install"], Some(&src));
 
     // Tell Cargo where to find the built libs
-    println!(
-        "cargo:rustc-link-search=native={}",
-        install.join("lib").display()
-    );
+    println!("cargo:rustc-link-search=native={}", install.join("lib").display());
     println!("cargo:rustc-link-lib=static=crypto");
     println!("cargo:rustc-link-lib=static=ssl");
 }
@@ -119,17 +102,10 @@ fn run_command(prog: &str, args: &[&str], cwd: Option<&PathBuf>) {
         command.current_dir(dir);
     }
 
-    let status = command
-        .status()
-        .unwrap_or_else(|e| panic!("Failed to execute command '{}': {}", prog, e));
+    let status = command.status().unwrap_or_else(|e| panic!("Failed to execute command '{}': {}", prog, e));
 
     if !status.success() {
-        panic!(
-            "Command failed: {} {:?} (exit code: {:?})",
-            prog,
-            args,
-            status.code()
-        );
+        panic!("Command failed: {} {:?} (exit code: {:?})", prog, args, status.code());
     }
 }
 
@@ -140,11 +116,7 @@ fn build_openssl_bindings() {
     let openssl_dir = format!("openssl-{}", openssl_target);
 
     // Set up library linking
-    println!(
-        "cargo:rustc-link-search=native={}/{}/lib",
-        manifest_dir.display(),
-        openssl_dir
-    );
+    println!("cargo:rustc-link-search=native={}/{}/lib", manifest_dir.display(), openssl_dir);
     println!("cargo:rustc-link-lib=static=crypto");
     println!("cargo:rustc-link-lib=static=ssl");
 
@@ -174,9 +146,7 @@ fn build_openssl_bindings() {
         .expect("Unable to generate ossl");
 
     let bindings_path = format!("{}/src/ossl.rs", manifest_dir.display());
-    bindings
-        .write_to_file(&bindings_path)
-        .expect("Failed to write ossl to file");
+    bindings.write_to_file(&bindings_path).expect("Failed to write ossl to file");
 
     println!("cargo:rerun-if-changed=wrapper/rust_wrapper.h");
 

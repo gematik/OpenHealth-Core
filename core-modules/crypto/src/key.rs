@@ -1,6 +1,6 @@
 use crate::utils::byte_unit::{ByteUnit, BytesExt};
 use core::marker::PhantomData;
-use zeroize::{Zeroizing};
+use zeroize::Zeroizing;
 
 pub trait Role {}
 pub struct Private;
@@ -33,10 +33,7 @@ impl<R: Role, Z: AsRef<[u8]>> KeyMaterial<R, Z> {
 
 impl<R: Role> KeyMaterial<R, Vec<u8>> {
     pub fn new(bytes: impl Into<Vec<u8>>) -> Self {
-        KeyMaterial {
-            _role: PhantomData,
-            bytes: bytes.into(),
-        }
+        KeyMaterial { _role: PhantomData, bytes: bytes.into() }
     }
 
     pub fn to_vec(&self) -> Vec<u8> {
@@ -46,10 +43,7 @@ impl<R: Role> KeyMaterial<R, Vec<u8>> {
 
 impl<R: Role> KeyMaterial<R, Zeroizing<Vec<u8>>> {
     pub fn new_secret(bytes: impl Into<Vec<u8>>) -> Self {
-        KeyMaterial {
-            _role: PhantomData,
-            bytes: Zeroizing::new(bytes.into()),
-        }
+        KeyMaterial { _role: PhantomData, bytes: Zeroizing::new(bytes.into()) }
     }
 }
 

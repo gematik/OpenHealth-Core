@@ -19,11 +19,11 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use zeroize::Zeroizing;
-use crate::error::CryptoResult;
 use crate::ec::ec_key::EcCurve;
+use crate::error::CryptoResult;
 use crate::key::{KeyMaterial, PrivateKey, PublicKey};
 use crate::ossl;
+use zeroize::Zeroizing;
 
 struct EcdhSecret;
 impl crate::key::Role for EcdhSecret {}
@@ -33,7 +33,7 @@ pub type EcdhSharedSecret = KeyMaterial<EcdhSecret, Zeroizing<Vec<u8>>>;
 /// ECDH curves supported at the high level.
 #[derive(Clone, Debug)]
 pub struct EcdhSpec {
-    pub curve: EcCurve
+    pub curve: EcCurve,
 }
 
 impl EcdhSpec {
@@ -97,7 +97,7 @@ mod tests {
 
     #[test]
     fn ecdh_roundtrip_bp384() {
-        roundtrip(EcdhSpec { curve: EcCurve::BrainpoolP384r1 } );
+        roundtrip(EcdhSpec { curve: EcCurve::BrainpoolP384r1 });
     }
 
     #[test]

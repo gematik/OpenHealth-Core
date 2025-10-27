@@ -56,12 +56,7 @@ impl Mac {
     }
 
     /// Creates and initializes a MAC with the given key and cipher name.
-    pub fn create(
-        key: &[u8],
-        name: &str,
-        cipher: Option<&str>,
-        digest: Option<&str>,
-    ) -> OsslResult<Self> {
+    pub fn create(key: &[u8], name: &str, cipher: Option<&str>, digest: Option<&str>) -> OsslResult<Self> {
         let cm = Self::new(name)?;
 
         // Hold CStrings so their memory outlives EVP_MAC_init
@@ -74,39 +69,25 @@ impl Mac {
 
         if let Some(val_cipher) = &val_cipher {
             params.push(unsafe {
-                OSSL_PARAM_construct_utf8_string(
-                    name_cipher.as_ptr(),
-                    val_cipher.as_ptr() as *mut _,
-                    0,
-                )
+                OSSL_PARAM_construct_utf8_string(name_cipher.as_ptr(), val_cipher.as_ptr() as *mut _, 0)
             });
         }
 
         if let Some(val_digest) = &val_digest {
             params.push(unsafe {
-                OSSL_PARAM_construct_utf8_string(
-                    name_digest.as_ptr(),
-                    val_digest.as_ptr() as *mut _,
-                    0,
-                )
+                OSSL_PARAM_construct_utf8_string(name_digest.as_ptr(), val_digest.as_ptr() as *mut _, 0)
             });
         }
 
         params.push(unsafe { OSSL_PARAM_construct_end() });
 
-        ossl_check!(
-            unsafe { EVP_MAC_init(cm.ctx, key.as_ptr(), key.len(), params.as_ptr()) },
-            "EVP_MAC_init failed"
-        );
+        ossl_check!(unsafe { EVP_MAC_init(cm.ctx, key.as_ptr(), key.len(), params.as_ptr()) }, "EVP_MAC_init failed");
         Ok(cm)
     }
 
     /// Feeds more data into the MAC.
     pub fn update(&mut self, input: &[u8]) -> OsslResult<()> {
-        ossl_check!(
-            unsafe { EVP_MAC_update(self.ctx, input.as_ptr(), input.len()) },
-            "EVP_MAC_update failed"
-        );
+        ossl_check!(unsafe { EVP_MAC_update(self.ctx, input.as_ptr(), input.len()) }, "EVP_MAC_update failed");
         Ok(())
     }
 

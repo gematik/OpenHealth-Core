@@ -43,12 +43,7 @@ impl CardKey {
     /// # Panics
     /// Panics if the key ID is not in the range [2, 28].
     pub fn new(key_id: u8) -> Self {
-        assert!(
-            (MIN_KEY_ID..=MAX_KEY_ID).contains(&key_id),
-            "Key ID out of range [{},{}]",
-            MIN_KEY_ID,
-            MAX_KEY_ID
-        );
+        assert!((MIN_KEY_ID..=MAX_KEY_ID).contains(&key_id), "Key ID out of range [{},{}]", MIN_KEY_ID, MAX_KEY_ID);
         Self { key_id }
     }
 
@@ -106,9 +101,6 @@ mod tests {
         assert_eq!(card_key.calculate_key_reference(false), 15);
 
         // Test with df_specific = true
-        assert_eq!(
-            card_key.calculate_key_reference(true),
-            15 + CardKey::DF_SPECIFIC_PWD_MARKER
-        );
+        assert_eq!(card_key.calculate_key_reference(true), 15 + CardKey::DF_SPECIFIC_PWD_MARKER);
     }
 }

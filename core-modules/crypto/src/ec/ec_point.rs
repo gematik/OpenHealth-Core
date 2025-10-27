@@ -19,8 +19,8 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use crate::error::{CryptoError, CryptoResult};
 use crate::ec::ec_key::{EcCurve, EcPublicKey};
+use crate::error::{CryptoError, CryptoResult};
 use num_bigint::BigInt;
 
 /// Elliptic curve point representation.
@@ -31,11 +31,7 @@ use num_bigint::BigInt;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum EcPoint {
     /// A finite point with affine coordinates on the given curve.
-    Finite {
-        curve: EcCurve,
-        x: BigInt,
-        y: BigInt,
-    },
+    Finite { curve: EcCurve, x: BigInt, y: BigInt },
     /// The point at infinity on the given curve.
     Infinity { curve: EcCurve },
 }
@@ -101,9 +97,7 @@ impl EcPoint {
     /// - InvalidEcPoint if any coordinate exceeds the curve's coordinate size.
     pub fn uncompressed(&self) -> CryptoResult<Vec<u8>> {
         match self {
-            EcPoint::Infinity { .. } => Err(CryptoError::InvalidEcPoint(
-                "cannot encode point at infinity".to_string(),
-            )),
+            EcPoint::Infinity { .. } => Err(CryptoError::InvalidEcPoint("cannot encode point at infinity".to_string())),
             EcPoint::Finite { x, y, .. } => {
                 let coordinate_size = match self.curve() {
                     EcCurve::BrainpoolP256r1 => 32,
@@ -185,9 +179,7 @@ impl EcPoint {
             (_, EcPoint::Infinity { .. }) => Ok(self.clone()),
             (EcPoint::Finite { curve: ca, .. }, EcPoint::Finite { curve: cb, .. }) => {
                 if ca != cb {
-                    return Err(CryptoError::InvalidEcPoint(
-                        "points are on different curves".to_string(),
-                    ));
+                    return Err(CryptoError::InvalidEcPoint("points are on different curves".to_string()));
                 }
                 let pa = crate::ossl::ec::EcPoint::from_public(ca.name(), &self.uncompressed()?)?;
                 let pb = crate::ossl::ec::EcPoint::from_public(cb.name(), &other.uncompressed()?)?;

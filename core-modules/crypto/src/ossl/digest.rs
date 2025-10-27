@@ -43,10 +43,7 @@ impl Digest {
     pub fn create(algorithm: &str) -> OsslResult<Self> {
         let cname = CString::new(algorithm).unwrap();
         let md = unsafe { EVP_MD_fetch(ptr::null_mut(), cname.as_ptr(), ptr::null_mut()) };
-        ossl_require!(
-            !md.is_null(),
-            &format!("Invalid hash algorithm: {algorithm}")
-        );
+        ossl_require!(!md.is_null(), &format!("Invalid hash algorithm: {algorithm}"));
         let ctx = unsafe { EVP_MD_CTX_new() };
         if ctx.is_null() {
             unsafe { EVP_MD_free(md) };
@@ -84,10 +81,7 @@ impl Digest {
 
         let mut len = unsafe { EVP_MD_get_size(md) } as u32;
         let mut out = vec![0u8; len as usize];
-        ossl_check!(
-            unsafe { EVP_DigestFinal_ex(self.ctx, out.as_mut_ptr(), &mut len) },
-            "Failed to finalize digest"
-        );
+        ossl_check!(unsafe { EVP_DigestFinal_ex(self.ctx, out.as_mut_ptr(), &mut len) }, "Failed to finalize digest");
         out.truncate(len as usize);
         Ok(out)
     }

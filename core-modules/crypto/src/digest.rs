@@ -58,9 +58,7 @@ impl DigestSpec {
 
     fn xof_output_len(&self) -> Option<usize> {
         match self {
-            Self::Shake128 { output_length } | Self::Shake256 { output_length } => {
-                Some(output_length.bytes() as usize)
-            }
+            Self::Shake128 { output_length } | Self::Shake256 { output_length } => Some(output_length.bytes() as usize),
             _ => None,
         }
     }
@@ -111,7 +109,8 @@ mod tests {
     #[test]
     fn sha256_abc() {
         // NIST FIPS 180-4
-        let expected = "BA 78 16 BF 8F 01 CF EA 41 41 40 DE 5D AE 22 23 B0 03 61 A3 96 17 7A 9C B4 10 FF 61 F2 00 15 AD";
+        let expected =
+            "BA 78 16 BF 8F 01 CF EA 41 41 40 DE 5D AE 22 23 B0 03 61 A3 96 17 7A 9C B4 10 FF 61 F2 00 15 AD";
         let got = digest_hex(DigestSpec::Sha256, b"abc");
         assert_eq!(got, expected);
     }
@@ -135,7 +134,8 @@ mod tests {
     #[test]
     fn sha3_256_abc() {
         // NIST FIPS 202
-        let expected = "3A 98 5D A7 4F E2 25 B2 04 5C 17 2D 6B D3 90 BD 85 5F 08 6E 3E 9D 52 5B 46 BF E2 45 11 43 15 32";
+        let expected =
+            "3A 98 5D A7 4F E2 25 B2 04 5C 17 2D 6B D3 90 BD 85 5F 08 6E 3E 9D 52 5B 46 BF E2 45 11 43 15 32";
         let got = digest_hex(DigestSpec::Sha3_256, b"abc");
         assert_eq!(got, expected);
     }
@@ -159,10 +159,9 @@ mod tests {
     #[test]
     fn shake128_empty_32_bytes() {
         // NIST FIPS 202 - SHAKE128("", 256 bits) -> 32 bytes
-        let expected = "7F 9C 2B A4 E8 8F 82 7D 61 60 45 50 76 05 85 3E D7 3B 80 93 F6 EF BC 88 EB 1A 6E AC FA 66 EF 26";
-        let spec = DigestSpec::Shake128 {
-            output_length: 32.bytes(),
-        };
+        let expected =
+            "7F 9C 2B A4 E8 8F 82 7D 61 60 45 50 76 05 85 3E D7 3B 80 93 F6 EF BC 88 EB 1A 6E AC FA 66 EF 26";
+        let spec = DigestSpec::Shake128 { output_length: 32.bytes() };
         let got = digest_hex(spec, b"");
         assert_eq!(got, expected);
     }
@@ -171,9 +170,7 @@ mod tests {
     fn shake256_empty_64_bytes() {
         // NIST FIPS 202 - SHAKE256("", 512 bits) -> 64 bytes
         let expected = "46 B9 DD 2B 0B A8 8D 13 23 3B 3F EB 74 3E EB 24 3F CD 52 EA 62 B8 1B 82 B5 0C 27 64 6E D5 76 2F D7 5D C4 DD D8 C0 F2 00 CB 05 01 9D 67 B5 92 F6 FC 82 1C 49 47 9A B4 86 40 29 2E AC B3 B7 C4 BE";
-        let spec = DigestSpec::Shake256 {
-            output_length: 64.bytes(),
-        };
+        let spec = DigestSpec::Shake256 { output_length: 64.bytes() };
         let got = digest_hex(spec, b"");
         assert_eq!(got, expected);
     }

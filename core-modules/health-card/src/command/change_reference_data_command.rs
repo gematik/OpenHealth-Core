@@ -93,12 +93,7 @@ mod tests {
         let old_secret = EncryptedPinFormat2 { bytes: old_pin_data.clone() };
         let new_secret = EncryptedPinFormat2 { bytes: new_pin_data.clone() };
 
-        let command = HealthCardCommand::change_reference_data(
-            &password_reference,
-            false,
-            &old_secret,
-            &new_secret
-        );
+        let command = HealthCardCommand::change_reference_data(&password_reference, false, &old_secret, &new_secret);
 
         assert_eq!(command.cla, CLA);
         assert_eq!(command.ins, INS);
@@ -112,12 +107,7 @@ mod tests {
         assert_eq!(command.data, Some(expected_data));
         assert_eq!(command.ne, None);
 
-        let command = HealthCardCommand::change_reference_data(
-            &password_reference,
-            true,
-            &old_secret,
-            &new_secret
-        );
+        let command = HealthCardCommand::change_reference_data(&password_reference, true, &old_secret, &new_secret);
 
         assert_eq!(command.p2, password_reference.calculate_key_reference(true));
     }

@@ -43,18 +43,11 @@ pub fn openssl_error(msg: &str) -> OsslError {
     let err_code = unsafe { ERR_get_error() };
     // Get human-readable string
     let err_str = if err_code != 0 {
-        Some(unsafe {
-            CStr::from_ptr(ERR_error_string(err_code, ptr::null_mut()))
-                .to_string_lossy()
-                .into_owned()
-        })
+        Some(unsafe { CStr::from_ptr(ERR_error_string(err_code, ptr::null_mut())).to_string_lossy().into_owned() })
     } else {
         None
     };
-    OsslError(format!(
-        "{msg}{}",
-        err_str.map(|s| format!(": {s}")).unwrap_or_default()
-    ))
+    OsslError(format!("{msg}{}", err_str.map(|s| format!(": {s}")).unwrap_or_default()))
 }
 
 /// Check return code equals 1, else error

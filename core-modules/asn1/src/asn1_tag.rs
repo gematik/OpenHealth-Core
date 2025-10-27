@@ -140,11 +140,7 @@ pub struct Asn1Id {
 
 impl Asn1Id {
     pub const fn new(class: Asn1Class, form: Asn1Form, number: u32) -> Self {
-        Self {
-            class,
-            form,
-            number,
-        }
+        Self { class, form, number }
     }
 
     pub const fn uni(n: u32) -> Self {

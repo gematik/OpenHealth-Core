@@ -54,26 +54,15 @@ pub trait GeneralAuthenticateCommand {
     /// * `command_chaining` - true for command chaining false if not
     /// * `data` - byte vector with data
     /// * `tag_no` - tag number for the ASN.1 encoding
-    fn general_authenticate_with_data(
-        command_chaining: bool,
-        data: &[u8],
-        tag_no: u8,
-    ) -> Result<HealthCardCommand>;
+    fn general_authenticate_with_data(command_chaining: bool, data: &[u8], tag_no: u8) -> Result<HealthCardCommand>;
 }
 
 impl GeneralAuthenticateCommand for HealthCardCommand {
     fn general_authenticate(command_chaining: bool) -> Result<HealthCardCommand> {
-        let cla = if command_chaining {
-            CLA_COMMAND_CHAINING
-        } else {
-            CLA_NO_COMMAND_CHAINING
-        };
+        let cla = if command_chaining { CLA_COMMAND_CHAINING } else { CLA_NO_COMMAND_CHAINING };
 
         let data = Asn1Encoder::write(|w| {
-            w.write_tagged_object(
-                GENERAL_AUTHENTICATE_TAG.app_tag().constructed(),
-                |_inner| Ok(())
-            )?;
+            w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.app_tag().constructed(), |_inner| Ok(()))?;
             Ok(())
         })?;
 
@@ -88,32 +77,18 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
         })
     }
 
-    fn general_authenticate_with_data(
-        command_chaining: bool,
-        data: &[u8],
-        tag_no: u8,
-    ) -> Result<HealthCardCommand> {
-        let cla = if command_chaining {
-            CLA_COMMAND_CHAINING
-        } else {
-            CLA_NO_COMMAND_CHAINING
-        };
+    fn general_authenticate_with_data(command_chaining: bool, data: &[u8], tag_no: u8) -> Result<HealthCardCommand> {
+        let cla = if command_chaining { CLA_COMMAND_CHAINING } else { CLA_NO_COMMAND_CHAINING };
 
         let data_to_write = data.to_vec();
         let encoded_data = Asn1Encoder::write(|w| {
-            w.write_tagged_object(
-                GENERAL_AUTHENTICATE_TAG.app_tag().constructed(),
-                |inner| {
-                    inner.write_tagged_object(
-                        tag_no.ctx_tag(),
-                        |innermost| {
-                            innermost.write_bytes(&data_to_write);
-                            Ok(())
-                        }
-                    )?;
+            w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.app_tag().constructed(), |inner| {
+                inner.write_tagged_object(tag_no.ctx_tag(), |innermost| {
+                    innermost.write_bytes(&data_to_write);
                     Ok(())
-                }
-            )?;
+                })?;
+                Ok(())
+            })?;
             Ok(())
         })?;
 
@@ -226,7 +201,7 @@ mod tests {
             command.p1,
             command.p2,
             command.data.clone(),
-            command.ne
+            command.ne,
         );
 
         assert!(apdu_result.is_ok());
@@ -260,14 +235,13 @@ mod tests {
         assert_eq!(&data[6..(6 + 128)], &large_data[..]);
         assert_eq!(data.len(), 134);
     }
-
 }
 
-    #[test]
-    fn smoke_encoder_invalid_oid_returns_err() {
-        let res = Asn1Encoder::write(|w| {
-            w.write_object_identifier("3.1.2")?; // invalid first arc
-            Ok(())
-        });
-        assert!(res.is_err());
-    }
+#[test]
+fn smoke_encoder_invalid_oid_returns_err() {
+    let res = Asn1Encoder::write(|w| {
+        w.write_object_identifier("3.1.2")?; // invalid first arc
+        Ok(())
+    });
+    assert!(res.is_err());
+}

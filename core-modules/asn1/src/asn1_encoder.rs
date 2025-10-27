@@ -171,10 +171,7 @@ impl WriterScope {
     /// Write an ASN.1 bit string.
     pub fn write_asn1_bit_string(&mut self, value: &[u8], unused_bits: u8) -> Result<()> {
         if !(0..=7).contains(&unused_bits) {
-            return Err(Asn1EncoderError::new(format!(
-                "Invalid unused bit count: {}",
-                unused_bits
-            )));
+            return Err(Asn1EncoderError::new(format!("Invalid unused bit count: {}", unused_bits)));
         }
         self.write_tagged_object(UniversalTag::BitString.primitive(), |s| {
             s.write_byte(unused_bits);
@@ -201,46 +198,34 @@ impl WriterScope {
 
     /// Write [Asn1Type.OBJECT_IDENTIFIER].
     pub fn write_object_identifier(&mut self, oid: &str) -> Result<()> {
-        self.write_tagged_object(
-            UniversalTag::ObjectIdentifier.primitive(),
-            |s| {
-                let parts: Vec<i32> = oid
-                    .split('.')
-                    .map(|p| {
-                        p.parse::<i32>()
-                            .map_err(|_| Asn1EncoderError::new(format!("Invalid OID part: {}", p)))
-                    })
-                    .collect::<std::result::Result<_, _>>()?;
+        self.write_tagged_object(UniversalTag::ObjectIdentifier.primitive(), |s| {
+            let parts: Vec<i32> = oid
+                .split('.')
+                .map(|p| p.parse::<i32>().map_err(|_| Asn1EncoderError::new(format!("Invalid OID part: {}", p))))
+                .collect::<std::result::Result<_, _>>()?;
 
-                if parts.len() < 2 {
-                    return Err(Asn1EncoderError::new(
-                        "OID must have at least two components".to_string(),
-                    ));
-                }
+            if parts.len() < 2 {
+                return Err(Asn1EncoderError::new("OID must have at least two components".to_string()));
+            }
 
-                let first = parts[0];
-                let second = parts[1];
+            let first = parts[0];
+            let second = parts[1];
 
-                if !(0..=2).contains(&first) {
-                    return Err(Asn1EncoderError::new(
-                        "OID first part must be 0, 1, or 2".to_string(),
-                    ));
-                }
-                if first < 2 && !(0..=39).contains(&second) {
-                    return Err(Asn1EncoderError::new(
-                        "OID second part must be 0-39 for first part 0 or 1".to_string(),
-                    ));
-                }
+            if !(0..=2).contains(&first) {
+                return Err(Asn1EncoderError::new("OID first part must be 0, 1, or 2".to_string()));
+            }
+            if first < 2 && !(0..=39).contains(&second) {
+                return Err(Asn1EncoderError::new("OID second part must be 0-39 for first part 0 or 1".to_string()));
+            }
 
-                let first_byte = first * 40 + second;
-                s.write_multi_byte(first_byte);
+            let first_byte = first * 40 + second;
+            s.write_multi_byte(first_byte);
 
-                for part in parts.iter().skip(2) {
-                    s.write_multi_byte(*part);
-                }
-                Ok(())
-            },
-        )
+            for part in parts.iter().skip(2) {
+                s.write_multi_byte(*part);
+            }
+            Ok(())
+        })
     }
 
     fn write_multi_byte(&mut self, mut integer: i32) {

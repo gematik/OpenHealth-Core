@@ -39,9 +39,7 @@ pub struct AesCipher {
 
 impl From<cipher::aes::AesCipher> for AesCipher {
     fn from(inner: cipher::aes::AesCipher) -> Self {
-        Self {
-            inner: Mutex::new(inner),
-        }
+        Self { inner: Mutex::new(inner) }
     }
 }
 

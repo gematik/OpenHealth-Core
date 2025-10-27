@@ -37,7 +37,7 @@
     non_camel_case_types,
     non_snake_case,
     non_upper_case_globals,
-    unused_imports,
+    unused_imports
 )]
 
 use std::os::raw::{c_char, c_long, c_void};

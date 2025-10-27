@@ -23,8 +23,8 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
 
-use crate::command::apdu::{EXPECTED_LENGTH_WILDCARD_EXTENDED, EXPECTED_LENGTH_WILDCARD_SHORT};
 use crate::command::apdu::{CardCommandApdu, CardResponseApdu};
+use crate::command::apdu::{EXPECTED_LENGTH_WILDCARD_EXTENDED, EXPECTED_LENGTH_WILDCARD_SHORT};
 use crate::command::health_card_status::HealthCardResponseStatus;
 
 /// Special value to indicate that all available data should be expected.
@@ -69,27 +69,16 @@ impl HealthCardCommand {
         data: Option<Vec<u8>>,
         ne: Option<i32>,
     ) -> Self {
-
         let ne_usize = ne.map(|n| if n >= 0 { n as usize } else { 0 });
 
-        HealthCardCommand {
-            expected_status,
-            cla,
-            ins,
-            p1,
-            p2,
-            data,
-            ne: ne_usize,        }
+        HealthCardCommand { expected_status, cla, ins, p1, p2, data, ne: ne_usize }
     }
 
     /// Converts the HealthCardCommand to a CardCommandApdu.
     ///
     /// # Arguments
     /// * `scope_supports_extended_length` - Indicates if the scope supports extended length
-    pub fn command_apdu(
-        &self,
-        scope_supports_extended_length: bool,
-    ) -> Result<CardCommandApdu, Box<dyn Error>> {
+    pub fn command_apdu(&self, scope_supports_extended_length: bool) -> Result<CardCommandApdu, Box<dyn Error>> {
         let expected_length = match self.ne {
             Some(ne) if ne == EXPECT_ALL_WILDCARD as usize => {
                 if scope_supports_extended_length {
@@ -101,15 +90,8 @@ impl HealthCardCommand {
             other => other,
         };
 
-        CardCommandApdu::of_options(
-            self.cla,
-            self.ins,
-            self.p1,
-            self.p2,
-            self.data.clone(),
-            expected_length,
-        )
-        .map_err(|e| Box::new(e) as Box<dyn Error>)
+        CardCommandApdu::of_options(self.cla, self.ins, self.p1, self.p2, self.data.clone(), expected_length)
+            .map_err(|e| Box::new(e) as Box<dyn Error>)
     }
 }
 
@@ -169,9 +151,7 @@ impl ResponseException {
     /// # Arguments
     /// * `health_card_response_status` - The status indicating the reason for the failure
     pub fn new(health_card_response_status: HealthCardResponseStatus) -> Self {
-        ResponseException {
-            health_card_response_status,
-        }
+        ResponseException { health_card_response_status }
     }
 }
 
@@ -193,15 +173,8 @@ mod tests {
         let mut expected_status = HashMap::new();
         expected_status.insert(0x9000, HealthCardResponseStatus::Success);
 
-        let command = HealthCardCommand::new(
-            expected_status,
-            0x00,
-            0xA4,
-            0x04,
-            0x00,
-            Some(vec![0x3F, 0x00]),
-            Some(256),
-        );
+        let command =
+            HealthCardCommand::new(expected_status, 0x00, 0xA4, 0x04, 0x00, Some(vec![0x3F, 0x00]), Some(256));
 
         assert_eq!(command.cla, 0x00);
         assert_eq!(command.ins, 0xA4);
@@ -219,16 +192,12 @@ mod tests {
 
         assert!(response.require_success().is_ok());
 
-        let failed_response =
-            HealthCardResponse::new(HealthCardResponseStatus::FileNotFound, response_apdu);
+        let failed_response = HealthCardResponse::new(HealthCardResponseStatus::FileNotFound, response_apdu);
 
         let result = failed_response.require_success();
         assert!(result.is_err());
         if let Err(e) = result {
-            assert_eq!(
-                e.health_card_response_status,
-                HealthCardResponseStatus::FileNotFound
-            );
+            assert_eq!(e.health_card_response_status, HealthCardResponseStatus::FileNotFound);
         }
     }
 }

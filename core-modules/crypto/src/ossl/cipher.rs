@@ -76,18 +76,10 @@ impl AesCipher {
         if mode == EVP_CIPH_GCM_MODE as i32 || mode == EVP_CIPH_CCM_MODE as i32 {
             let mut iv_len = iv.len();
             let mut params = [
-                unsafe {
-                    OSSL_PARAM_construct_size_t(
-                        OSSL_CIPHER_PARAM_IVLEN.as_ptr() as *const _,
-                        &mut iv_len,
-                    )
-                },
+                unsafe { OSSL_PARAM_construct_size_t(OSSL_CIPHER_PARAM_IVLEN.as_ptr() as *const _, &mut iv_len) },
                 unsafe { OSSL_PARAM_construct_end() },
             ];
-            ossl_check!(
-                unsafe { EVP_CIPHER_CTX_set_params(aes.ctx, params.as_mut_ptr()) },
-                "Failed to set IV length"
-            );
+            ossl_check!(unsafe { EVP_CIPHER_CTX_set_params(aes.ctx, params.as_mut_ptr()) }, "Failed to set IV length");
         } else {
             ossl_check!(
                 unsafe { init_fn(aes.ctx, aes.cipher, key.as_ptr(), iv.as_ptr(), ptr::null()) },
@@ -120,21 +112,9 @@ impl AesCipher {
         ossl_check!(
             unsafe {
                 if self.is_encrypting() {
-                    EVP_EncryptUpdate(
-                        self.ctx,
-                        ptr::null_mut(),
-                        &mut out_len,
-                        aad.as_ptr(),
-                        aad.len() as c_int,
-                    )
+                    EVP_EncryptUpdate(self.ctx, ptr::null_mut(), &mut out_len, aad.as_ptr(), aad.len() as c_int)
                 } else {
-                    EVP_DecryptUpdate(
-                        self.ctx,
-                        ptr::null_mut(),
-                        &mut out_len,
-                        aad.as_ptr(),
-                        aad.len() as c_int,
-                    )
+                    EVP_DecryptUpdate(self.ctx, ptr::null_mut(), &mut out_len, aad.as_ptr(), aad.len() as c_int)
                 }
             },
             "Failed to set AAD"
@@ -226,17 +206,9 @@ impl AesCipher {
         let mut out_len: c_int = 0;
         let rc = unsafe {
             if self.is_encrypting() {
-                EVP_EncryptFinal_ex(
-                    self.ctx,
-                    output.as_mut_ptr().add(old_output_len),
-                    &mut out_len,
-                )
+                EVP_EncryptFinal_ex(self.ctx, output.as_mut_ptr().add(old_output_len), &mut out_len)
             } else {
-                EVP_DecryptFinal_ex(
-                    self.ctx,
-                    output.as_mut_ptr().add(old_output_len),
-                    &mut out_len,
-                )
+                EVP_DecryptFinal_ex(self.ctx, output.as_mut_ptr().add(old_output_len), &mut out_len)
             }
         };
         ossl_check!(

@@ -25,8 +25,8 @@ use crate::ossl::api::{openssl_error, OsslResult};
 use crate::ossl::bio::Bio;
 use crate::ossl_check;
 use crypto_openssl_sys::{
-    d2i_PUBKEY_bio, d2i_PrivateKey_bio, i2d_PKCS8PrivateKey_bio, i2d_PUBKEY_bio, EVP_PKEY_CTX_free,
-    EVP_PKEY_free, EVP_PKEY, EVP_PKEY_CTX,
+    d2i_PUBKEY_bio, d2i_PrivateKey_bio, i2d_PKCS8PrivateKey_bio, i2d_PUBKEY_bio, EVP_PKEY_CTX_free, EVP_PKEY_free,
+    EVP_PKEY, EVP_PKEY_CTX,
 };
 
 /// Wrapper around `EVP_PKEY_CTX` that frees the context on drop.
@@ -76,15 +76,7 @@ impl PKey {
         let mut bio = Bio::new_mem()?;
         ossl_check!(
             unsafe {
-                i2d_PKCS8PrivateKey_bio(
-                    bio.as_mut_ptr(),
-                    self.0,
-                    ptr::null(),
-                    ptr::null(),
-                    0,
-                    None,
-                    ptr::null_mut(),
-                )
+                i2d_PKCS8PrivateKey_bio(bio.as_mut_ptr(), self.0, ptr::null(), ptr::null(), 0, None, ptr::null_mut())
             },
             "Failed to convert private key to DER"
         );
@@ -93,10 +85,7 @@ impl PKey {
 
     pub fn to_der_public(&self) -> OsslResult<Vec<u8>> {
         let mut bio = Bio::new_mem()?;
-        ossl_check!(
-            unsafe { i2d_PUBKEY_bio(bio.as_mut_ptr(), self.0) },
-            "Failed to convert public key to DER"
-        );
+        ossl_check!(unsafe { i2d_PUBKEY_bio(bio.as_mut_ptr(), self.0) }, "Failed to convert public key to DER");
         Ok(bio.to_vec())
     }
 

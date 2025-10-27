@@ -19,11 +19,11 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use zeroize::Zeroizing;
 use crate::error::CryptoResult;
 use crate::key::{KeyMaterial, PublicKey};
 use crate::ossl;
 use crate::utils::byte_unit::{ByteUnit, BytesExt};
+use zeroize::Zeroizing;
 
 struct MlkemSecret;
 impl crate::key::Role for MlkemSecret {}
@@ -109,11 +109,7 @@ mod tests {
         let ss_dec = dec.decapsulate(wrapped).expect("decapsulate");
 
         // Shared secret must match
-        assert_eq!(
-            ss_enc.as_bytes(),
-            ss_dec.as_bytes(),
-            "shared secret equality"
-        );
+        assert_eq!(ss_enc.as_bytes(), ss_dec.as_bytes(), "shared secret equality");
     }
 
     #[test]

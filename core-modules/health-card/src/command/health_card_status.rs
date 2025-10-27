@@ -152,82 +152,52 @@ impl std::fmt::Display for HealthCardResponseStatus {
 impl HealthCardResponseStatus {
     /// Gets the status from a status word (SW) for a general authenticate command.
     pub fn from_general_authenticate_status(sw: u16) -> Self {
-        GENERAL_AUTHENTICATE_STATUS
-            .get(&sw)
-            .copied()
-            .unwrap_or(HealthCardResponseStatus::UnknownStatus)
+        GENERAL_AUTHENTICATE_STATUS.get(&sw).copied().unwrap_or(HealthCardResponseStatus::UnknownStatus)
     }
 
     /// Gets the status from a status word (SW) for a PIN-related command.
     pub fn from_pin_status(sw: u16) -> Self {
-        PIN_STATUS
-            .get(&sw)
-            .copied()
-            .unwrap_or(HealthCardResponseStatus::UnknownStatus)
+        PIN_STATUS.get(&sw).copied().unwrap_or(HealthCardResponseStatus::UnknownStatus)
     }
 
     /// Gets the status from a status word (SW) for a manage security environment command.
     pub fn from_manage_security_environment_status(sw: u16) -> Self {
-        MANAGE_SECURITY_ENVIRONMENT_STATUS
-            .get(&sw)
-            .copied()
-            .unwrap_or(HealthCardResponseStatus::UnknownStatus)
+        MANAGE_SECURITY_ENVIRONMENT_STATUS.get(&sw).copied().unwrap_or(HealthCardResponseStatus::UnknownStatus)
     }
 
     /// Gets the status from a status word (SW) for a PSO compute digital signature command.
     pub fn from_pso_compute_digital_signature_status(sw: u16) -> Self {
-        PSO_COMPUTE_DIGITAL_SIGNATURE_STATUS
-            .get(&sw)
-            .copied()
-            .unwrap_or(HealthCardResponseStatus::UnknownStatus)
+        PSO_COMPUTE_DIGITAL_SIGNATURE_STATUS.get(&sw).copied().unwrap_or(HealthCardResponseStatus::UnknownStatus)
     }
 
     /// Gets the status from a status word (SW) for a read command.
     pub fn from_read_status(sw: u16) -> Self {
-        READ_STATUS
-            .get(&sw)
-            .copied()
-            .unwrap_or(HealthCardResponseStatus::UnknownStatus)
+        READ_STATUS.get(&sw).copied().unwrap_or(HealthCardResponseStatus::UnknownStatus)
     }
 
     /// Gets the status from a status word (SW) for a select command.
     pub fn from_select_status(sw: u16) -> Self {
-        SELECT_STATUS
-            .get(&sw)
-            .copied()
-            .unwrap_or(HealthCardResponseStatus::UnknownStatus)
+        SELECT_STATUS.get(&sw).copied().unwrap_or(HealthCardResponseStatus::UnknownStatus)
     }
 
     /// Gets the status from a status word (SW) for a verify secret command.
     pub fn from_verify_secret_status(sw: u16) -> Self {
-        VERIFY_SECRET_STATUS
-            .get(&sw)
-            .copied()
-            .unwrap_or(HealthCardResponseStatus::UnknownStatus)
+        VERIFY_SECRET_STATUS.get(&sw).copied().unwrap_or(HealthCardResponseStatus::UnknownStatus)
     }
 
     /// Gets the status from a status word (SW) for an unlock EGK command.
     pub fn from_unlock_egk_status(sw: u16) -> Self {
-        UNLOCK_EGK_STATUS
-            .get(&sw)
-            .copied()
-            .unwrap_or(HealthCardResponseStatus::UnknownStatus)
+        UNLOCK_EGK_STATUS.get(&sw).copied().unwrap_or(HealthCardResponseStatus::UnknownStatus)
     }
 
     /// Gets the status from a status word (SW) for a change reference data command.
     pub fn from_change_reference_data_status(sw: u16) -> Self {
-        CHANGE_REFERENCE_DATA_STATUS
-            .get(&sw)
-            .copied()
-            .unwrap_or(HealthCardResponseStatus::UnknownStatus)
+        CHANGE_REFERENCE_DATA_STATUS.get(&sw).copied().unwrap_or(HealthCardResponseStatus::UnknownStatus)
     }
 
     /// Gets the status from a status word (SW) for a get random values command.
     pub fn from_get_random_values_status(sw: u16) -> Self {
-        GET_RANDOM_VALUES_STATUS
-            .get(&sw)
-            .copied()
-            .unwrap_or(HealthCardResponseStatus::UnknownStatus)
+        GET_RANDOM_VALUES_STATUS.get(&sw).copied().unwrap_or(HealthCardResponseStatus::UnknownStatus)
     }
 
     /// Check if the status indicates success.
@@ -466,10 +436,7 @@ mod tests {
     #[test]
     fn test_status_word_ext() {
         let sw: u16 = 0x9000;
-        assert_eq!(
-            sw.to_general_authenticate_status(),
-            HealthCardResponseStatus::Success
-        );
+        assert_eq!(sw.to_general_authenticate_status(), HealthCardResponseStatus::Success);
         assert_eq!(sw.to_pin_status(), HealthCardResponseStatus::Success);
     }
 

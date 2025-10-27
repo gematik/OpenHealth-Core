@@ -27,7 +27,6 @@
 /// - A multireference password allows the use of a secret, which is stored as an at-tributary in a
 ///   regular password (see (gemSpec_COS_3.14.0#N015.200)), but under conditions that deviate from those of the
 ///   regular password.
-
 use crate::card::card_key_reference::CardKeyReference;
 
 const MIN_PWD_ID: u8 = 0;
@@ -72,11 +71,7 @@ impl CardKeyReference for PasswordReference {
     /// # Returns
     /// The calculated key reference.
     fn calculate_key_reference(&self, df_specific: bool) -> u8 {
-        self.pwd_id + if df_specific {
-            Self::DF_SPECIFIC_PWD_MARKER
-        } else {
-            0
-        }
+        self.pwd_id + if df_specific { Self::DF_SPECIFIC_PWD_MARKER } else { 0 }
     }
 }
 
@@ -102,9 +97,6 @@ mod tests {
 
         assert_eq!(pwd_ref.calculate_key_reference(false), 10);
 
-        assert_eq!(
-            pwd_ref.calculate_key_reference(true),
-            10 + PasswordReference::DF_SPECIFIC_PWD_MARKER
-        );
+        assert_eq!(pwd_ref.calculate_key_reference(true), 10 + PasswordReference::DF_SPECIFIC_PWD_MARKER);
     }
 }

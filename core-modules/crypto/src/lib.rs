@@ -51,9 +51,9 @@ pub mod mac;
 pub mod utils;
 // mod exchange;
 
+mod ec;
 #[cfg(feature = "uniffi")]
 pub mod ffi;
-mod ec;
 
 #[cfg(feature = "uniffi")]
 uniffi::setup_scaffolding!();

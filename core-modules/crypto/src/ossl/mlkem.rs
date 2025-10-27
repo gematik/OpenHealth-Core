@@ -50,13 +50,8 @@ impl MlkemEncapsulation {
 
     /// Returns a tuple of wrapped key and secret key.
     pub fn encapsulate(&self) -> OsslResult<(Vec<u8>, Vec<u8>)> {
-        let raw = unsafe {
-            EVP_PKEY_CTX_new_from_pkey(
-                std::ptr::null_mut(),
-                self.0.as_mut_ptr(),
-                std::ptr::null_mut(),
-            )
-        };
+        let raw =
+            unsafe { EVP_PKEY_CTX_new_from_pkey(std::ptr::null_mut(), self.0.as_mut_ptr(), std::ptr::null_mut()) };
         if raw.is_null() {
             return Err(openssl_error("Failed to create context from key"));
         }
@@ -70,15 +65,7 @@ impl MlkemEncapsulation {
         let mut wlen = 0usize;
         let mut slen = 0usize;
         ossl_check!(
-            unsafe {
-                EVP_PKEY_encapsulate(
-                    ctx.as_ptr(),
-                    ptr::null_mut(),
-                    &mut wlen,
-                    ptr::null_mut(),
-                    &mut slen,
-                )
-            },
+            unsafe { EVP_PKEY_encapsulate(ctx.as_ptr(), ptr::null_mut(), &mut wlen, ptr::null_mut(), &mut slen,) },
             "Failed to determine buffer sizes"
         );
 
@@ -86,13 +73,7 @@ impl MlkemEncapsulation {
         let mut secret = vec![0u8; slen];
         ossl_check!(
             unsafe {
-                EVP_PKEY_encapsulate(
-                    ctx.as_ptr(),
-                    wrapped.as_mut_ptr(),
-                    &mut wlen,
-                    secret.as_mut_ptr(),
-                    &mut slen,
-                )
+                EVP_PKEY_encapsulate(ctx.as_ptr(), wrapped.as_mut_ptr(), &mut wlen, secret.as_mut_ptr(), &mut slen)
             },
             "Encapsulation failed"
         );
@@ -111,23 +92,16 @@ impl MlkemDecapsulation {
     /// Generate a new keypair
     pub fn create(algorithm: &str) -> OsslResult<Self> {
         let alg = CString::new(algorithm).unwrap();
-        let gen_ctx =
-            unsafe { EVP_PKEY_CTX_new_from_name(ptr::null_mut(), alg.as_ptr(), ptr::null_mut()) };
+        let gen_ctx = unsafe { EVP_PKEY_CTX_new_from_name(ptr::null_mut(), alg.as_ptr(), ptr::null_mut()) };
         if gen_ctx.is_null() {
             return Err(openssl_error("Keygen context init failed"));
         }
         let gen_ctx = PKeyCtx(gen_ctx);
-        ossl_check!(
-            unsafe { EVP_PKEY_keygen_init(gen_ctx.as_ptr()) },
-            "Keygen init failed"
-        );
+        ossl_check!(unsafe { EVP_PKEY_keygen_init(gen_ctx.as_ptr()) }, "Keygen init failed");
 
         // actually generate
         let mut raw: *mut EVP_PKEY = ptr::null_mut();
-        ossl_check!(
-            unsafe { EVP_PKEY_keygen(gen_ctx.as_ptr(), &mut raw) },
-            "Keygen failed"
-        );
+        ossl_check!(unsafe { EVP_PKEY_keygen(gen_ctx.as_ptr(), &mut raw) }, "Keygen failed");
         if raw.is_null() {
             return Err(openssl_error("Keygen returned null"));
         }
@@ -154,28 +128,17 @@ impl MlkemDecapsulation {
 
     /// Recover shared secret from wrapped key
     pub fn decapsulate(&self, wrapped_key: &[u8]) -> OsslResult<Vec<u8>> {
-        let raw = unsafe {
-            EVP_PKEY_CTX_new_from_pkey(ptr::null_mut(), self.0.as_mut_ptr(), ptr::null_mut())
-        };
+        let raw = unsafe { EVP_PKEY_CTX_new_from_pkey(ptr::null_mut(), self.0.as_mut_ptr(), ptr::null_mut()) };
         if raw.is_null() {
             return Err(openssl_error("Failed to create context from key"));
         }
         let ctx = PKeyCtx(raw);
-        ossl_check!(
-            unsafe { EVP_PKEY_decapsulate_init(ctx.as_ptr(), ptr::null_mut()) },
-            "Decapsulate init failed"
-        );
+        ossl_check!(unsafe { EVP_PKEY_decapsulate_init(ctx.as_ptr(), ptr::null_mut()) }, "Decapsulate init failed");
 
         let mut klen = 0usize;
         ossl_check!(
             unsafe {
-                EVP_PKEY_decapsulate(
-                    ctx.as_ptr(),
-                    ptr::null_mut(),
-                    &mut klen,
-                    wrapped_key.as_ptr(),
-                    wrapped_key.len(),
-                )
+                EVP_PKEY_decapsulate(ctx.as_ptr(), ptr::null_mut(), &mut klen, wrapped_key.as_ptr(), wrapped_key.len())
             },
             "Length query failed"
         );
@@ -183,13 +146,7 @@ impl MlkemDecapsulation {
         let mut key = vec![0u8; klen];
         ossl_check!(
             unsafe {
-                EVP_PKEY_decapsulate(
-                    ctx.as_ptr(),
-                    key.as_mut_ptr(),
-                    &mut klen,
-                    wrapped_key.as_ptr(),
-                    wrapped_key.len(),
-                )
+                EVP_PKEY_decapsulate(ctx.as_ptr(), key.as_mut_ptr(), &mut klen, wrapped_key.as_ptr(), wrapped_key.len())
             },
             "Decapsulation failed"
         );
