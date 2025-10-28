@@ -20,9 +20,9 @@
 // find details in the "Readme" file.
 
 use crate::command::apdu::EXPECTED_LENGTH_WILDCARD_SHORT;
-use asn1::asn1_encoder::Asn1Encoder;
-use asn1::asn1_encoder::Result;
-use asn1::asn1_tag::{Asn1Class, Asn1Form, TagNumberExt};
+use asn1::encoder::Asn1Encoder;
+use asn1::encoder::Result;
+use asn1::tag::{Asn1Class, Asn1Form, TagNumberExt};
 
 use crate::command::health_card_command::HealthCardCommand;
 use crate::command::health_card_status::GENERAL_AUTHENTICATE_STATUS;
@@ -108,7 +108,7 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
 mod tests {
     use super::*;
     use crate::command::apdu::CardCommandApdu;
-    use asn1::asn1_tag::{Asn1Class, Asn1Form};
+    use asn1::tag::{Asn1Class, Asn1Form};
 
     #[test]
     fn test_general_authenticate_without_chaining() {

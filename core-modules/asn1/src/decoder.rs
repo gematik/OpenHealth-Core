@@ -19,19 +19,12 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use crate::asn1_tag::{Asn1Class, Asn1Form, Asn1Id, UniversalTag};
-#[derive(Debug)]
-pub struct Asn1DecoderError {
-    pub message: String,
-}
+use crate::error::{DecoderError, DecoderResult};
+use crate::tag::{Asn1Class, Asn1Form, Asn1Id, UniversalTag};
 
-impl Asn1DecoderError {
-    pub fn new(msg: String) -> Self {
-        Self { message: msg }
-    }
-}
+pub use crate::error::DecoderError as Asn1DecoderError;
 
-pub type Result<T> = std::result::Result<T, Asn1DecoderError>;
+pub type Result<T> = DecoderResult<T>;
 
 /// Constructs an `Asn1Decoder` from the given data.
 /// The data slice will not be copied!
@@ -69,11 +62,7 @@ impl<'a> ParserScope<'a> {
                 let form: u8 = id.form.into();
                 format!("Asn1Id(class=0x{class:02X}, form=0x{form:02X}, number=0x{:X})", id.number)
             };
-            return Err(Asn1DecoderError::new(format!(
-                "Expected tag `{}` but got `{}`",
-                describe(&expected),
-                describe(&tag)
-            )));
+            return Err(DecoderError::UnexpectedTag { expected: describe(&expected), actual: describe(&tag) });
         }
         let length = self.read_length()?;
         let is_infinite = length == -1;
@@ -92,15 +81,13 @@ impl<'a> ParserScope<'a> {
         if !is_infinite {
             if self.end_offset != self.offset {
                 self.end_offset = original_end;
-                return Err(Asn1DecoderError::new("Unparsed bytes remaining".to_string()));
+                return Err(DecoderError::UnparsedBytesRemaining);
             }
         } else {
             let end = self.read_bytes(2)?;
             if end != [0x00, 0x00] {
                 self.end_offset = original_end;
-                return Err(Asn1DecoderError::new(
-                    "Infinite length object must be finished with `0x00 0x00`".to_string(),
-                ));
+                return Err(DecoderError::MissingEndOfContentMarker);
             }
         }
 
@@ -112,7 +99,7 @@ impl<'a> ParserScope<'a> {
     #[inline]
     pub fn read_byte(&mut self) -> Result<u8> {
         if self.offset >= self.end_offset {
-            return Err(Asn1DecoderError::new("Unexpected end of data while reading byte".to_string()));
+            return Err(DecoderError::unexpected_end_of_data("reading byte"));
         }
         let b = self.data[self.offset];
         self.offset += 1;
@@ -121,12 +108,9 @@ impl<'a> ParserScope<'a> {
 
     /// Read `length` bytes.
     pub fn read_bytes(&mut self, length: usize) -> Result<Vec<u8>> {
-        let end = self
-            .offset
-            .checked_add(length)
-            .ok_or_else(|| Asn1DecoderError::new("Integer overflow computing slice end".to_string()))?;
+        let end = self.offset.checked_add(length).ok_or_else(|| DecoderError::integer_overflow("slice end"))?;
         if end > self.end_offset {
-            return Err(Asn1DecoderError::new("Unexpected end of data while reading bytes".to_string()));
+            return Err(DecoderError::unexpected_end_of_data("reading bytes"));
         }
         let data = &self.data[self.offset..end];
         self.offset = end;
@@ -179,7 +163,7 @@ impl<'a> ParserScope<'a> {
     /// Read `length` bytes as an integer.
     pub fn read_int(&mut self, length: usize, signed: bool) -> Result<i32> {
         if !(1..=4).contains(&length) {
-            return Err(Asn1DecoderError::new(format!("Length must be in range of [1, 4]. Is `{}`", length)));
+            return Err(DecoderError::InvalidLength { length });
         }
         let bytes = self.read_bytes(length)?;
         let mut result = bytes[0] as i32;
@@ -193,12 +177,9 @@ impl<'a> ParserScope<'a> {
     /// Skip `length` bytes.
     #[inline]
     pub fn skip(&mut self, length: usize) -> Result<()> {
-        let end = self
-            .offset
-            .checked_add(length)
-            .ok_or_else(|| Asn1DecoderError::new("Integer overflow computing skip end".to_string()))?;
+        let end = self.offset.checked_add(length).ok_or_else(|| DecoderError::integer_overflow("skip end"))?;
         if end > self.end_offset {
-            return Err(Asn1DecoderError::new("Skip exceeds available data".to_string()));
+            return Err(DecoderError::SkipExceedsAvailableData);
         }
         self.offset = end;
         Ok(())
@@ -207,7 +188,7 @@ impl<'a> ParserScope<'a> {
     /// Skip to the `end_offset`.
     pub fn skip_to_end(&mut self) -> Result<()> {
         if self.end_offset == usize::MAX {
-            return Err(Asn1DecoderError::new("Can't skip bytes inside infinite length object".to_string()));
+            return Err(DecoderError::SkipInsideInfiniteLengthObject);
         }
         self.offset = self.end_offset;
         Ok(())
@@ -231,16 +212,14 @@ impl<'a> ParserScope<'a> {
         self.advance_with_tag(UniversalTag::BitString.primitive(), |s| {
             let unused_bits = s.read_byte()? as i32;
             if !(0..=7).contains(&unused_bits) {
-                return Err(Asn1DecoderError::new(format!("Invalid unused bit count: {}", unused_bits)));
+                return Err(DecoderError::InvalidUnusedBitCount { count: unused_bits });
             }
             let mut bit_string = s.read_bytes(s.remaining_length())?;
             if unused_bits == 0 {
                 Ok(bit_string)
             } else {
                 if bit_string.is_empty() {
-                    return Err(Asn1DecoderError::new(
-                        "BIT STRING content is empty but indicates unused bits".to_string(),
-                    ));
+                    return Err(DecoderError::BitStringIndicatesUnusedBits);
                 }
                 let last = bit_string[bit_string.len() - 1];
                 let mask = (((0xFFu16 << unused_bits) & 0xFF) as u8) & 0xFF;
@@ -255,10 +234,7 @@ impl<'a> ParserScope<'a> {
     pub fn read_utf8_string(&mut self) -> Result<String> {
         self.advance_with_tag(UniversalTag::Utf8String.primitive(), |s| {
             let bytes = s.read_bytes(s.remaining_length())?;
-            match String::from_utf8(bytes) {
-                Ok(v) => Ok(v),
-                Err(_) => Err(Asn1DecoderError::new("Malformed UTF-8 string".to_string())),
-            }
+            String::from_utf8(bytes).map_err(|_| DecoderError::MalformedUtf8String)
         })
     }
 
@@ -266,10 +242,7 @@ impl<'a> ParserScope<'a> {
     pub fn read_visible_string(&mut self) -> Result<String> {
         self.advance_with_tag(UniversalTag::VisibleString.primitive(), |s| {
             let bytes = s.read_bytes(s.remaining_length())?;
-            match String::from_utf8(bytes) {
-                Ok(v) => Ok(v),
-                Err(_) => Err(Asn1DecoderError::new("Malformed UTF-8 string".to_string())),
-            }
+            String::from_utf8(bytes).map_err(|_| DecoderError::MalformedUtf8String)
         })
     }
 
@@ -283,7 +256,7 @@ impl<'a> ParserScope<'a> {
         self.advance_with_tag(UniversalTag::ObjectIdentifier.primitive(), |s| {
             let bytes = s.read_bytes(s.remaining_length())?;
             if bytes.is_empty() {
-                return Err(Asn1DecoderError::new("Encoded OID cannot be empty".to_string()));
+                return Err(DecoderError::EmptyObjectIdentifier);
             }
 
             let first_byte = (bytes[0] as i32) & 0xFF;
@@ -305,7 +278,7 @@ impl<'a> ParserScope<'a> {
                 }
             }
             if value != 0 {
-                return Err(Asn1DecoderError::new("Invalid OID encoding: unfinished encoding".to_string()));
+                return Err(DecoderError::UnfinishedObjectIdentifierEncoding);
             }
 
             Ok(parts.iter().map(|v| v.to_string()).collect::<Vec<_>>().join("."))
@@ -329,8 +302,8 @@ impl<'a> Asn1Decoder<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::asn1_date_time::Asn1Offset;
-    use crate::asn1_tag::UniversalTag;
+    use crate::date_time::Asn1Offset;
+    use crate::tag::UniversalTag;
 
     fn hex_bytes(s: &str) -> Vec<u8> {
         s.split_whitespace().filter(|p| !p.is_empty()).map(|p| u8::from_str_radix(p, 16).expect("hex")).collect()

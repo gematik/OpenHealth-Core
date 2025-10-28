@@ -30,22 +30,6 @@ impl crate::key::Role for EcdhSecret {}
 
 pub type EcdhSharedSecret = KeyMaterial<EcdhSecret, Zeroizing<Vec<u8>>>;
 
-/// ECDH curves supported at the high level.
-#[derive(Clone, Debug)]
-pub struct EcdhSpec {
-    pub curve: EcCurve,
-}
-
-impl EcdhSpec {
-    /// Generate a fresh ECDH keypair for this curve.
-    pub fn generate_keypair(&self) -> CryptoResult<(PrivateKey, PublicKey)> {
-        let keypair = ossl::ec::EcKeypair::generate(self.curve.name())?;
-        let priv_der = keypair.private_key_der()?;
-        let pub_der = keypair.public_key_der()?;
-        Ok((PrivateKey::new_secret(priv_der), PublicKey::new(pub_der)))
-    }
-}
-
 /// ECDH context for deriving shared secrets.
 ///
 /// Construct from a private key (DER PKCS#8), then call `derive` with a peer
@@ -71,9 +55,10 @@ impl Ecdh {
 
 #[cfg(test)]
 mod tests {
+    use crate::ec::ec_key::EcKeyPairSpec;
     use super::*;
 
-    fn roundtrip(spec: EcdhSpec) {
+    fn roundtrip(spec: EcKeyPairSpec) {
         let (a_priv, a_pub) = spec.generate_keypair().expect("keypair a");
         let (b_priv, b_pub) = spec.generate_keypair().expect("keypair b");
 
@@ -92,16 +77,16 @@ mod tests {
 
     #[test]
     fn ecdh_roundtrip_bp256() {
-        roundtrip(EcdhSpec { curve: EcCurve::BrainpoolP256r1 });
+        roundtrip(EcKeyPairSpec { curve: EcCurve::BrainpoolP256r1 });
     }
 
     #[test]
     fn ecdh_roundtrip_bp384() {
-        roundtrip(EcdhSpec { curve: EcCurve::BrainpoolP384r1 });
+        roundtrip(EcKeyPairSpec { curve: EcCurve::BrainpoolP384r1 });
     }
 
     #[test]
     fn ecdh_roundtrip_bp512() {
-        roundtrip(EcdhSpec { curve: EcCurve::BrainpoolP512r1 });
+        roundtrip(EcKeyPairSpec { curve: EcCurve::BrainpoolP512r1 });
     }
 }

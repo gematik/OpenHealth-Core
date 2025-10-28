@@ -19,12 +19,11 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use crate::asn1_decoder::Asn1DecoderError;
-use crate::asn1_decoder::ParserScope;
-use crate::asn1_decoder::Result as DecoderResult;
-use crate::asn1_encoder::Result as EncoderResult;
-use crate::asn1_encoder::WriterScope;
-use crate::asn1_tag::{Asn1Form, UniversalTag};
+use crate::decoder::ParserScope;
+use crate::encoder::Result as EncoderResult;
+use crate::encoder::WriterScope;
+use crate::error::{DecoderError, DecoderResult, TimeValueError};
+use crate::tag::UniversalTag;
 use regex::Regex;
 use std::sync::OnceLock;
 
@@ -87,11 +86,12 @@ fn parse_time_zone_or_offset(offset: &str) -> DecoderResult<Option<Asn1Offset>> 
         Ok(None)
     } else {
         let sign = if offset.as_bytes()[0] == b'-' { -1 } else { 1 };
-        let hours: i32 =
-            offset[1..3].parse().map_err(|_| Asn1DecoderError::new(format!("Invalid hour in offset: `{}`", offset)))?;
+        let hours: i32 = offset[1..3]
+            .parse()
+            .map_err(|_| DecoderError::from(TimeValueError::InvalidOffsetHour { value: offset.to_string() }))?;
         let minutes: i32 = offset[3..5]
             .parse()
-            .map_err(|_| Asn1DecoderError::new(format!("Invalid minute in offset: `{}`", offset)))?;
+            .map_err(|_| DecoderError::from(TimeValueError::InvalidOffsetMinute { value: offset.to_string() }))?;
         Ok(Some(Asn1Offset::UtcOffset { hours: hours * sign, minutes }))
     }
 }
@@ -115,7 +115,7 @@ impl<'a> ParserScope<'a> {
     fn parse_utc_time(&mut self, value: &str) -> DecoderResult<Asn1UtcTime> {
         let re = utc_time_regex();
         let Some(caps) = re.captures(value) else {
-            return Err(Asn1DecoderError::new(format!("Wrong utc time format: `{}`", value)));
+            return Err(TimeValueError::InvalidUtcFormat { value: value.to_string() }.into());
         };
 
         let yy = &caps[1];
@@ -126,21 +126,27 @@ impl<'a> ParserScope<'a> {
         let ss = caps.get(6).map(|m| m.as_str()).unwrap_or("");
         let offset = &caps[7];
 
-        let year =
-            yy.parse::<i32>().map_err(|_| Asn1DecoderError::new(format!("Invalid year in UTC_TIME: `{}`", yy)))?;
-        let month =
-            mm.parse::<i32>().map_err(|_| Asn1DecoderError::new(format!("Invalid month in UTC_TIME: `{}`", mm)))?;
-        let day = dd.parse::<i32>().map_err(|_| Asn1DecoderError::new(format!("Invalid day in UTC_TIME: `{}`", dd)))?;
-        let hour =
-            hh.parse::<i32>().map_err(|_| Asn1DecoderError::new(format!("Invalid hour in UTC_TIME: `{}`", hh)))?;
-        let minute =
-            min.parse::<i32>().map_err(|_| Asn1DecoderError::new(format!("Invalid minute in UTC_TIME: `{}`", min)))?;
+        let year = yy
+            .parse::<i32>()
+            .map_err(|_| DecoderError::from(TimeValueError::InvalidUtcYear { value: yy.to_string() }))?;
+        let month = mm
+            .parse::<i32>()
+            .map_err(|_| DecoderError::from(TimeValueError::InvalidUtcMonth { value: mm.to_string() }))?;
+        let day = dd
+            .parse::<i32>()
+            .map_err(|_| DecoderError::from(TimeValueError::InvalidUtcDay { value: dd.to_string() }))?;
+        let hour = hh
+            .parse::<i32>()
+            .map_err(|_| DecoderError::from(TimeValueError::InvalidUtcHour { value: hh.to_string() }))?;
+        let minute = min
+            .parse::<i32>()
+            .map_err(|_| DecoderError::from(TimeValueError::InvalidUtcMinute { value: min.to_string() }))?;
         let second = if ss.is_empty() {
             None
         } else {
             Some(
                 ss.parse::<i32>()
-                    .map_err(|_| Asn1DecoderError::new(format!("Invalid second in UTC_TIME: `{}`", ss)))?,
+                    .map_err(|_| DecoderError::from(TimeValueError::InvalidUtcSecond { value: ss.to_string() }))?,
             )
         };
 
@@ -151,7 +157,7 @@ impl<'a> ParserScope<'a> {
     fn parse_generalized_time(&mut self, value: &str) -> DecoderResult<Asn1GeneralizedTime> {
         let re = generalized_time_regex();
         let Some(caps) = re.captures(value) else {
-            return Err(Asn1DecoderError::new(format!("Wrong generalized time format: `{}`", value)));
+            return Err(TimeValueError::InvalidGeneralizedTimeFormat { value: value.to_string() }.into());
         };
 
         let yyyy = &caps[1];
@@ -165,30 +171,32 @@ impl<'a> ParserScope<'a> {
 
         let year = yyyy
             .parse::<i32>()
-            .map_err(|_| Asn1DecoderError::new(format!("Invalid year in GENERALIZED_TIME: `{}`", yyyy)))?;
+            .map_err(|_| DecoderError::from(TimeValueError::InvalidGeneralizedYear { value: yyyy.to_string() }))?;
         let month = mm
             .parse::<i32>()
-            .map_err(|_| Asn1DecoderError::new(format!("Invalid month in GENERALIZED_TIME: `{}`", mm)))?;
+            .map_err(|_| DecoderError::from(TimeValueError::InvalidGeneralizedMonth { value: mm.to_string() }))?;
         let day = dd
             .parse::<i32>()
-            .map_err(|_| Asn1DecoderError::new(format!("Invalid day in GENERALIZED_TIME: `{}`", dd)))?;
+            .map_err(|_| DecoderError::from(TimeValueError::InvalidGeneralizedDay { value: dd.to_string() }))?;
         let hour = hh
             .parse::<i32>()
-            .map_err(|_| Asn1DecoderError::new(format!("Invalid hour in GENERALIZED_TIME: `{}`", hh)))?;
+            .map_err(|_| DecoderError::from(TimeValueError::InvalidGeneralizedHour { value: hh.to_string() }))?;
         let minute = if min.is_empty() {
             None
         } else {
             Some(
-                min.parse::<i32>()
-                    .map_err(|_| Asn1DecoderError::new(format!("Invalid minute in GENERALIZED_TIME: `{}`", min)))?,
+                min.parse::<i32>().map_err(|_| {
+                    DecoderError::from(TimeValueError::InvalidGeneralizedMinute { value: min.to_string() })
+                })?,
             )
         };
         let second = if ss.is_empty() {
             None
         } else {
             Some(
-                ss.parse::<i32>()
-                    .map_err(|_| Asn1DecoderError::new(format!("Invalid second in GENERALIZED_TIME: `{}`", ss)))?,
+                ss.parse::<i32>().map_err(|_| {
+                    DecoderError::from(TimeValueError::InvalidGeneralizedSecond { value: ss.to_string() })
+                })?,
             )
         };
         let fraction_of_second = if fff.is_empty() {
@@ -196,9 +204,9 @@ impl<'a> ParserScope<'a> {
         } else {
             // drop the leading '.'
             Some(
-                fff[1..]
-                    .parse::<i32>()
-                    .map_err(|_| Asn1DecoderError::new(format!("Invalid fraction in GENERALIZED_TIME: `{}`", fff)))?,
+                fff[1..].parse::<i32>().map_err(|_| {
+                    DecoderError::from(TimeValueError::InvalidGeneralizedFraction { value: fff.to_string() })
+                })?,
             )
         };
 
@@ -219,8 +227,7 @@ impl<'a> ParserScope<'a> {
         self.advance_with_tag(UniversalTag::UtcTime.primitive(), |s| {
             let len = s.remaining_length();
             let bytes = s.read_bytes(len)?;
-            let value = String::from_utf8(bytes)
-                .map_err(|_| Asn1DecoderError::new("Malformed UTC_TIME (non-UTF8)".to_string()))?;
+            let value = String::from_utf8(bytes).map_err(|_| DecoderError::MalformedUtcTimeEncoding)?;
             s.parse_utc_time(&value)
         })
     }
@@ -230,8 +237,8 @@ impl<'a> ParserScope<'a> {
         self.advance_with_tag(UniversalTag::GeneralizedTime.primitive(), |s| {
             let len = s.remaining_length();
             let bytes = s.read_bytes(len)?;
-            let value = String::from_utf8(bytes)
-                .map_err(|_| Asn1DecoderError::new("Malformed GENERALIZED_TIME (non-UTF8)".to_string()))?;
+            let value =
+                String::from_utf8(bytes).map_err(|_| DecoderError::MalformedGeneralizedTimeEncoding)?;
             s.parse_generalized_time(&value)
         })
     }
@@ -280,7 +287,7 @@ impl WriterScope {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::asn1_decoder::Asn1Decoder;
+    use crate::decoder::Asn1Decoder;
 
     #[inline]
     fn tag(t: impl Into<u8>) -> u8 {
@@ -298,7 +305,7 @@ mod tests {
             second: None,
             offset: None, // Z
         };
-        let out = crate::asn1_encoder::Asn1Encoder::write(|w| {
+        let out = crate::encoder::Asn1Encoder::write(|w| {
             w.write_utc_time(&value)?;
             Ok(())
         })
@@ -322,7 +329,7 @@ mod tests {
             second: Some(58),
             offset: Some(Asn1Offset::UtcOffset { hours: 2, minutes: 30 }),
         };
-        let out = crate::asn1_encoder::Asn1Encoder::write(|w| {
+        let out = crate::encoder::Asn1Encoder::write(|w| {
             w.write_utc_time(&value)?;
             Ok(())
         })
@@ -381,7 +388,7 @@ mod tests {
             fraction_of_second: Some(123),
             offset: Some(Asn1Offset::GeneralizedOffset { hours: -1, minutes: 30 }),
         };
-        let out = crate::asn1_encoder::Asn1Encoder::write(|w| {
+        let out = crate::encoder::Asn1Encoder::write(|w| {
             w.write_generalized_time(&value)?;
             Ok(())
         })

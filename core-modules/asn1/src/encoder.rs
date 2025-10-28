@@ -19,21 +19,10 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use crate::asn1_tag::{Asn1Class, Asn1Form, Asn1Id, UniversalTag};
+use crate::error::{EncoderError, EncoderResult};
+use crate::tag::{Asn1Class, Asn1Form, Asn1Id, UniversalTag};
 
-/// Exception thrown by the ASN.1 encoder.
-#[derive(Debug)]
-pub struct Asn1EncoderError {
-    pub message: String,
-}
-
-impl Asn1EncoderError {
-    pub fn new(msg: String) -> Self {
-        Self { message: msg }
-    }
-}
-
-pub type Result<T> = std::result::Result<T, Asn1EncoderError>;
+pub type Result<T> = EncoderResult<T>;
 
 /// ASN.1 encoder for encoding data in ASN.1 format.
 pub struct Asn1Encoder;
@@ -171,7 +160,7 @@ impl WriterScope {
     /// Write an ASN.1 bit string.
     pub fn write_asn1_bit_string(&mut self, value: &[u8], unused_bits: u8) -> Result<()> {
         if !(0..=7).contains(&unused_bits) {
-            return Err(Asn1EncoderError::new(format!("Invalid unused bit count: {}", unused_bits)));
+            return Err(EncoderError::new(format!("Invalid unused bit count: {}", unused_bits)));
         }
         self.write_tagged_object(UniversalTag::BitString.primitive(), |s| {
             s.write_byte(unused_bits);
@@ -201,21 +190,21 @@ impl WriterScope {
         self.write_tagged_object(UniversalTag::ObjectIdentifier.primitive(), |s| {
             let parts: Vec<i32> = oid
                 .split('.')
-                .map(|p| p.parse::<i32>().map_err(|_| Asn1EncoderError::new(format!("Invalid OID part: {}", p))))
+                .map(|p| p.parse::<i32>().map_err(|_| EncoderError::new(format!("Invalid OID part: {}", p))))
                 .collect::<std::result::Result<_, _>>()?;
 
             if parts.len() < 2 {
-                return Err(Asn1EncoderError::new("OID must have at least two components".to_string()));
+                return Err(EncoderError::new("OID must have at least two components"));
             }
 
             let first = parts[0];
             let second = parts[1];
 
             if !(0..=2).contains(&first) {
-                return Err(Asn1EncoderError::new("OID first part must be 0, 1, or 2".to_string()));
+                return Err(EncoderError::new("OID first part must be 0, 1, or 2"));
             }
             if first < 2 && !(0..=39).contains(&second) {
-                return Err(Asn1EncoderError::new("OID second part must be 0-39 for first part 0 or 1".to_string()));
+                return Err(EncoderError::new("OID second part must be 0-39 for first part 0 or 1"));
             }
 
             let first_byte = first * 40 + second;
@@ -278,7 +267,7 @@ impl Asn1Encoder {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::asn1_tag::TagNumberExt;
+    use crate::tag::TagNumberExt;
 
     fn hex(bytes: &[u8]) -> String {
         let mut out = String::new();

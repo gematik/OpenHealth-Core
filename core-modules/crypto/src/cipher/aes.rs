@@ -156,10 +156,6 @@ impl AesCipherSpec {
     }
 }
 
-// // The native API is NOT thread-safe.
-// unsafe impl Send for ossl::cipher::AesCipher {}
-// unsafe impl Sync for ossl::cipher::AesCipher {}
-
 /// Streaming AES encryptor.
 ///
 /// - Feed plaintext via `update` and finalize with `finalize`.

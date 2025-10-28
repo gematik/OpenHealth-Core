@@ -282,7 +282,7 @@ mod tests {
         let y = hex_bigint("A2AE1762A3831C1D20F03F8D1E3C0C39AFE6F09B4D44BBE80CD100987B05F92B");
         let point = EcPoint::finite(curve.clone(), x, y);
         let public_key = point.to_ec_public_key().unwrap();
-        assert_eq!(curve, public_key.curve);
-        assert_eq!(point.uncompressed().unwrap(), public_key.data);
+        assert_eq!(curve, *public_key.curve());
+        assert_eq!(point.uncompressed().unwrap(), public_key.as_bytes());
     }
 }
