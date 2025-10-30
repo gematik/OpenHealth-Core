@@ -56,7 +56,8 @@ impl EncryptedPinFormat2 {
                 let digit = c as u8 - STRING_INT_OFFSET;
                 assert!(
                     (MIN_DIGIT..=MAX_DIGIT).contains(&digit),
-                    "PIN digit value is out of range of a decimal digit: {}", c
+                    "PIN digit value is out of range of a decimal digit: {}",
+                    c
                 );
                 digit
             })
@@ -94,9 +95,7 @@ impl EncryptedPinFormat2 {
             }
         }
 
-        Self {
-            bytes: format2.to_vec(),
-        }
+        Self { bytes: format2.to_vec() }
     }
 }
 
@@ -144,7 +143,7 @@ mod tests {
     fn test_specific_pin_value() {
         let pin = "1234";
         let encrypted = EncryptedPinFormat2::new(pin);
-        
+
         assert_eq!(encrypted.bytes[0], 0x24);
         assert_eq!(encrypted.bytes[1], 0x12);
         assert_eq!(encrypted.bytes[2], 0x34);

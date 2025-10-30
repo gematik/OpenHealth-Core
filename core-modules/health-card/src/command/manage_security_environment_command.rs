@@ -20,12 +20,12 @@
 // find details in the "Readme" file.
 
 use crate::card::card_key_reference::CardKeyReference;
+use crate::card::pso_algorithm::PsoAlgorithm;
 use crate::command::health_card_command::HealthCardCommand;
 use crate::command::health_card_status::MANAGE_SECURITY_ENVIRONMENT_STATUS;
-use crate::card::pso_algorithm::PsoAlgorithm;
-use asn1::asn1_encoder::Asn1Encoder;
-use asn1::asn1_encoder::Result;
-use asn1::asn1_tag::{Asn1Tag, UniversalTag};
+use asn1::encoder::Asn1Encoder;
+use asn1::encoder::Result;
+use asn1::tag::{TagNumberExt, UniversalTag};
 
 /// CLA byte for the MANAGE SECURITY ENVIRONMENT command
 const CLA: u8 = 0x00;
@@ -87,13 +87,13 @@ impl ManageSecurityEnvironmentCommand for HealthCardCommand {
     ) -> Result<HealthCardCommand> {
         let data = Asn1Encoder::write(|w| {
             // '80 I2OS(OctetLength(OID), 1) || OID
-            w.write_tagged_object(0u8, Asn1Tag::CONTEXT_SPECIFIC, |inner| {
+            w.write_tagged_object(0u8.context_tag(), |inner| {
                 inner.write_bytes(oid);
                 Ok(())
             })?;
 
             // '83 01 || keyRef'
-            w.write_tagged_object(3u8, Asn1Tag::CONTEXT_SPECIFIC, |inner| {
+            w.write_tagged_object(3u8.context_tag(), |inner| {
                 inner.write_byte(card_key.calculate_key_reference(df_specific));
                 Ok(())
             })?;
@@ -118,13 +118,13 @@ impl ManageSecurityEnvironmentCommand for HealthCardCommand {
     ) -> Result<HealthCardCommand> {
         let data = Asn1Encoder::write(|w| {
             // '8401 || keyRef'
-            w.write_tagged_object(UniversalTag::OctetString, Asn1Tag::CONTEXT_SPECIFIC, |inner| {
+            w.write_tagged_object(UniversalTag::OctetString.number().context_tag(), |inner| {
                 inner.write_byte(key.calculate_key_reference(df_specific));
                 Ok(())
             })?;
 
             // '8001 || algId'
-            w.write_tagged_object(UniversalTag::External, Asn1Tag::CONTEXT_SPECIFIC, |inner| {
+            w.write_tagged_object(UniversalTag::External.number().context_tag(), |inner| {
                 inner.write_byte(pso_algorithm.identifier());
                 Ok(())
             })?;

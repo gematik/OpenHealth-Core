@@ -30,3 +30,4 @@ default = []
 
 [dependencies]
 regex = "1.11.1"
+thiserror = "1.0"

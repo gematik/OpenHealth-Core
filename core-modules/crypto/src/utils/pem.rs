@@ -19,11 +19,14 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
+use std::sync::OnceLock;
+
 use base64::Engine;
+use regex::Regex;
 
 const PEM_DATA_MAX_LENGTH_PER_LINE: usize = 64;
 
-static PEM_REGEX: &str = r"^-----BEGIN (.*)-----(.*)-----END (.*)-----$";
+static PEM_REGEX: OnceLock<Regex> = OnceLock::new();
 
 /// Represents a Privacy Enhanced Mail (PEM) formatted cryptographic object.
 pub struct Pem {
@@ -55,7 +58,8 @@ pub trait DecodeToPem {
 impl DecodeToPem for str {
     fn decode_to_pem(&self) -> Pem {
         let s = self.replace('\n', "").trim().to_owned();
-        let re = regex::Regex::new(PEM_REGEX).unwrap();
+        let re = PEM_REGEX
+            .get_or_init(|| Regex::new(r"^-----BEGIN (.*)-----(.*)-----END (.*)-----$").expect("compile PEM regex"));
         let captures = re.captures(&s).expect("Invalid PEM format");
         let header_type = captures.get(1).unwrap().as_str();
         let data = captures.get(2).unwrap().as_str();
@@ -108,13 +112,8 @@ mod tests {
         let encoded = pem.encode_to_string();
         let lines: Vec<&str> = encoded.lines().collect();
 
-        for line in lines.iter()
-            .filter(|l| !l.is_empty() && !l.starts_with("-----"))
-        {
-            assert!(
-                line.len() <= 64,
-                "Line exceeds 64 characters: {line}"
-            );
+        for line in lines.iter().filter(|l| !l.is_empty() && !l.starts_with("-----")) {
+            assert!(line.len() <= 64, "Line exceeds 64 characters: {line}");
         }
     }
 
@@ -139,9 +138,7 @@ mod tests {
         let typ = "CERTIFICATE";
         let content = "Hello World";
         let encoded_content = base64::engine::general_purpose::STANDARD.encode(content.as_bytes());
-        let pem_string = format!(
-            "-----BEGIN {typ}-----\n{encoded_content}\n-----END {typ}-----\n"
-        );
+        let pem_string = format!("-----BEGIN {typ}-----\n{encoded_content}\n-----END {typ}-----\n");
 
         let decoded = pem_string.decode_to_pem();
         assert_eq!(typ, decoded.r#type);

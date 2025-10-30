@@ -64,10 +64,7 @@ fn encode_data_length_extended(nc: usize) -> [u8; 3] {
 /// # Arguments
 /// * `nc` - The data length (number of data bytes).
 fn encode_data_length_short(nc: usize) -> [u8; 1] {
-    assert!(
-        nc <= 255,
-        "Data length (nc) must be in range [0, 255] for short APDUs"
-    );
+    assert!(nc <= 255, "Data length (nc) must be in range [0, 255] for short APDUs");
     [nc as u8]
 }
 
@@ -194,13 +191,7 @@ impl CardCommandApdu {
     /// * `p1` - The parameter 1 byte (P1).
     /// * `p2` - The parameter 2 byte (P2).
     /// * `ne` - The expected response length (Ne), or None for case 1.
-    pub fn of_options_without_data(
-        cla: u8,
-        ins: u8,
-        p1: u8,
-        p2: u8,
-        ne: Option<usize>,
-    ) -> Result<Self, ApduError> {
+    pub fn of_options_without_data(cla: u8, ins: u8, p1: u8, p2: u8, ne: Option<usize>) -> Result<Self, ApduError> {
         Self::of_options(cla, ins, p1, p2, None::<Vec<u8>>, ne)
     }
 
@@ -247,9 +238,7 @@ impl CardCommandApdu {
 
             if let Some(ne_val) = ne {
                 // Cases 4s or 4e: Both data and expected length are present.
-                if data_length < EXPECTED_LENGTH_WILDCARD_SHORT
-                    && ne_val <= EXPECTED_LENGTH_WILDCARD_SHORT
-                {
+                if data_length < EXPECTED_LENGTH_WILDCARD_SHORT && ne_val <= EXPECTED_LENGTH_WILDCARD_SHORT {
                     // Case 4s: Short data and expected length.
                     let data_offset = 5;
                     apdu.extend_from_slice(&encode_data_length_short(data_length));
@@ -299,17 +288,7 @@ impl CardCommandApdu {
             }
         };
 
-        Ok(CardCommandApdu {
-            apdu,
-            data_length,
-            data_offset,
-            cla,
-            ins,
-            p1,
-            p2,
-            data: data_vec,
-            ne,
-        })
+        Ok(CardCommandApdu { apdu, data_length, data_offset, cla, ins, p1, p2, data: data_vec, ne })
     }
 
     /// Creates a CardCommandApdu instance from a raw APDU byte array.
@@ -318,9 +297,7 @@ impl CardCommandApdu {
     /// * `apdu` - The raw APDU byte array.
     pub fn of_apdu(apdu: &[u8]) -> Result<Self, ApduError> {
         if apdu.len() < 4 {
-            return Err(ApduError::InvalidApdu(
-                "APDU must be at least 4 bytes long".to_string(),
-            ));
+            return Err(ApduError::InvalidApdu("APDU must be at least 4 bytes long".to_string()));
         }
 
         let mut data_length = 0;
@@ -335,11 +312,7 @@ impl CardCommandApdu {
         } else if apdu.len() == 5 {
             // Case 2s: Only expected length is present.
             let li = apdu[4] as usize;
-            let ne = if li == 0 {
-                EXPECTED_LENGTH_WILDCARD_SHORT
-            } else {
-                li
-            };
+            let ne = if li == 0 { EXPECTED_LENGTH_WILDCARD_SHORT } else { li };
 
             data_length = 0;
             expected_length = Some(ne);
@@ -383,11 +356,8 @@ impl CardCommandApdu {
             let data_length_extended = ((apdu[5] as usize) << 8) | (apdu[6] as usize);
             if apdu.len() == 7 {
                 // Case 2e: Only expected length in extended format.
-                let ne = if data_length_extended == 0 {
-                    EXPECTED_LENGTH_WILDCARD_EXTENDED
-                } else {
-                    data_length_extended
-                };
+                let ne =
+                    if data_length_extended == 0 { EXPECTED_LENGTH_WILDCARD_EXTENDED } else { data_length_extended };
 
                 data_length = 0;
                 expected_length = Some(ne);
@@ -410,8 +380,7 @@ impl CardCommandApdu {
                 } else if apdu.len() == 4 + 5 + data_length_extended {
                     // Case 4e: Data and expected length (extended).
                     let off = apdu.len() - 2;
-                    let expected_length_indicator =
-                        ((apdu[off] as usize) << 8) | (apdu[off + 1] as usize);
+                    let expected_length_indicator = ((apdu[off] as usize) << 8) | (apdu[off + 1] as usize);
                     let ne = if expected_length_indicator == 0 {
                         EXPECTED_LENGTH_WILDCARD_EXTENDED
                     } else {
@@ -508,14 +477,7 @@ pub struct CardCommandApduBuilder {
 impl CardCommandApduBuilder {
     /// Creates a new CardCommandApduBuilder with default values.
     pub fn new() -> Self {
-        Self {
-            cla: 0,
-            ins: 0,
-            p1: 0,
-            p2: 0,
-            data: None,
-            ne: None,
-        }
+        Self { cla: 0, ins: 0, p1: 0, p2: 0, data: None, ne: None }
     }
 
     /// Sets the CLA byte.
@@ -585,9 +547,7 @@ impl CardResponseApdu {
             ));
         }
 
-        Ok(CardResponseApdu {
-            bytes: apdu.to_vec(),
-        })
+        Ok(CardResponseApdu { bytes: apdu.to_vec() })
     }
 
     /// Creates a CardResponseApdu from a byte array.
@@ -668,8 +628,7 @@ mod tests {
     #[test]
     fn test_card_command_apdu_case1() {
         // Case 1: Header only
-        let apdu =
-            CardCommandApdu::of_options(0x00, 0xA4, 0x04, 0x00, None::<Vec<u8>>, None).unwrap();
+        let apdu = CardCommandApdu::of_options(0x00, 0xA4, 0x04, 0x00, None::<Vec<u8>>, None).unwrap();
         assert_eq!(apdu.apdu(), vec![0x00, 0xA4, 0x04, 0x00]);
         assert_eq!(apdu.data, None);
         assert_eq!(apdu.ne, None);
@@ -678,8 +637,7 @@ mod tests {
     #[test]
     fn test_card_command_apdu_case2s() {
         // Case 2s: Header + Le (short)
-        let apdu = CardCommandApdu::of_options(0x00, 0xA4, 0x04, 0x00, None::<Vec<u8>>, Some(256))
-            .unwrap();
+        let apdu = CardCommandApdu::of_options(0x00, 0xA4, 0x04, 0x00, None::<Vec<u8>>, Some(256)).unwrap();
         assert_eq!(apdu.apdu(), vec![0x00, 0xA4, 0x04, 0x00, 0x00]);
         assert_eq!(apdu.data, None);
         assert_eq!(apdu.ne, Some(256));

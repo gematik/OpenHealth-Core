@@ -128,10 +128,7 @@ impl ReadCommand for HealthCardCommand {
     }
 
     fn read_sfi_with_offset_and_length(sfi: ShortFileIdentifier, offset: i32, ne: i32) -> HealthCardCommand {
-        assert!(
-            (MIN_OFFSET_RANGE..=MAX_OFFSET_WITH_SFI_RANGE).contains(&offset),
-            "Offset must be in range [0, 255]"
-        );
+        assert!((MIN_OFFSET_RANGE..=MAX_OFFSET_WITH_SFI_RANGE).contains(&offset), "Offset must be in range [0, 255]");
 
         HealthCardCommand {
             expected_status: READ_STATUS.clone(), // Verwende das importierte READ_STATUS

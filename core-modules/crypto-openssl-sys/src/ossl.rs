@@ -1366,7 +1366,6 @@ pub const OPENSSL_INIT_ENGINE_AFALG: i32 = 32768;
 pub const OPENSSL_INIT_ATFORK: i32 = 131072;
 pub const OPENSSL_INIT_NO_ATEXIT: i32 = 524288;
 pub const OPENSSL_INIT_ENGINE_ALL_BUILTIN: i32 = 30208;
-pub const CRYPTO_ONCE_STATIC_INIT: i32 = 0;
 pub const BIO_R_ACCEPT_ERROR: i32 = 100;
 pub const BIO_R_ADDRINFO_ADDR_IS_NOT_AF_INET: i32 = 141;
 pub const BIO_R_AMBIGUOUS_HOST_OR_SERVICE: i32 = 129;
@@ -3324,8 +3323,7 @@ pub const LN_id_kp_bgpsec_router: &[u8; 14] = b"BGPsec Router\0";
 pub const NID_id_kp_bgpsec_router: i32 = 1220;
 pub const SN_id_kp_BrandIndicatorforMessageIdentification: &[u8; 45] =
     b"id-kp-BrandIndicatorforMessageIdentification\0";
-pub const LN_id_kp_BrandIndicatorforMessageIdentification: &[u8; 43] =
-    b"Brand Indicator for Message Identification\0";
+pub const LN_id_kp_BrandIndicatorforMessageIdentification: &[u8; 43] = b"Brand Indicator for Message Identification\0";
 pub const NID_id_kp_BrandIndicatorforMessageIdentification: i32 = 1221;
 pub const SN_cmKGA: &[u8; 6] = b"cmKGA\0";
 pub const LN_cmKGA: &[u8; 48] = b"Certificate Management Key Generation Authority\0";
@@ -3872,8 +3870,7 @@ pub const SN_authority_attribute_identifier: &[u8; 29] = b"authorityAttributeIde
 pub const LN_authority_attribute_identifier: &[u8; 38] = b"X509v3 Authority Attribute Identifier\0";
 pub const NID_authority_attribute_identifier: i32 = 1295;
 pub const SN_role_spec_cert_identifier: &[u8; 23] = b"roleSpecCertIdentifier\0";
-pub const LN_role_spec_cert_identifier: &[u8; 49] =
-    b"X509v3 Role Specification Certificate Identifier\0";
+pub const LN_role_spec_cert_identifier: &[u8; 49] = b"X509v3 Role Specification Certificate Identifier\0";
 pub const NID_role_spec_cert_identifier: i32 = 1296;
 pub const SN_basic_att_constraints: &[u8; 20] = b"basicAttConstraints\0";
 pub const LN_basic_att_constraints: &[u8; 47] = b"X509v3 Basic Attribute Certificate Constraints\0";
@@ -3918,8 +3915,7 @@ pub const SN_no_assertion: &[u8; 12] = b"noAssertion\0";
 pub const LN_no_assertion: &[u8; 20] = b"X509v3 No Assertion\0";
 pub const NID_no_assertion: i32 = 1306;
 pub const SN_id_aa_issuing_distribution_point: &[u8; 27] = b"aAissuingDistributionPoint\0";
-pub const LN_id_aa_issuing_distribution_point: &[u8; 54] =
-    b"X509v3 Attribute Authority Issuing Distribution Point\0";
+pub const LN_id_aa_issuing_distribution_point: &[u8; 54] = b"X509v3 Attribute Authority Issuing Distribution Point\0";
 pub const NID_id_aa_issuing_distribution_point: i32 = 1307;
 pub const SN_issued_on_behalf_of: &[u8; 17] = b"issuedOnBehalfOf\0";
 pub const LN_issued_on_behalf_of: &[u8; 27] = b"X509v3 Issued On Behalf Of\0";
@@ -3946,8 +3942,7 @@ pub const SN_prot_restrict: &[u8; 13] = b"protRestrict\0";
 pub const LN_prot_restrict: &[u8; 28] = b"X509v3 Protocol Restriction\0";
 pub const NID_prot_restrict: i32 = 1315;
 pub const SN_subject_alt_public_key_info: &[u8; 24] = b"subjectAltPublicKeyInfo\0";
-pub const LN_subject_alt_public_key_info: &[u8; 43] =
-    b"X509v3 Subject Alternative Public Key Info\0";
+pub const LN_subject_alt_public_key_info: &[u8; 43] = b"X509v3 Subject Alternative Public Key Info\0";
 pub const NID_subject_alt_public_key_info: i32 = 1316;
 pub const SN_alt_signature_algorithm: &[u8; 22] = b"altSignatureAlgorithm\0";
 pub const LN_alt_signature_algorithm: &[u8; 39] = b"X509v3 Alternative Signature Algorithm\0";
@@ -4348,28 +4343,22 @@ pub const NID_SLH_DSA_SHA2_256s_WITH_SHA512: i32 = 1479;
 pub const SN_SLH_DSA_SHA2_256f_WITH_SHA512: &[u8; 38] = b"id-hash-slh-dsa-sha2-256f-with-sha512\0";
 pub const LN_SLH_DSA_SHA2_256f_WITH_SHA512: &[u8; 30] = b"SLH-DSA-SHA2-256f-WITH-SHA512\0";
 pub const NID_SLH_DSA_SHA2_256f_WITH_SHA512: i32 = 1480;
-pub const SN_SLH_DSA_SHAKE_128s_WITH_SHAKE128: &[u8; 41] =
-    b"id-hash-slh-dsa-shake-128s-with-shake128\0";
+pub const SN_SLH_DSA_SHAKE_128s_WITH_SHAKE128: &[u8; 41] = b"id-hash-slh-dsa-shake-128s-with-shake128\0";
 pub const LN_SLH_DSA_SHAKE_128s_WITH_SHAKE128: &[u8; 33] = b"SLH-DSA-SHAKE-128s-WITH-SHAKE128\0";
 pub const NID_SLH_DSA_SHAKE_128s_WITH_SHAKE128: i32 = 1481;
-pub const SN_SLH_DSA_SHAKE_128f_WITH_SHAKE128: &[u8; 41] =
-    b"id-hash-slh-dsa-shake-128f-with-shake128\0";
+pub const SN_SLH_DSA_SHAKE_128f_WITH_SHAKE128: &[u8; 41] = b"id-hash-slh-dsa-shake-128f-with-shake128\0";
 pub const LN_SLH_DSA_SHAKE_128f_WITH_SHAKE128: &[u8; 33] = b"SLH-DSA-SHAKE-128f-WITH-SHAKE128\0";
 pub const NID_SLH_DSA_SHAKE_128f_WITH_SHAKE128: i32 = 1482;
-pub const SN_SLH_DSA_SHAKE_192s_WITH_SHAKE256: &[u8; 41] =
-    b"id-hash-slh-dsa-shake-192s-with-shake256\0";
+pub const SN_SLH_DSA_SHAKE_192s_WITH_SHAKE256: &[u8; 41] = b"id-hash-slh-dsa-shake-192s-with-shake256\0";
 pub const LN_SLH_DSA_SHAKE_192s_WITH_SHAKE256: &[u8; 33] = b"SLH-DSA-SHAKE-192s-WITH-SHAKE256\0";
 pub const NID_SLH_DSA_SHAKE_192s_WITH_SHAKE256: i32 = 1483;
-pub const SN_SLH_DSA_SHAKE_192f_WITH_SHAKE256: &[u8; 41] =
-    b"id-hash-slh-dsa-shake-192f-with-shake256\0";
+pub const SN_SLH_DSA_SHAKE_192f_WITH_SHAKE256: &[u8; 41] = b"id-hash-slh-dsa-shake-192f-with-shake256\0";
 pub const LN_SLH_DSA_SHAKE_192f_WITH_SHAKE256: &[u8; 33] = b"SLH-DSA-SHAKE-192f-WITH-SHAKE256\0";
 pub const NID_SLH_DSA_SHAKE_192f_WITH_SHAKE256: i32 = 1484;
-pub const SN_SLH_DSA_SHAKE_256s_WITH_SHAKE256: &[u8; 41] =
-    b"id-hash-slh-dsa-shake-256s-with-shake256\0";
+pub const SN_SLH_DSA_SHAKE_256s_WITH_SHAKE256: &[u8; 41] = b"id-hash-slh-dsa-shake-256s-with-shake256\0";
 pub const LN_SLH_DSA_SHAKE_256s_WITH_SHAKE256: &[u8; 33] = b"SLH-DSA-SHAKE-256s-WITH-SHAKE256\0";
 pub const NID_SLH_DSA_SHAKE_256s_WITH_SHAKE256: i32 = 1485;
-pub const SN_SLH_DSA_SHAKE_256f_WITH_SHAKE256: &[u8; 41] =
-    b"id-hash-slh-dsa-shake-256f-with-shake256\0";
+pub const SN_SLH_DSA_SHAKE_256f_WITH_SHAKE256: &[u8; 41] = b"id-hash-slh-dsa-shake-256f-with-shake256\0";
 pub const LN_SLH_DSA_SHAKE_256f_WITH_SHAKE256: &[u8; 33] = b"SLH-DSA-SHAKE-256f-WITH-SHAKE256\0";
 pub const NID_SLH_DSA_SHAKE_256f_WITH_SHAKE256: i32 = 1486;
 pub const SN_hold_instruction_code: &[u8; 20] = b"holdInstructionCode\0";
@@ -4860,14 +4849,11 @@ pub const SN_cryptocom: &[u8; 10] = b"cryptocom\0";
 pub const NID_cryptocom: i32 = 806;
 pub const SN_id_tc26: &[u8; 8] = b"id-tc26\0";
 pub const NID_id_tc26: i32 = 974;
-pub const SN_id_GostR3411_94_with_GostR3410_2001: &[u8; 36] =
-    b"id-GostR3411-94-with-GostR3410-2001\0";
-pub const LN_id_GostR3411_94_with_GostR3410_2001: &[u8; 39] =
-    b"GOST R 34.11-94 with GOST R 34.10-2001\0";
+pub const SN_id_GostR3411_94_with_GostR3410_2001: &[u8; 36] = b"id-GostR3411-94-with-GostR3410-2001\0";
+pub const LN_id_GostR3411_94_with_GostR3410_2001: &[u8; 39] = b"GOST R 34.11-94 with GOST R 34.10-2001\0";
 pub const NID_id_GostR3411_94_with_GostR3410_2001: i32 = 807;
 pub const SN_id_GostR3411_94_with_GostR3410_94: &[u8; 34] = b"id-GostR3411-94-with-GostR3410-94\0";
-pub const LN_id_GostR3411_94_with_GostR3410_94: &[u8; 37] =
-    b"GOST R 34.11-94 with GOST R 34.10-94\0";
+pub const LN_id_GostR3411_94_with_GostR3410_94: &[u8; 37] = b"GOST R 34.11-94 with GOST R 34.10-94\0";
 pub const NID_id_GostR3411_94_with_GostR3410_94: i32 = 808;
 pub const SN_id_GostR3411_94: &[u8; 10] = b"md_gost94\0";
 pub const LN_id_GostR3411_94: &[u8; 16] = b"GOST R 34.11-94\0";
@@ -4908,8 +4894,7 @@ pub const NID_id_GostR3410_2001DH: i32 = 817;
 pub const SN_id_GostR3410_94DH: &[u8; 18] = b"id-GostR3410-94DH\0";
 pub const LN_id_GostR3410_94DH: &[u8; 19] = b"GOST R 34.10-94 DH\0";
 pub const NID_id_GostR3410_94DH: i32 = 818;
-pub const SN_id_Gost28147_89_CryptoPro_KeyMeshing: &[u8; 37] =
-    b"id-Gost28147-89-CryptoPro-KeyMeshing\0";
+pub const SN_id_Gost28147_89_CryptoPro_KeyMeshing: &[u8; 37] = b"id-Gost28147-89-CryptoPro-KeyMeshing\0";
 pub const NID_id_Gost28147_89_CryptoPro_KeyMeshing: i32 = 819;
 pub const SN_id_Gost28147_89_None_KeyMeshing: &[u8; 32] = b"id-Gost28147-89-None-KeyMeshing\0";
 pub const NID_id_Gost28147_89_None_KeyMeshing: i32 = 820;
@@ -4919,17 +4904,13 @@ pub const SN_id_GostR3411_94_CryptoProParamSet: &[u8; 34] = b"id-GostR3411-94-Cr
 pub const NID_id_GostR3411_94_CryptoProParamSet: i32 = 822;
 pub const SN_id_Gost28147_89_TestParamSet: &[u8; 29] = b"id-Gost28147-89-TestParamSet\0";
 pub const NID_id_Gost28147_89_TestParamSet: i32 = 823;
-pub const SN_id_Gost28147_89_CryptoPro_A_ParamSet: &[u8; 37] =
-    b"id-Gost28147-89-CryptoPro-A-ParamSet\0";
+pub const SN_id_Gost28147_89_CryptoPro_A_ParamSet: &[u8; 37] = b"id-Gost28147-89-CryptoPro-A-ParamSet\0";
 pub const NID_id_Gost28147_89_CryptoPro_A_ParamSet: i32 = 824;
-pub const SN_id_Gost28147_89_CryptoPro_B_ParamSet: &[u8; 37] =
-    b"id-Gost28147-89-CryptoPro-B-ParamSet\0";
+pub const SN_id_Gost28147_89_CryptoPro_B_ParamSet: &[u8; 37] = b"id-Gost28147-89-CryptoPro-B-ParamSet\0";
 pub const NID_id_Gost28147_89_CryptoPro_B_ParamSet: i32 = 825;
-pub const SN_id_Gost28147_89_CryptoPro_C_ParamSet: &[u8; 37] =
-    b"id-Gost28147-89-CryptoPro-C-ParamSet\0";
+pub const SN_id_Gost28147_89_CryptoPro_C_ParamSet: &[u8; 37] = b"id-Gost28147-89-CryptoPro-C-ParamSet\0";
 pub const NID_id_Gost28147_89_CryptoPro_C_ParamSet: i32 = 826;
-pub const SN_id_Gost28147_89_CryptoPro_D_ParamSet: &[u8; 37] =
-    b"id-Gost28147-89-CryptoPro-D-ParamSet\0";
+pub const SN_id_Gost28147_89_CryptoPro_D_ParamSet: &[u8; 37] = b"id-Gost28147-89-CryptoPro-D-ParamSet\0";
 pub const NID_id_Gost28147_89_CryptoPro_D_ParamSet: i32 = 827;
 pub const SN_id_Gost28147_89_CryptoPro_Oscar_1_1_ParamSet: &[u8; 45] =
     b"id-Gost28147-89-CryptoPro-Oscar-1-1-ParamSet\0";
@@ -4937,48 +4918,35 @@ pub const NID_id_Gost28147_89_CryptoPro_Oscar_1_1_ParamSet: i32 = 828;
 pub const SN_id_Gost28147_89_CryptoPro_Oscar_1_0_ParamSet: &[u8; 45] =
     b"id-Gost28147-89-CryptoPro-Oscar-1-0-ParamSet\0";
 pub const NID_id_Gost28147_89_CryptoPro_Oscar_1_0_ParamSet: i32 = 829;
-pub const SN_id_Gost28147_89_CryptoPro_RIC_1_ParamSet: &[u8; 41] =
-    b"id-Gost28147-89-CryptoPro-RIC-1-ParamSet\0";
+pub const SN_id_Gost28147_89_CryptoPro_RIC_1_ParamSet: &[u8; 41] = b"id-Gost28147-89-CryptoPro-RIC-1-ParamSet\0";
 pub const NID_id_Gost28147_89_CryptoPro_RIC_1_ParamSet: i32 = 830;
 pub const SN_id_GostR3410_94_TestParamSet: &[u8; 29] = b"id-GostR3410-94-TestParamSet\0";
 pub const NID_id_GostR3410_94_TestParamSet: i32 = 831;
-pub const SN_id_GostR3410_94_CryptoPro_A_ParamSet: &[u8; 37] =
-    b"id-GostR3410-94-CryptoPro-A-ParamSet\0";
+pub const SN_id_GostR3410_94_CryptoPro_A_ParamSet: &[u8; 37] = b"id-GostR3410-94-CryptoPro-A-ParamSet\0";
 pub const NID_id_GostR3410_94_CryptoPro_A_ParamSet: i32 = 832;
-pub const SN_id_GostR3410_94_CryptoPro_B_ParamSet: &[u8; 37] =
-    b"id-GostR3410-94-CryptoPro-B-ParamSet\0";
+pub const SN_id_GostR3410_94_CryptoPro_B_ParamSet: &[u8; 37] = b"id-GostR3410-94-CryptoPro-B-ParamSet\0";
 pub const NID_id_GostR3410_94_CryptoPro_B_ParamSet: i32 = 833;
-pub const SN_id_GostR3410_94_CryptoPro_C_ParamSet: &[u8; 37] =
-    b"id-GostR3410-94-CryptoPro-C-ParamSet\0";
+pub const SN_id_GostR3410_94_CryptoPro_C_ParamSet: &[u8; 37] = b"id-GostR3410-94-CryptoPro-C-ParamSet\0";
 pub const NID_id_GostR3410_94_CryptoPro_C_ParamSet: i32 = 834;
-pub const SN_id_GostR3410_94_CryptoPro_D_ParamSet: &[u8; 37] =
-    b"id-GostR3410-94-CryptoPro-D-ParamSet\0";
+pub const SN_id_GostR3410_94_CryptoPro_D_ParamSet: &[u8; 37] = b"id-GostR3410-94-CryptoPro-D-ParamSet\0";
 pub const NID_id_GostR3410_94_CryptoPro_D_ParamSet: i32 = 835;
-pub const SN_id_GostR3410_94_CryptoPro_XchA_ParamSet: &[u8; 40] =
-    b"id-GostR3410-94-CryptoPro-XchA-ParamSet\0";
+pub const SN_id_GostR3410_94_CryptoPro_XchA_ParamSet: &[u8; 40] = b"id-GostR3410-94-CryptoPro-XchA-ParamSet\0";
 pub const NID_id_GostR3410_94_CryptoPro_XchA_ParamSet: i32 = 836;
-pub const SN_id_GostR3410_94_CryptoPro_XchB_ParamSet: &[u8; 40] =
-    b"id-GostR3410-94-CryptoPro-XchB-ParamSet\0";
+pub const SN_id_GostR3410_94_CryptoPro_XchB_ParamSet: &[u8; 40] = b"id-GostR3410-94-CryptoPro-XchB-ParamSet\0";
 pub const NID_id_GostR3410_94_CryptoPro_XchB_ParamSet: i32 = 837;
-pub const SN_id_GostR3410_94_CryptoPro_XchC_ParamSet: &[u8; 40] =
-    b"id-GostR3410-94-CryptoPro-XchC-ParamSet\0";
+pub const SN_id_GostR3410_94_CryptoPro_XchC_ParamSet: &[u8; 40] = b"id-GostR3410-94-CryptoPro-XchC-ParamSet\0";
 pub const NID_id_GostR3410_94_CryptoPro_XchC_ParamSet: i32 = 838;
 pub const SN_id_GostR3410_2001_TestParamSet: &[u8; 31] = b"id-GostR3410-2001-TestParamSet\0";
 pub const NID_id_GostR3410_2001_TestParamSet: i32 = 839;
-pub const SN_id_GostR3410_2001_CryptoPro_A_ParamSet: &[u8; 39] =
-    b"id-GostR3410-2001-CryptoPro-A-ParamSet\0";
+pub const SN_id_GostR3410_2001_CryptoPro_A_ParamSet: &[u8; 39] = b"id-GostR3410-2001-CryptoPro-A-ParamSet\0";
 pub const NID_id_GostR3410_2001_CryptoPro_A_ParamSet: i32 = 840;
-pub const SN_id_GostR3410_2001_CryptoPro_B_ParamSet: &[u8; 39] =
-    b"id-GostR3410-2001-CryptoPro-B-ParamSet\0";
+pub const SN_id_GostR3410_2001_CryptoPro_B_ParamSet: &[u8; 39] = b"id-GostR3410-2001-CryptoPro-B-ParamSet\0";
 pub const NID_id_GostR3410_2001_CryptoPro_B_ParamSet: i32 = 841;
-pub const SN_id_GostR3410_2001_CryptoPro_C_ParamSet: &[u8; 39] =
-    b"id-GostR3410-2001-CryptoPro-C-ParamSet\0";
+pub const SN_id_GostR3410_2001_CryptoPro_C_ParamSet: &[u8; 39] = b"id-GostR3410-2001-CryptoPro-C-ParamSet\0";
 pub const NID_id_GostR3410_2001_CryptoPro_C_ParamSet: i32 = 842;
-pub const SN_id_GostR3410_2001_CryptoPro_XchA_ParamSet: &[u8; 42] =
-    b"id-GostR3410-2001-CryptoPro-XchA-ParamSet\0";
+pub const SN_id_GostR3410_2001_CryptoPro_XchA_ParamSet: &[u8; 42] = b"id-GostR3410-2001-CryptoPro-XchA-ParamSet\0";
 pub const NID_id_GostR3410_2001_CryptoPro_XchA_ParamSet: i32 = 843;
-pub const SN_id_GostR3410_2001_CryptoPro_XchB_ParamSet: &[u8; 42] =
-    b"id-GostR3410-2001-CryptoPro-XchB-ParamSet\0";
+pub const SN_id_GostR3410_2001_CryptoPro_XchB_ParamSet: &[u8; 42] = b"id-GostR3410-2001-CryptoPro-XchB-ParamSet\0";
 pub const NID_id_GostR3410_2001_CryptoPro_XchB_ParamSet: i32 = 844;
 pub const SN_id_GostR3410_94_a: &[u8; 18] = b"id-GostR3410-94-a\0";
 pub const NID_id_GostR3410_94_a: i32 = 845;
@@ -4997,19 +4965,14 @@ pub const NID_id_GostR3410_94_cc: i32 = 850;
 pub const SN_id_GostR3410_2001_cc: &[u8; 11] = b"gost2001cc\0";
 pub const LN_id_GostR3410_2001_cc: &[u8; 26] = b"GOST 34.10-2001 Cryptocom\0";
 pub const NID_id_GostR3410_2001_cc: i32 = 851;
-pub const SN_id_GostR3411_94_with_GostR3410_94_cc: &[u8; 37] =
-    b"id-GostR3411-94-with-GostR3410-94-cc\0";
-pub const LN_id_GostR3411_94_with_GostR3410_94_cc: &[u8; 47] =
-    b"GOST R 34.11-94 with GOST R 34.10-94 Cryptocom\0";
+pub const SN_id_GostR3411_94_with_GostR3410_94_cc: &[u8; 37] = b"id-GostR3411-94-with-GostR3410-94-cc\0";
+pub const LN_id_GostR3411_94_with_GostR3410_94_cc: &[u8; 47] = b"GOST R 34.11-94 with GOST R 34.10-94 Cryptocom\0";
 pub const NID_id_GostR3411_94_with_GostR3410_94_cc: i32 = 852;
-pub const SN_id_GostR3411_94_with_GostR3410_2001_cc: &[u8; 39] =
-    b"id-GostR3411-94-with-GostR3410-2001-cc\0";
-pub const LN_id_GostR3411_94_with_GostR3410_2001_cc: &[u8; 49] =
-    b"GOST R 34.11-94 with GOST R 34.10-2001 Cryptocom\0";
+pub const SN_id_GostR3411_94_with_GostR3410_2001_cc: &[u8; 39] = b"id-GostR3411-94-with-GostR3410-2001-cc\0";
+pub const LN_id_GostR3411_94_with_GostR3410_2001_cc: &[u8; 49] = b"GOST R 34.11-94 with GOST R 34.10-2001 Cryptocom\0";
 pub const NID_id_GostR3411_94_with_GostR3410_2001_cc: i32 = 853;
 pub const SN_id_GostR3410_2001_ParamSet_cc: &[u8; 30] = b"id-GostR3410-2001-ParamSet-cc\0";
-pub const LN_id_GostR3410_2001_ParamSet_cc: &[u8; 41] =
-    b"GOST R 3410-2001 Parameter Set Cryptocom\0";
+pub const LN_id_GostR3410_2001_ParamSet_cc: &[u8; 41] = b"GOST R 3410-2001 Parameter Set Cryptocom\0";
 pub const NID_id_GostR3410_2001_ParamSet_cc: i32 = 854;
 pub const SN_id_tc26_algorithms: &[u8; 19] = b"id-tc26-algorithms\0";
 pub const NID_id_tc26_algorithms: i32 = 977;
@@ -5031,13 +4994,11 @@ pub const LN_id_GostR3411_2012_512: &[u8; 36] = b"GOST R 34.11-2012 with 512 bit
 pub const NID_id_GostR3411_2012_512: i32 = 983;
 pub const SN_id_tc26_signwithdigest: &[u8; 23] = b"id-tc26-signwithdigest\0";
 pub const NID_id_tc26_signwithdigest: i32 = 984;
-pub const SN_id_tc26_signwithdigest_gost3410_2012_256: &[u8; 41] =
-    b"id-tc26-signwithdigest-gost3410-2012-256\0";
+pub const SN_id_tc26_signwithdigest_gost3410_2012_256: &[u8; 41] = b"id-tc26-signwithdigest-gost3410-2012-256\0";
 pub const LN_id_tc26_signwithdigest_gost3410_2012_256: &[u8; 51] =
     b"GOST R 34.10-2012 with GOST R 34.11-2012 (256 bit)\0";
 pub const NID_id_tc26_signwithdigest_gost3410_2012_256: i32 = 985;
-pub const SN_id_tc26_signwithdigest_gost3410_2012_512: &[u8; 41] =
-    b"id-tc26-signwithdigest-gost3410-2012-512\0";
+pub const SN_id_tc26_signwithdigest_gost3410_2012_512: &[u8; 41] = b"id-tc26-signwithdigest-gost3410-2012-512\0";
 pub const LN_id_tc26_signwithdigest_gost3410_2012_512: &[u8; 51] =
     b"GOST R 34.10-2012 with GOST R 34.11-2012 (512 bit)\0";
 pub const NID_id_tc26_signwithdigest_gost3410_2012_512: i32 = 986;
@@ -5051,15 +5012,13 @@ pub const LN_id_tc26_hmac_gost_3411_2012_512: &[u8; 29] = b"HMAC GOST 34.11-2012
 pub const NID_id_tc26_hmac_gost_3411_2012_512: i32 = 989;
 pub const SN_id_tc26_cipher: &[u8; 15] = b"id-tc26-cipher\0";
 pub const NID_id_tc26_cipher: i32 = 990;
-pub const SN_id_tc26_cipher_gostr3412_2015_magma: &[u8; 36] =
-    b"id-tc26-cipher-gostr3412-2015-magma\0";
+pub const SN_id_tc26_cipher_gostr3412_2015_magma: &[u8; 36] = b"id-tc26-cipher-gostr3412-2015-magma\0";
 pub const NID_id_tc26_cipher_gostr3412_2015_magma: i32 = 1173;
 pub const SN_magma_ctr_acpkm: &[u8; 16] = b"magma-ctr-acpkm\0";
 pub const NID_magma_ctr_acpkm: i32 = 1174;
 pub const SN_magma_ctr_acpkm_omac: &[u8; 21] = b"magma-ctr-acpkm-omac\0";
 pub const NID_magma_ctr_acpkm_omac: i32 = 1175;
-pub const SN_id_tc26_cipher_gostr3412_2015_kuznyechik: &[u8; 41] =
-    b"id-tc26-cipher-gostr3412-2015-kuznyechik\0";
+pub const SN_id_tc26_cipher_gostr3412_2015_kuznyechik: &[u8; 41] = b"id-tc26-cipher-gostr3412-2015-kuznyechik\0";
 pub const NID_id_tc26_cipher_gostr3412_2015_kuznyechik: i32 = 1176;
 pub const SN_kuznyechik_ctr_acpkm: &[u8; 21] = b"kuznyechik-ctr-acpkm\0";
 pub const NID_kuznyechik_ctr_acpkm: i32 = 1177;
@@ -5067,11 +5026,9 @@ pub const SN_kuznyechik_ctr_acpkm_omac: &[u8; 26] = b"kuznyechik-ctr-acpkm-omac\
 pub const NID_kuznyechik_ctr_acpkm_omac: i32 = 1178;
 pub const SN_id_tc26_agreement: &[u8; 18] = b"id-tc26-agreement\0";
 pub const NID_id_tc26_agreement: i32 = 991;
-pub const SN_id_tc26_agreement_gost_3410_2012_256: &[u8; 37] =
-    b"id-tc26-agreement-gost-3410-2012-256\0";
+pub const SN_id_tc26_agreement_gost_3410_2012_256: &[u8; 37] = b"id-tc26-agreement-gost-3410-2012-256\0";
 pub const NID_id_tc26_agreement_gost_3410_2012_256: i32 = 992;
-pub const SN_id_tc26_agreement_gost_3410_2012_512: &[u8; 37] =
-    b"id-tc26-agreement-gost-3410-2012-512\0";
+pub const SN_id_tc26_agreement_gost_3410_2012_512: &[u8; 37] = b"id-tc26-agreement-gost-3410-2012-512\0";
 pub const NID_id_tc26_agreement_gost_3410_2012_512: i32 = 993;
 pub const SN_id_tc26_wrap: &[u8; 13] = b"id-tc26-wrap\0";
 pub const NID_id_tc26_wrap: i32 = 1179;
@@ -5079,8 +5036,7 @@ pub const SN_id_tc26_wrap_gostr3412_2015_magma: &[u8; 34] = b"id-tc26-wrap-gostr
 pub const NID_id_tc26_wrap_gostr3412_2015_magma: i32 = 1180;
 pub const SN_magma_kexp15: &[u8; 13] = b"magma-kexp15\0";
 pub const NID_magma_kexp15: i32 = 1181;
-pub const SN_id_tc26_wrap_gostr3412_2015_kuznyechik: &[u8; 39] =
-    b"id-tc26-wrap-gostr3412-2015-kuznyechik\0";
+pub const SN_id_tc26_wrap_gostr3412_2015_kuznyechik: &[u8; 39] = b"id-tc26-wrap-gostr3412-2015-kuznyechik\0";
 pub const NID_id_tc26_wrap_gostr3412_2015_kuznyechik: i32 = 1182;
 pub const SN_kuznyechik_kexp15: &[u8; 18] = b"kuznyechik-kexp15\0";
 pub const NID_kuznyechik_kexp15: i32 = 1183;
@@ -5088,51 +5044,34 @@ pub const SN_id_tc26_constants: &[u8; 18] = b"id-tc26-constants\0";
 pub const NID_id_tc26_constants: i32 = 994;
 pub const SN_id_tc26_sign_constants: &[u8; 23] = b"id-tc26-sign-constants\0";
 pub const NID_id_tc26_sign_constants: i32 = 995;
-pub const SN_id_tc26_gost_3410_2012_256_constants: &[u8; 37] =
-    b"id-tc26-gost-3410-2012-256-constants\0";
+pub const SN_id_tc26_gost_3410_2012_256_constants: &[u8; 37] = b"id-tc26-gost-3410-2012-256-constants\0";
 pub const NID_id_tc26_gost_3410_2012_256_constants: i32 = 1147;
-pub const SN_id_tc26_gost_3410_2012_256_paramSetA: &[u8; 37] =
-    b"id-tc26-gost-3410-2012-256-paramSetA\0";
-pub const LN_id_tc26_gost_3410_2012_256_paramSetA: &[u8; 39] =
-    b"GOST R 34.10-2012 (256 bit) ParamSet A\0";
+pub const SN_id_tc26_gost_3410_2012_256_paramSetA: &[u8; 37] = b"id-tc26-gost-3410-2012-256-paramSetA\0";
+pub const LN_id_tc26_gost_3410_2012_256_paramSetA: &[u8; 39] = b"GOST R 34.10-2012 (256 bit) ParamSet A\0";
 pub const NID_id_tc26_gost_3410_2012_256_paramSetA: i32 = 1148;
-pub const SN_id_tc26_gost_3410_2012_256_paramSetB: &[u8; 37] =
-    b"id-tc26-gost-3410-2012-256-paramSetB\0";
-pub const LN_id_tc26_gost_3410_2012_256_paramSetB: &[u8; 39] =
-    b"GOST R 34.10-2012 (256 bit) ParamSet B\0";
+pub const SN_id_tc26_gost_3410_2012_256_paramSetB: &[u8; 37] = b"id-tc26-gost-3410-2012-256-paramSetB\0";
+pub const LN_id_tc26_gost_3410_2012_256_paramSetB: &[u8; 39] = b"GOST R 34.10-2012 (256 bit) ParamSet B\0";
 pub const NID_id_tc26_gost_3410_2012_256_paramSetB: i32 = 1184;
-pub const SN_id_tc26_gost_3410_2012_256_paramSetC: &[u8; 37] =
-    b"id-tc26-gost-3410-2012-256-paramSetC\0";
-pub const LN_id_tc26_gost_3410_2012_256_paramSetC: &[u8; 39] =
-    b"GOST R 34.10-2012 (256 bit) ParamSet C\0";
+pub const SN_id_tc26_gost_3410_2012_256_paramSetC: &[u8; 37] = b"id-tc26-gost-3410-2012-256-paramSetC\0";
+pub const LN_id_tc26_gost_3410_2012_256_paramSetC: &[u8; 39] = b"GOST R 34.10-2012 (256 bit) ParamSet C\0";
 pub const NID_id_tc26_gost_3410_2012_256_paramSetC: i32 = 1185;
-pub const SN_id_tc26_gost_3410_2012_256_paramSetD: &[u8; 37] =
-    b"id-tc26-gost-3410-2012-256-paramSetD\0";
-pub const LN_id_tc26_gost_3410_2012_256_paramSetD: &[u8; 39] =
-    b"GOST R 34.10-2012 (256 bit) ParamSet D\0";
+pub const SN_id_tc26_gost_3410_2012_256_paramSetD: &[u8; 37] = b"id-tc26-gost-3410-2012-256-paramSetD\0";
+pub const LN_id_tc26_gost_3410_2012_256_paramSetD: &[u8; 39] = b"GOST R 34.10-2012 (256 bit) ParamSet D\0";
 pub const NID_id_tc26_gost_3410_2012_256_paramSetD: i32 = 1186;
-pub const SN_id_tc26_gost_3410_2012_512_constants: &[u8; 37] =
-    b"id-tc26-gost-3410-2012-512-constants\0";
+pub const SN_id_tc26_gost_3410_2012_512_constants: &[u8; 37] = b"id-tc26-gost-3410-2012-512-constants\0";
 pub const NID_id_tc26_gost_3410_2012_512_constants: i32 = 996;
-pub const SN_id_tc26_gost_3410_2012_512_paramSetTest: &[u8; 40] =
-    b"id-tc26-gost-3410-2012-512-paramSetTest\0";
+pub const SN_id_tc26_gost_3410_2012_512_paramSetTest: &[u8; 40] = b"id-tc26-gost-3410-2012-512-paramSetTest\0";
 pub const LN_id_tc26_gost_3410_2012_512_paramSetTest: &[u8; 50] =
     b"GOST R 34.10-2012 (512 bit) testing parameter set\0";
 pub const NID_id_tc26_gost_3410_2012_512_paramSetTest: i32 = 997;
-pub const SN_id_tc26_gost_3410_2012_512_paramSetA: &[u8; 37] =
-    b"id-tc26-gost-3410-2012-512-paramSetA\0";
-pub const LN_id_tc26_gost_3410_2012_512_paramSetA: &[u8; 39] =
-    b"GOST R 34.10-2012 (512 bit) ParamSet A\0";
+pub const SN_id_tc26_gost_3410_2012_512_paramSetA: &[u8; 37] = b"id-tc26-gost-3410-2012-512-paramSetA\0";
+pub const LN_id_tc26_gost_3410_2012_512_paramSetA: &[u8; 39] = b"GOST R 34.10-2012 (512 bit) ParamSet A\0";
 pub const NID_id_tc26_gost_3410_2012_512_paramSetA: i32 = 998;
-pub const SN_id_tc26_gost_3410_2012_512_paramSetB: &[u8; 37] =
-    b"id-tc26-gost-3410-2012-512-paramSetB\0";
-pub const LN_id_tc26_gost_3410_2012_512_paramSetB: &[u8; 39] =
-    b"GOST R 34.10-2012 (512 bit) ParamSet B\0";
+pub const SN_id_tc26_gost_3410_2012_512_paramSetB: &[u8; 37] = b"id-tc26-gost-3410-2012-512-paramSetB\0";
+pub const LN_id_tc26_gost_3410_2012_512_paramSetB: &[u8; 39] = b"GOST R 34.10-2012 (512 bit) ParamSet B\0";
 pub const NID_id_tc26_gost_3410_2012_512_paramSetB: i32 = 999;
-pub const SN_id_tc26_gost_3410_2012_512_paramSetC: &[u8; 37] =
-    b"id-tc26-gost-3410-2012-512-paramSetC\0";
-pub const LN_id_tc26_gost_3410_2012_512_paramSetC: &[u8; 39] =
-    b"GOST R 34.10-2012 (512 bit) ParamSet C\0";
+pub const SN_id_tc26_gost_3410_2012_512_paramSetC: &[u8; 37] = b"id-tc26-gost-3410-2012-512-paramSetC\0";
+pub const LN_id_tc26_gost_3410_2012_512_paramSetC: &[u8; 39] = b"GOST R 34.10-2012 (512 bit) ParamSet C\0";
 pub const NID_id_tc26_gost_3410_2012_512_paramSetC: i32 = 1149;
 pub const SN_id_tc26_digest_constants: &[u8; 25] = b"id-tc26-digest-constants\0";
 pub const NID_id_tc26_digest_constants: i32 = 1000;
@@ -5500,32 +5439,23 @@ pub const SN_brainpoolP512t1: &[u8; 16] = b"brainpoolP512t1\0";
 pub const NID_brainpoolP512t1: i32 = 934;
 pub const SN_dhSinglePass_stdDH_sha1kdf_scheme: &[u8; 34] = b"dhSinglePass-stdDH-sha1kdf-scheme\0";
 pub const NID_dhSinglePass_stdDH_sha1kdf_scheme: i32 = 936;
-pub const SN_dhSinglePass_stdDH_sha224kdf_scheme: &[u8; 36] =
-    b"dhSinglePass-stdDH-sha224kdf-scheme\0";
+pub const SN_dhSinglePass_stdDH_sha224kdf_scheme: &[u8; 36] = b"dhSinglePass-stdDH-sha224kdf-scheme\0";
 pub const NID_dhSinglePass_stdDH_sha224kdf_scheme: i32 = 937;
-pub const SN_dhSinglePass_stdDH_sha256kdf_scheme: &[u8; 36] =
-    b"dhSinglePass-stdDH-sha256kdf-scheme\0";
+pub const SN_dhSinglePass_stdDH_sha256kdf_scheme: &[u8; 36] = b"dhSinglePass-stdDH-sha256kdf-scheme\0";
 pub const NID_dhSinglePass_stdDH_sha256kdf_scheme: i32 = 938;
-pub const SN_dhSinglePass_stdDH_sha384kdf_scheme: &[u8; 36] =
-    b"dhSinglePass-stdDH-sha384kdf-scheme\0";
+pub const SN_dhSinglePass_stdDH_sha384kdf_scheme: &[u8; 36] = b"dhSinglePass-stdDH-sha384kdf-scheme\0";
 pub const NID_dhSinglePass_stdDH_sha384kdf_scheme: i32 = 939;
-pub const SN_dhSinglePass_stdDH_sha512kdf_scheme: &[u8; 36] =
-    b"dhSinglePass-stdDH-sha512kdf-scheme\0";
+pub const SN_dhSinglePass_stdDH_sha512kdf_scheme: &[u8; 36] = b"dhSinglePass-stdDH-sha512kdf-scheme\0";
 pub const NID_dhSinglePass_stdDH_sha512kdf_scheme: i32 = 940;
-pub const SN_dhSinglePass_cofactorDH_sha1kdf_scheme: &[u8; 39] =
-    b"dhSinglePass-cofactorDH-sha1kdf-scheme\0";
+pub const SN_dhSinglePass_cofactorDH_sha1kdf_scheme: &[u8; 39] = b"dhSinglePass-cofactorDH-sha1kdf-scheme\0";
 pub const NID_dhSinglePass_cofactorDH_sha1kdf_scheme: i32 = 941;
-pub const SN_dhSinglePass_cofactorDH_sha224kdf_scheme: &[u8; 41] =
-    b"dhSinglePass-cofactorDH-sha224kdf-scheme\0";
+pub const SN_dhSinglePass_cofactorDH_sha224kdf_scheme: &[u8; 41] = b"dhSinglePass-cofactorDH-sha224kdf-scheme\0";
 pub const NID_dhSinglePass_cofactorDH_sha224kdf_scheme: i32 = 942;
-pub const SN_dhSinglePass_cofactorDH_sha256kdf_scheme: &[u8; 41] =
-    b"dhSinglePass-cofactorDH-sha256kdf-scheme\0";
+pub const SN_dhSinglePass_cofactorDH_sha256kdf_scheme: &[u8; 41] = b"dhSinglePass-cofactorDH-sha256kdf-scheme\0";
 pub const NID_dhSinglePass_cofactorDH_sha256kdf_scheme: i32 = 943;
-pub const SN_dhSinglePass_cofactorDH_sha384kdf_scheme: &[u8; 41] =
-    b"dhSinglePass-cofactorDH-sha384kdf-scheme\0";
+pub const SN_dhSinglePass_cofactorDH_sha384kdf_scheme: &[u8; 41] = b"dhSinglePass-cofactorDH-sha384kdf-scheme\0";
 pub const NID_dhSinglePass_cofactorDH_sha384kdf_scheme: i32 = 944;
-pub const SN_dhSinglePass_cofactorDH_sha512kdf_scheme: &[u8; 41] =
-    b"dhSinglePass-cofactorDH-sha512kdf-scheme\0";
+pub const SN_dhSinglePass_cofactorDH_sha512kdf_scheme: &[u8; 41] = b"dhSinglePass-cofactorDH-sha512kdf-scheme\0";
 pub const NID_dhSinglePass_cofactorDH_sha512kdf_scheme: i32 = 945;
 pub const SN_dh_std_kdf: &[u8; 11] = b"dh-std-kdf\0";
 pub const NID_dh_std_kdf: i32 = 946;
@@ -5863,10 +5793,8 @@ pub const NID_tcg_at_tcgCredentialSpecification: i32 = 1358;
 pub const SN_tcg_at_tcgCredentialType: &[u8; 25] = b"tcg-at-tcgCredentialType\0";
 pub const LN_tcg_at_tcgCredentialType: &[u8; 20] = b"TCG Credential Type\0";
 pub const NID_tcg_at_tcgCredentialType: i32 = 1359;
-pub const SN_tcg_at_previousPlatformCertificates: &[u8; 36] =
-    b"tcg-at-previousPlatformCertificates\0";
-pub const LN_tcg_at_previousPlatformCertificates: &[u8; 35] =
-    b"TCG Previous Platform Certificates\0";
+pub const SN_tcg_at_previousPlatformCertificates: &[u8; 36] = b"tcg-at-previousPlatformCertificates\0";
+pub const LN_tcg_at_previousPlatformCertificates: &[u8; 35] = b"TCG Previous Platform Certificates\0";
 pub const NID_tcg_at_previousPlatformCertificates: i32 = 1360;
 pub const SN_tcg_at_tbbSecurityAssertions_v3: &[u8; 32] = b"tcg-at-tbbSecurityAssertions-v3\0";
 pub const LN_tcg_at_tbbSecurityAssertions_v3: &[u8; 31] = b"TCG TBB Security Assertions V3\0";
@@ -5892,8 +5820,7 @@ pub const NID_tcg_algorithm_null: i32 = 1367;
 pub const SN_tcg_kp_EKCertificate: &[u8; 21] = b"tcg-kp-EKCertificate\0";
 pub const LN_tcg_kp_EKCertificate: &[u8; 28] = b"Endorsement Key Certificate\0";
 pub const NID_tcg_kp_EKCertificate: i32 = 1368;
-pub const SN_tcg_kp_PlatformAttributeCertificate: &[u8; 36] =
-    b"tcg-kp-PlatformAttributeCertificate\0";
+pub const SN_tcg_kp_PlatformAttributeCertificate: &[u8; 36] = b"tcg-kp-PlatformAttributeCertificate\0";
 pub const LN_tcg_kp_PlatformAttributeCertificate: &[u8; 31] = b"Platform Attribute Certificate\0";
 pub const NID_tcg_kp_PlatformAttributeCertificate: i32 = 1369;
 pub const SN_tcg_kp_AIKCertificate: &[u8; 22] = b"tcg-kp-AIKCertificate\0";
@@ -5902,24 +5829,18 @@ pub const NID_tcg_kp_AIKCertificate: i32 = 1370;
 pub const SN_tcg_kp_PlatformKeyCertificate: &[u8; 30] = b"tcg-kp-PlatformKeyCertificate\0";
 pub const LN_tcg_kp_PlatformKeyCertificate: &[u8; 25] = b"Platform Key Certificate\0";
 pub const NID_tcg_kp_PlatformKeyCertificate: i32 = 1371;
-pub const SN_tcg_kp_DeltaPlatformAttributeCertificate: &[u8; 41] =
-    b"tcg-kp-DeltaPlatformAttributeCertificate\0";
-pub const LN_tcg_kp_DeltaPlatformAttributeCertificate: &[u8; 37] =
-    b"Delta Platform Attribute Certificate\0";
+pub const SN_tcg_kp_DeltaPlatformAttributeCertificate: &[u8; 41] = b"tcg-kp-DeltaPlatformAttributeCertificate\0";
+pub const LN_tcg_kp_DeltaPlatformAttributeCertificate: &[u8; 37] = b"Delta Platform Attribute Certificate\0";
 pub const NID_tcg_kp_DeltaPlatformAttributeCertificate: i32 = 1372;
-pub const SN_tcg_kp_DeltaPlatformKeyCertificate: &[u8; 35] =
-    b"tcg-kp-DeltaPlatformKeyCertificate\0";
+pub const SN_tcg_kp_DeltaPlatformKeyCertificate: &[u8; 35] = b"tcg-kp-DeltaPlatformKeyCertificate\0";
 pub const LN_tcg_kp_DeltaPlatformKeyCertificate: &[u8; 31] = b"Delta Platform Key Certificate\0";
 pub const NID_tcg_kp_DeltaPlatformKeyCertificate: i32 = 1373;
 pub const SN_tcg_kp_AdditionalPlatformAttributeCertificate: &[u8; 46] =
     b"tcg-kp-AdditionalPlatformAttributeCertificate\0";
-pub const LN_tcg_kp_AdditionalPlatformAttributeCertificate: &[u8; 42] =
-    b"Additional Platform Attribute Certificate\0";
+pub const LN_tcg_kp_AdditionalPlatformAttributeCertificate: &[u8; 42] = b"Additional Platform Attribute Certificate\0";
 pub const NID_tcg_kp_AdditionalPlatformAttributeCertificate: i32 = 1374;
-pub const SN_tcg_kp_AdditionalPlatformKeyCertificate: &[u8; 40] =
-    b"tcg-kp-AdditionalPlatformKeyCertificate\0";
-pub const LN_tcg_kp_AdditionalPlatformKeyCertificate: &[u8; 36] =
-    b"Additional Platform Key Certificate\0";
+pub const SN_tcg_kp_AdditionalPlatformKeyCertificate: &[u8; 40] = b"tcg-kp-AdditionalPlatformKeyCertificate\0";
+pub const LN_tcg_kp_AdditionalPlatformKeyCertificate: &[u8; 36] = b"Additional Platform Key Certificate\0";
 pub const NID_tcg_kp_AdditionalPlatformKeyCertificate: i32 = 1375;
 pub const SN_tcg_ce_relevantCredentials: &[u8; 27] = b"tcg-ce-relevantCredentials\0";
 pub const LN_tcg_ce_relevantCredentials: &[u8; 21] = b"Relevant Credentials\0";
@@ -5927,23 +5848,18 @@ pub const NID_tcg_ce_relevantCredentials: i32 = 1376;
 pub const SN_tcg_ce_relevantManifests: &[u8; 25] = b"tcg-ce-relevantManifests\0";
 pub const LN_tcg_ce_relevantManifests: &[u8; 19] = b"Relevant Manifests\0";
 pub const NID_tcg_ce_relevantManifests: i32 = 1377;
-pub const SN_tcg_ce_virtualPlatformAttestationService: &[u8; 41] =
-    b"tcg-ce-virtualPlatformAttestationService\0";
-pub const LN_tcg_ce_virtualPlatformAttestationService: &[u8; 37] =
-    b"Virtual Platform Attestation Service\0";
+pub const SN_tcg_ce_virtualPlatformAttestationService: &[u8; 41] = b"tcg-ce-virtualPlatformAttestationService\0";
+pub const LN_tcg_ce_virtualPlatformAttestationService: &[u8; 37] = b"Virtual Platform Attestation Service\0";
 pub const NID_tcg_ce_virtualPlatformAttestationService: i32 = 1378;
 pub const SN_tcg_ce_migrationControllerAttestationService: &[u8; 45] =
     b"tcg-ce-migrationControllerAttestationService\0";
-pub const LN_tcg_ce_migrationControllerAttestationService: &[u8; 41] =
-    b"Migration Controller Attestation Service\0";
+pub const LN_tcg_ce_migrationControllerAttestationService: &[u8; 41] = b"Migration Controller Attestation Service\0";
 pub const NID_tcg_ce_migrationControllerAttestationService: i32 = 1379;
 pub const SN_tcg_ce_migrationControllerRegistrationService: &[u8; 46] =
     b"tcg-ce-migrationControllerRegistrationService\0";
-pub const LN_tcg_ce_migrationControllerRegistrationService: &[u8; 42] =
-    b"Migration Controller Registration Service\0";
+pub const LN_tcg_ce_migrationControllerRegistrationService: &[u8; 42] = b"Migration Controller Registration Service\0";
 pub const NID_tcg_ce_migrationControllerRegistrationService: i32 = 1380;
-pub const SN_tcg_ce_virtualPlatformBackupService: &[u8; 36] =
-    b"tcg-ce-virtualPlatformBackupService\0";
+pub const SN_tcg_ce_virtualPlatformBackupService: &[u8; 36] = b"tcg-ce-virtualPlatformBackupService\0";
 pub const LN_tcg_ce_virtualPlatformBackupService: &[u8; 32] = b"Virtual Platform Backup Service\0";
 pub const NID_tcg_ce_virtualPlatformBackupService: i32 = 1381;
 pub const SN_tcg_prt_tpmIdProtocol: &[u8; 22] = b"tcg-prt-tpmIdProtocol\0";
@@ -5965,12 +5881,10 @@ pub const SN_tcg_registry_componentClass_tcg: &[u8; 32] = b"tcg-registry-compone
 pub const LN_tcg_registry_componentClass_tcg: &[u8; 32] = b"Trusted Computed Group Registry\0";
 pub const NID_tcg_registry_componentClass_tcg: i32 = 1387;
 pub const SN_tcg_registry_componentClass_ietf: &[u8; 33] = b"tcg-registry-componentClass-ietf\0";
-pub const LN_tcg_registry_componentClass_ietf: &[u8; 41] =
-    b"Internet Engineering Task Force Registry\0";
+pub const LN_tcg_registry_componentClass_ietf: &[u8; 41] = b"Internet Engineering Task Force Registry\0";
 pub const NID_tcg_registry_componentClass_ietf: i32 = 1388;
 pub const SN_tcg_registry_componentClass_dmtf: &[u8; 33] = b"tcg-registry-componentClass-dmtf\0";
-pub const LN_tcg_registry_componentClass_dmtf: &[u8; 43] =
-    b"Distributed Management Task Force Registry\0";
+pub const LN_tcg_registry_componentClass_dmtf: &[u8; 43] = b"Distributed Management Task Force Registry\0";
 pub const NID_tcg_registry_componentClass_dmtf: i32 = 1389;
 pub const SN_tcg_registry_componentClass_pcie: &[u8; 33] = b"tcg-registry-componentClass-pcie\0";
 pub const LN_tcg_registry_componentClass_pcie: &[u8; 21] = b"PCIE Component Class\0";
@@ -5978,10 +5892,8 @@ pub const NID_tcg_registry_componentClass_pcie: i32 = 1390;
 pub const SN_tcg_registry_componentClass_disk: &[u8; 33] = b"tcg-registry-componentClass-disk\0";
 pub const LN_tcg_registry_componentClass_disk: &[u8; 21] = b"Disk Component Class\0";
 pub const NID_tcg_registry_componentClass_disk: i32 = 1391;
-pub const SN_tcg_cap_verifiedPlatformCertificate: &[u8; 36] =
-    b"tcg-cap-verifiedPlatformCertificate\0";
-pub const LN_tcg_cap_verifiedPlatformCertificate: &[u8; 44] =
-    b"TCG Verified Platform Certificate CA Policy\0";
+pub const SN_tcg_cap_verifiedPlatformCertificate: &[u8; 36] = b"tcg-cap-verifiedPlatformCertificate\0";
+pub const LN_tcg_cap_verifiedPlatformCertificate: &[u8; 44] = b"TCG Verified Platform Certificate CA Policy\0";
 pub const NID_tcg_cap_verifiedPlatformCertificate: i32 = 1392;
 pub const SN_tcg_tr_ID: &[u8; 10] = b"tcg-tr-ID\0";
 pub const LN_tcg_tr_ID: &[u8; 22] = b"TCG Trait Identifiers\0";
@@ -6022,25 +5934,19 @@ pub const NID_tcg_tr_ID_OID: i32 = 1404;
 pub const SN_tcg_tr_ID_PEN: &[u8; 14] = b"tcg-tr-ID-PEN\0";
 pub const LN_tcg_tr_ID_PEN: &[u8; 32] = b"Private Enterprise Number Trait\0";
 pub const NID_tcg_tr_ID_PEN: i32 = 1405;
-pub const SN_tcg_tr_ID_platformFirmwareCapabilities: &[u8; 39] =
-    b"tcg-tr-ID-platformFirmwareCapabilities\0";
-pub const LN_tcg_tr_ID_platformFirmwareCapabilities: &[u8; 37] =
-    b"Platform Firmware Capabilities Trait\0";
+pub const SN_tcg_tr_ID_platformFirmwareCapabilities: &[u8; 39] = b"tcg-tr-ID-platformFirmwareCapabilities\0";
+pub const LN_tcg_tr_ID_platformFirmwareCapabilities: &[u8; 37] = b"Platform Firmware Capabilities Trait\0";
 pub const NID_tcg_tr_ID_platformFirmwareCapabilities: i32 = 1406;
 pub const SN_tcg_tr_ID_platformFirmwareSignatureVerification: &[u8; 48] =
     b"tcg-tr-ID-platformFirmwareSignatureVerification\0";
 pub const LN_tcg_tr_ID_platformFirmwareSignatureVerification: &[u8; 47] =
     b"Platform Firmware Signature Verification Trait\0";
 pub const NID_tcg_tr_ID_platformFirmwareSignatureVerification: i32 = 1407;
-pub const SN_tcg_tr_ID_platformFirmwareUpdateCompliance: &[u8; 43] =
-    b"tcg-tr-ID-platformFirmwareUpdateCompliance\0";
-pub const LN_tcg_tr_ID_platformFirmwareUpdateCompliance: &[u8; 42] =
-    b"Platform Firmware Update Compliance Trait\0";
+pub const SN_tcg_tr_ID_platformFirmwareUpdateCompliance: &[u8; 43] = b"tcg-tr-ID-platformFirmwareUpdateCompliance\0";
+pub const LN_tcg_tr_ID_platformFirmwareUpdateCompliance: &[u8; 42] = b"Platform Firmware Update Compliance Trait\0";
 pub const NID_tcg_tr_ID_platformFirmwareUpdateCompliance: i32 = 1408;
-pub const SN_tcg_tr_ID_platformHardwareCapabilities: &[u8; 39] =
-    b"tcg-tr-ID-platformHardwareCapabilities\0";
-pub const LN_tcg_tr_ID_platformHardwareCapabilities: &[u8; 37] =
-    b"Platform Hardware Capabilities Trait\0";
+pub const SN_tcg_tr_ID_platformHardwareCapabilities: &[u8; 39] = b"tcg-tr-ID-platformHardwareCapabilities\0";
+pub const LN_tcg_tr_ID_platformHardwareCapabilities: &[u8; 37] = b"Platform Hardware Capabilities Trait\0";
 pub const NID_tcg_tr_ID_platformHardwareCapabilities: i32 = 1409;
 pub const SN_tcg_tr_ID_RTM: &[u8; 14] = b"tcg-tr-ID-RTM\0";
 pub const LN_tcg_tr_ID_RTM: &[u8; 36] = b"Root of Trust for Measurement Trait\0";
@@ -6075,8 +5981,7 @@ pub const NID_tcg_tr_cat_platformVersion: i32 = 1419;
 pub const SN_tcg_tr_cat_platformSerial: &[u8; 26] = b"tcg-tr-cat-platformSerial\0";
 pub const LN_tcg_tr_cat_platformSerial: &[u8; 31] = b"Platform Serial Trait Category\0";
 pub const NID_tcg_tr_cat_platformSerial: i32 = 1420;
-pub const SN_tcg_tr_cat_platformManufacturerIdentifier: &[u8; 42] =
-    b"tcg-tr-cat-platformManufacturerIdentifier\0";
+pub const SN_tcg_tr_cat_platformManufacturerIdentifier: &[u8; 42] = b"tcg-tr-cat-platformManufacturerIdentifier\0";
 pub const LN_tcg_tr_cat_platformManufacturerIdentifier: &[u8; 48] =
     b"Platform Manufacturer Identifier Trait Category\0";
 pub const NID_tcg_tr_cat_platformManufacturerIdentifier: i32 = 1421;
@@ -6087,8 +5992,7 @@ pub const SN_tcg_tr_cat_componentClass: &[u8; 26] = b"tcg-tr-cat-componentClass\
 pub const LN_tcg_tr_cat_componentClass: &[u8; 31] = b"Component Class Trait Category\0";
 pub const NID_tcg_tr_cat_componentClass: i32 = 1423;
 pub const SN_tcg_tr_cat_componentManufacturer: &[u8; 33] = b"tcg-tr-cat-componentManufacturer\0";
-pub const LN_tcg_tr_cat_componentManufacturer: &[u8; 38] =
-    b"Component Manufacturer Trait Category\0";
+pub const LN_tcg_tr_cat_componentManufacturer: &[u8; 38] = b"Component Manufacturer Trait Category\0";
 pub const NID_tcg_tr_cat_componentManufacturer: i32 = 1424;
 pub const SN_tcg_tr_cat_componentModel: &[u8; 26] = b"tcg-tr-cat-componentModel\0";
 pub const LN_tcg_tr_cat_componentModel: &[u8; 31] = b"Component Model Trait Category\0";
@@ -6105,10 +6009,8 @@ pub const NID_tcg_tr_cat_componentLocation: i32 = 1428;
 pub const SN_tcg_tr_cat_componentRevision: &[u8; 29] = b"tcg-tr-cat-componentRevision\0";
 pub const LN_tcg_tr_cat_componentRevision: &[u8; 34] = b"Component Revision Trait Category\0";
 pub const NID_tcg_tr_cat_componentRevision: i32 = 1429;
-pub const SN_tcg_tr_cat_componentFieldReplaceable: &[u8; 37] =
-    b"tcg-tr-cat-componentFieldReplaceable\0";
-pub const LN_tcg_tr_cat_componentFieldReplaceable: &[u8; 43] =
-    b"Component Field Replaceable Trait Category\0";
+pub const SN_tcg_tr_cat_componentFieldReplaceable: &[u8; 37] = b"tcg-tr-cat-componentFieldReplaceable\0";
+pub const LN_tcg_tr_cat_componentFieldReplaceable: &[u8; 43] = b"Component Field Replaceable Trait Category\0";
 pub const NID_tcg_tr_cat_componentFieldReplaceable: i32 = 1430;
 pub const SN_tcg_tr_cat_EKCertificate: &[u8; 25] = b"tcg-tr-cat-EKCertificate\0";
 pub const LN_tcg_tr_cat_EKCertificate: &[u8; 30] = b"EK Certificate Trait Category\0";
@@ -6131,15 +6033,11 @@ pub const NID_tcg_tr_cat_PEMCertificate: i32 = 1436;
 pub const SN_tcg_tr_cat_PlatformCertificate: &[u8; 31] = b"tcg-tr-cat-PlatformCertificate\0";
 pub const LN_tcg_tr_cat_PlatformCertificate: &[u8; 36] = b"Platform Certificate Trait Category\0";
 pub const NID_tcg_tr_cat_PlatformCertificate: i32 = 1437;
-pub const SN_tcg_tr_cat_DeltaPlatformCertificate: &[u8; 36] =
-    b"tcg-tr-cat-DeltaPlatformCertificate\0";
-pub const LN_tcg_tr_cat_DeltaPlatformCertificate: &[u8; 42] =
-    b"Delta Platform Certificate Trait Category\0";
+pub const SN_tcg_tr_cat_DeltaPlatformCertificate: &[u8; 36] = b"tcg-tr-cat-DeltaPlatformCertificate\0";
+pub const LN_tcg_tr_cat_DeltaPlatformCertificate: &[u8; 42] = b"Delta Platform Certificate Trait Category\0";
 pub const NID_tcg_tr_cat_DeltaPlatformCertificate: i32 = 1438;
-pub const SN_tcg_tr_cat_RebasePlatformCertificate: &[u8; 37] =
-    b"tcg-tr-cat-RebasePlatformCertificate\0";
-pub const LN_tcg_tr_cat_RebasePlatformCertificate: &[u8; 43] =
-    b"Rebase Platform Certificate Trait Category\0";
+pub const SN_tcg_tr_cat_RebasePlatformCertificate: &[u8; 37] = b"tcg-tr-cat-RebasePlatformCertificate\0";
+pub const LN_tcg_tr_cat_RebasePlatformCertificate: &[u8; 43] = b"Rebase Platform Certificate Trait Category\0";
 pub const NID_tcg_tr_cat_RebasePlatformCertificate: i32 = 1439;
 pub const SN_tcg_tr_cat_genericCertificate: &[u8; 30] = b"tcg-tr-cat-genericCertificate\0";
 pub const LN_tcg_tr_cat_genericCertificate: &[u8; 35] = b"Generic Certificate Trait Category\0";
@@ -6148,8 +6046,7 @@ pub const SN_tcg_tr_cat_CommonCriteria: &[u8; 26] = b"tcg-tr-cat-CommonCriteria\
 pub const LN_tcg_tr_cat_CommonCriteria: &[u8; 31] = b"Common Criteria Trait Category\0";
 pub const NID_tcg_tr_cat_CommonCriteria: i32 = 1441;
 pub const SN_tcg_tr_cat_componentIdentifierV11: &[u8; 34] = b"tcg-tr-cat-componentIdentifierV11\0";
-pub const LN_tcg_tr_cat_componentIdentifierV11: &[u8; 41] =
-    b"Component Identifier V1.1 Trait Category\0";
+pub const LN_tcg_tr_cat_componentIdentifierV11: &[u8; 41] = b"Component Identifier V1.1 Trait Category\0";
 pub const NID_tcg_tr_cat_componentIdentifierV11: i32 = 1442;
 pub const SN_tcg_tr_cat_FIPSLevel: &[u8; 21] = b"tcg-tr-cat-FIPSLevel\0";
 pub const LN_tcg_tr_cat_FIPSLevel: &[u8; 26] = b"FIPS Level Trait Category\0";
@@ -6166,23 +6063,18 @@ pub const NID_tcg_tr_cat_attestationProtocol: i32 = 1446;
 pub const SN_tcg_tr_cat_PEN: &[u8; 15] = b"tcg-tr-cat-PEN\0";
 pub const LN_tcg_tr_cat_PEN: &[u8; 41] = b"Private Enterprise Number Trait Category\0";
 pub const NID_tcg_tr_cat_PEN: i32 = 1447;
-pub const SN_tcg_tr_cat_platformFirmwareCapabilities: &[u8; 40] =
-    b"tcg-tr-cat-platformFirmwareCapabilities\0";
-pub const LN_tcg_tr_cat_platformFirmwareCapabilities: &[u8; 46] =
-    b"Platform Firmware Capabilities Trait Category\0";
+pub const SN_tcg_tr_cat_platformFirmwareCapabilities: &[u8; 40] = b"tcg-tr-cat-platformFirmwareCapabilities\0";
+pub const LN_tcg_tr_cat_platformFirmwareCapabilities: &[u8; 46] = b"Platform Firmware Capabilities Trait Category\0";
 pub const NID_tcg_tr_cat_platformFirmwareCapabilities: i32 = 1448;
-pub const SN_tcg_tr_cat_platformHardwareCapabilities: &[u8; 40] =
-    b"tcg-tr-cat-platformHardwareCapabilities\0";
-pub const LN_tcg_tr_cat_platformHardwareCapabilities: &[u8; 46] =
-    b"Platform Hardware Capabilities Trait Category\0";
+pub const SN_tcg_tr_cat_platformHardwareCapabilities: &[u8; 40] = b"tcg-tr-cat-platformHardwareCapabilities\0";
+pub const LN_tcg_tr_cat_platformHardwareCapabilities: &[u8; 46] = b"Platform Hardware Capabilities Trait Category\0";
 pub const NID_tcg_tr_cat_platformHardwareCapabilities: i32 = 1449;
 pub const SN_tcg_tr_cat_platformFirmwareSignatureVerification: &[u8; 49] =
     b"tcg-tr-cat-platformFirmwareSignatureVerification\0";
 pub const LN_tcg_tr_cat_platformFirmwareSignatureVerification: &[u8; 56] =
     b"Platform Firmware Signature Verification Trait Category\0";
 pub const NID_tcg_tr_cat_platformFirmwareSignatureVerification: i32 = 1450;
-pub const SN_tcg_tr_cat_platformFirmwareUpdateCompliance: &[u8; 44] =
-    b"tcg-tr-cat-platformFirmwareUpdateCompliance\0";
+pub const SN_tcg_tr_cat_platformFirmwareUpdateCompliance: &[u8; 44] = b"tcg-tr-cat-platformFirmwareUpdateCompliance\0";
 pub const LN_tcg_tr_cat_platformFirmwareUpdateCompliance: &[u8; 51] =
     b"Platform Firmware Update Compliance Trait Category\0";
 pub const NID_tcg_tr_cat_platformFirmwareUpdateCompliance: i32 = 1451;
@@ -6203,14 +6095,11 @@ pub const LN_ML_KEM_1024: &[u8; 12] = b"ML-KEM-1024\0";
 pub const NID_ML_KEM_1024: i32 = 1456;
 pub const SN_id_tc26_cipher_gostr3412_2015_magma_ctracpkm: &[u8; 16] = b"magma-ctr-acpkm\0";
 pub const NID_id_tc26_cipher_gostr3412_2015_magma_ctracpkm: i32 = 1174;
-pub const SN_id_tc26_cipher_gostr3412_2015_magma_ctracpkm_omac: &[u8; 21] =
-    b"magma-ctr-acpkm-omac\0";
+pub const SN_id_tc26_cipher_gostr3412_2015_magma_ctracpkm_omac: &[u8; 21] = b"magma-ctr-acpkm-omac\0";
 pub const NID_id_tc26_cipher_gostr3412_2015_magma_ctracpkm_omac: i32 = 1175;
-pub const SN_id_tc26_cipher_gostr3412_2015_kuznyechik_ctracpkm: &[u8; 21] =
-    b"kuznyechik-ctr-acpkm\0";
+pub const SN_id_tc26_cipher_gostr3412_2015_kuznyechik_ctracpkm: &[u8; 21] = b"kuznyechik-ctr-acpkm\0";
 pub const NID_id_tc26_cipher_gostr3412_2015_kuznyechik_ctracpkm: i32 = 1177;
-pub const SN_id_tc26_cipher_gostr3412_2015_kuznyechik_ctracpkm_omac: &[u8; 26] =
-    b"kuznyechik-ctr-acpkm-omac\0";
+pub const SN_id_tc26_cipher_gostr3412_2015_kuznyechik_ctracpkm_omac: &[u8; 26] = b"kuznyechik-ctr-acpkm-omac\0";
 pub const NID_id_tc26_cipher_gostr3412_2015_kuznyechik_ctracpkm_omac: i32 = 1178;
 pub const SN_id_tc26_wrap_gostr3412_2015_magma_kexp15: &[u8; 13] = b"magma-kexp15\0";
 pub const NID_id_tc26_wrap_gostr3412_2015_magma_kexp15: i32 = 1181;
@@ -7318,8 +7207,583 @@ pub const ERR_R_INVALID_PROPERTY_DEFINITION: i32 = 524558;
 pub const ERR_R_UNABLE_TO_GET_READ_LOCK: i32 = 786703;
 pub const ERR_R_UNABLE_TO_GET_WRITE_LOCK: i32 = 786704;
 pub const ERR_MAX_DATA_SIZE: i32 = 1024;
+pub const OSSL_CIPHER_CTS_MODE_CS1: &[u8; 4] = b"CS1\0";
+pub const OSSL_CIPHER_CTS_MODE_CS2: &[u8; 4] = b"CS2\0";
+pub const OSSL_CIPHER_CTS_MODE_CS3: &[u8; 4] = b"CS3\0";
+pub const OSSL_CIPHER_NAME_AES_128_GCM_SIV: &[u8; 16] = b"AES-128-GCM-SIV\0";
+pub const OSSL_CIPHER_NAME_AES_192_GCM_SIV: &[u8; 16] = b"AES-192-GCM-SIV\0";
+pub const OSSL_CIPHER_NAME_AES_256_GCM_SIV: &[u8; 16] = b"AES-256-GCM-SIV\0";
+pub const OSSL_DIGEST_NAME_MD5: &[u8; 4] = b"MD5\0";
+pub const OSSL_DIGEST_NAME_MD5_SHA1: &[u8; 9] = b"MD5-SHA1\0";
+pub const OSSL_DIGEST_NAME_SHA1: &[u8; 5] = b"SHA1\0";
+pub const OSSL_DIGEST_NAME_SHA2_224: &[u8; 9] = b"SHA2-224\0";
+pub const OSSL_DIGEST_NAME_SHA2_256: &[u8; 9] = b"SHA2-256\0";
+pub const OSSL_DIGEST_NAME_SHA2_256_192: &[u8; 13] = b"SHA2-256/192\0";
+pub const OSSL_DIGEST_NAME_SHA2_384: &[u8; 9] = b"SHA2-384\0";
+pub const OSSL_DIGEST_NAME_SHA2_512: &[u8; 9] = b"SHA2-512\0";
+pub const OSSL_DIGEST_NAME_SHA2_512_224: &[u8; 13] = b"SHA2-512/224\0";
+pub const OSSL_DIGEST_NAME_SHA2_512_256: &[u8; 13] = b"SHA2-512/256\0";
+pub const OSSL_DIGEST_NAME_MD2: &[u8; 4] = b"MD2\0";
+pub const OSSL_DIGEST_NAME_MD4: &[u8; 4] = b"MD4\0";
+pub const OSSL_DIGEST_NAME_MDC2: &[u8; 5] = b"MDC2\0";
+pub const OSSL_DIGEST_NAME_RIPEMD160: &[u8; 10] = b"RIPEMD160\0";
+pub const OSSL_DIGEST_NAME_SHA3_224: &[u8; 9] = b"SHA3-224\0";
+pub const OSSL_DIGEST_NAME_SHA3_256: &[u8; 9] = b"SHA3-256\0";
+pub const OSSL_DIGEST_NAME_SHA3_384: &[u8; 9] = b"SHA3-384\0";
+pub const OSSL_DIGEST_NAME_SHA3_512: &[u8; 9] = b"SHA3-512\0";
+pub const OSSL_DIGEST_NAME_KECCAK_KMAC128: &[u8; 16] = b"KECCAK-KMAC-128\0";
+pub const OSSL_DIGEST_NAME_KECCAK_KMAC256: &[u8; 16] = b"KECCAK-KMAC-256\0";
+pub const OSSL_DIGEST_NAME_SM3: &[u8; 4] = b"SM3\0";
+pub const OSSL_MAC_NAME_BLAKE2BMAC: &[u8; 11] = b"BLAKE2BMAC\0";
+pub const OSSL_MAC_NAME_BLAKE2SMAC: &[u8; 11] = b"BLAKE2SMAC\0";
+pub const OSSL_MAC_NAME_CMAC: &[u8; 5] = b"CMAC\0";
+pub const OSSL_MAC_NAME_GMAC: &[u8; 5] = b"GMAC\0";
+pub const OSSL_MAC_NAME_HMAC: &[u8; 5] = b"HMAC\0";
+pub const OSSL_MAC_NAME_KMAC128: &[u8; 8] = b"KMAC128\0";
+pub const OSSL_MAC_NAME_KMAC256: &[u8; 8] = b"KMAC256\0";
+pub const OSSL_MAC_NAME_POLY1305: &[u8; 9] = b"POLY1305\0";
+pub const OSSL_MAC_NAME_SIPHASH: &[u8; 8] = b"SIPHASH\0";
+pub const OSSL_KDF_NAME_HKDF: &[u8; 5] = b"HKDF\0";
+pub const OSSL_KDF_NAME_TLS1_3_KDF: &[u8; 10] = b"TLS13-KDF\0";
+pub const OSSL_KDF_NAME_PBKDF1: &[u8; 7] = b"PBKDF1\0";
+pub const OSSL_KDF_NAME_PBKDF2: &[u8; 7] = b"PBKDF2\0";
+pub const OSSL_KDF_NAME_SCRYPT: &[u8; 7] = b"SCRYPT\0";
+pub const OSSL_KDF_NAME_SSHKDF: &[u8; 7] = b"SSHKDF\0";
+pub const OSSL_KDF_NAME_SSKDF: &[u8; 6] = b"SSKDF\0";
+pub const OSSL_KDF_NAME_TLS1_PRF: &[u8; 9] = b"TLS1-PRF\0";
+pub const OSSL_KDF_NAME_X942KDF_ASN1: &[u8; 13] = b"X942KDF-ASN1\0";
+pub const OSSL_KDF_NAME_X942KDF_CONCAT: &[u8; 15] = b"X942KDF-CONCAT\0";
+pub const OSSL_KDF_NAME_X963KDF: &[u8; 8] = b"X963KDF\0";
+pub const OSSL_KDF_NAME_KBKDF: &[u8; 6] = b"KBKDF\0";
+pub const OSSL_KDF_NAME_KRB5KDF: &[u8; 8] = b"KRB5KDF\0";
+pub const OSSL_KDF_NAME_HMACDRBGKDF: &[u8; 14] = b"HMAC-DRBG-KDF\0";
+pub const OSSL_PKEY_RSA_PAD_MODE_NONE: &[u8; 5] = b"none\0";
+pub const OSSL_PKEY_RSA_PAD_MODE_PKCSV15: &[u8; 6] = b"pkcs1\0";
+pub const OSSL_PKEY_RSA_PAD_MODE_OAEP: &[u8; 5] = b"oaep\0";
+pub const OSSL_PKEY_RSA_PAD_MODE_X931: &[u8; 5] = b"x931\0";
+pub const OSSL_PKEY_RSA_PAD_MODE_PSS: &[u8; 4] = b"pss\0";
+pub const OSSL_PKEY_RSA_PSS_SALT_LEN_DIGEST: &[u8; 7] = b"digest\0";
+pub const OSSL_PKEY_RSA_PSS_SALT_LEN_MAX: &[u8; 4] = b"max\0";
+pub const OSSL_PKEY_RSA_PSS_SALT_LEN_AUTO: &[u8; 5] = b"auto\0";
+pub const OSSL_PKEY_RSA_PSS_SALT_LEN_AUTO_DIGEST_MAX: &[u8; 15] = b"auto-digestmax\0";
+pub const OSSL_PKEY_EC_ENCODING_EXPLICIT: &[u8; 9] = b"explicit\0";
+pub const OSSL_PKEY_EC_ENCODING_GROUP: &[u8; 12] = b"named_curve\0";
+pub const OSSL_PKEY_EC_POINT_CONVERSION_FORMAT_UNCOMPRESSED: &[u8; 13] = b"uncompressed\0";
+pub const OSSL_PKEY_EC_POINT_CONVERSION_FORMAT_COMPRESSED: &[u8; 11] = b"compressed\0";
+pub const OSSL_PKEY_EC_POINT_CONVERSION_FORMAT_HYBRID: &[u8; 7] = b"hybrid\0";
+pub const OSSL_PKEY_EC_GROUP_CHECK_DEFAULT: &[u8; 8] = b"default\0";
+pub const OSSL_PKEY_EC_GROUP_CHECK_NAMED: &[u8; 6] = b"named\0";
+pub const OSSL_PKEY_EC_GROUP_CHECK_NAMED_NIST: &[u8; 11] = b"named-nist\0";
+pub const OSSL_SKEY_TYPE_GENERIC: &[u8; 15] = b"GENERIC-SECRET\0";
+pub const OSSL_SKEY_TYPE_AES: &[u8; 4] = b"AES\0";
+pub const OSSL_KEM_PARAM_OPERATION_RSASVE: &[u8; 7] = b"RSASVE\0";
+pub const OSSL_KEM_PARAM_OPERATION_DHKEM: &[u8; 6] = b"DHKEM\0";
+pub const OSSL_PKEY_RETAIN_SEED: &[u8; 17] = b"pkey_retain_seed\0";
+pub const OSSL_ALG_PARAM_ALGORITHM_ID: &[u8; 13] = b"algorithm-id\0";
+pub const OSSL_ALG_PARAM_ALGORITHM_ID_PARAMS: &[u8; 20] = b"algorithm-id-params\0";
+pub const OSSL_ALG_PARAM_CIPHER: &[u8; 7] = b"cipher\0";
+pub const OSSL_ALG_PARAM_DIGEST: &[u8; 7] = b"digest\0";
+pub const OSSL_ALG_PARAM_ENGINE: &[u8; 7] = b"engine\0";
+pub const OSSL_ALG_PARAM_FIPS_APPROVED_INDICATOR: &[u8; 15] = b"fips-indicator\0";
+pub const OSSL_ALG_PARAM_MAC: &[u8; 4] = b"mac\0";
+pub const OSSL_ALG_PARAM_PROPERTIES: &[u8; 11] = b"properties\0";
+pub const OSSL_ASYM_CIPHER_PARAM_FIPS_APPROVED_INDICATOR: &[u8; 15] = b"fips-indicator\0";
+pub const OSSL_ASYM_CIPHER_PARAM_IMPLICIT_REJECTION: &[u8; 19] = b"implicit-rejection\0";
+pub const OSSL_ASYM_CIPHER_PARAM_OAEP_DIGEST: &[u8; 7] = b"digest\0";
+pub const OSSL_ASYM_CIPHER_PARAM_OAEP_DIGEST_PROPS: &[u8; 13] = b"digest-props\0";
+pub const OSSL_ASYM_CIPHER_PARAM_OAEP_LABEL: &[u8; 11] = b"oaep-label\0";
+pub const OSSL_ASYM_CIPHER_PARAM_TLS_CLIENT_VERSION: &[u8; 19] = b"tls-client-version\0";
+pub const OSSL_ASYM_CIPHER_PARAM_TLS_NEGOTIATED_VERSION: &[u8; 23] = b"tls-negotiated-version\0";
+pub const OSSL_CAPABILITY_TLS_GROUP_ALG: &[u8; 14] = b"tls-group-alg\0";
+pub const OSSL_CAPABILITY_TLS_GROUP_ID: &[u8; 13] = b"tls-group-id\0";
+pub const OSSL_CAPABILITY_TLS_GROUP_IS_KEM: &[u8; 17] = b"tls-group-is-kem\0";
+pub const OSSL_CAPABILITY_TLS_GROUP_MAX_DTLS: &[u8; 13] = b"tls-max-dtls\0";
+pub const OSSL_CAPABILITY_TLS_GROUP_MAX_TLS: &[u8; 12] = b"tls-max-tls\0";
+pub const OSSL_CAPABILITY_TLS_GROUP_MIN_DTLS: &[u8; 13] = b"tls-min-dtls\0";
+pub const OSSL_CAPABILITY_TLS_GROUP_MIN_TLS: &[u8; 12] = b"tls-min-tls\0";
+pub const OSSL_CAPABILITY_TLS_GROUP_NAME: &[u8; 15] = b"tls-group-name\0";
+pub const OSSL_CAPABILITY_TLS_GROUP_NAME_INTERNAL: &[u8; 24] = b"tls-group-name-internal\0";
+pub const OSSL_CAPABILITY_TLS_GROUP_SECURITY_BITS: &[u8; 19] = b"tls-group-sec-bits\0";
+pub const OSSL_CAPABILITY_TLS_SIGALG_CODE_POINT: &[u8; 22] = b"tls-sigalg-code-point\0";
+pub const OSSL_CAPABILITY_TLS_SIGALG_HASH_NAME: &[u8; 21] = b"tls-sigalg-hash-name\0";
+pub const OSSL_CAPABILITY_TLS_SIGALG_HASH_OID: &[u8; 20] = b"tls-sigalg-hash-oid\0";
+pub const OSSL_CAPABILITY_TLS_SIGALG_IANA_NAME: &[u8; 21] = b"tls-sigalg-iana-name\0";
+pub const OSSL_CAPABILITY_TLS_SIGALG_KEYTYPE: &[u8; 19] = b"tls-sigalg-keytype\0";
+pub const OSSL_CAPABILITY_TLS_SIGALG_KEYTYPE_OID: &[u8; 23] = b"tls-sigalg-keytype-oid\0";
+pub const OSSL_CAPABILITY_TLS_SIGALG_MAX_DTLS: &[u8; 13] = b"tls-max-dtls\0";
+pub const OSSL_CAPABILITY_TLS_SIGALG_MAX_TLS: &[u8; 12] = b"tls-max-tls\0";
+pub const OSSL_CAPABILITY_TLS_SIGALG_MIN_DTLS: &[u8; 13] = b"tls-min-dtls\0";
+pub const OSSL_CAPABILITY_TLS_SIGALG_MIN_TLS: &[u8; 12] = b"tls-min-tls\0";
+pub const OSSL_CAPABILITY_TLS_SIGALG_NAME: &[u8; 16] = b"tls-sigalg-name\0";
+pub const OSSL_CAPABILITY_TLS_SIGALG_OID: &[u8; 15] = b"tls-sigalg-oid\0";
+pub const OSSL_CAPABILITY_TLS_SIGALG_SECURITY_BITS: &[u8; 20] = b"tls-sigalg-sec-bits\0";
+pub const OSSL_CAPABILITY_TLS_SIGALG_SIG_NAME: &[u8; 20] = b"tls-sigalg-sig-name\0";
+pub const OSSL_CAPABILITY_TLS_SIGALG_SIG_OID: &[u8; 19] = b"tls-sigalg-sig-oid\0";
+pub const OSSL_CIPHER_PARAM_AEAD: &[u8; 5] = b"aead\0";
+pub const OSSL_CIPHER_PARAM_AEAD_IV_GENERATED: &[u8; 13] = b"iv-generated\0";
+pub const OSSL_CIPHER_PARAM_AEAD_MAC_KEY: &[u8; 7] = b"mackey\0";
+pub const OSSL_CIPHER_PARAM_AEAD_TAG: &[u8; 4] = b"tag\0";
+pub const OSSL_CIPHER_PARAM_AEAD_TAGLEN: &[u8; 7] = b"taglen\0";
+pub const OSSL_CIPHER_PARAM_AEAD_TLS1_AAD: &[u8; 7] = b"tlsaad\0";
+pub const OSSL_CIPHER_PARAM_AEAD_TLS1_AAD_PAD: &[u8; 10] = b"tlsaadpad\0";
+pub const OSSL_CIPHER_PARAM_AEAD_TLS1_GET_IV_GEN: &[u8; 9] = b"tlsivgen\0";
+pub const OSSL_CIPHER_PARAM_AEAD_TLS1_IV_FIXED: &[u8; 11] = b"tlsivfixed\0";
+pub const OSSL_CIPHER_PARAM_AEAD_TLS1_SET_IV_INV: &[u8; 9] = b"tlsivinv\0";
+pub const OSSL_CIPHER_PARAM_ALGORITHM_ID: &[u8; 13] = b"algorithm-id\0";
+pub const OSSL_CIPHER_PARAM_ALGORITHM_ID_PARAMS: &[u8; 20] = b"algorithm-id-params\0";
+pub const OSSL_CIPHER_PARAM_ALGORITHM_ID_PARAMS_OLD: &[u8; 13] = b"alg_id_param\0";
+pub const OSSL_CIPHER_PARAM_BLOCK_SIZE: &[u8; 10] = b"blocksize\0";
+pub const OSSL_CIPHER_PARAM_CTS: &[u8; 4] = b"cts\0";
+pub const OSSL_CIPHER_PARAM_CTS_MODE: &[u8; 9] = b"cts_mode\0";
+pub const OSSL_CIPHER_PARAM_CUSTOM_IV: &[u8; 10] = b"custom-iv\0";
+pub const OSSL_CIPHER_PARAM_DECRYPT_ONLY: &[u8; 13] = b"decrypt-only\0";
+pub const OSSL_CIPHER_PARAM_FIPS_APPROVED_INDICATOR: &[u8; 15] = b"fips-indicator\0";
+pub const OSSL_CIPHER_PARAM_FIPS_ENCRYPT_CHECK: &[u8; 14] = b"encrypt-check\0";
+pub const OSSL_CIPHER_PARAM_HAS_RAND_KEY: &[u8; 12] = b"has-randkey\0";
+pub const OSSL_CIPHER_PARAM_IV: &[u8; 3] = b"iv\0";
+pub const OSSL_CIPHER_PARAM_IVLEN: &[u8; 6] = b"ivlen\0";
+pub const OSSL_CIPHER_PARAM_KEYLEN: &[u8; 7] = b"keylen\0";
+pub const OSSL_CIPHER_PARAM_MODE: &[u8; 5] = b"mode\0";
+pub const OSSL_CIPHER_PARAM_NUM: &[u8; 4] = b"num\0";
+pub const OSSL_CIPHER_PARAM_PADDING: &[u8; 8] = b"padding\0";
+pub const OSSL_CIPHER_PARAM_PIPELINE_AEAD_TAG: &[u8; 13] = b"pipeline-tag\0";
+pub const OSSL_CIPHER_PARAM_RANDOM_KEY: &[u8; 8] = b"randkey\0";
+pub const OSSL_CIPHER_PARAM_RC2_KEYBITS: &[u8; 8] = b"keybits\0";
+pub const OSSL_CIPHER_PARAM_ROUNDS: &[u8; 7] = b"rounds\0";
+pub const OSSL_CIPHER_PARAM_SPEED: &[u8; 6] = b"speed\0";
+pub const OSSL_CIPHER_PARAM_TLS1_MULTIBLOCK: &[u8; 10] = b"tls-multi\0";
+pub const OSSL_CIPHER_PARAM_TLS1_MULTIBLOCK_AAD: &[u8; 14] = b"tls1multi_aad\0";
+pub const OSSL_CIPHER_PARAM_TLS1_MULTIBLOCK_AAD_PACKLEN: &[u8; 21] = b"tls1multi_aadpacklen\0";
+pub const OSSL_CIPHER_PARAM_TLS1_MULTIBLOCK_ENC: &[u8; 14] = b"tls1multi_enc\0";
+pub const OSSL_CIPHER_PARAM_TLS1_MULTIBLOCK_ENC_IN: &[u8; 16] = b"tls1multi_encin\0";
+pub const OSSL_CIPHER_PARAM_TLS1_MULTIBLOCK_ENC_LEN: &[u8; 17] = b"tls1multi_enclen\0";
+pub const OSSL_CIPHER_PARAM_TLS1_MULTIBLOCK_INTERLEAVE: &[u8; 21] = b"tls1multi_interleave\0";
+pub const OSSL_CIPHER_PARAM_TLS1_MULTIBLOCK_MAX_BUFSIZE: &[u8; 19] = b"tls1multi_maxbufsz\0";
+pub const OSSL_CIPHER_PARAM_TLS1_MULTIBLOCK_MAX_SEND_FRAGMENT: &[u8; 21] = b"tls1multi_maxsndfrag\0";
+pub const OSSL_CIPHER_PARAM_TLS_MAC: &[u8; 8] = b"tls-mac\0";
+pub const OSSL_CIPHER_PARAM_TLS_MAC_SIZE: &[u8; 13] = b"tls-mac-size\0";
+pub const OSSL_CIPHER_PARAM_TLS_VERSION: &[u8; 12] = b"tls-version\0";
+pub const OSSL_CIPHER_PARAM_UPDATED_IV: &[u8; 11] = b"updated-iv\0";
+pub const OSSL_CIPHER_PARAM_USE_BITS: &[u8; 9] = b"use-bits\0";
+pub const OSSL_CIPHER_PARAM_XTS_STANDARD: &[u8; 13] = b"xts_standard\0";
+pub const OSSL_DECODER_PARAM_PROPERTIES: &[u8; 11] = b"properties\0";
+pub const OSSL_DIGEST_PARAM_ALGID_ABSENT: &[u8; 13] = b"algid-absent\0";
+pub const OSSL_DIGEST_PARAM_BLOCK_SIZE: &[u8; 10] = b"blocksize\0";
+pub const OSSL_DIGEST_PARAM_MICALG: &[u8; 7] = b"micalg\0";
+pub const OSSL_DIGEST_PARAM_PAD_TYPE: &[u8; 9] = b"pad-type\0";
+pub const OSSL_DIGEST_PARAM_SIZE: &[u8; 5] = b"size\0";
+pub const OSSL_DIGEST_PARAM_SSL3_MS: &[u8; 8] = b"ssl3-ms\0";
+pub const OSSL_DIGEST_PARAM_XOF: &[u8; 4] = b"xof\0";
+pub const OSSL_DIGEST_PARAM_XOFLEN: &[u8; 7] = b"xoflen\0";
+pub const OSSL_DRBG_PARAM_CIPHER: &[u8; 7] = b"cipher\0";
+pub const OSSL_DRBG_PARAM_DIGEST: &[u8; 7] = b"digest\0";
+pub const OSSL_DRBG_PARAM_ENTROPY_REQUIRED: &[u8; 17] = b"entropy_required\0";
+pub const OSSL_DRBG_PARAM_FIPS_APPROVED_INDICATOR: &[u8; 15] = b"fips-indicator\0";
+pub const OSSL_DRBG_PARAM_MAC: &[u8; 4] = b"mac\0";
+pub const OSSL_DRBG_PARAM_MAX_ADINLEN: &[u8; 12] = b"max_adinlen\0";
+pub const OSSL_DRBG_PARAM_MAX_ENTROPYLEN: &[u8; 15] = b"max_entropylen\0";
+pub const OSSL_DRBG_PARAM_MAX_LENGTH: &[u8; 14] = b"maxium_length\0";
+pub const OSSL_DRBG_PARAM_MAX_NONCELEN: &[u8; 13] = b"max_noncelen\0";
+pub const OSSL_DRBG_PARAM_MAX_PERSLEN: &[u8; 12] = b"max_perslen\0";
+pub const OSSL_DRBG_PARAM_MIN_ENTROPYLEN: &[u8; 15] = b"min_entropylen\0";
+pub const OSSL_DRBG_PARAM_MIN_LENGTH: &[u8; 14] = b"minium_length\0";
+pub const OSSL_DRBG_PARAM_MIN_NONCELEN: &[u8; 13] = b"min_noncelen\0";
+pub const OSSL_DRBG_PARAM_PREDICTION_RESISTANCE: &[u8; 22] = b"prediction_resistance\0";
+pub const OSSL_DRBG_PARAM_PROPERTIES: &[u8; 11] = b"properties\0";
+pub const OSSL_DRBG_PARAM_RANDOM_DATA: &[u8; 12] = b"random_data\0";
+pub const OSSL_DRBG_PARAM_RESEED_COUNTER: &[u8; 15] = b"reseed_counter\0";
+pub const OSSL_DRBG_PARAM_RESEED_REQUESTS: &[u8; 16] = b"reseed_requests\0";
+pub const OSSL_DRBG_PARAM_RESEED_TIME: &[u8; 12] = b"reseed_time\0";
+pub const OSSL_DRBG_PARAM_RESEED_TIME_INTERVAL: &[u8; 21] = b"reseed_time_interval\0";
+pub const OSSL_DRBG_PARAM_SIZE: &[u8; 5] = b"size\0";
+pub const OSSL_DRBG_PARAM_USE_DF: &[u8; 24] = b"use_derivation_function\0";
+pub const OSSL_ENCODER_PARAM_CIPHER: &[u8; 7] = b"cipher\0";
+pub const OSSL_ENCODER_PARAM_ENCRYPT_LEVEL: &[u8; 14] = b"encrypt-level\0";
+pub const OSSL_ENCODER_PARAM_PROPERTIES: &[u8; 11] = b"properties\0";
+pub const OSSL_ENCODER_PARAM_SAVE_PARAMETERS: &[u8; 16] = b"save-parameters\0";
+pub const OSSL_EXCHANGE_PARAM_EC_ECDH_COFACTOR_MODE: &[u8; 19] = b"ecdh-cofactor-mode\0";
+pub const OSSL_EXCHANGE_PARAM_FIPS_APPROVED_INDICATOR: &[u8; 15] = b"fips-indicator\0";
+pub const OSSL_EXCHANGE_PARAM_KDF_DIGEST: &[u8; 11] = b"kdf-digest\0";
+pub const OSSL_EXCHANGE_PARAM_KDF_DIGEST_PROPS: &[u8; 17] = b"kdf-digest-props\0";
+pub const OSSL_EXCHANGE_PARAM_KDF_OUTLEN: &[u8; 11] = b"kdf-outlen\0";
+pub const OSSL_EXCHANGE_PARAM_KDF_TYPE: &[u8; 9] = b"kdf-type\0";
+pub const OSSL_EXCHANGE_PARAM_KDF_UKM: &[u8; 8] = b"kdf-ukm\0";
+pub const OSSL_EXCHANGE_PARAM_PAD: &[u8; 4] = b"pad\0";
+pub const OSSL_GEN_PARAM_ITERATION: &[u8; 10] = b"iteration\0";
+pub const OSSL_GEN_PARAM_POTENTIAL: &[u8; 10] = b"potential\0";
+pub const OSSL_KDF_PARAM_ARGON2_AD: &[u8; 3] = b"ad\0";
+pub const OSSL_KDF_PARAM_ARGON2_LANES: &[u8; 6] = b"lanes\0";
+pub const OSSL_KDF_PARAM_ARGON2_MEMCOST: &[u8; 8] = b"memcost\0";
+pub const OSSL_KDF_PARAM_ARGON2_VERSION: &[u8; 8] = b"version\0";
+pub const OSSL_KDF_PARAM_CEK_ALG: &[u8; 7] = b"cekalg\0";
+pub const OSSL_KDF_PARAM_CIPHER: &[u8; 7] = b"cipher\0";
+pub const OSSL_KDF_PARAM_CONSTANT: &[u8; 9] = b"constant\0";
+pub const OSSL_KDF_PARAM_DATA: &[u8; 5] = b"data\0";
+pub const OSSL_KDF_PARAM_DIGEST: &[u8; 7] = b"digest\0";
+pub const OSSL_KDF_PARAM_EARLY_CLEAN: &[u8; 12] = b"early_clean\0";
+pub const OSSL_KDF_PARAM_FIPS_APPROVED_INDICATOR: &[u8; 15] = b"fips-indicator\0";
+pub const OSSL_KDF_PARAM_FIPS_EMS_CHECK: &[u8; 10] = b"ems_check\0";
+pub const OSSL_KDF_PARAM_HMACDRBG_ENTROPY: &[u8; 8] = b"entropy\0";
+pub const OSSL_KDF_PARAM_HMACDRBG_NONCE: &[u8; 6] = b"nonce\0";
+pub const OSSL_KDF_PARAM_INFO: &[u8; 5] = b"info\0";
+pub const OSSL_KDF_PARAM_ITER: &[u8; 5] = b"iter\0";
+pub const OSSL_KDF_PARAM_KBKDF_R: &[u8; 2] = b"r\0";
+pub const OSSL_KDF_PARAM_KBKDF_USE_L: &[u8; 6] = b"use-l\0";
+pub const OSSL_KDF_PARAM_KBKDF_USE_SEPARATOR: &[u8; 14] = b"use-separator\0";
+pub const OSSL_KDF_PARAM_KEY: &[u8; 4] = b"key\0";
+pub const OSSL_KDF_PARAM_LABEL: &[u8; 6] = b"label\0";
+pub const OSSL_KDF_PARAM_MAC: &[u8; 4] = b"mac\0";
+pub const OSSL_KDF_PARAM_MAC_SIZE: &[u8; 7] = b"maclen\0";
+pub const OSSL_KDF_PARAM_MODE: &[u8; 5] = b"mode\0";
+pub const OSSL_KDF_PARAM_PASSWORD: &[u8; 5] = b"pass\0";
+pub const OSSL_KDF_PARAM_PKCS12_ID: &[u8; 3] = b"id\0";
+pub const OSSL_KDF_PARAM_PKCS5: &[u8; 6] = b"pkcs5\0";
+pub const OSSL_KDF_PARAM_PREFIX: &[u8; 7] = b"prefix\0";
+pub const OSSL_KDF_PARAM_PROPERTIES: &[u8; 11] = b"properties\0";
+pub const OSSL_KDF_PARAM_SALT: &[u8; 5] = b"salt\0";
+pub const OSSL_KDF_PARAM_SCRYPT_MAXMEM: &[u8; 13] = b"maxmem_bytes\0";
+pub const OSSL_KDF_PARAM_SCRYPT_N: &[u8; 2] = b"n\0";
+pub const OSSL_KDF_PARAM_SCRYPT_P: &[u8; 2] = b"p\0";
+pub const OSSL_KDF_PARAM_SCRYPT_R: &[u8; 2] = b"r\0";
+pub const OSSL_KDF_PARAM_SECRET: &[u8; 7] = b"secret\0";
+pub const OSSL_KDF_PARAM_SEED: &[u8; 5] = b"seed\0";
+pub const OSSL_KDF_PARAM_SIZE: &[u8; 5] = b"size\0";
+pub const OSSL_KDF_PARAM_SSHKDF_SESSION_ID: &[u8; 11] = b"session_id\0";
+pub const OSSL_KDF_PARAM_SSHKDF_TYPE: &[u8; 5] = b"type\0";
+pub const OSSL_KDF_PARAM_SSHKDF_XCGHASH: &[u8; 8] = b"xcghash\0";
+pub const OSSL_KDF_PARAM_THREADS: &[u8; 8] = b"threads\0";
+pub const OSSL_KDF_PARAM_UKM: &[u8; 4] = b"ukm\0";
+pub const OSSL_KDF_PARAM_X942_ACVPINFO: &[u8; 10] = b"acvp-info\0";
+pub const OSSL_KDF_PARAM_X942_PARTYUINFO: &[u8; 12] = b"partyu-info\0";
+pub const OSSL_KDF_PARAM_X942_PARTYVINFO: &[u8; 12] = b"partyv-info\0";
+pub const OSSL_KDF_PARAM_X942_SUPP_PRIVINFO: &[u8; 14] = b"supp-privinfo\0";
+pub const OSSL_KDF_PARAM_X942_SUPP_PUBINFO: &[u8; 13] = b"supp-pubinfo\0";
+pub const OSSL_KDF_PARAM_X942_USE_KEYBITS: &[u8; 12] = b"use-keybits\0";
+pub const OSSL_KEM_PARAM_FIPS_APPROVED_INDICATOR: &[u8; 15] = b"fips-indicator\0";
+pub const OSSL_KEM_PARAM_IKME: &[u8; 5] = b"ikme\0";
+pub const OSSL_KEM_PARAM_OPERATION: &[u8; 10] = b"operation\0";
+pub const OSSL_LIBSSL_RECORD_LAYER_PARAM_BLOCK_PADDING: &[u8; 14] = b"block_padding\0";
+pub const OSSL_LIBSSL_RECORD_LAYER_PARAM_HS_PADDING: &[u8; 11] = b"hs_padding\0";
+pub const OSSL_LIBSSL_RECORD_LAYER_PARAM_MAX_EARLY_DATA: &[u8; 15] = b"max_early_data\0";
+pub const OSSL_LIBSSL_RECORD_LAYER_PARAM_MAX_FRAG_LEN: &[u8; 13] = b"max_frag_len\0";
+pub const OSSL_LIBSSL_RECORD_LAYER_PARAM_MODE: &[u8; 5] = b"mode\0";
+pub const OSSL_LIBSSL_RECORD_LAYER_PARAM_OPTIONS: &[u8; 8] = b"options\0";
+pub const OSSL_LIBSSL_RECORD_LAYER_PARAM_READ_AHEAD: &[u8; 11] = b"read_ahead\0";
+pub const OSSL_LIBSSL_RECORD_LAYER_PARAM_STREAM_MAC: &[u8; 11] = b"stream_mac\0";
+pub const OSSL_LIBSSL_RECORD_LAYER_PARAM_TLSTREE: &[u8; 8] = b"tlstree\0";
+pub const OSSL_LIBSSL_RECORD_LAYER_PARAM_USE_ETM: &[u8; 8] = b"use_etm\0";
+pub const OSSL_LIBSSL_RECORD_LAYER_READ_BUFFER_LEN: &[u8; 16] = b"read_buffer_len\0";
+pub const OSSL_MAC_PARAM_BLOCK_SIZE: &[u8; 11] = b"block-size\0";
+pub const OSSL_MAC_PARAM_CIPHER: &[u8; 7] = b"cipher\0";
+pub const OSSL_MAC_PARAM_CUSTOM: &[u8; 7] = b"custom\0";
+pub const OSSL_MAC_PARAM_C_ROUNDS: &[u8; 9] = b"c-rounds\0";
+pub const OSSL_MAC_PARAM_DIGEST: &[u8; 7] = b"digest\0";
+pub const OSSL_MAC_PARAM_DIGEST_NOINIT: &[u8; 14] = b"digest-noinit\0";
+pub const OSSL_MAC_PARAM_DIGEST_ONESHOT: &[u8; 15] = b"digest-oneshot\0";
+pub const OSSL_MAC_PARAM_D_ROUNDS: &[u8; 9] = b"d-rounds\0";
+pub const OSSL_MAC_PARAM_FIPS_APPROVED_INDICATOR: &[u8; 15] = b"fips-indicator\0";
+pub const OSSL_MAC_PARAM_IV: &[u8; 3] = b"iv\0";
+pub const OSSL_MAC_PARAM_KEY: &[u8; 4] = b"key\0";
+pub const OSSL_MAC_PARAM_PROPERTIES: &[u8; 11] = b"properties\0";
+pub const OSSL_MAC_PARAM_SALT: &[u8; 5] = b"salt\0";
+pub const OSSL_MAC_PARAM_SIZE: &[u8; 5] = b"size\0";
+pub const OSSL_MAC_PARAM_TLS_DATA_SIZE: &[u8; 14] = b"tls-data-size\0";
+pub const OSSL_MAC_PARAM_XOF: &[u8; 4] = b"xof\0";
+pub const OSSL_OBJECT_PARAM_DATA: &[u8; 5] = b"data\0";
+pub const OSSL_OBJECT_PARAM_DATA_STRUCTURE: &[u8; 15] = b"data-structure\0";
+pub const OSSL_OBJECT_PARAM_DATA_TYPE: &[u8; 10] = b"data-type\0";
+pub const OSSL_OBJECT_PARAM_DESC: &[u8; 5] = b"desc\0";
+pub const OSSL_OBJECT_PARAM_INPUT_TYPE: &[u8; 11] = b"input-type\0";
+pub const OSSL_OBJECT_PARAM_REFERENCE: &[u8; 10] = b"reference\0";
+pub const OSSL_OBJECT_PARAM_TYPE: &[u8; 5] = b"type\0";
+pub const OSSL_PASSPHRASE_PARAM_INFO: &[u8; 5] = b"info\0";
+pub const OSSL_PKEY_PARAM_ALGORITHM_ID: &[u8; 13] = b"algorithm-id\0";
+pub const OSSL_PKEY_PARAM_ALGORITHM_ID_PARAMS: &[u8; 20] = b"algorithm-id-params\0";
+pub const OSSL_PKEY_PARAM_BITS: &[u8; 5] = b"bits\0";
+pub const OSSL_PKEY_PARAM_CIPHER: &[u8; 7] = b"cipher\0";
+pub const OSSL_PKEY_PARAM_DEFAULT_DIGEST: &[u8; 15] = b"default-digest\0";
+pub const OSSL_PKEY_PARAM_DHKEM_IKM: &[u8; 10] = b"dhkem-ikm\0";
+pub const OSSL_PKEY_PARAM_DH_GENERATOR: &[u8; 20] = b"safeprime-generator\0";
+pub const OSSL_PKEY_PARAM_DH_PRIV_LEN: &[u8; 9] = b"priv_len\0";
+pub const OSSL_PKEY_PARAM_DIGEST: &[u8; 7] = b"digest\0";
+pub const OSSL_PKEY_PARAM_DIGEST_SIZE: &[u8; 12] = b"digest-size\0";
+pub const OSSL_PKEY_PARAM_DIST_ID: &[u8; 7] = b"distid\0";
+pub const OSSL_PKEY_PARAM_EC_A: &[u8; 2] = b"a\0";
+pub const OSSL_PKEY_PARAM_EC_B: &[u8; 2] = b"b\0";
+pub const OSSL_PKEY_PARAM_EC_CHAR2_M: &[u8; 2] = b"m\0";
+pub const OSSL_PKEY_PARAM_EC_CHAR2_PP_K1: &[u8; 3] = b"k1\0";
+pub const OSSL_PKEY_PARAM_EC_CHAR2_PP_K2: &[u8; 3] = b"k2\0";
+pub const OSSL_PKEY_PARAM_EC_CHAR2_PP_K3: &[u8; 3] = b"k3\0";
+pub const OSSL_PKEY_PARAM_EC_CHAR2_TP_BASIS: &[u8; 3] = b"tp\0";
+pub const OSSL_PKEY_PARAM_EC_CHAR2_TYPE: &[u8; 11] = b"basis-type\0";
+pub const OSSL_PKEY_PARAM_EC_COFACTOR: &[u8; 9] = b"cofactor\0";
+pub const OSSL_PKEY_PARAM_EC_DECODED_FROM_EXPLICIT_PARAMS: &[u8; 22] = b"decoded-from-explicit\0";
+pub const OSSL_PKEY_PARAM_EC_ENCODING: &[u8; 9] = b"encoding\0";
+pub const OSSL_PKEY_PARAM_EC_FIELD_TYPE: &[u8; 11] = b"field-type\0";
+pub const OSSL_PKEY_PARAM_EC_GENERATOR: &[u8; 10] = b"generator\0";
+pub const OSSL_PKEY_PARAM_EC_GROUP_CHECK_TYPE: &[u8; 12] = b"group-check\0";
+pub const OSSL_PKEY_PARAM_EC_INCLUDE_PUBLIC: &[u8; 15] = b"include-public\0";
+pub const OSSL_PKEY_PARAM_EC_ORDER: &[u8; 6] = b"order\0";
+pub const OSSL_PKEY_PARAM_EC_P: &[u8; 2] = b"p\0";
+pub const OSSL_PKEY_PARAM_EC_POINT_CONVERSION_FORMAT: &[u8; 13] = b"point-format\0";
+pub const OSSL_PKEY_PARAM_EC_PUB_X: &[u8; 3] = b"qx\0";
+pub const OSSL_PKEY_PARAM_EC_PUB_Y: &[u8; 3] = b"qy\0";
+pub const OSSL_PKEY_PARAM_EC_SEED: &[u8; 5] = b"seed\0";
+pub const OSSL_PKEY_PARAM_ENCODED_PUBLIC_KEY: &[u8; 16] = b"encoded-pub-key\0";
+pub const OSSL_PKEY_PARAM_ENGINE: &[u8; 7] = b"engine\0";
+pub const OSSL_PKEY_PARAM_FFC_COFACTOR: &[u8; 2] = b"j\0";
+pub const OSSL_PKEY_PARAM_FFC_DIGEST: &[u8; 7] = b"digest\0";
+pub const OSSL_PKEY_PARAM_FFC_G: &[u8; 2] = b"g\0";
+pub const OSSL_PKEY_PARAM_FFC_GINDEX: &[u8; 7] = b"gindex\0";
+pub const OSSL_PKEY_PARAM_FFC_H: &[u8; 7] = b"hindex\0";
+pub const OSSL_PKEY_PARAM_FFC_P: &[u8; 2] = b"p\0";
+pub const OSSL_PKEY_PARAM_FFC_PBITS: &[u8; 6] = b"pbits\0";
+pub const OSSL_PKEY_PARAM_FFC_PCOUNTER: &[u8; 9] = b"pcounter\0";
+pub const OSSL_PKEY_PARAM_FFC_Q: &[u8; 2] = b"q\0";
+pub const OSSL_PKEY_PARAM_FFC_QBITS: &[u8; 6] = b"qbits\0";
+pub const OSSL_PKEY_PARAM_FFC_SEED: &[u8; 5] = b"seed\0";
+pub const OSSL_PKEY_PARAM_FFC_TYPE: &[u8; 5] = b"type\0";
+pub const OSSL_PKEY_PARAM_FFC_VALIDATE_G: &[u8; 11] = b"validate-g\0";
+pub const OSSL_PKEY_PARAM_FFC_VALIDATE_LEGACY: &[u8; 16] = b"validate-legacy\0";
+pub const OSSL_PKEY_PARAM_FFC_VALIDATE_PQ: &[u8; 12] = b"validate-pq\0";
+pub const OSSL_PKEY_PARAM_FIPS_APPROVED_INDICATOR: &[u8; 15] = b"fips-indicator\0";
+pub const OSSL_PKEY_PARAM_FIPS_DIGEST_CHECK: &[u8; 13] = b"digest-check\0";
+pub const OSSL_PKEY_PARAM_FIPS_KEY_CHECK: &[u8; 10] = b"key-check\0";
+pub const OSSL_PKEY_PARAM_FIPS_SIGN_CHECK: &[u8; 11] = b"sign-check\0";
+pub const OSSL_PKEY_PARAM_GROUP_NAME: &[u8; 6] = b"group\0";
+pub const OSSL_PKEY_PARAM_IMPLICIT_REJECTION: &[u8; 19] = b"implicit-rejection\0";
+pub const OSSL_PKEY_PARAM_MANDATORY_DIGEST: &[u8; 17] = b"mandatory-digest\0";
+pub const OSSL_PKEY_PARAM_MASKGENFUNC: &[u8; 4] = b"mgf\0";
+pub const OSSL_PKEY_PARAM_MAX_SIZE: &[u8; 9] = b"max-size\0";
+pub const OSSL_PKEY_PARAM_MGF1_DIGEST: &[u8; 12] = b"mgf1-digest\0";
+pub const OSSL_PKEY_PARAM_MGF1_PROPERTIES: &[u8; 16] = b"mgf1-properties\0";
+pub const OSSL_PKEY_PARAM_ML_DSA_INPUT_FORMATS: &[u8; 21] = b"ml-dsa.input_formats\0";
+pub const OSSL_PKEY_PARAM_ML_DSA_OUTPUT_FORMATS: &[u8; 22] = b"ml-dsa.output_formats\0";
+pub const OSSL_PKEY_PARAM_ML_DSA_PREFER_SEED: &[u8; 19] = b"ml-dsa.prefer_seed\0";
+pub const OSSL_PKEY_PARAM_ML_DSA_RETAIN_SEED: &[u8; 19] = b"ml-dsa.retain_seed\0";
+pub const OSSL_PKEY_PARAM_ML_DSA_SEED: &[u8; 5] = b"seed\0";
+pub const OSSL_PKEY_PARAM_ML_KEM_IMPORT_PCT_TYPE: &[u8; 23] = b"ml-kem.import_pct_type\0";
+pub const OSSL_PKEY_PARAM_ML_KEM_INPUT_FORMATS: &[u8; 21] = b"ml-kem.input_formats\0";
+pub const OSSL_PKEY_PARAM_ML_KEM_OUTPUT_FORMATS: &[u8; 22] = b"ml-kem.output_formats\0";
+pub const OSSL_PKEY_PARAM_ML_KEM_PREFER_SEED: &[u8; 19] = b"ml-kem.prefer_seed\0";
+pub const OSSL_PKEY_PARAM_ML_KEM_RETAIN_SEED: &[u8; 19] = b"ml-kem.retain_seed\0";
+pub const OSSL_PKEY_PARAM_ML_KEM_SEED: &[u8; 5] = b"seed\0";
+pub const OSSL_PKEY_PARAM_PAD_MODE: &[u8; 9] = b"pad-mode\0";
+pub const OSSL_PKEY_PARAM_PRIV_KEY: &[u8; 5] = b"priv\0";
+pub const OSSL_PKEY_PARAM_PROPERTIES: &[u8; 11] = b"properties\0";
+pub const OSSL_PKEY_PARAM_PUB_KEY: &[u8; 4] = b"pub\0";
+pub const OSSL_PKEY_PARAM_RSA_BITS: &[u8; 5] = b"bits\0";
+pub const OSSL_PKEY_PARAM_RSA_COEFFICIENT: &[u8; 16] = b"rsa-coefficient\0";
+pub const OSSL_PKEY_PARAM_RSA_COEFFICIENT1: &[u8; 17] = b"rsa-coefficient1\0";
+pub const OSSL_PKEY_PARAM_RSA_COEFFICIENT2: &[u8; 17] = b"rsa-coefficient2\0";
+pub const OSSL_PKEY_PARAM_RSA_COEFFICIENT3: &[u8; 17] = b"rsa-coefficient3\0";
+pub const OSSL_PKEY_PARAM_RSA_COEFFICIENT4: &[u8; 17] = b"rsa-coefficient4\0";
+pub const OSSL_PKEY_PARAM_RSA_COEFFICIENT5: &[u8; 17] = b"rsa-coefficient5\0";
+pub const OSSL_PKEY_PARAM_RSA_COEFFICIENT6: &[u8; 17] = b"rsa-coefficient6\0";
+pub const OSSL_PKEY_PARAM_RSA_COEFFICIENT7: &[u8; 17] = b"rsa-coefficient7\0";
+pub const OSSL_PKEY_PARAM_RSA_COEFFICIENT8: &[u8; 17] = b"rsa-coefficient8\0";
+pub const OSSL_PKEY_PARAM_RSA_COEFFICIENT9: &[u8; 17] = b"rsa-coefficient9\0";
+pub const OSSL_PKEY_PARAM_RSA_D: &[u8; 2] = b"d\0";
+pub const OSSL_PKEY_PARAM_RSA_DERIVE_FROM_PQ: &[u8; 19] = b"rsa-derive-from-pq\0";
+pub const OSSL_PKEY_PARAM_RSA_DIGEST: &[u8; 7] = b"digest\0";
+pub const OSSL_PKEY_PARAM_RSA_DIGEST_PROPS: &[u8; 11] = b"properties\0";
+pub const OSSL_PKEY_PARAM_RSA_E: &[u8; 2] = b"e\0";
+pub const OSSL_PKEY_PARAM_RSA_EXPONENT: &[u8; 13] = b"rsa-exponent\0";
+pub const OSSL_PKEY_PARAM_RSA_EXPONENT1: &[u8; 14] = b"rsa-exponent1\0";
+pub const OSSL_PKEY_PARAM_RSA_EXPONENT10: &[u8; 15] = b"rsa-exponent10\0";
+pub const OSSL_PKEY_PARAM_RSA_EXPONENT2: &[u8; 14] = b"rsa-exponent2\0";
+pub const OSSL_PKEY_PARAM_RSA_EXPONENT3: &[u8; 14] = b"rsa-exponent3\0";
+pub const OSSL_PKEY_PARAM_RSA_EXPONENT4: &[u8; 14] = b"rsa-exponent4\0";
+pub const OSSL_PKEY_PARAM_RSA_EXPONENT5: &[u8; 14] = b"rsa-exponent5\0";
+pub const OSSL_PKEY_PARAM_RSA_EXPONENT6: &[u8; 14] = b"rsa-exponent6\0";
+pub const OSSL_PKEY_PARAM_RSA_EXPONENT7: &[u8; 14] = b"rsa-exponent7\0";
+pub const OSSL_PKEY_PARAM_RSA_EXPONENT8: &[u8; 14] = b"rsa-exponent8\0";
+pub const OSSL_PKEY_PARAM_RSA_EXPONENT9: &[u8; 14] = b"rsa-exponent9\0";
+pub const OSSL_PKEY_PARAM_RSA_FACTOR: &[u8; 11] = b"rsa-factor\0";
+pub const OSSL_PKEY_PARAM_RSA_FACTOR1: &[u8; 12] = b"rsa-factor1\0";
+pub const OSSL_PKEY_PARAM_RSA_FACTOR10: &[u8; 13] = b"rsa-factor10\0";
+pub const OSSL_PKEY_PARAM_RSA_FACTOR2: &[u8; 12] = b"rsa-factor2\0";
+pub const OSSL_PKEY_PARAM_RSA_FACTOR3: &[u8; 12] = b"rsa-factor3\0";
+pub const OSSL_PKEY_PARAM_RSA_FACTOR4: &[u8; 12] = b"rsa-factor4\0";
+pub const OSSL_PKEY_PARAM_RSA_FACTOR5: &[u8; 12] = b"rsa-factor5\0";
+pub const OSSL_PKEY_PARAM_RSA_FACTOR6: &[u8; 12] = b"rsa-factor6\0";
+pub const OSSL_PKEY_PARAM_RSA_FACTOR7: &[u8; 12] = b"rsa-factor7\0";
+pub const OSSL_PKEY_PARAM_RSA_FACTOR8: &[u8; 12] = b"rsa-factor8\0";
+pub const OSSL_PKEY_PARAM_RSA_FACTOR9: &[u8; 12] = b"rsa-factor9\0";
+pub const OSSL_PKEY_PARAM_RSA_MASKGENFUNC: &[u8; 4] = b"mgf\0";
+pub const OSSL_PKEY_PARAM_RSA_MGF1_DIGEST: &[u8; 12] = b"mgf1-digest\0";
+pub const OSSL_PKEY_PARAM_RSA_N: &[u8; 2] = b"n\0";
+pub const OSSL_PKEY_PARAM_RSA_PRIMES: &[u8; 7] = b"primes\0";
+pub const OSSL_PKEY_PARAM_RSA_PSS_SALTLEN: &[u8; 8] = b"saltlen\0";
+pub const OSSL_PKEY_PARAM_RSA_TEST_P1: &[u8; 3] = b"p1\0";
+pub const OSSL_PKEY_PARAM_RSA_TEST_P2: &[u8; 3] = b"p2\0";
+pub const OSSL_PKEY_PARAM_RSA_TEST_Q1: &[u8; 3] = b"q1\0";
+pub const OSSL_PKEY_PARAM_RSA_TEST_Q2: &[u8; 3] = b"q2\0";
+pub const OSSL_PKEY_PARAM_RSA_TEST_XP: &[u8; 3] = b"xp\0";
+pub const OSSL_PKEY_PARAM_RSA_TEST_XP1: &[u8; 4] = b"xp1\0";
+pub const OSSL_PKEY_PARAM_RSA_TEST_XP2: &[u8; 4] = b"xp2\0";
+pub const OSSL_PKEY_PARAM_RSA_TEST_XQ: &[u8; 3] = b"xq\0";
+pub const OSSL_PKEY_PARAM_RSA_TEST_XQ1: &[u8; 4] = b"xq1\0";
+pub const OSSL_PKEY_PARAM_RSA_TEST_XQ2: &[u8; 4] = b"xq2\0";
+pub const OSSL_PKEY_PARAM_SECURITY_BITS: &[u8; 14] = b"security-bits\0";
+pub const OSSL_PKEY_PARAM_SLH_DSA_SEED: &[u8; 5] = b"seed\0";
+pub const OSSL_PKEY_PARAM_USE_COFACTOR_FLAG: &[u8; 18] = b"use-cofactor-flag\0";
+pub const OSSL_PROV_PARAM_BUILDINFO: &[u8; 10] = b"buildinfo\0";
+pub const OSSL_PROV_PARAM_CORE_MODULE_FILENAME: &[u8; 16] = b"module-filename\0";
+pub const OSSL_PROV_PARAM_CORE_PROV_NAME: &[u8; 14] = b"provider-name\0";
+pub const OSSL_PROV_PARAM_CORE_VERSION: &[u8; 16] = b"openssl-version\0";
+pub const OSSL_PROV_PARAM_DRBG_TRUNC_DIGEST: &[u8; 17] = b"drbg-no-trunc-md\0";
+pub const OSSL_PROV_PARAM_DSA_SIGN_DISABLED: &[u8; 18] = b"dsa-sign-disabled\0";
+pub const OSSL_PROV_PARAM_ECDH_COFACTOR_CHECK: &[u8; 20] = b"ecdh-cofactor-check\0";
+pub const OSSL_PROV_PARAM_HKDF_DIGEST_CHECK: &[u8; 18] = b"hkdf-digest-check\0";
+pub const OSSL_PROV_PARAM_HKDF_KEY_CHECK: &[u8; 15] = b"hkdf-key-check\0";
+pub const OSSL_PROV_PARAM_HMAC_KEY_CHECK: &[u8; 15] = b"hmac-key-check\0";
+pub const OSSL_PROV_PARAM_KBKDF_KEY_CHECK: &[u8; 16] = b"kbkdf-key-check\0";
+pub const OSSL_PROV_PARAM_KMAC_KEY_CHECK: &[u8; 15] = b"kmac-key-check\0";
+pub const OSSL_PROV_PARAM_NAME: &[u8; 5] = b"name\0";
+pub const OSSL_PROV_PARAM_NO_SHORT_MAC: &[u8; 13] = b"no-short-mac\0";
+pub const OSSL_PROV_PARAM_PBKDF2_LOWER_BOUND_CHECK: &[u8; 25] = b"pbkdf2-lower-bound-check\0";
+pub const OSSL_PROV_PARAM_RSA_PKCS15_PAD_DISABLED: &[u8; 24] = b"rsa-pkcs15-pad-disabled\0";
+pub const OSSL_PROV_PARAM_RSA_PSS_SALTLEN_CHECK: &[u8; 22] = b"rsa-pss-saltlen-check\0";
+pub const OSSL_PROV_PARAM_RSA_SIGN_X931_PAD_DISABLED: &[u8; 27] = b"rsa-sign-x931-pad-disabled\0";
+pub const OSSL_PROV_PARAM_SECURITY_CHECKS: &[u8; 16] = b"security-checks\0";
+pub const OSSL_PROV_PARAM_SELF_TEST_DESC: &[u8; 8] = b"st-desc\0";
+pub const OSSL_PROV_PARAM_SELF_TEST_PHASE: &[u8; 9] = b"st-phase\0";
+pub const OSSL_PROV_PARAM_SELF_TEST_TYPE: &[u8; 8] = b"st-type\0";
+pub const OSSL_PROV_PARAM_SIGNATURE_DIGEST_CHECK: &[u8; 23] = b"signature-digest-check\0";
+pub const OSSL_PROV_PARAM_SSHKDF_DIGEST_CHECK: &[u8; 20] = b"sshkdf-digest-check\0";
+pub const OSSL_PROV_PARAM_SSHKDF_KEY_CHECK: &[u8; 17] = b"sshkdf-key-check\0";
+pub const OSSL_PROV_PARAM_SSKDF_DIGEST_CHECK: &[u8; 19] = b"sskdf-digest-check\0";
+pub const OSSL_PROV_PARAM_SSKDF_KEY_CHECK: &[u8; 16] = b"sskdf-key-check\0";
+pub const OSSL_PROV_PARAM_STATUS: &[u8; 7] = b"status\0";
+pub const OSSL_PROV_PARAM_TDES_ENCRYPT_DISABLED: &[u8; 22] = b"tdes-encrypt-disabled\0";
+pub const OSSL_PROV_PARAM_TLS13_KDF_DIGEST_CHECK: &[u8; 23] = b"tls13-kdf-digest-check\0";
+pub const OSSL_PROV_PARAM_TLS13_KDF_KEY_CHECK: &[u8; 20] = b"tls13-kdf-key-check\0";
+pub const OSSL_PROV_PARAM_TLS1_PRF_DIGEST_CHECK: &[u8; 22] = b"tls1-prf-digest-check\0";
+pub const OSSL_PROV_PARAM_TLS1_PRF_EMS_CHECK: &[u8; 19] = b"tls1-prf-ems-check\0";
+pub const OSSL_PROV_PARAM_TLS1_PRF_KEY_CHECK: &[u8; 19] = b"tls1-prf-key-check\0";
+pub const OSSL_PROV_PARAM_VERSION: &[u8; 8] = b"version\0";
+pub const OSSL_PROV_PARAM_X942KDF_KEY_CHECK: &[u8; 18] = b"x942kdf-key-check\0";
+pub const OSSL_PROV_PARAM_X963KDF_DIGEST_CHECK: &[u8; 21] = b"x963kdf-digest-check\0";
+pub const OSSL_PROV_PARAM_X963KDF_KEY_CHECK: &[u8; 18] = b"x963kdf-key-check\0";
+pub const OSSL_RAND_PARAM_FIPS_APPROVED_INDICATOR: &[u8; 15] = b"fips-indicator\0";
+pub const OSSL_RAND_PARAM_GENERATE: &[u8; 9] = b"generate\0";
+pub const OSSL_RAND_PARAM_MAX_REQUEST: &[u8; 12] = b"max_request\0";
+pub const OSSL_RAND_PARAM_STATE: &[u8; 6] = b"state\0";
+pub const OSSL_RAND_PARAM_STRENGTH: &[u8; 9] = b"strength\0";
+pub const OSSL_RAND_PARAM_TEST_ENTROPY: &[u8; 13] = b"test_entropy\0";
+pub const OSSL_RAND_PARAM_TEST_NONCE: &[u8; 11] = b"test_nonce\0";
+pub const OSSL_SIGNATURE_PARAM_ADD_RANDOM: &[u8; 18] = b"additional-random\0";
+pub const OSSL_SIGNATURE_PARAM_ALGORITHM_ID: &[u8; 13] = b"algorithm-id\0";
+pub const OSSL_SIGNATURE_PARAM_ALGORITHM_ID_PARAMS: &[u8; 20] = b"algorithm-id-params\0";
+pub const OSSL_SIGNATURE_PARAM_CONTEXT_STRING: &[u8; 15] = b"context-string\0";
+pub const OSSL_SIGNATURE_PARAM_DETERMINISTIC: &[u8; 14] = b"deterministic\0";
+pub const OSSL_SIGNATURE_PARAM_DIGEST: &[u8; 7] = b"digest\0";
+pub const OSSL_SIGNATURE_PARAM_DIGEST_SIZE: &[u8; 12] = b"digest-size\0";
+pub const OSSL_SIGNATURE_PARAM_FIPS_APPROVED_INDICATOR: &[u8; 15] = b"fips-indicator\0";
+pub const OSSL_SIGNATURE_PARAM_FIPS_DIGEST_CHECK: &[u8; 13] = b"digest-check\0";
+pub const OSSL_SIGNATURE_PARAM_FIPS_KEY_CHECK: &[u8; 10] = b"key-check\0";
+pub const OSSL_SIGNATURE_PARAM_FIPS_RSA_PSS_SALTLEN_CHECK: &[u8; 22] = b"rsa-pss-saltlen-check\0";
+pub const OSSL_SIGNATURE_PARAM_FIPS_SIGN_CHECK: &[u8; 11] = b"sign-check\0";
+pub const OSSL_SIGNATURE_PARAM_FIPS_SIGN_X931_PAD_CHECK: &[u8; 20] = b"sign-x931-pad-check\0";
+pub const OSSL_SIGNATURE_PARAM_FIPS_VERIFY_MESSAGE: &[u8; 15] = b"verify-message\0";
+pub const OSSL_SIGNATURE_PARAM_INSTANCE: &[u8; 9] = b"instance\0";
+pub const OSSL_SIGNATURE_PARAM_KAT: &[u8; 4] = b"kat\0";
+pub const OSSL_SIGNATURE_PARAM_MESSAGE_ENCODING: &[u8; 17] = b"message-encoding\0";
+pub const OSSL_SIGNATURE_PARAM_MGF1_DIGEST: &[u8; 12] = b"mgf1-digest\0";
+pub const OSSL_SIGNATURE_PARAM_MGF1_PROPERTIES: &[u8; 16] = b"mgf1-properties\0";
+pub const OSSL_SIGNATURE_PARAM_MU: &[u8; 3] = b"mu\0";
+pub const OSSL_SIGNATURE_PARAM_NONCE_TYPE: &[u8; 11] = b"nonce-type\0";
+pub const OSSL_SIGNATURE_PARAM_PAD_MODE: &[u8; 9] = b"pad-mode\0";
+pub const OSSL_SIGNATURE_PARAM_PROPERTIES: &[u8; 11] = b"properties\0";
+pub const OSSL_SIGNATURE_PARAM_PSS_SALTLEN: &[u8; 8] = b"saltlen\0";
+pub const OSSL_SIGNATURE_PARAM_SIGNATURE: &[u8; 10] = b"signature\0";
+pub const OSSL_SIGNATURE_PARAM_TEST_ENTROPY: &[u8; 13] = b"test-entropy\0";
+pub const OSSL_SKEY_PARAM_KEY_LENGTH: &[u8; 11] = b"key-length\0";
+pub const OSSL_SKEY_PARAM_RAW_BYTES: &[u8; 10] = b"raw-bytes\0";
+pub const OSSL_STORE_PARAM_ALIAS: &[u8; 6] = b"alias\0";
+pub const OSSL_STORE_PARAM_DIGEST: &[u8; 7] = b"digest\0";
+pub const OSSL_STORE_PARAM_EXPECT: &[u8; 7] = b"expect\0";
+pub const OSSL_STORE_PARAM_FINGERPRINT: &[u8; 12] = b"fingerprint\0";
+pub const OSSL_STORE_PARAM_INPUT_TYPE: &[u8; 11] = b"input-type\0";
+pub const OSSL_STORE_PARAM_ISSUER: &[u8; 5] = b"name\0";
+pub const OSSL_STORE_PARAM_PROPERTIES: &[u8; 11] = b"properties\0";
+pub const OSSL_STORE_PARAM_SERIAL: &[u8; 7] = b"serial\0";
+pub const OSSL_STORE_PARAM_SUBJECT: &[u8; 8] = b"subject\0";
 pub type __darwin_time_t = ::std::os::raw::c_long;
+#[repr(C)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct __darwin_pthread_handler_rec {
+    pub __routine: ::std::option::Option<unsafe extern "C" fn(arg1: *mut ::std::os::raw::c_void)>,
+    pub __arg: *mut ::std::os::raw::c_void,
+    pub __next: *mut __darwin_pthread_handler_rec,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of __darwin_pthread_handler_rec"][::std::mem::size_of::<__darwin_pthread_handler_rec>() - 24usize];
+    ["Alignment of __darwin_pthread_handler_rec"][::std::mem::align_of::<__darwin_pthread_handler_rec>() - 8usize];
+    ["Offset of field: __darwin_pthread_handler_rec::__routine"]
+        [::std::mem::offset_of!(__darwin_pthread_handler_rec, __routine) - 0usize];
+    ["Offset of field: __darwin_pthread_handler_rec::__arg"]
+        [::std::mem::offset_of!(__darwin_pthread_handler_rec, __arg) - 8usize];
+    ["Offset of field: __darwin_pthread_handler_rec::__next"]
+        [::std::mem::offset_of!(__darwin_pthread_handler_rec, __next) - 16usize];
+};
+impl Default for __darwin_pthread_handler_rec {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
+pub struct _opaque_pthread_once_t {
+    pub __sig: ::std::os::raw::c_long,
+    pub __opaque: [::std::os::raw::c_char; 8usize],
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of _opaque_pthread_once_t"][::std::mem::size_of::<_opaque_pthread_once_t>() - 16usize];
+    ["Alignment of _opaque_pthread_once_t"][::std::mem::align_of::<_opaque_pthread_once_t>() - 8usize];
+    ["Offset of field: _opaque_pthread_once_t::__sig"][::std::mem::offset_of!(_opaque_pthread_once_t, __sig) - 0usize];
+    ["Offset of field: _opaque_pthread_once_t::__opaque"]
+        [::std::mem::offset_of!(_opaque_pthread_once_t, __opaque) - 8usize];
+};
+#[repr(C)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct _opaque_pthread_t {
+    pub __sig: ::std::os::raw::c_long,
+    pub __cleanup_stack: *mut __darwin_pthread_handler_rec,
+    pub __opaque: [::std::os::raw::c_char; 8176usize],
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of _opaque_pthread_t"][::std::mem::size_of::<_opaque_pthread_t>() - 8192usize];
+    ["Alignment of _opaque_pthread_t"][::std::mem::align_of::<_opaque_pthread_t>() - 8usize];
+    ["Offset of field: _opaque_pthread_t::__sig"][::std::mem::offset_of!(_opaque_pthread_t, __sig) - 0usize];
+    ["Offset of field: _opaque_pthread_t::__cleanup_stack"]
+        [::std::mem::offset_of!(_opaque_pthread_t, __cleanup_stack) - 8usize];
+    ["Offset of field: _opaque_pthread_t::__opaque"][::std::mem::offset_of!(_opaque_pthread_t, __opaque) - 16usize];
+};
+impl Default for _opaque_pthread_t {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+pub type __darwin_pthread_key_t = ::std::os::raw::c_ulong;
+pub type __darwin_pthread_once_t = _opaque_pthread_once_t;
+pub type __darwin_pthread_t = *mut _opaque_pthread_t;
 pub type time_t = __darwin_time_t;
+pub type pthread_once_t = __darwin_pthread_once_t;
+pub type pthread_t = __darwin_pthread_t;
+pub type pthread_key_t = __darwin_pthread_key_t;
 pub type intmax_t = ::std::os::raw::c_long;
 pub type uintmax_t = ::std::os::raw::c_ulong;
 pub type ossl_intmax_t = intmax_t;
@@ -7336,19 +7800,14 @@ pub type OPENSSL_sk_compfunc = ::std::option::Option<
         arg2: *const ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int,
 >;
-pub type OPENSSL_sk_freefunc =
-    ::std::option::Option<unsafe extern "C" fn(arg1: *mut ::std::os::raw::c_void)>;
-pub type OPENSSL_sk_copyfunc = ::std::option::Option<
-    unsafe extern "C" fn(arg1: *const ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void,
->;
+pub type OPENSSL_sk_freefunc = ::std::option::Option<unsafe extern "C" fn(arg1: *mut ::std::os::raw::c_void)>;
+pub type OPENSSL_sk_copyfunc =
+    ::std::option::Option<unsafe extern "C" fn(arg1: *const ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void>;
 unsafe extern "C" {
     pub fn OPENSSL_sk_num(arg1: *const OPENSSL_STACK) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn OPENSSL_sk_value(
-        arg1: *const OPENSSL_STACK,
-        arg2: ::std::os::raw::c_int,
-    ) -> *mut ::std::os::raw::c_void;
+    pub fn OPENSSL_sk_value(arg1: *const OPENSSL_STACK, arg2: ::std::os::raw::c_int) -> *mut ::std::os::raw::c_void;
 }
 unsafe extern "C" {
     pub fn OPENSSL_sk_set(
@@ -7364,16 +7823,10 @@ unsafe extern "C" {
     pub fn OPENSSL_sk_new_null() -> *mut OPENSSL_STACK;
 }
 unsafe extern "C" {
-    pub fn OPENSSL_sk_new_reserve(
-        c: OPENSSL_sk_compfunc,
-        n: ::std::os::raw::c_int,
-    ) -> *mut OPENSSL_STACK;
+    pub fn OPENSSL_sk_new_reserve(c: OPENSSL_sk_compfunc, n: ::std::os::raw::c_int) -> *mut OPENSSL_STACK;
 }
 unsafe extern "C" {
-    pub fn OPENSSL_sk_reserve(
-        st: *mut OPENSSL_STACK,
-        n: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn OPENSSL_sk_reserve(st: *mut OPENSSL_STACK, n: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn OPENSSL_sk_free(arg1: *mut OPENSSL_STACK);
@@ -7399,10 +7852,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn OPENSSL_sk_delete(
-        st: *mut OPENSSL_STACK,
-        loc: ::std::os::raw::c_int,
-    ) -> *mut ::std::os::raw::c_void;
+    pub fn OPENSSL_sk_delete(st: *mut OPENSSL_STACK, loc: ::std::os::raw::c_int) -> *mut ::std::os::raw::c_void;
 }
 unsafe extern "C" {
     pub fn OPENSSL_sk_delete_ptr(
@@ -7411,16 +7861,10 @@ unsafe extern "C" {
     ) -> *mut ::std::os::raw::c_void;
 }
 unsafe extern "C" {
-    pub fn OPENSSL_sk_find(
-        st: *mut OPENSSL_STACK,
-        data: *const ::std::os::raw::c_void,
-    ) -> ::std::os::raw::c_int;
+    pub fn OPENSSL_sk_find(st: *mut OPENSSL_STACK, data: *const ::std::os::raw::c_void) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn OPENSSL_sk_find_ex(
-        st: *mut OPENSSL_STACK,
-        data: *const ::std::os::raw::c_void,
-    ) -> ::std::os::raw::c_int;
+    pub fn OPENSSL_sk_find_ex(st: *mut OPENSSL_STACK, data: *const ::std::os::raw::c_void) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn OPENSSL_sk_find_all(
@@ -7430,16 +7874,10 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn OPENSSL_sk_push(
-        st: *mut OPENSSL_STACK,
-        data: *const ::std::os::raw::c_void,
-    ) -> ::std::os::raw::c_int;
+    pub fn OPENSSL_sk_push(st: *mut OPENSSL_STACK, data: *const ::std::os::raw::c_void) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn OPENSSL_sk_unshift(
-        st: *mut OPENSSL_STACK,
-        data: *const ::std::os::raw::c_void,
-    ) -> ::std::os::raw::c_int;
+    pub fn OPENSSL_sk_unshift(st: *mut OPENSSL_STACK, data: *const ::std::os::raw::c_void) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn OPENSSL_sk_shift(st: *mut OPENSSL_STACK) -> *mut ::std::os::raw::c_void;
@@ -7451,10 +7889,7 @@ unsafe extern "C" {
     pub fn OPENSSL_sk_zero(st: *mut OPENSSL_STACK);
 }
 unsafe extern "C" {
-    pub fn OPENSSL_sk_set_cmp_func(
-        sk: *mut OPENSSL_STACK,
-        cmp: OPENSSL_sk_compfunc,
-    ) -> OPENSSL_sk_compfunc;
+    pub fn OPENSSL_sk_set_cmp_func(sk: *mut OPENSSL_STACK, cmp: OPENSSL_sk_compfunc) -> OPENSSL_sk_compfunc;
 }
 unsafe extern "C" {
     pub fn OPENSSL_sk_dup(st: *const OPENSSL_STACK) -> *mut OPENSSL_STACK;
@@ -7478,11 +7913,9 @@ pub type sk_OPENSSL_STRING_compfunc = ::std::option::Option<
         b: *const *const ::std::os::raw::c_char,
     ) -> ::std::os::raw::c_int,
 >;
-pub type sk_OPENSSL_STRING_freefunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *mut ::std::os::raw::c_char)>;
-pub type sk_OPENSSL_STRING_copyfunc = ::std::option::Option<
-    unsafe extern "C" fn(a: *const ::std::os::raw::c_char) -> *mut ::std::os::raw::c_char,
->;
+pub type sk_OPENSSL_STRING_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut ::std::os::raw::c_char)>;
+pub type sk_OPENSSL_STRING_copyfunc =
+    ::std::option::Option<unsafe extern "C" fn(a: *const ::std::os::raw::c_char) -> *mut ::std::os::raw::c_char>;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct stack_st_OPENSSL_CSTRING {
@@ -7494,11 +7927,9 @@ pub type sk_OPENSSL_CSTRING_compfunc = ::std::option::Option<
         b: *const *const ::std::os::raw::c_char,
     ) -> ::std::os::raw::c_int,
 >;
-pub type sk_OPENSSL_CSTRING_freefunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *mut ::std::os::raw::c_char)>;
-pub type sk_OPENSSL_CSTRING_copyfunc = ::std::option::Option<
-    unsafe extern "C" fn(a: *const ::std::os::raw::c_char) -> *mut ::std::os::raw::c_char,
->;
+pub type sk_OPENSSL_CSTRING_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut ::std::os::raw::c_char)>;
+pub type sk_OPENSSL_CSTRING_copyfunc =
+    ::std::option::Option<unsafe extern "C" fn(a: *const ::std::os::raw::c_char) -> *mut ::std::os::raw::c_char>;
 pub type OPENSSL_BLOCK = *mut ::std::os::raw::c_void;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -7511,11 +7942,9 @@ pub type sk_OPENSSL_BLOCK_compfunc = ::std::option::Option<
         b: *const *const ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int,
 >;
-pub type sk_OPENSSL_BLOCK_freefunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *mut ::std::os::raw::c_void)>;
-pub type sk_OPENSSL_BLOCK_copyfunc = ::std::option::Option<
-    unsafe extern "C" fn(a: *const ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void,
->;
+pub type sk_OPENSSL_BLOCK_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut ::std::os::raw::c_void)>;
+pub type sk_OPENSSL_BLOCK_copyfunc =
+    ::std::option::Option<unsafe extern "C" fn(a: *const ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void>;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct ossl_provider_st {
@@ -8150,25 +8579,16 @@ unsafe extern "C" {
     pub fn EVP_PKEY_CTX_get_ecdh_cofactor_mode(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_set_ecdh_kdf_type(
-        ctx: *mut EVP_PKEY_CTX,
-        kdf: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_set_ecdh_kdf_type(ctx: *mut EVP_PKEY_CTX, kdf: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_CTX_get_ecdh_kdf_type(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_set_ecdh_kdf_md(
-        ctx: *mut EVP_PKEY_CTX,
-        md: *const EVP_MD,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_set_ecdh_kdf_md(ctx: *mut EVP_PKEY_CTX, md: *const EVP_MD) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_get_ecdh_kdf_md(
-        ctx: *mut EVP_PKEY_CTX,
-        md: *mut *const EVP_MD,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_get_ecdh_kdf_md(ctx: *mut EVP_PKEY_CTX, md: *mut *const EVP_MD) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_CTX_set_ecdh_kdf_outlen(
@@ -8365,10 +8785,8 @@ pub struct ossl_dispatch_st {
 const _: () = {
     ["Size of ossl_dispatch_st"][::std::mem::size_of::<ossl_dispatch_st>() - 16usize];
     ["Alignment of ossl_dispatch_st"][::std::mem::align_of::<ossl_dispatch_st>() - 8usize];
-    ["Offset of field: ossl_dispatch_st::function_id"]
-        [::std::mem::offset_of!(ossl_dispatch_st, function_id) - 0usize];
-    ["Offset of field: ossl_dispatch_st::function"]
-        [::std::mem::offset_of!(ossl_dispatch_st, function) - 8usize];
+    ["Offset of field: ossl_dispatch_st::function_id"][::std::mem::offset_of!(ossl_dispatch_st, function_id) - 0usize];
+    ["Offset of field: ossl_dispatch_st::function"][::std::mem::offset_of!(ossl_dispatch_st, function) - 8usize];
 };
 #[repr(C)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -8436,13 +8854,10 @@ const _: () = {
     ["Size of ossl_param_st"][::std::mem::size_of::<ossl_param_st>() - 40usize];
     ["Alignment of ossl_param_st"][::std::mem::align_of::<ossl_param_st>() - 8usize];
     ["Offset of field: ossl_param_st::key"][::std::mem::offset_of!(ossl_param_st, key) - 0usize];
-    ["Offset of field: ossl_param_st::data_type"]
-        [::std::mem::offset_of!(ossl_param_st, data_type) - 8usize];
+    ["Offset of field: ossl_param_st::data_type"][::std::mem::offset_of!(ossl_param_st, data_type) - 8usize];
     ["Offset of field: ossl_param_st::data"][::std::mem::offset_of!(ossl_param_st, data) - 16usize];
-    ["Offset of field: ossl_param_st::data_size"]
-        [::std::mem::offset_of!(ossl_param_st, data_size) - 24usize];
-    ["Offset of field: ossl_param_st::return_size"]
-        [::std::mem::offset_of!(ossl_param_st, return_size) - 32usize];
+    ["Offset of field: ossl_param_st::data_size"][::std::mem::offset_of!(ossl_param_st, data_size) - 24usize];
+    ["Offset of field: ossl_param_st::return_size"][::std::mem::offset_of!(ossl_param_st, return_size) - 32usize];
 };
 impl Default for ossl_param_st {
     fn default() -> Self {
@@ -8453,8 +8868,7 @@ impl Default for ossl_param_st {
         }
     }
 }
-pub type OSSL_thread_stop_handler_fn =
-    ::std::option::Option<unsafe extern "C" fn(arg: *mut ::std::os::raw::c_void)>;
+pub type OSSL_thread_stop_handler_fn = ::std::option::Option<unsafe extern "C" fn(arg: *mut ::std::os::raw::c_void)>;
 pub type OSSL_provider_init_fn = ::std::option::Option<
     unsafe extern "C" fn(
         handle: *const OSSL_CORE_HANDLE,
@@ -8472,10 +8886,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 pub type OSSL_CALLBACK = ::std::option::Option<
-    unsafe extern "C" fn(
-        params: *const OSSL_PARAM,
-        arg: *mut ::std::os::raw::c_void,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(params: *const OSSL_PARAM, arg: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_INOUT_CALLBACK = ::std::option::Option<
     unsafe extern "C" fn(
@@ -8502,8 +8913,7 @@ pub struct CRYPTO_dynlock {
 const _: () = {
     ["Size of CRYPTO_dynlock"][::std::mem::size_of::<CRYPTO_dynlock>() - 4usize];
     ["Alignment of CRYPTO_dynlock"][::std::mem::align_of::<CRYPTO_dynlock>() - 4usize];
-    ["Offset of field: CRYPTO_dynlock::dummy"]
-        [::std::mem::offset_of!(CRYPTO_dynlock, dummy) - 0usize];
+    ["Offset of field: CRYPTO_dynlock::dummy"][::std::mem::offset_of!(CRYPTO_dynlock, dummy) - 0usize];
 };
 pub type CRYPTO_RWLOCK = ::std::os::raw::c_void;
 unsafe extern "C" {
@@ -8538,27 +8948,13 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn CRYPTO_atomic_and(
-        val: *mut u64,
-        op: u64,
-        ret: *mut u64,
-        lock: *mut CRYPTO_RWLOCK,
-    ) -> ::std::os::raw::c_int;
+    pub fn CRYPTO_atomic_and(val: *mut u64, op: u64, ret: *mut u64, lock: *mut CRYPTO_RWLOCK) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn CRYPTO_atomic_or(
-        val: *mut u64,
-        op: u64,
-        ret: *mut u64,
-        lock: *mut CRYPTO_RWLOCK,
-    ) -> ::std::os::raw::c_int;
+    pub fn CRYPTO_atomic_or(val: *mut u64, op: u64, ret: *mut u64, lock: *mut CRYPTO_RWLOCK) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn CRYPTO_atomic_load(
-        val: *mut u64,
-        ret: *mut u64,
-        lock: *mut CRYPTO_RWLOCK,
-    ) -> ::std::os::raw::c_int;
+    pub fn CRYPTO_atomic_load(val: *mut u64, ret: *mut u64, lock: *mut CRYPTO_RWLOCK) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn CRYPTO_atomic_load_int(
@@ -8568,25 +8964,13 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn CRYPTO_atomic_store(
-        dst: *mut u64,
-        val: u64,
-        lock: *mut CRYPTO_RWLOCK,
-    ) -> ::std::os::raw::c_int;
+    pub fn CRYPTO_atomic_store(dst: *mut u64, val: u64, lock: *mut CRYPTO_RWLOCK) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn OPENSSL_strlcpy(
-        dst: *mut ::std::os::raw::c_char,
-        src: *const ::std::os::raw::c_char,
-        siz: usize,
-    ) -> usize;
+    pub fn OPENSSL_strlcpy(dst: *mut ::std::os::raw::c_char, src: *const ::std::os::raw::c_char, siz: usize) -> usize;
 }
 unsafe extern "C" {
-    pub fn OPENSSL_strlcat(
-        dst: *mut ::std::os::raw::c_char,
-        src: *const ::std::os::raw::c_char,
-        siz: usize,
-    ) -> usize;
+    pub fn OPENSSL_strlcat(dst: *mut ::std::os::raw::c_char, src: *const ::std::os::raw::c_char, siz: usize) -> usize;
 }
 unsafe extern "C" {
     pub fn OPENSSL_strnlen(str_: *const ::std::os::raw::c_char, maxlen: usize) -> usize;
@@ -8683,10 +9067,8 @@ pub struct crypto_ex_data_st {
 const _: () = {
     ["Size of crypto_ex_data_st"][::std::mem::size_of::<crypto_ex_data_st>() - 16usize];
     ["Alignment of crypto_ex_data_st"][::std::mem::align_of::<crypto_ex_data_st>() - 8usize];
-    ["Offset of field: crypto_ex_data_st::ctx"]
-        [::std::mem::offset_of!(crypto_ex_data_st, ctx) - 0usize];
-    ["Offset of field: crypto_ex_data_st::sk"]
-        [::std::mem::offset_of!(crypto_ex_data_st, sk) - 8usize];
+    ["Offset of field: crypto_ex_data_st::ctx"][::std::mem::offset_of!(crypto_ex_data_st, ctx) - 0usize];
+    ["Offset of field: crypto_ex_data_st::sk"][::std::mem::offset_of!(crypto_ex_data_st, sk) - 8usize];
 };
 impl Default for crypto_ex_data_st {
     fn default() -> Self {
@@ -8708,11 +9090,9 @@ pub type sk_void_compfunc = ::std::option::Option<
         b: *const *const ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int,
 >;
-pub type sk_void_freefunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *mut ::std::os::raw::c_void)>;
-pub type sk_void_copyfunc = ::std::option::Option<
-    unsafe extern "C" fn(a: *const ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void,
->;
+pub type sk_void_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut ::std::os::raw::c_void)>;
+pub type sk_void_copyfunc =
+    ::std::option::Option<unsafe extern "C" fn(a: *const ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void>;
 pub type CRYPTO_EX_new = ::std::option::Option<
     unsafe extern "C" fn(
         parent: *mut ::std::os::raw::c_void,
@@ -8796,10 +9176,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn CRYPTO_get_ex_data(
-        ad: *const CRYPTO_EX_DATA,
-        idx: ::std::os::raw::c_int,
-    ) -> *mut ::std::os::raw::c_void;
+    pub fn CRYPTO_get_ex_data(ad: *const CRYPTO_EX_DATA, idx: ::std::os::raw::c_int) -> *mut ::std::os::raw::c_void;
 }
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
@@ -8810,8 +9187,7 @@ pub struct crypto_threadid_st {
 const _: () = {
     ["Size of crypto_threadid_st"][::std::mem::size_of::<crypto_threadid_st>() - 4usize];
     ["Alignment of crypto_threadid_st"][::std::mem::align_of::<crypto_threadid_st>() - 4usize];
-    ["Offset of field: crypto_threadid_st::dummy"]
-        [::std::mem::offset_of!(crypto_threadid_st, dummy) - 0usize];
+    ["Offset of field: crypto_threadid_st::dummy"][::std::mem::offset_of!(crypto_threadid_st, dummy) - 0usize];
 };
 pub type CRYPTO_THREADID = crypto_threadid_st;
 pub type CRYPTO_malloc_fn = ::std::option::Option<
@@ -9029,15 +9405,10 @@ unsafe extern "C" {
     pub fn OPENSSL_cleanup();
 }
 unsafe extern "C" {
-    pub fn OPENSSL_init_crypto(
-        opts: u64,
-        settings: *const OPENSSL_INIT_SETTINGS,
-    ) -> ::std::os::raw::c_int;
+    pub fn OPENSSL_init_crypto(opts: u64, settings: *const OPENSSL_INIT_SETTINGS) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn OPENSSL_atexit(
-        handler: ::std::option::Option<unsafe extern "C" fn()>,
-    ) -> ::std::os::raw::c_int;
+    pub fn OPENSSL_atexit(handler: ::std::option::Option<unsafe extern "C" fn()>) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn OPENSSL_thread_stop();
@@ -9051,9 +9422,9 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn OPENSSL_INIT_free(settings: *mut OPENSSL_INIT_SETTINGS);
 }
-pub type CRYPTO_ONCE = ::std::os::raw::c_uint;
-pub type CRYPTO_THREAD_LOCAL = ::std::os::raw::c_uint;
-pub type CRYPTO_THREAD_ID = ::std::os::raw::c_uint;
+pub type CRYPTO_ONCE = pthread_once_t;
+pub type CRYPTO_THREAD_LOCAL = pthread_key_t;
+pub type CRYPTO_THREAD_ID = pthread_t;
 unsafe extern "C" {
     pub fn CRYPTO_THREAD_run_once(
         once: *mut CRYPTO_ONCE,
@@ -9082,10 +9453,7 @@ unsafe extern "C" {
     pub fn CRYPTO_THREAD_get_current_id() -> CRYPTO_THREAD_ID;
 }
 unsafe extern "C" {
-    pub fn CRYPTO_THREAD_compare_id(
-        a: CRYPTO_THREAD_ID,
-        b: CRYPTO_THREAD_ID,
-    ) -> ::std::os::raw::c_int;
+    pub fn CRYPTO_THREAD_compare_id(a: CRYPTO_THREAD_ID, b: CRYPTO_THREAD_ID) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn OSSL_LIB_CTX_new() -> *mut OSSL_LIB_CTX;
@@ -9097,10 +9465,7 @@ unsafe extern "C" {
     ) -> *mut OSSL_LIB_CTX;
 }
 unsafe extern "C" {
-    pub fn OSSL_LIB_CTX_new_child(
-        handle: *const OSSL_CORE_HANDLE,
-        in_: *const OSSL_DISPATCH,
-    ) -> *mut OSSL_LIB_CTX;
+    pub fn OSSL_LIB_CTX_new_child(handle: *const OSSL_CORE_HANDLE, in_: *const OSSL_DISPATCH) -> *mut OSSL_LIB_CTX;
 }
 unsafe extern "C" {
     pub fn OSSL_LIB_CTX_load_config(
@@ -9127,10 +9492,7 @@ unsafe extern "C" {
     pub fn OSSL_sleep(millis: u64);
 }
 unsafe extern "C" {
-    pub fn OSSL_LIB_CTX_get_data(
-        ctx: *mut OSSL_LIB_CTX,
-        index: ::std::os::raw::c_int,
-    ) -> *mut ::std::os::raw::c_void;
+    pub fn OSSL_LIB_CTX_get_data(ctx: *mut OSSL_LIB_CTX, index: ::std::os::raw::c_int) -> *mut ::std::os::raw::c_void;
 }
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -9243,9 +9605,8 @@ pub type bio_info_cb = BIO_info_cb;
 pub struct stack_st_BIO {
     _unused: [u8; 0],
 }
-pub type sk_BIO_compfunc = ::std::option::Option<
-    unsafe extern "C" fn(a: *const *const BIO, b: *const *const BIO) -> ::std::os::raw::c_int,
->;
+pub type sk_BIO_compfunc =
+    ::std::option::Option<unsafe extern "C" fn(a: *const *const BIO, b: *const *const BIO) -> ::std::os::raw::c_int>;
 pub type sk_BIO_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut BIO)>;
 pub type sk_BIO_copyfunc = ::std::option::Option<unsafe extern "C" fn(a: *const BIO) -> *mut BIO>;
 pub type asn1_ps_func = ::std::option::Option<
@@ -9257,11 +9618,7 @@ pub type asn1_ps_func = ::std::option::Option<
     ) -> ::std::os::raw::c_int,
 >;
 pub type BIO_dgram_sctp_notification_handler_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        b: *mut BIO,
-        context: *mut ::std::os::raw::c_void,
-        buf: *mut ::std::os::raw::c_void,
-    ),
+    unsafe extern "C" fn(b: *mut BIO, context: *mut ::std::os::raw::c_void, buf: *mut ::std::os::raw::c_void),
 >;
 #[repr(C)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -9277,8 +9634,7 @@ const _: () = {
     ["Size of bio_msg_st"][::std::mem::size_of::<bio_msg_st>() - 40usize];
     ["Alignment of bio_msg_st"][::std::mem::align_of::<bio_msg_st>() - 8usize];
     ["Offset of field: bio_msg_st::data"][::std::mem::offset_of!(bio_msg_st, data) - 0usize];
-    ["Offset of field: bio_msg_st::data_len"]
-        [::std::mem::offset_of!(bio_msg_st, data_len) - 8usize];
+    ["Offset of field: bio_msg_st::data_len"][::std::mem::offset_of!(bio_msg_st, data_len) - 8usize];
     ["Offset of field: bio_msg_st::peer"][::std::mem::offset_of!(bio_msg_st, peer) - 16usize];
     ["Offset of field: bio_msg_st::local"][::std::mem::offset_of!(bio_msg_st, local) - 24usize];
     ["Offset of field: bio_msg_st::flags"][::std::mem::offset_of!(bio_msg_st, flags) - 32usize];
@@ -9306,14 +9662,10 @@ pub struct bio_mmsg_cb_args_st {
 const _: () = {
     ["Size of bio_mmsg_cb_args_st"][::std::mem::size_of::<bio_mmsg_cb_args_st>() - 40usize];
     ["Alignment of bio_mmsg_cb_args_st"][::std::mem::align_of::<bio_mmsg_cb_args_st>() - 8usize];
-    ["Offset of field: bio_mmsg_cb_args_st::msg"]
-        [::std::mem::offset_of!(bio_mmsg_cb_args_st, msg) - 0usize];
-    ["Offset of field: bio_mmsg_cb_args_st::stride"]
-        [::std::mem::offset_of!(bio_mmsg_cb_args_st, stride) - 8usize];
-    ["Offset of field: bio_mmsg_cb_args_st::num_msg"]
-        [::std::mem::offset_of!(bio_mmsg_cb_args_st, num_msg) - 16usize];
-    ["Offset of field: bio_mmsg_cb_args_st::flags"]
-        [::std::mem::offset_of!(bio_mmsg_cb_args_st, flags) - 24usize];
+    ["Offset of field: bio_mmsg_cb_args_st::msg"][::std::mem::offset_of!(bio_mmsg_cb_args_st, msg) - 0usize];
+    ["Offset of field: bio_mmsg_cb_args_st::stride"][::std::mem::offset_of!(bio_mmsg_cb_args_st, stride) - 8usize];
+    ["Offset of field: bio_mmsg_cb_args_st::num_msg"][::std::mem::offset_of!(bio_mmsg_cb_args_st, num_msg) - 16usize];
+    ["Offset of field: bio_mmsg_cb_args_st::flags"][::std::mem::offset_of!(bio_mmsg_cb_args_st, flags) - 24usize];
     ["Offset of field: bio_mmsg_cb_args_st::msgs_processed"]
         [::std::mem::offset_of!(bio_mmsg_cb_args_st, msgs_processed) - 32usize];
 };
@@ -9368,12 +9720,9 @@ impl Default for bio_poll_descriptor_st__bindgen_ty_1 {
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
     ["Size of bio_poll_descriptor_st"][::std::mem::size_of::<bio_poll_descriptor_st>() - 16usize];
-    ["Alignment of bio_poll_descriptor_st"]
-        [::std::mem::align_of::<bio_poll_descriptor_st>() - 8usize];
-    ["Offset of field: bio_poll_descriptor_st::type_"]
-        [::std::mem::offset_of!(bio_poll_descriptor_st, type_) - 0usize];
-    ["Offset of field: bio_poll_descriptor_st::value"]
-        [::std::mem::offset_of!(bio_poll_descriptor_st, value) - 8usize];
+    ["Alignment of bio_poll_descriptor_st"][::std::mem::align_of::<bio_poll_descriptor_st>() - 8usize];
+    ["Offset of field: bio_poll_descriptor_st::type_"][::std::mem::offset_of!(bio_poll_descriptor_st, type_) - 0usize];
+    ["Offset of field: bio_poll_descriptor_st::value"][::std::mem::offset_of!(bio_poll_descriptor_st, value) - 8usize];
 };
 impl Default for bio_poll_descriptor_st {
     fn default() -> Self {
@@ -9408,10 +9757,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BIO_get_ex_data(
-        bio: *const BIO,
-        idx: ::std::os::raw::c_int,
-    ) -> *mut ::std::os::raw::c_void;
+    pub fn BIO_get_ex_data(bio: *const BIO, idx: ::std::os::raw::c_int) -> *mut ::std::os::raw::c_void;
 }
 unsafe extern "C" {
     pub fn BIO_number_read(bio: *mut BIO) -> u64;
@@ -9420,11 +9766,7 @@ unsafe extern "C" {
     pub fn BIO_number_written(bio: *mut BIO) -> u64;
 }
 unsafe extern "C" {
-    pub fn BIO_asn1_set_prefix(
-        b: *mut BIO,
-        prefix: asn1_ps_func,
-        prefix_free: asn1_ps_func,
-    ) -> ::std::os::raw::c_int;
+    pub fn BIO_asn1_set_prefix(b: *mut BIO, prefix: asn1_ps_func, prefix_free: asn1_ps_func) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn BIO_asn1_get_prefix(
@@ -9434,11 +9776,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BIO_asn1_set_suffix(
-        b: *mut BIO,
-        suffix: asn1_ps_func,
-        suffix_free: asn1_ps_func,
-    ) -> ::std::os::raw::c_int;
+    pub fn BIO_asn1_set_suffix(b: *mut BIO, suffix: asn1_ps_func, suffix_free: asn1_ps_func) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn BIO_asn1_get_suffix(
@@ -9451,16 +9789,10 @@ unsafe extern "C" {
     pub fn BIO_s_file() -> *const BIO_METHOD;
 }
 unsafe extern "C" {
-    pub fn BIO_new_file(
-        filename: *const ::std::os::raw::c_char,
-        mode: *const ::std::os::raw::c_char,
-    ) -> *mut BIO;
+    pub fn BIO_new_file(filename: *const ::std::os::raw::c_char, mode: *const ::std::os::raw::c_char) -> *mut BIO;
 }
 unsafe extern "C" {
-    pub fn BIO_new_from_core_bio(
-        libctx: *mut OSSL_LIB_CTX,
-        corebio: *mut OSSL_CORE_BIO,
-    ) -> *mut BIO;
+    pub fn BIO_new_from_core_bio(libctx: *mut OSSL_LIB_CTX, corebio: *mut OSSL_CORE_BIO) -> *mut BIO;
 }
 unsafe extern "C" {
     pub fn BIO_new_ex(libctx: *mut OSSL_LIB_CTX, method: *const BIO_METHOD) -> *mut BIO;
@@ -9560,26 +9892,16 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BIO_get_rpoll_descriptor(
-        b: *mut BIO,
-        desc: *mut BIO_POLL_DESCRIPTOR,
-    ) -> ::std::os::raw::c_int;
+    pub fn BIO_get_rpoll_descriptor(b: *mut BIO, desc: *mut BIO_POLL_DESCRIPTOR) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BIO_get_wpoll_descriptor(
-        b: *mut BIO,
-        desc: *mut BIO_POLL_DESCRIPTOR,
-    ) -> ::std::os::raw::c_int;
+    pub fn BIO_get_wpoll_descriptor(b: *mut BIO, desc: *mut BIO_POLL_DESCRIPTOR) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn BIO_puts(bp: *mut BIO, buf: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BIO_indent(
-        b: *mut BIO,
-        indent: ::std::os::raw::c_int,
-        max: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn BIO_indent(b: *mut BIO, indent: ::std::os::raw::c_int, max: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn BIO_ctrl(
@@ -9590,11 +9912,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_long;
 }
 unsafe extern "C" {
-    pub fn BIO_callback_ctrl(
-        b: *mut BIO,
-        cmd: ::std::os::raw::c_int,
-        fp: BIO_info_cb,
-    ) -> ::std::os::raw::c_long;
+    pub fn BIO_callback_ctrl(b: *mut BIO, cmd: ::std::os::raw::c_int, fp: BIO_info_cb) -> ::std::os::raw::c_long;
 }
 unsafe extern "C" {
     pub fn BIO_ptr_ctrl(
@@ -9642,10 +9960,7 @@ unsafe extern "C" {
     pub fn BIO_dup_chain(in_: *mut BIO) -> *mut BIO;
 }
 unsafe extern "C" {
-    pub fn BIO_nread0(
-        bio: *mut BIO,
-        buf: *mut *mut ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn BIO_nread0(bio: *mut BIO, buf: *mut *mut ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn BIO_nread(
@@ -9655,10 +9970,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BIO_nwrite0(
-        bio: *mut BIO,
-        buf: *mut *mut ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn BIO_nwrite0(bio: *mut BIO, buf: *mut *mut ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn BIO_nwrite(
@@ -9674,10 +9986,7 @@ unsafe extern "C" {
     pub fn BIO_s_secmem() -> *const BIO_METHOD;
 }
 unsafe extern "C" {
-    pub fn BIO_new_mem_buf(
-        buf: *const ::std::os::raw::c_void,
-        len: ::std::os::raw::c_int,
-    ) -> *mut BIO;
+    pub fn BIO_new_mem_buf(buf: *const ::std::os::raw::c_void, len: ::std::os::raw::c_int) -> *mut BIO;
 }
 unsafe extern "C" {
     pub fn BIO_s_fd() -> *const BIO_METHOD;
@@ -9713,11 +10022,8 @@ unsafe extern "C" {
     pub fn BIO_s_core() -> *const BIO_METHOD;
 }
 unsafe extern "C" {
-    pub fn BIO_wait(
-        bio: *mut BIO,
-        max_time: time_t,
-        nap_milliseconds: ::std::os::raw::c_uint,
-    ) -> ::std::os::raw::c_int;
+    pub fn BIO_wait(bio: *mut BIO, max_time: time_t, nap_milliseconds: ::std::os::raw::c_uint)
+    -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn BIO_do_connect_retry(
@@ -9800,18 +10106,10 @@ unsafe extern "C" {
     pub fn BIO_copy_next_retry(b: *mut BIO);
 }
 unsafe extern "C" {
-    pub fn BIO_printf(
-        bio: *mut BIO,
-        format: *const ::std::os::raw::c_char,
-        ...
-    ) -> ::std::os::raw::c_int;
+    pub fn BIO_printf(bio: *mut BIO, format: *const ::std::os::raw::c_char, ...) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BIO_vprintf(
-        bio: *mut BIO,
-        format: *const ::std::os::raw::c_char,
-        args: va_list,
-    ) -> ::std::os::raw::c_int;
+    pub fn BIO_vprintf(bio: *mut BIO, format: *const ::std::os::raw::c_char, args: va_list) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn BIO_snprintf(
@@ -9830,10 +10128,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BIO_meth_new(
-        type_: ::std::os::raw::c_int,
-        name: *const ::std::os::raw::c_char,
-    ) -> *mut BIO_METHOD;
+    pub fn BIO_meth_new(type_: ::std::os::raw::c_int, name: *const ::std::os::raw::c_char) -> *mut BIO_METHOD;
 }
 unsafe extern "C" {
     pub fn BIO_meth_free(biom: *mut BIO_METHOD);
@@ -9922,10 +10217,7 @@ unsafe extern "C" {
     pub fn BIO_meth_set_puts(
         biom: *mut BIO_METHOD,
         puts: ::std::option::Option<
-            unsafe extern "C" fn(
-                arg1: *mut BIO,
-                arg2: *const ::std::os::raw::c_char,
-            ) -> ::std::os::raw::c_int,
+            unsafe extern "C" fn(arg1: *mut BIO, arg2: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int,
         >,
     ) -> ::std::os::raw::c_int;
 }
@@ -9957,17 +10249,13 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn BIO_meth_set_create(
         biom: *mut BIO_METHOD,
-        create: ::std::option::Option<
-            unsafe extern "C" fn(arg1: *mut BIO) -> ::std::os::raw::c_int,
-        >,
+        create: ::std::option::Option<unsafe extern "C" fn(arg1: *mut BIO) -> ::std::os::raw::c_int>,
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn BIO_meth_set_destroy(
         biom: *mut BIO_METHOD,
-        destroy: ::std::option::Option<
-            unsafe extern "C" fn(arg1: *mut BIO) -> ::std::os::raw::c_int,
-        >,
+        destroy: ::std::option::Option<unsafe extern "C" fn(arg1: *mut BIO) -> ::std::os::raw::c_int>,
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
@@ -10060,10 +10348,7 @@ unsafe extern "C" {
     pub fn BIO_meth_get_puts(
         biom: *const BIO_METHOD,
     ) -> ::std::option::Option<
-        unsafe extern "C" fn(
-            biom: *mut BIO,
-            arg1: *const ::std::os::raw::c_char,
-        ) -> ::std::os::raw::c_int,
+        unsafe extern "C" fn(biom: *mut BIO, arg1: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int,
     >;
 }
 unsafe extern "C" {
@@ -10103,11 +10388,7 @@ unsafe extern "C" {
     pub fn BIO_meth_get_callback_ctrl(
         biom: *const BIO_METHOD,
     ) -> ::std::option::Option<
-        unsafe extern "C" fn(
-            biom: *mut BIO,
-            arg1: ::std::os::raw::c_int,
-            arg2: BIO_info_cb,
-        ) -> ::std::os::raw::c_long,
+        unsafe extern "C" fn(biom: *mut BIO, arg1: ::std::os::raw::c_int, arg2: BIO_info_cb) -> ::std::os::raw::c_long,
     >;
 }
 unsafe extern "C" {
@@ -10285,10 +10566,7 @@ unsafe extern "C" {
     pub fn BN_num_bits_word(l: ::std::os::raw::c_ulong) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BN_security_bits(
-        L: ::std::os::raw::c_int,
-        N: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn BN_security_bits(L: ::std::os::raw::c_int, N: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn BN_new() -> *mut BIGNUM;
@@ -10306,11 +10584,7 @@ unsafe extern "C" {
     pub fn BN_swap(a: *mut BIGNUM, b: *mut BIGNUM);
 }
 unsafe extern "C" {
-    pub fn BN_bin2bn(
-        s: *const ::std::os::raw::c_uchar,
-        len: ::std::os::raw::c_int,
-        ret: *mut BIGNUM,
-    ) -> *mut BIGNUM;
+    pub fn BN_bin2bn(s: *const ::std::os::raw::c_uchar, len: ::std::os::raw::c_int, ret: *mut BIGNUM) -> *mut BIGNUM;
 }
 unsafe extern "C" {
     pub fn BN_signed_bin2bn(
@@ -10337,11 +10611,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BN_lebin2bn(
-        s: *const ::std::os::raw::c_uchar,
-        len: ::std::os::raw::c_int,
-        ret: *mut BIGNUM,
-    ) -> *mut BIGNUM;
+    pub fn BN_lebin2bn(s: *const ::std::os::raw::c_uchar, len: ::std::os::raw::c_int, ret: *mut BIGNUM) -> *mut BIGNUM;
 }
 unsafe extern "C" {
     pub fn BN_signed_lebin2bn(
@@ -10365,11 +10635,8 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BN_native2bn(
-        s: *const ::std::os::raw::c_uchar,
-        len: ::std::os::raw::c_int,
-        ret: *mut BIGNUM,
-    ) -> *mut BIGNUM;
+    pub fn BN_native2bn(s: *const ::std::os::raw::c_uchar, len: ::std::os::raw::c_int, ret: *mut BIGNUM)
+    -> *mut BIGNUM;
 }
 unsafe extern "C" {
     pub fn BN_signed_native2bn(
@@ -10393,11 +10660,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BN_mpi2bn(
-        s: *const ::std::os::raw::c_uchar,
-        len: ::std::os::raw::c_int,
-        ret: *mut BIGNUM,
-    ) -> *mut BIGNUM;
+    pub fn BN_mpi2bn(s: *const ::std::os::raw::c_uchar, len: ::std::os::raw::c_int, ret: *mut BIGNUM) -> *mut BIGNUM;
 }
 unsafe extern "C" {
     pub fn BN_bn2mpi(a: *const BIGNUM, to: *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
@@ -10415,12 +10678,7 @@ unsafe extern "C" {
     pub fn BN_add(r: *mut BIGNUM, a: *const BIGNUM, b: *const BIGNUM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BN_mul(
-        r: *mut BIGNUM,
-        a: *const BIGNUM,
-        b: *const BIGNUM,
-        ctx: *mut BN_CTX,
-    ) -> ::std::os::raw::c_int;
+    pub fn BN_mul(r: *mut BIGNUM, a: *const BIGNUM, b: *const BIGNUM, ctx: *mut BN_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn BN_sqr(r: *mut BIGNUM, a: *const BIGNUM, ctx: *mut BN_CTX) -> ::std::os::raw::c_int;
@@ -10443,12 +10701,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BN_nnmod(
-        r: *mut BIGNUM,
-        m: *const BIGNUM,
-        d: *const BIGNUM,
-        ctx: *mut BN_CTX,
-    ) -> ::std::os::raw::c_int;
+    pub fn BN_nnmod(r: *mut BIGNUM, m: *const BIGNUM, d: *const BIGNUM, ctx: *mut BN_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn BN_mod_add(
@@ -10494,12 +10747,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BN_mod_sqr(
-        r: *mut BIGNUM,
-        a: *const BIGNUM,
-        m: *const BIGNUM,
-        ctx: *mut BN_CTX,
-    ) -> ::std::os::raw::c_int;
+    pub fn BN_mod_sqr(r: *mut BIGNUM, a: *const BIGNUM, m: *const BIGNUM, ctx: *mut BN_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn BN_mod_lshift1(
@@ -10510,11 +10758,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BN_mod_lshift1_quick(
-        r: *mut BIGNUM,
-        a: *const BIGNUM,
-        m: *const BIGNUM,
-    ) -> ::std::os::raw::c_int;
+    pub fn BN_mod_lshift1_quick(r: *mut BIGNUM, a: *const BIGNUM, m: *const BIGNUM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn BN_mod_lshift(
@@ -10564,22 +10808,13 @@ unsafe extern "C" {
     pub fn BN_is_bit_set(a: *const BIGNUM, n: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BN_lshift(
-        r: *mut BIGNUM,
-        a: *const BIGNUM,
-        n: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn BN_lshift(r: *mut BIGNUM, a: *const BIGNUM, n: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn BN_lshift1(r: *mut BIGNUM, a: *const BIGNUM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BN_exp(
-        r: *mut BIGNUM,
-        a: *const BIGNUM,
-        p: *const BIGNUM,
-        ctx: *mut BN_CTX,
-    ) -> ::std::os::raw::c_int;
+    pub fn BN_exp(r: *mut BIGNUM, a: *const BIGNUM, p: *const BIGNUM, ctx: *mut BN_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn BN_mod_exp(
@@ -10671,11 +10906,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BN_rshift(
-        r: *mut BIGNUM,
-        a: *const BIGNUM,
-        n: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn BN_rshift(r: *mut BIGNUM, a: *const BIGNUM, n: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn BN_rshift1(r: *mut BIGNUM, a: *const BIGNUM) -> ::std::os::raw::c_int;
@@ -10702,60 +10933,28 @@ unsafe extern "C" {
     pub fn BN_bn2dec(a: *const BIGNUM) -> *mut ::std::os::raw::c_char;
 }
 unsafe extern "C" {
-    pub fn BN_hex2bn(
-        a: *mut *mut BIGNUM,
-        str_: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn BN_hex2bn(a: *mut *mut BIGNUM, str_: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BN_dec2bn(
-        a: *mut *mut BIGNUM,
-        str_: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn BN_dec2bn(a: *mut *mut BIGNUM, str_: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BN_asc2bn(
-        a: *mut *mut BIGNUM,
-        str_: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn BN_asc2bn(a: *mut *mut BIGNUM, str_: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BN_gcd(
-        r: *mut BIGNUM,
-        a: *const BIGNUM,
-        b: *const BIGNUM,
-        ctx: *mut BN_CTX,
-    ) -> ::std::os::raw::c_int;
+    pub fn BN_gcd(r: *mut BIGNUM, a: *const BIGNUM, b: *const BIGNUM, ctx: *mut BN_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BN_kronecker(
-        a: *const BIGNUM,
-        b: *const BIGNUM,
-        ctx: *mut BN_CTX,
-    ) -> ::std::os::raw::c_int;
+    pub fn BN_kronecker(a: *const BIGNUM, b: *const BIGNUM, ctx: *mut BN_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BN_are_coprime(
-        a: *mut BIGNUM,
-        b: *const BIGNUM,
-        ctx: *mut BN_CTX,
-    ) -> ::std::os::raw::c_int;
+    pub fn BN_are_coprime(a: *mut BIGNUM, b: *const BIGNUM, ctx: *mut BN_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BN_mod_inverse(
-        ret: *mut BIGNUM,
-        a: *const BIGNUM,
-        n: *const BIGNUM,
-        ctx: *mut BN_CTX,
-    ) -> *mut BIGNUM;
+    pub fn BN_mod_inverse(ret: *mut BIGNUM, a: *const BIGNUM, n: *const BIGNUM, ctx: *mut BN_CTX) -> *mut BIGNUM;
 }
 unsafe extern "C" {
-    pub fn BN_mod_sqrt(
-        ret: *mut BIGNUM,
-        a: *const BIGNUM,
-        n: *const BIGNUM,
-        ctx: *mut BN_CTX,
-    ) -> *mut BIGNUM;
+    pub fn BN_mod_sqrt(ret: *mut BIGNUM, a: *const BIGNUM, n: *const BIGNUM, ctx: *mut BN_CTX) -> *mut BIGNUM;
 }
 unsafe extern "C" {
     pub fn BN_consttime_swap(
@@ -10852,11 +11051,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BN_check_prime(
-        p: *const BIGNUM,
-        ctx: *mut BN_CTX,
-        cb: *mut BN_GENCB,
-    ) -> ::std::os::raw::c_int;
+    pub fn BN_check_prime(p: *const BIGNUM, ctx: *mut BN_CTX, cb: *mut BN_GENCB) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn BN_X931_generate_Xpq(
@@ -10924,11 +11119,7 @@ unsafe extern "C" {
     pub fn BN_MONT_CTX_free(mont: *mut BN_MONT_CTX);
 }
 unsafe extern "C" {
-    pub fn BN_MONT_CTX_set(
-        mont: *mut BN_MONT_CTX,
-        mod_: *const BIGNUM,
-        ctx: *mut BN_CTX,
-    ) -> ::std::os::raw::c_int;
+    pub fn BN_MONT_CTX_set(mont: *mut BN_MONT_CTX, mod_: *const BIGNUM, ctx: *mut BN_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn BN_MONT_CTX_copy(to: *mut BN_MONT_CTX, from: *mut BN_MONT_CTX) -> *mut BN_MONT_CTX;
@@ -10942,11 +11133,7 @@ unsafe extern "C" {
     ) -> *mut BN_MONT_CTX;
 }
 unsafe extern "C" {
-    pub fn BN_BLINDING_new(
-        A: *const BIGNUM,
-        Ai: *const BIGNUM,
-        mod_: *mut BIGNUM,
-    ) -> *mut BN_BLINDING;
+    pub fn BN_BLINDING_new(A: *const BIGNUM, Ai: *const BIGNUM, mod_: *mut BIGNUM) -> *mut BN_BLINDING;
 }
 unsafe extern "C" {
     pub fn BN_BLINDING_free(b: *mut BN_BLINDING);
@@ -10955,18 +11142,10 @@ unsafe extern "C" {
     pub fn BN_BLINDING_update(b: *mut BN_BLINDING, ctx: *mut BN_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BN_BLINDING_convert(
-        n: *mut BIGNUM,
-        b: *mut BN_BLINDING,
-        ctx: *mut BN_CTX,
-    ) -> ::std::os::raw::c_int;
+    pub fn BN_BLINDING_convert(n: *mut BIGNUM, b: *mut BN_BLINDING, ctx: *mut BN_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BN_BLINDING_invert(
-        n: *mut BIGNUM,
-        b: *mut BN_BLINDING,
-        ctx: *mut BN_CTX,
-    ) -> ::std::os::raw::c_int;
+    pub fn BN_BLINDING_invert(n: *mut BIGNUM, b: *mut BN_BLINDING, ctx: *mut BN_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn BN_BLINDING_convert_ex(
@@ -11039,11 +11218,7 @@ unsafe extern "C" {
     pub fn BN_RECP_CTX_free(recp: *mut BN_RECP_CTX);
 }
 unsafe extern "C" {
-    pub fn BN_RECP_CTX_set(
-        recp: *mut BN_RECP_CTX,
-        rdiv: *const BIGNUM,
-        ctx: *mut BN_CTX,
-    ) -> ::std::os::raw::c_int;
+    pub fn BN_RECP_CTX_set(recp: *mut BN_RECP_CTX, rdiv: *const BIGNUM, ctx: *mut BN_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn BN_mod_mul_reciprocal(
@@ -11073,12 +11248,10 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BN_GF2m_add(r: *mut BIGNUM, a: *const BIGNUM, b: *const BIGNUM)
-    -> ::std::os::raw::c_int;
+    pub fn BN_GF2m_add(r: *mut BIGNUM, a: *const BIGNUM, b: *const BIGNUM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BN_GF2m_mod(r: *mut BIGNUM, a: *const BIGNUM, p: *const BIGNUM)
-    -> ::std::os::raw::c_int;
+    pub fn BN_GF2m_mod(r: *mut BIGNUM, a: *const BIGNUM, p: *const BIGNUM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn BN_GF2m_mod_mul(
@@ -11140,11 +11313,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BN_GF2m_mod_arr(
-        r: *mut BIGNUM,
-        a: *const BIGNUM,
-        p: *const ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn BN_GF2m_mod_arr(r: *mut BIGNUM, a: *const BIGNUM, p: *const ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn BN_GF2m_mod_mul_arr(
@@ -11213,10 +11382,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BN_GF2m_arr2poly(
-        p: *const ::std::os::raw::c_int,
-        a: *mut BIGNUM,
-    ) -> ::std::os::raw::c_int;
+    pub fn BN_GF2m_arr2poly(p: *const ::std::os::raw::c_int, a: *mut BIGNUM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn BN_nist_mod_192(
@@ -11333,14 +11499,10 @@ pub struct stack_st_X509_ALGOR {
     _unused: [u8; 0],
 }
 pub type sk_X509_ALGOR_compfunc = ::std::option::Option<
-    unsafe extern "C" fn(
-        a: *const *const X509_ALGOR,
-        b: *const *const X509_ALGOR,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(a: *const *const X509_ALGOR, b: *const *const X509_ALGOR) -> ::std::os::raw::c_int,
 >;
 pub type sk_X509_ALGOR_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut X509_ALGOR)>;
-pub type sk_X509_ALGOR_copyfunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *const X509_ALGOR) -> *mut X509_ALGOR>;
+pub type sk_X509_ALGOR_copyfunc = ::std::option::Option<unsafe extern "C" fn(a: *const X509_ALGOR) -> *mut X509_ALGOR>;
 #[repr(C)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct asn1_string_st {
@@ -11353,14 +11515,10 @@ pub struct asn1_string_st {
 const _: () = {
     ["Size of asn1_string_st"][::std::mem::size_of::<asn1_string_st>() - 24usize];
     ["Alignment of asn1_string_st"][::std::mem::align_of::<asn1_string_st>() - 8usize];
-    ["Offset of field: asn1_string_st::length"]
-        [::std::mem::offset_of!(asn1_string_st, length) - 0usize];
-    ["Offset of field: asn1_string_st::type_"]
-        [::std::mem::offset_of!(asn1_string_st, type_) - 4usize];
-    ["Offset of field: asn1_string_st::data"]
-        [::std::mem::offset_of!(asn1_string_st, data) - 8usize];
-    ["Offset of field: asn1_string_st::flags"]
-        [::std::mem::offset_of!(asn1_string_st, flags) - 16usize];
+    ["Offset of field: asn1_string_st::length"][::std::mem::offset_of!(asn1_string_st, length) - 0usize];
+    ["Offset of field: asn1_string_st::type_"][::std::mem::offset_of!(asn1_string_st, type_) - 4usize];
+    ["Offset of field: asn1_string_st::data"][::std::mem::offset_of!(asn1_string_st, data) - 8usize];
+    ["Offset of field: asn1_string_st::flags"][::std::mem::offset_of!(asn1_string_st, flags) - 16usize];
 };
 impl Default for asn1_string_st {
     fn default() -> Self {
@@ -11382,12 +11540,9 @@ pub struct ASN1_ENCODING_st {
 const _: () = {
     ["Size of ASN1_ENCODING_st"][::std::mem::size_of::<ASN1_ENCODING_st>() - 24usize];
     ["Alignment of ASN1_ENCODING_st"][::std::mem::align_of::<ASN1_ENCODING_st>() - 8usize];
-    ["Offset of field: ASN1_ENCODING_st::enc"]
-        [::std::mem::offset_of!(ASN1_ENCODING_st, enc) - 0usize];
-    ["Offset of field: ASN1_ENCODING_st::len"]
-        [::std::mem::offset_of!(ASN1_ENCODING_st, len) - 8usize];
-    ["Offset of field: ASN1_ENCODING_st::modified"]
-        [::std::mem::offset_of!(ASN1_ENCODING_st, modified) - 16usize];
+    ["Offset of field: ASN1_ENCODING_st::enc"][::std::mem::offset_of!(ASN1_ENCODING_st, enc) - 0usize];
+    ["Offset of field: ASN1_ENCODING_st::len"][::std::mem::offset_of!(ASN1_ENCODING_st, len) - 8usize];
+    ["Offset of field: ASN1_ENCODING_st::modified"][::std::mem::offset_of!(ASN1_ENCODING_st, modified) - 16usize];
 };
 impl Default for ASN1_ENCODING_st {
     fn default() -> Self {
@@ -11412,16 +11567,11 @@ pub struct asn1_string_table_st {
 const _: () = {
     ["Size of asn1_string_table_st"][::std::mem::size_of::<asn1_string_table_st>() - 40usize];
     ["Alignment of asn1_string_table_st"][::std::mem::align_of::<asn1_string_table_st>() - 8usize];
-    ["Offset of field: asn1_string_table_st::nid"]
-        [::std::mem::offset_of!(asn1_string_table_st, nid) - 0usize];
-    ["Offset of field: asn1_string_table_st::minsize"]
-        [::std::mem::offset_of!(asn1_string_table_st, minsize) - 8usize];
-    ["Offset of field: asn1_string_table_st::maxsize"]
-        [::std::mem::offset_of!(asn1_string_table_st, maxsize) - 16usize];
-    ["Offset of field: asn1_string_table_st::mask"]
-        [::std::mem::offset_of!(asn1_string_table_st, mask) - 24usize];
-    ["Offset of field: asn1_string_table_st::flags"]
-        [::std::mem::offset_of!(asn1_string_table_st, flags) - 32usize];
+    ["Offset of field: asn1_string_table_st::nid"][::std::mem::offset_of!(asn1_string_table_st, nid) - 0usize];
+    ["Offset of field: asn1_string_table_st::minsize"][::std::mem::offset_of!(asn1_string_table_st, minsize) - 8usize];
+    ["Offset of field: asn1_string_table_st::maxsize"][::std::mem::offset_of!(asn1_string_table_st, maxsize) - 16usize];
+    ["Offset of field: asn1_string_table_st::mask"][::std::mem::offset_of!(asn1_string_table_st, mask) - 24usize];
+    ["Offset of field: asn1_string_table_st::flags"][::std::mem::offset_of!(asn1_string_table_st, flags) - 32usize];
 };
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -11434,11 +11584,9 @@ pub type sk_ASN1_STRING_TABLE_compfunc = ::std::option::Option<
         b: *const *const ASN1_STRING_TABLE,
     ) -> ::std::os::raw::c_int,
 >;
-pub type sk_ASN1_STRING_TABLE_freefunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *mut ASN1_STRING_TABLE)>;
-pub type sk_ASN1_STRING_TABLE_copyfunc = ::std::option::Option<
-    unsafe extern "C" fn(a: *const ASN1_STRING_TABLE) -> *mut ASN1_STRING_TABLE,
->;
+pub type sk_ASN1_STRING_TABLE_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut ASN1_STRING_TABLE)>;
+pub type sk_ASN1_STRING_TABLE_copyfunc =
+    ::std::option::Option<unsafe extern "C" fn(a: *const ASN1_STRING_TABLE) -> *mut ASN1_STRING_TABLE>;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct ASN1_TEMPLATE_st {
@@ -11511,10 +11659,8 @@ pub union asn1_type_st__bindgen_ty_1 {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of asn1_type_st__bindgen_ty_1"]
-        [::std::mem::size_of::<asn1_type_st__bindgen_ty_1>() - 8usize];
-    ["Alignment of asn1_type_st__bindgen_ty_1"]
-        [::std::mem::align_of::<asn1_type_st__bindgen_ty_1>() - 8usize];
+    ["Size of asn1_type_st__bindgen_ty_1"][::std::mem::size_of::<asn1_type_st__bindgen_ty_1>() - 8usize];
+    ["Alignment of asn1_type_st__bindgen_ty_1"][::std::mem::align_of::<asn1_type_st__bindgen_ty_1>() - 8usize];
     ["Offset of field: asn1_type_st__bindgen_ty_1::ptr"]
         [::std::mem::offset_of!(asn1_type_st__bindgen_ty_1, ptr) - 0usize];
     ["Offset of field: asn1_type_st__bindgen_ty_1::boolean"]
@@ -11589,14 +11735,10 @@ pub struct stack_st_ASN1_TYPE {
     _unused: [u8; 0],
 }
 pub type sk_ASN1_TYPE_compfunc = ::std::option::Option<
-    unsafe extern "C" fn(
-        a: *const *const ASN1_TYPE,
-        b: *const *const ASN1_TYPE,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(a: *const *const ASN1_TYPE, b: *const *const ASN1_TYPE) -> ::std::os::raw::c_int,
 >;
 pub type sk_ASN1_TYPE_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut ASN1_TYPE)>;
-pub type sk_ASN1_TYPE_copyfunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *const ASN1_TYPE) -> *mut ASN1_TYPE>;
+pub type sk_ASN1_TYPE_copyfunc = ::std::option::Option<unsafe extern "C" fn(a: *const ASN1_TYPE) -> *mut ASN1_TYPE>;
 pub type ASN1_SEQUENCE_ANY = stack_st_ASN1_TYPE;
 unsafe extern "C" {
     pub fn d2i_ASN1_SEQUENCE_ANY(
@@ -11640,14 +11782,10 @@ pub struct BIT_STRING_BITNAME_st {
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
     ["Size of BIT_STRING_BITNAME_st"][::std::mem::size_of::<BIT_STRING_BITNAME_st>() - 24usize];
-    ["Alignment of BIT_STRING_BITNAME_st"]
-        [::std::mem::align_of::<BIT_STRING_BITNAME_st>() - 8usize];
-    ["Offset of field: BIT_STRING_BITNAME_st::bitnum"]
-        [::std::mem::offset_of!(BIT_STRING_BITNAME_st, bitnum) - 0usize];
-    ["Offset of field: BIT_STRING_BITNAME_st::lname"]
-        [::std::mem::offset_of!(BIT_STRING_BITNAME_st, lname) - 8usize];
-    ["Offset of field: BIT_STRING_BITNAME_st::sname"]
-        [::std::mem::offset_of!(BIT_STRING_BITNAME_st, sname) - 16usize];
+    ["Alignment of BIT_STRING_BITNAME_st"][::std::mem::align_of::<BIT_STRING_BITNAME_st>() - 8usize];
+    ["Offset of field: BIT_STRING_BITNAME_st::bitnum"][::std::mem::offset_of!(BIT_STRING_BITNAME_st, bitnum) - 0usize];
+    ["Offset of field: BIT_STRING_BITNAME_st::lname"][::std::mem::offset_of!(BIT_STRING_BITNAME_st, lname) - 8usize];
+    ["Offset of field: BIT_STRING_BITNAME_st::sname"][::std::mem::offset_of!(BIT_STRING_BITNAME_st, sname) - 16usize];
 };
 impl Default for BIT_STRING_BITNAME_st {
     fn default() -> Self {
@@ -11673,10 +11811,7 @@ unsafe extern "C" {
     ) -> *mut ASN1_TYPE;
 }
 unsafe extern "C" {
-    pub fn i2d_ASN1_TYPE(
-        a: *const ASN1_TYPE,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_ASN1_TYPE(a: *const ASN1_TYPE, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn ASN1_ANY_it() -> *const ASN1_ITEM;
@@ -11685,11 +11820,7 @@ unsafe extern "C" {
     pub fn ASN1_TYPE_get(a: *const ASN1_TYPE) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn ASN1_TYPE_set(
-        a: *mut ASN1_TYPE,
-        type_: ::std::os::raw::c_int,
-        value: *mut ::std::os::raw::c_void,
-    );
+    pub fn ASN1_TYPE_set(a: *mut ASN1_TYPE, type_: ::std::os::raw::c_int, value: *mut ::std::os::raw::c_void);
 }
 unsafe extern "C" {
     pub fn ASN1_TYPE_set1(
@@ -11709,10 +11840,7 @@ unsafe extern "C" {
     ) -> *mut ASN1_TYPE;
 }
 unsafe extern "C" {
-    pub fn ASN1_TYPE_unpack_sequence(
-        it: *const ASN1_ITEM,
-        t: *const ASN1_TYPE,
-    ) -> *mut ::std::os::raw::c_void;
+    pub fn ASN1_TYPE_unpack_sequence(it: *const ASN1_ITEM, t: *const ASN1_TYPE) -> *mut ::std::os::raw::c_void;
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -11720,10 +11848,7 @@ pub struct stack_st_ASN1_OBJECT {
     _unused: [u8; 0],
 }
 pub type sk_ASN1_OBJECT_compfunc = ::std::option::Option<
-    unsafe extern "C" fn(
-        a: *const *const ASN1_OBJECT,
-        b: *const *const ASN1_OBJECT,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(a: *const *const ASN1_OBJECT, b: *const *const ASN1_OBJECT) -> ::std::os::raw::c_int,
 >;
 pub type sk_ASN1_OBJECT_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut ASN1_OBJECT)>;
 pub type sk_ASN1_OBJECT_copyfunc =
@@ -11742,10 +11867,7 @@ unsafe extern "C" {
     ) -> *mut ASN1_OBJECT;
 }
 unsafe extern "C" {
-    pub fn i2d_ASN1_OBJECT(
-        a: *const ASN1_OBJECT,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_ASN1_OBJECT(a: *const ASN1_OBJECT, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn ASN1_OBJECT_it() -> *const ASN1_ITEM;
@@ -11760,10 +11882,7 @@ unsafe extern "C" {
     pub fn ASN1_STRING_clear_free(a: *mut ASN1_STRING);
 }
 unsafe extern "C" {
-    pub fn ASN1_STRING_copy(
-        dst: *mut ASN1_STRING,
-        str_: *const ASN1_STRING,
-    ) -> ::std::os::raw::c_int;
+    pub fn ASN1_STRING_copy(dst: *mut ASN1_STRING, str_: *const ASN1_STRING) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn ASN1_STRING_dup(a: *const ASN1_STRING) -> *mut ASN1_STRING;
@@ -11782,11 +11901,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn ASN1_STRING_set0(
-        str_: *mut ASN1_STRING,
-        data: *mut ::std::os::raw::c_void,
-        len: ::std::os::raw::c_int,
-    );
+    pub fn ASN1_STRING_set0(str_: *mut ASN1_STRING, data: *mut ::std::os::raw::c_void, len: ::std::os::raw::c_int);
 }
 unsafe extern "C" {
     pub fn ASN1_STRING_length(x: *const ASN1_STRING) -> ::std::os::raw::c_int;
@@ -11840,10 +11955,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn ASN1_BIT_STRING_get_bit(
-        a: *const ASN1_BIT_STRING,
-        n: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn ASN1_BIT_STRING_get_bit(a: *const ASN1_BIT_STRING, n: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn ASN1_BIT_STRING_check(
@@ -11880,13 +11992,9 @@ pub struct stack_st_ASN1_INTEGER {
     _unused: [u8; 0],
 }
 pub type sk_ASN1_INTEGER_compfunc = ::std::option::Option<
-    unsafe extern "C" fn(
-        a: *const *const ASN1_INTEGER,
-        b: *const *const ASN1_INTEGER,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(a: *const *const ASN1_INTEGER, b: *const *const ASN1_INTEGER) -> ::std::os::raw::c_int,
 >;
-pub type sk_ASN1_INTEGER_freefunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *mut ASN1_INTEGER)>;
+pub type sk_ASN1_INTEGER_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut ASN1_INTEGER)>;
 pub type sk_ASN1_INTEGER_copyfunc =
     ::std::option::Option<unsafe extern "C" fn(a: *const ASN1_INTEGER) -> *mut ASN1_INTEGER>;
 unsafe extern "C" {
@@ -11903,10 +12011,7 @@ unsafe extern "C" {
     ) -> *mut ASN1_INTEGER;
 }
 unsafe extern "C" {
-    pub fn i2d_ASN1_INTEGER(
-        a: *const ASN1_INTEGER,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_ASN1_INTEGER(a: *const ASN1_INTEGER, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn ASN1_INTEGER_it() -> *const ASN1_ITEM;
@@ -11922,10 +12027,7 @@ unsafe extern "C" {
     pub fn ASN1_INTEGER_dup(a: *const ASN1_INTEGER) -> *mut ASN1_INTEGER;
 }
 unsafe extern "C" {
-    pub fn ASN1_INTEGER_cmp(
-        x: *const ASN1_INTEGER,
-        y: *const ASN1_INTEGER,
-    ) -> ::std::os::raw::c_int;
+    pub fn ASN1_INTEGER_cmp(x: *const ASN1_INTEGER, y: *const ASN1_INTEGER) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn ASN1_ENUMERATED_new() -> *mut ASN1_ENUMERATED;
@@ -11964,10 +12066,7 @@ unsafe extern "C" {
     ) -> *mut ASN1_UTCTIME;
 }
 unsafe extern "C" {
-    pub fn ASN1_UTCTIME_set_string(
-        s: *mut ASN1_UTCTIME,
-        str_: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn ASN1_UTCTIME_set_string(s: *mut ASN1_UTCTIME, str_: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn ASN1_UTCTIME_cmp_time_t(s: *const ASN1_UTCTIME, t: time_t) -> ::std::os::raw::c_int;
@@ -11976,10 +12075,7 @@ unsafe extern "C" {
     pub fn ASN1_GENERALIZEDTIME_check(a: *const ASN1_GENERALIZEDTIME) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn ASN1_GENERALIZEDTIME_set(
-        s: *mut ASN1_GENERALIZEDTIME,
-        t: time_t,
-    ) -> *mut ASN1_GENERALIZEDTIME;
+    pub fn ASN1_GENERALIZEDTIME_set(s: *mut ASN1_GENERALIZEDTIME, t: time_t) -> *mut ASN1_GENERALIZEDTIME;
 }
 unsafe extern "C" {
     pub fn ASN1_GENERALIZEDTIME_adj(
@@ -12029,10 +12125,7 @@ unsafe extern "C" {
     pub fn ASN1_OCTET_STRING_dup(a: *const ASN1_OCTET_STRING) -> *mut ASN1_OCTET_STRING;
 }
 unsafe extern "C" {
-    pub fn ASN1_OCTET_STRING_cmp(
-        a: *const ASN1_OCTET_STRING,
-        b: *const ASN1_OCTET_STRING,
-    ) -> ::std::os::raw::c_int;
+    pub fn ASN1_OCTET_STRING_cmp(a: *const ASN1_OCTET_STRING, b: *const ASN1_OCTET_STRING) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn ASN1_OCTET_STRING_set(
@@ -12047,13 +12140,9 @@ pub struct stack_st_ASN1_UTF8STRING {
     _unused: [u8; 0],
 }
 pub type sk_ASN1_UTF8STRING_compfunc = ::std::option::Option<
-    unsafe extern "C" fn(
-        a: *const *const ASN1_UTF8STRING,
-        b: *const *const ASN1_UTF8STRING,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(a: *const *const ASN1_UTF8STRING, b: *const *const ASN1_UTF8STRING) -> ::std::os::raw::c_int,
 >;
-pub type sk_ASN1_UTF8STRING_freefunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *mut ASN1_UTF8STRING)>;
+pub type sk_ASN1_UTF8STRING_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut ASN1_UTF8STRING)>;
 pub type sk_ASN1_UTF8STRING_copyfunc =
     ::std::option::Option<unsafe extern "C" fn(a: *const ASN1_UTF8STRING) -> *mut ASN1_UTF8STRING>;
 unsafe extern "C" {
@@ -12136,10 +12225,7 @@ unsafe extern "C" {
     ) -> *mut ASN1_NULL;
 }
 unsafe extern "C" {
-    pub fn i2d_ASN1_NULL(
-        a: *const ASN1_NULL,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_ASN1_NULL(a: *const ASN1_NULL, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn ASN1_NULL_it() -> *const ASN1_ITEM;
@@ -12191,11 +12277,9 @@ pub type sk_ASN1_GENERALSTRING_compfunc = ::std::option::Option<
         b: *const *const ASN1_GENERALSTRING,
     ) -> ::std::os::raw::c_int,
 >;
-pub type sk_ASN1_GENERALSTRING_freefunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *mut ASN1_GENERALSTRING)>;
-pub type sk_ASN1_GENERALSTRING_copyfunc = ::std::option::Option<
-    unsafe extern "C" fn(a: *const ASN1_GENERALSTRING) -> *mut ASN1_GENERALSTRING,
->;
+pub type sk_ASN1_GENERALSTRING_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut ASN1_GENERALSTRING)>;
+pub type sk_ASN1_GENERALSTRING_copyfunc =
+    ::std::option::Option<unsafe extern "C" fn(a: *const ASN1_GENERALSTRING) -> *mut ASN1_GENERALSTRING>;
 unsafe extern "C" {
     pub fn ASN1_PRINTABLE_new() -> *mut ASN1_STRING;
 }
@@ -12210,10 +12294,7 @@ unsafe extern "C" {
     ) -> *mut ASN1_STRING;
 }
 unsafe extern "C" {
-    pub fn i2d_ASN1_PRINTABLE(
-        a: *const ASN1_STRING,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_ASN1_PRINTABLE(a: *const ASN1_STRING, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn ASN1_PRINTABLE_it() -> *const ASN1_ITEM;
@@ -12232,10 +12313,7 @@ unsafe extern "C" {
     ) -> *mut ASN1_STRING;
 }
 unsafe extern "C" {
-    pub fn i2d_DIRECTORYSTRING(
-        a: *const ASN1_STRING,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_DIRECTORYSTRING(a: *const ASN1_STRING, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn DIRECTORYSTRING_it() -> *const ASN1_ITEM;
@@ -12254,10 +12332,7 @@ unsafe extern "C" {
     ) -> *mut ASN1_STRING;
 }
 unsafe extern "C" {
-    pub fn i2d_DISPLAYTEXT(
-        a: *const ASN1_STRING,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_DISPLAYTEXT(a: *const ASN1_STRING, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn DISPLAYTEXT_it() -> *const ASN1_ITEM;
@@ -12364,10 +12439,7 @@ unsafe extern "C" {
     ) -> *mut ASN1_UTCTIME;
 }
 unsafe extern "C" {
-    pub fn i2d_ASN1_UTCTIME(
-        a: *const ASN1_UTCTIME,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_ASN1_UTCTIME(a: *const ASN1_UTCTIME, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn ASN1_UTCTIME_it() -> *const ASN1_ITEM;
@@ -12408,10 +12480,7 @@ unsafe extern "C" {
     ) -> *mut ASN1_TIME;
 }
 unsafe extern "C" {
-    pub fn i2d_ASN1_TIME(
-        a: *const ASN1_TIME,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_ASN1_TIME(a: *const ASN1_TIME, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn ASN1_TIME_it() -> *const ASN1_ITEM;
@@ -12449,16 +12518,10 @@ unsafe extern "C" {
     ) -> *mut ASN1_GENERALIZEDTIME;
 }
 unsafe extern "C" {
-    pub fn ASN1_TIME_set_string(
-        s: *mut ASN1_TIME,
-        str_: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn ASN1_TIME_set_string(s: *mut ASN1_TIME, str_: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn ASN1_TIME_set_string_X509(
-        s: *mut ASN1_TIME,
-        str_: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn ASN1_TIME_set_string_X509(s: *mut ASN1_TIME, str_: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn ASN1_TIME_to_tm(s: *const ASN1_TIME, tm: *mut tm) -> ::std::os::raw::c_int;
@@ -12506,11 +12569,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn i2a_ASN1_STRING(
-        bp: *mut BIO,
-        a: *const ASN1_STRING,
-        type_: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2a_ASN1_STRING(bp: *mut BIO, a: *const ASN1_STRING, type_: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn i2t_ASN1_OBJECT(
@@ -12549,10 +12608,7 @@ unsafe extern "C" {
     pub fn ASN1_INTEGER_set_uint64(a: *mut ASN1_INTEGER, r: u64) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn ASN1_INTEGER_set(
-        a: *mut ASN1_INTEGER,
-        v: ::std::os::raw::c_long,
-    ) -> ::std::os::raw::c_int;
+    pub fn ASN1_INTEGER_set(a: *mut ASN1_INTEGER, v: ::std::os::raw::c_long) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn ASN1_INTEGER_get(a: *const ASN1_INTEGER) -> ::std::os::raw::c_long;
@@ -12564,37 +12620,25 @@ unsafe extern "C" {
     pub fn ASN1_INTEGER_to_BN(ai: *const ASN1_INTEGER, bn: *mut BIGNUM) -> *mut BIGNUM;
 }
 unsafe extern "C" {
-    pub fn ASN1_ENUMERATED_get_int64(
-        pr: *mut i64,
-        a: *const ASN1_ENUMERATED,
-    ) -> ::std::os::raw::c_int;
+    pub fn ASN1_ENUMERATED_get_int64(pr: *mut i64, a: *const ASN1_ENUMERATED) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn ASN1_ENUMERATED_set_int64(a: *mut ASN1_ENUMERATED, r: i64) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn ASN1_ENUMERATED_set(
-        a: *mut ASN1_ENUMERATED,
-        v: ::std::os::raw::c_long,
-    ) -> ::std::os::raw::c_int;
+    pub fn ASN1_ENUMERATED_set(a: *mut ASN1_ENUMERATED, v: ::std::os::raw::c_long) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn ASN1_ENUMERATED_get(a: *const ASN1_ENUMERATED) -> ::std::os::raw::c_long;
 }
 unsafe extern "C" {
-    pub fn BN_to_ASN1_ENUMERATED(
-        bn: *const BIGNUM,
-        ai: *mut ASN1_ENUMERATED,
-    ) -> *mut ASN1_ENUMERATED;
+    pub fn BN_to_ASN1_ENUMERATED(bn: *const BIGNUM, ai: *mut ASN1_ENUMERATED) -> *mut ASN1_ENUMERATED;
 }
 unsafe extern "C" {
     pub fn ASN1_ENUMERATED_to_BN(ai: *const ASN1_ENUMERATED, bn: *mut BIGNUM) -> *mut BIGNUM;
 }
 unsafe extern "C" {
-    pub fn ASN1_PRINTABLE_type(
-        s: *const ::std::os::raw::c_uchar,
-        max: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn ASN1_PRINTABLE_type(s: *const ::std::os::raw::c_uchar, max: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn ASN1_tag2bit(tag: ::std::os::raw::c_int) -> ::std::os::raw::c_ulong;
@@ -12647,10 +12691,7 @@ unsafe extern "C" {
     ) -> *mut ::std::os::raw::c_void;
 }
 unsafe extern "C" {
-    pub fn ASN1_item_dup(
-        it: *const ASN1_ITEM,
-        x: *const ::std::os::raw::c_void,
-    ) -> *mut ::std::os::raw::c_void;
+    pub fn ASN1_item_dup(it: *const ASN1_ITEM, x: *const ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void;
 }
 unsafe extern "C" {
     pub fn ASN1_item_sign_ex(
@@ -12709,11 +12750,7 @@ unsafe extern "C" {
     ) -> *mut ::std::os::raw::c_void;
 }
 unsafe extern "C" {
-    pub fn ASN1_i2d_bio(
-        i2d: i2d_of_void,
-        out: *mut BIO,
-        x: *const ::std::os::raw::c_void,
-    ) -> ::std::os::raw::c_int;
+    pub fn ASN1_i2d_bio(i2d: i2d_of_void, out: *mut BIO, x: *const ::std::os::raw::c_void) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn ASN1_item_i2d_bio(
@@ -12729,10 +12766,7 @@ unsafe extern "C" {
     pub fn ASN1_UTCTIME_print(fp: *mut BIO, a: *const ASN1_UTCTIME) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn ASN1_GENERALIZEDTIME_print(
-        fp: *mut BIO,
-        a: *const ASN1_GENERALIZEDTIME,
-    ) -> ::std::os::raw::c_int;
+    pub fn ASN1_GENERALIZEDTIME_print(fp: *mut BIO, a: *const ASN1_GENERALIZEDTIME) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn ASN1_TIME_print(bp: *mut BIO, tm: *const ASN1_TIME) -> ::std::os::raw::c_int;
@@ -12825,10 +12859,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn ASN1_item_unpack(
-        oct: *const ASN1_STRING,
-        it: *const ASN1_ITEM,
-    ) -> *mut ::std::os::raw::c_void;
+    pub fn ASN1_item_unpack(oct: *const ASN1_STRING, it: *const ASN1_ITEM) -> *mut ::std::os::raw::c_void;
 }
 unsafe extern "C" {
     pub fn ASN1_item_unpack_ex(
@@ -12849,9 +12880,7 @@ unsafe extern "C" {
     pub fn ASN1_STRING_set_default_mask(mask: ::std::os::raw::c_ulong);
 }
 unsafe extern "C" {
-    pub fn ASN1_STRING_set_default_mask_asc(
-        p: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn ASN1_STRING_set_default_mask_asc(p: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn ASN1_STRING_get_default_mask() -> ::std::os::raw::c_ulong;
@@ -12952,16 +12981,10 @@ unsafe extern "C" {
     pub fn ASN1_add_stable_module();
 }
 unsafe extern "C" {
-    pub fn ASN1_generate_nconf(
-        str_: *const ::std::os::raw::c_char,
-        nconf: *mut CONF,
-    ) -> *mut ASN1_TYPE;
+    pub fn ASN1_generate_nconf(str_: *const ::std::os::raw::c_char, nconf: *mut CONF) -> *mut ASN1_TYPE;
 }
 unsafe extern "C" {
-    pub fn ASN1_generate_v3(
-        str_: *const ::std::os::raw::c_char,
-        cnf: *mut X509V3_CTX,
-    ) -> *mut ASN1_TYPE;
+    pub fn ASN1_generate_v3(str_: *const ::std::os::raw::c_char, cnf: *mut X509V3_CTX) -> *mut ASN1_TYPE;
 }
 unsafe extern "C" {
     pub fn ASN1_str2mask(
@@ -13016,9 +13039,7 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn ASN1_SCTX_new(
-        scan_cb: ::std::option::Option<
-            unsafe extern "C" fn(ctx: *mut ASN1_SCTX) -> ::std::os::raw::c_int,
-        >,
+        scan_cb: ::std::option::Option<unsafe extern "C" fn(ctx: *mut ASN1_SCTX) -> ::std::os::raw::c_int>,
     ) -> *mut ASN1_SCTX;
 }
 unsafe extern "C" {
@@ -13091,11 +13112,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn SMIME_read_ASN1(
-        bio: *mut BIO,
-        bcont: *mut *mut BIO,
-        it: *const ASN1_ITEM,
-    ) -> *mut ASN1_VALUE;
+    pub fn SMIME_read_ASN1(bio: *mut BIO, bcont: *mut *mut BIO, it: *const ASN1_ITEM) -> *mut ASN1_VALUE;
 }
 unsafe extern "C" {
     pub fn SMIME_read_ASN1_ex(
@@ -13109,11 +13126,7 @@ unsafe extern "C" {
     ) -> *mut ASN1_VALUE;
 }
 unsafe extern "C" {
-    pub fn SMIME_crlf_copy(
-        in_: *mut BIO,
-        out: *mut BIO,
-        flags: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn SMIME_crlf_copy(in_: *mut BIO, out: *mut BIO, flags: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn SMIME_text(in_: *mut BIO, out: *mut BIO) -> ::std::os::raw::c_int;
@@ -13125,22 +13138,13 @@ unsafe extern "C" {
     pub fn ASN1_ITEM_get(i: usize) -> *const ASN1_ITEM;
 }
 unsafe extern "C" {
-    pub fn OSSL_PARAM_locate(
-        p: *mut OSSL_PARAM,
-        key: *const ::std::os::raw::c_char,
-    ) -> *mut OSSL_PARAM;
+    pub fn OSSL_PARAM_locate(p: *mut OSSL_PARAM, key: *const ::std::os::raw::c_char) -> *mut OSSL_PARAM;
 }
 unsafe extern "C" {
-    pub fn OSSL_PARAM_locate_const(
-        p: *const OSSL_PARAM,
-        key: *const ::std::os::raw::c_char,
-    ) -> *const OSSL_PARAM;
+    pub fn OSSL_PARAM_locate_const(p: *const OSSL_PARAM, key: *const ::std::os::raw::c_char) -> *const OSSL_PARAM;
 }
 unsafe extern "C" {
-    pub fn OSSL_PARAM_construct_int(
-        key: *const ::std::os::raw::c_char,
-        buf: *mut ::std::os::raw::c_int,
-    ) -> OSSL_PARAM;
+    pub fn OSSL_PARAM_construct_int(key: *const ::std::os::raw::c_char, buf: *mut ::std::os::raw::c_int) -> OSSL_PARAM;
 }
 unsafe extern "C" {
     pub fn OSSL_PARAM_construct_uint(
@@ -13161,40 +13165,22 @@ unsafe extern "C" {
     ) -> OSSL_PARAM;
 }
 unsafe extern "C" {
-    pub fn OSSL_PARAM_construct_int32(
-        key: *const ::std::os::raw::c_char,
-        buf: *mut i32,
-    ) -> OSSL_PARAM;
+    pub fn OSSL_PARAM_construct_int32(key: *const ::std::os::raw::c_char, buf: *mut i32) -> OSSL_PARAM;
 }
 unsafe extern "C" {
-    pub fn OSSL_PARAM_construct_uint32(
-        key: *const ::std::os::raw::c_char,
-        buf: *mut u32,
-    ) -> OSSL_PARAM;
+    pub fn OSSL_PARAM_construct_uint32(key: *const ::std::os::raw::c_char, buf: *mut u32) -> OSSL_PARAM;
 }
 unsafe extern "C" {
-    pub fn OSSL_PARAM_construct_int64(
-        key: *const ::std::os::raw::c_char,
-        buf: *mut i64,
-    ) -> OSSL_PARAM;
+    pub fn OSSL_PARAM_construct_int64(key: *const ::std::os::raw::c_char, buf: *mut i64) -> OSSL_PARAM;
 }
 unsafe extern "C" {
-    pub fn OSSL_PARAM_construct_uint64(
-        key: *const ::std::os::raw::c_char,
-        buf: *mut u64,
-    ) -> OSSL_PARAM;
+    pub fn OSSL_PARAM_construct_uint64(key: *const ::std::os::raw::c_char, buf: *mut u64) -> OSSL_PARAM;
 }
 unsafe extern "C" {
-    pub fn OSSL_PARAM_construct_size_t(
-        key: *const ::std::os::raw::c_char,
-        buf: *mut usize,
-    ) -> OSSL_PARAM;
+    pub fn OSSL_PARAM_construct_size_t(key: *const ::std::os::raw::c_char, buf: *mut usize) -> OSSL_PARAM;
 }
 unsafe extern "C" {
-    pub fn OSSL_PARAM_construct_time_t(
-        key: *const ::std::os::raw::c_char,
-        buf: *mut time_t,
-    ) -> OSSL_PARAM;
+    pub fn OSSL_PARAM_construct_time_t(key: *const ::std::os::raw::c_char, buf: *mut time_t) -> OSSL_PARAM;
 }
 unsafe extern "C" {
     pub fn OSSL_PARAM_construct_BN(
@@ -13204,10 +13190,7 @@ unsafe extern "C" {
     ) -> OSSL_PARAM;
 }
 unsafe extern "C" {
-    pub fn OSSL_PARAM_construct_double(
-        key: *const ::std::os::raw::c_char,
-        buf: *mut f64,
-    ) -> OSSL_PARAM;
+    pub fn OSSL_PARAM_construct_double(key: *const ::std::os::raw::c_char, buf: *mut f64) -> OSSL_PARAM;
 }
 unsafe extern "C" {
     pub fn OSSL_PARAM_construct_utf8_string(
@@ -13258,28 +13241,16 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn OSSL_PARAM_get_int(
-        p: *const OSSL_PARAM,
-        val: *mut ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn OSSL_PARAM_get_int(p: *const OSSL_PARAM, val: *mut ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn OSSL_PARAM_get_uint(
-        p: *const OSSL_PARAM,
-        val: *mut ::std::os::raw::c_uint,
-    ) -> ::std::os::raw::c_int;
+    pub fn OSSL_PARAM_get_uint(p: *const OSSL_PARAM, val: *mut ::std::os::raw::c_uint) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn OSSL_PARAM_get_long(
-        p: *const OSSL_PARAM,
-        val: *mut ::std::os::raw::c_long,
-    ) -> ::std::os::raw::c_int;
+    pub fn OSSL_PARAM_get_long(p: *const OSSL_PARAM, val: *mut ::std::os::raw::c_long) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn OSSL_PARAM_get_ulong(
-        p: *const OSSL_PARAM,
-        val: *mut ::std::os::raw::c_ulong,
-    ) -> ::std::os::raw::c_int;
+    pub fn OSSL_PARAM_get_ulong(p: *const OSSL_PARAM, val: *mut ::std::os::raw::c_ulong) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn OSSL_PARAM_get_int32(p: *const OSSL_PARAM, val: *mut i32) -> ::std::os::raw::c_int;
@@ -13300,28 +13271,16 @@ unsafe extern "C" {
     pub fn OSSL_PARAM_get_time_t(p: *const OSSL_PARAM, val: *mut time_t) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn OSSL_PARAM_set_int(
-        p: *mut OSSL_PARAM,
-        val: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn OSSL_PARAM_set_int(p: *mut OSSL_PARAM, val: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn OSSL_PARAM_set_uint(
-        p: *mut OSSL_PARAM,
-        val: ::std::os::raw::c_uint,
-    ) -> ::std::os::raw::c_int;
+    pub fn OSSL_PARAM_set_uint(p: *mut OSSL_PARAM, val: ::std::os::raw::c_uint) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn OSSL_PARAM_set_long(
-        p: *mut OSSL_PARAM,
-        val: ::std::os::raw::c_long,
-    ) -> ::std::os::raw::c_int;
+    pub fn OSSL_PARAM_set_long(p: *mut OSSL_PARAM, val: ::std::os::raw::c_long) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn OSSL_PARAM_set_ulong(
-        p: *mut OSSL_PARAM,
-        val: ::std::os::raw::c_ulong,
-    ) -> ::std::os::raw::c_int;
+    pub fn OSSL_PARAM_set_ulong(p: *mut OSSL_PARAM, val: ::std::os::raw::c_ulong) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn OSSL_PARAM_set_int32(p: *mut OSSL_PARAM, val: i32) -> ::std::os::raw::c_int;
@@ -13361,10 +13320,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn OSSL_PARAM_set_utf8_string(
-        p: *mut OSSL_PARAM,
-        val: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn OSSL_PARAM_set_utf8_string(p: *mut OSSL_PARAM, val: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn OSSL_PARAM_get_octet_string(
@@ -13388,10 +13344,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn OSSL_PARAM_set_utf8_ptr(
-        p: *mut OSSL_PARAM,
-        val: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn OSSL_PARAM_set_utf8_ptr(p: *mut OSSL_PARAM, val: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn OSSL_PARAM_get_octet_ptr(
@@ -13528,11 +13481,7 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     #[doc = " Gets the order of a EC_GROUP\n  \\param  group  EC_GROUP object\n  \\param  order  BIGNUM to which the order is copied\n  \\param  ctx    unused\n  \\return 1 on success and 0 if an error occurred"]
-    pub fn EC_GROUP_get_order(
-        group: *const EC_GROUP,
-        order: *mut BIGNUM,
-        ctx: *mut BN_CTX,
-    ) -> ::std::os::raw::c_int;
+    pub fn EC_GROUP_get_order(group: *const EC_GROUP, order: *mut BIGNUM, ctx: *mut BN_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     #[doc = " Gets the order of an EC_GROUP\n  \\param  group  EC_GROUP object\n  \\return the group order"]
@@ -13589,11 +13538,7 @@ unsafe extern "C" {
     pub fn EC_GROUP_get_seed_len(arg1: *const EC_GROUP) -> usize;
 }
 unsafe extern "C" {
-    pub fn EC_GROUP_set_seed(
-        arg1: *mut EC_GROUP,
-        arg2: *const ::std::os::raw::c_uchar,
-        len: usize,
-    ) -> usize;
+    pub fn EC_GROUP_set_seed(arg1: *mut EC_GROUP, arg2: *const ::std::os::raw::c_uchar, len: usize) -> usize;
 }
 unsafe extern "C" {
     #[doc = " Sets the parameters of an ec curve defined by y^2 = x^3 + a*x + b (for GFp)\n  or y^2 + x*y = x^3 + a*x^2 + b (for GF2m)\n  \\param  group  EC_GROUP object\n  \\param  p      BIGNUM with the prime number (GFp) or the polynomial\n                 defining the underlying field (GF2m)\n  \\param  a      BIGNUM with parameter a of the equation\n  \\param  b      BIGNUM with parameter b of the equation\n  \\param  ctx    BN_CTX object (optional)\n  \\return 1 on success and 0 if an error occurred"]
@@ -13665,18 +13610,11 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     #[doc = " Checks whether the discriminant of the elliptic curve is zero or not\n  \\param  group  EC_GROUP object\n  \\param  ctx    BN_CTX object (optional)\n  \\return 1 if the discriminant is not zero and 0 otherwise"]
-    pub fn EC_GROUP_check_discriminant(
-        group: *const EC_GROUP,
-        ctx: *mut BN_CTX,
-    ) -> ::std::os::raw::c_int;
+    pub fn EC_GROUP_check_discriminant(group: *const EC_GROUP, ctx: *mut BN_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     #[doc = " Compares two EC_GROUP objects\n  \\param  a    first EC_GROUP object\n  \\param  b    second EC_GROUP object\n  \\param  ctx  BN_CTX object (optional)\n  \\return 0 if the groups are equal, 1 if not, or -1 on error"]
-    pub fn EC_GROUP_cmp(
-        a: *const EC_GROUP,
-        b: *const EC_GROUP,
-        ctx: *mut BN_CTX,
-    ) -> ::std::os::raw::c_int;
+    pub fn EC_GROUP_cmp(a: *const EC_GROUP, b: *const EC_GROUP, ctx: *mut BN_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     #[doc = " Creates a new EC_GROUP object with the specified parameters defined\n  over GFp (defined by the equation y^2 = x^3 + a*x + b)\n  \\param  p    BIGNUM with the prime number\n  \\param  a    BIGNUM with the parameter a of the equation\n  \\param  b    BIGNUM with the parameter b of the equation\n  \\param  ctx  BN_CTX object (optional)\n  \\return newly created EC_GROUP object with the specified parameters"]
@@ -13731,10 +13669,7 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     #[doc = " Creates an ECPARAMETERS object for the given EC_GROUP object.\n  \\param  group   pointer to the EC_GROUP object\n  \\param  params  pointer to an existing ECPARAMETERS object or NULL\n  \\return pointer to the new ECPARAMETERS object or NULL\n          if an error occurred."]
-    pub fn EC_GROUP_get_ecparameters(
-        group: *const EC_GROUP,
-        params: *mut ECPARAMETERS,
-    ) -> *mut ECPARAMETERS;
+    pub fn EC_GROUP_get_ecparameters(group: *const EC_GROUP, params: *mut ECPARAMETERS) -> *mut ECPARAMETERS;
 }
 unsafe extern "C" {
     #[doc = " Creates a new EC_GROUP object from an ECPKPARAMETERS object\n  \\param  params  pointer to an existing ECPKPARAMETERS object, or NULL\n  \\return newly created EC_GROUP object with specified curve, or NULL\n          if an error occurred"]
@@ -13742,10 +13677,7 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     #[doc = " Creates an ECPKPARAMETERS object for the given EC_GROUP object.\n  \\param  group   pointer to the EC_GROUP object\n  \\param  params  pointer to an existing ECPKPARAMETERS object or NULL\n  \\return pointer to the new ECPKPARAMETERS object or NULL\n          if an error occurred."]
-    pub fn EC_GROUP_get_ecpkparameters(
-        group: *const EC_GROUP,
-        params: *mut ECPKPARAMETERS,
-    ) -> *mut ECPKPARAMETERS;
+    pub fn EC_GROUP_get_ecpkparameters(group: *const EC_GROUP, params: *mut ECPKPARAMETERS) -> *mut ECPKPARAMETERS;
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -13757,10 +13689,8 @@ pub struct EC_builtin_curve {
 const _: () = {
     ["Size of EC_builtin_curve"][::std::mem::size_of::<EC_builtin_curve>() - 16usize];
     ["Alignment of EC_builtin_curve"][::std::mem::align_of::<EC_builtin_curve>() - 8usize];
-    ["Offset of field: EC_builtin_curve::nid"]
-        [::std::mem::offset_of!(EC_builtin_curve, nid) - 0usize];
-    ["Offset of field: EC_builtin_curve::comment"]
-        [::std::mem::offset_of!(EC_builtin_curve, comment) - 8usize];
+    ["Offset of field: EC_builtin_curve::nid"][::std::mem::offset_of!(EC_builtin_curve, nid) - 0usize];
+    ["Offset of field: EC_builtin_curve::comment"][::std::mem::offset_of!(EC_builtin_curve, comment) - 8usize];
 };
 impl Default for EC_builtin_curve {
     fn default() -> Self {
@@ -13809,10 +13739,7 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     #[doc = " Sets a point to infinity (neutral element)\n  \\param  group  underlying EC_GROUP object\n  \\param  point  EC_POINT to set to infinity\n  \\return 1 on success and 0 if an error occurred"]
-    pub fn EC_POINT_set_to_infinity(
-        group: *const EC_GROUP,
-        point: *mut EC_POINT,
-    ) -> ::std::os::raw::c_int;
+    pub fn EC_POINT_set_to_infinity(group: *const EC_GROUP, point: *mut EC_POINT) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     #[doc = " Returns the EC_METHOD used in EC_POINT object\n  \\param  point  EC_POINT object\n  \\return the EC_METHOD used"]
@@ -14015,18 +13942,11 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     #[doc = " Computes the inverse of a EC_POINT\n  \\param  group  underlying EC_GROUP object\n  \\param  a      EC_POINT object to be inverted (it's used for the result as well)\n  \\param  ctx    BN_CTX object (optional)\n  \\return 1 on success and 0 if an error occurred"]
-    pub fn EC_POINT_invert(
-        group: *const EC_GROUP,
-        a: *mut EC_POINT,
-        ctx: *mut BN_CTX,
-    ) -> ::std::os::raw::c_int;
+    pub fn EC_POINT_invert(group: *const EC_GROUP, a: *mut EC_POINT, ctx: *mut BN_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     #[doc = " Checks whether the point is the neutral element of the group\n  \\param  group  the underlying EC_GROUP object\n  \\param  p      EC_POINT object\n  \\return 1 if the point is the neutral element and 0 otherwise"]
-    pub fn EC_POINT_is_at_infinity(
-        group: *const EC_GROUP,
-        p: *const EC_POINT,
-    ) -> ::std::os::raw::c_int;
+    pub fn EC_POINT_is_at_infinity(group: *const EC_GROUP, p: *const EC_POINT) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     #[doc = " Checks whether the point is on the curve\n  \\param  group  underlying EC_GROUP object\n  \\param  point  EC_POINT object to check\n  \\param  ctx    BN_CTX object (optional)\n  \\return 1 if the point is on the curve, 0 if not, or -1 on error"]
@@ -14085,10 +14005,7 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     #[doc = " Stores multiples of generator for faster point multiplication\n  \\param  group  EC_GROUP object\n  \\param  ctx    BN_CTX object (optional)\n  \\return 1 on success and 0 if an error occurred"]
-    pub fn EC_GROUP_precompute_mult(
-        group: *mut EC_GROUP,
-        ctx: *mut BN_CTX,
-    ) -> ::std::os::raw::c_int;
+    pub fn EC_GROUP_precompute_mult(group: *mut EC_GROUP, ctx: *mut BN_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     #[doc = " Reports whether a precomputation has been done\n  \\param  group  EC_GROUP object\n  \\return 1 if a pre-computation has been done and 0 otherwise"]
@@ -14116,10 +14033,8 @@ unsafe extern "C" {
     pub fn EC_GROUP_get_basis_type(arg1: *const EC_GROUP) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EC_GROUP_get_trinomial_basis(
-        arg1: *const EC_GROUP,
-        k: *mut ::std::os::raw::c_uint,
-    ) -> ::std::os::raw::c_int;
+    pub fn EC_GROUP_get_trinomial_basis(arg1: *const EC_GROUP, k: *mut ::std::os::raw::c_uint)
+    -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EC_GROUP_get_pentanomial_basis(
@@ -14137,24 +14052,14 @@ unsafe extern "C" {
     ) -> *mut EC_GROUP;
 }
 unsafe extern "C" {
-    pub fn i2d_ECPKParameters(
-        arg1: *const EC_GROUP,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_ECPKParameters(arg1: *const EC_GROUP, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn ECPKParameters_print(
-        bp: *mut BIO,
-        x: *const EC_GROUP,
-        off: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn ECPKParameters_print(bp: *mut BIO, x: *const EC_GROUP, off: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     #[doc = "  Creates a new EC_KEY object.\n  \\param  ctx  The library context for to use for this EC_KEY. May be NULL in\n               which case the default library context is used.\n  \\return EC_KEY object or NULL if an error occurred."]
-    pub fn EC_KEY_new_ex(
-        ctx: *mut OSSL_LIB_CTX,
-        propq: *const ::std::os::raw::c_char,
-    ) -> *mut EC_KEY;
+    pub fn EC_KEY_new_ex(ctx: *mut OSSL_LIB_CTX, propq: *const ::std::os::raw::c_char) -> *mut EC_KEY;
 }
 unsafe extern "C" {
     #[doc = "  Creates a new EC_KEY object. Same as calling EC_KEY_new_ex with a\n  NULL library context\n  \\return EC_KEY object or NULL if an error occurred."]
@@ -14248,10 +14153,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EC_KEY_get_ex_data(
-        key: *const EC_KEY,
-        idx: ::std::os::raw::c_int,
-    ) -> *mut ::std::os::raw::c_void;
+    pub fn EC_KEY_get_ex_data(key: *const EC_KEY, idx: ::std::os::raw::c_int) -> *mut ::std::os::raw::c_void;
 }
 unsafe extern "C" {
     pub fn EC_KEY_set_asn1_flag(eckey: *mut EC_KEY, asn1_flag: ::std::os::raw::c_int);
@@ -14300,19 +14202,11 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     #[doc = " Decodes an EC_KEY private key from an octet string\n  \\param  key    key to decode\n  \\param  buf    memory buffer with the encoded private key\n  \\param  len    length of the encoded key\n  \\return 1 on success and 0 if an error occurred"]
-    pub fn EC_KEY_oct2priv(
-        key: *mut EC_KEY,
-        buf: *const ::std::os::raw::c_uchar,
-        len: usize,
-    ) -> ::std::os::raw::c_int;
+    pub fn EC_KEY_oct2priv(key: *mut EC_KEY, buf: *const ::std::os::raw::c_uchar, len: usize) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     #[doc = " Encodes a EC_KEY private key to an octet string\n  \\param  key    key to encode\n  \\param  buf    memory buffer for the result. If NULL the function returns\n                 required buffer size.\n  \\param  len    length of the memory buffer\n  \\return the length of the encoded octet string or 0 if an error occurred"]
-    pub fn EC_KEY_priv2oct(
-        key: *const EC_KEY,
-        buf: *mut ::std::os::raw::c_uchar,
-        len: usize,
-    ) -> usize;
+    pub fn EC_KEY_priv2oct(key: *const EC_KEY, buf: *mut ::std::os::raw::c_uchar, len: usize) -> usize;
 }
 unsafe extern "C" {
     #[doc = " Encodes an EC_KEY private key to an allocated octet string\n  \\param  eckey  key to encode\n  \\param  pbuf   returns pointer to allocated buffer\n  \\return the length of the encoded octet string or 0 if an error occurred"]
@@ -14328,10 +14222,7 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     #[doc = " Encodes a private key object and stores the result in a buffer.\n  \\param  key  the EC_KEY object to encode\n  \\param  out  the buffer for the result (if NULL the function returns number\n               of bytes needed).\n  \\return 1 on success and 0 if an error occurred."]
-    pub fn i2d_ECPrivateKey(
-        key: *const EC_KEY,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_ECPrivateKey(key: *const EC_KEY, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     #[doc = " Decodes ec parameter from a memory buffer.\n  \\param  key  a pointer to a EC_KEY object which should be used (or NULL)\n  \\param  in   pointer to memory with the DER encoded ec parameters\n  \\param  len  length of the DER encoded ec parameters\n  \\return a EC_KEY object with the decoded parameters or NULL if an error\n          occurred."]
@@ -14343,10 +14234,7 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     #[doc = " Encodes ec parameter and stores the result in a buffer.\n  \\param  key  the EC_KEY object with ec parameters to encode\n  \\param  out  the buffer for the result (if NULL the function returns number\n               of bytes needed).\n  \\return 1 on success and 0 if an error occurred."]
-    pub fn i2d_ECParameters(
-        key: *const EC_KEY,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_ECParameters(key: *const EC_KEY, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     #[doc = " Decodes an ec public key from a octet string.\n  \\param  key  a pointer to a EC_KEY object which should be used\n  \\param  in   memory buffer with the encoded public key\n  \\param  len  length of the encoded public key\n  \\return EC_KEY object with decoded public key or NULL if an error\n          occurred."]
@@ -14358,10 +14246,7 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     #[doc = " Encodes an ec public key in an octet string.\n  \\param  key  the EC_KEY object with the public key\n  \\param  out  the buffer for the result (if NULL the function returns number\n               of bytes needed).\n  \\return 1 on success and 0 if an error occurred"]
-    pub fn i2o_ECPublicKey(
-        key: *const EC_KEY,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2o_ECPublicKey(key: *const EC_KEY, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     #[doc = " Prints out the ec parameters on human readable form.\n  \\param  bp   BIO object to which the information is printed\n  \\param  key  EC_KEY object\n  \\return 1 on success and 0 if an error occurred"]
@@ -14369,11 +14254,7 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     #[doc = " Prints out the contents of a EC_KEY object\n  \\param  bp   BIO object to which the information is printed\n  \\param  key  EC_KEY object\n  \\param  off  line offset\n  \\return 1 on success and 0 if an error occurred"]
-    pub fn EC_KEY_print(
-        bp: *mut BIO,
-        key: *const EC_KEY,
-        off: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn EC_KEY_print(bp: *mut BIO, key: *const EC_KEY, off: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EC_KEY_OpenSSL() -> *const EC_KEY_METHOD;
@@ -14388,8 +14269,7 @@ unsafe extern "C" {
     pub fn EC_KEY_get_method(key: *const EC_KEY) -> *const EC_KEY_METHOD;
 }
 unsafe extern "C" {
-    pub fn EC_KEY_set_method(key: *mut EC_KEY, meth: *const EC_KEY_METHOD)
-    -> ::std::os::raw::c_int;
+    pub fn EC_KEY_set_method(key: *mut EC_KEY, meth: *const EC_KEY_METHOD) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EC_KEY_new_method(engine: *mut ENGINE) -> *mut EC_KEY;
@@ -14446,10 +14326,7 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     #[doc = " i2d_ECDSA_SIG encodes content of ECDSA_SIG (note: this function modifies *pp\n  (*pp += length of the DER encoded signature)).\n  \\param  sig  pointer to the ECDSA_SIG object\n  \\param  pp   pointer to a unsigned char pointer for the output or NULL\n  \\return the length of the DER encoded ECDSA_SIG object or a negative value\n          on error"]
-    pub fn i2d_ECDSA_SIG(
-        a: *const ECDSA_SIG,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_ECDSA_SIG(a: *const ECDSA_SIG, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     #[doc = " Accessor for r and s fields of ECDSA_SIG\n  \\param  sig  pointer to ECDSA_SIG structure\n  \\param  pr   pointer to BIGNUM pointer for r (may be NULL)\n  \\param  ps   pointer to BIGNUM pointer for s (may be NULL)"]
@@ -14465,11 +14342,7 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     #[doc = " Setter for r and s fields of ECDSA_SIG\n  \\param  sig  pointer to ECDSA_SIG structure\n  \\param  r    pointer to BIGNUM for r\n  \\param  s    pointer to BIGNUM for s"]
-    pub fn ECDSA_SIG_set0(
-        sig: *mut ECDSA_SIG,
-        r: *mut BIGNUM,
-        s: *mut BIGNUM,
-    ) -> ::std::os::raw::c_int;
+    pub fn ECDSA_SIG_set0(sig: *mut ECDSA_SIG, r: *mut BIGNUM, s: *mut BIGNUM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     #[doc = " Computes the ECDSA signature of the given hash value using\n  the supplied private key and returns the created signature.\n  \\param  dgst      pointer to the hash value\n  \\param  dgst_len  length of the hash value\n  \\param  eckey     EC_KEY object containing a private EC key\n  \\return pointer to a ECDSA_SIG structure or NULL if an error occurred"]
@@ -14555,9 +14428,7 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn EC_KEY_METHOD_set_init(
         meth: *mut EC_KEY_METHOD,
-        init: ::std::option::Option<
-            unsafe extern "C" fn(key: *mut EC_KEY) -> ::std::os::raw::c_int,
-        >,
+        init: ::std::option::Option<unsafe extern "C" fn(key: *mut EC_KEY) -> ::std::os::raw::c_int>,
         finish: ::std::option::Option<unsafe extern "C" fn(key: *mut EC_KEY)>,
         copy: ::std::option::Option<
             unsafe extern "C" fn(dest: *mut EC_KEY, src: *const EC_KEY) -> ::std::os::raw::c_int,
@@ -14566,25 +14437,17 @@ unsafe extern "C" {
             unsafe extern "C" fn(key: *mut EC_KEY, grp: *const EC_GROUP) -> ::std::os::raw::c_int,
         >,
         set_private: ::std::option::Option<
-            unsafe extern "C" fn(
-                key: *mut EC_KEY,
-                priv_key: *const BIGNUM,
-            ) -> ::std::os::raw::c_int,
+            unsafe extern "C" fn(key: *mut EC_KEY, priv_key: *const BIGNUM) -> ::std::os::raw::c_int,
         >,
         set_public: ::std::option::Option<
-            unsafe extern "C" fn(
-                key: *mut EC_KEY,
-                pub_key: *const EC_POINT,
-            ) -> ::std::os::raw::c_int,
+            unsafe extern "C" fn(key: *mut EC_KEY, pub_key: *const EC_POINT) -> ::std::os::raw::c_int,
         >,
     );
 }
 unsafe extern "C" {
     pub fn EC_KEY_METHOD_set_keygen(
         meth: *mut EC_KEY_METHOD,
-        keygen: ::std::option::Option<
-            unsafe extern "C" fn(key: *mut EC_KEY) -> ::std::os::raw::c_int,
-        >,
+        keygen: ::std::option::Option<unsafe extern "C" fn(key: *mut EC_KEY) -> ::std::os::raw::c_int>,
     );
 }
 unsafe extern "C" {
@@ -14660,9 +14523,7 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn EC_KEY_METHOD_get_init(
         meth: *const EC_KEY_METHOD,
-        pinit: *mut ::std::option::Option<
-            unsafe extern "C" fn(key: *mut EC_KEY) -> ::std::os::raw::c_int,
-        >,
+        pinit: *mut ::std::option::Option<unsafe extern "C" fn(key: *mut EC_KEY) -> ::std::os::raw::c_int>,
         pfinish: *mut ::std::option::Option<unsafe extern "C" fn(key: *mut EC_KEY)>,
         pcopy: *mut ::std::option::Option<
             unsafe extern "C" fn(dest: *mut EC_KEY, src: *const EC_KEY) -> ::std::os::raw::c_int,
@@ -14671,25 +14532,17 @@ unsafe extern "C" {
             unsafe extern "C" fn(key: *mut EC_KEY, grp: *const EC_GROUP) -> ::std::os::raw::c_int,
         >,
         pset_private: *mut ::std::option::Option<
-            unsafe extern "C" fn(
-                key: *mut EC_KEY,
-                priv_key: *const BIGNUM,
-            ) -> ::std::os::raw::c_int,
+            unsafe extern "C" fn(key: *mut EC_KEY, priv_key: *const BIGNUM) -> ::std::os::raw::c_int,
         >,
         pset_public: *mut ::std::option::Option<
-            unsafe extern "C" fn(
-                key: *mut EC_KEY,
-                pub_key: *const EC_POINT,
-            ) -> ::std::os::raw::c_int,
+            unsafe extern "C" fn(key: *mut EC_KEY, pub_key: *const EC_POINT) -> ::std::os::raw::c_int,
         >,
     );
 }
 unsafe extern "C" {
     pub fn EC_KEY_METHOD_get_keygen(
         meth: *const EC_KEY_METHOD,
-        pkeygen: *mut ::std::option::Option<
-            unsafe extern "C" fn(key: *mut EC_KEY) -> ::std::os::raw::c_int,
-        >,
+        pkeygen: *mut ::std::option::Option<unsafe extern "C" fn(key: *mut EC_KEY) -> ::std::os::raw::c_int>,
     );
 }
 unsafe extern "C" {
@@ -14779,10 +14632,7 @@ pub type OSSL_FUNC = ::std::option::Option<unsafe extern "C" fn()>;
 pub type OSSL_FUNC_core_gettable_params_fn =
     ::std::option::Option<unsafe extern "C" fn(prov: *const OSSL_CORE_HANDLE) -> *const OSSL_PARAM>;
 pub type OSSL_FUNC_core_get_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        prov: *const OSSL_CORE_HANDLE,
-        params: *mut OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(prov: *const OSSL_CORE_HANDLE, params: *mut OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_core_thread_start_fn = ::std::option::Option<
     unsafe extern "C" fn(
@@ -14791,11 +14641,9 @@ pub type OSSL_FUNC_core_thread_start_fn = ::std::option::Option<
         arg: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_core_get_libctx_fn = ::std::option::Option<
-    unsafe extern "C" fn(prov: *const OSSL_CORE_HANDLE) -> *mut OPENSSL_CORE_CTX,
->;
-pub type OSSL_FUNC_core_new_error_fn =
-    ::std::option::Option<unsafe extern "C" fn(prov: *const OSSL_CORE_HANDLE)>;
+pub type OSSL_FUNC_core_get_libctx_fn =
+    ::std::option::Option<unsafe extern "C" fn(prov: *const OSSL_CORE_HANDLE) -> *mut OPENSSL_CORE_CTX>;
+pub type OSSL_FUNC_core_new_error_fn = ::std::option::Option<unsafe extern "C" fn(prov: *const OSSL_CORE_HANDLE)>;
 pub type OSSL_FUNC_core_set_error_debug_fn = ::std::option::Option<
     unsafe extern "C" fn(
         prov: *const OSSL_CORE_HANDLE,
@@ -14805,22 +14653,14 @@ pub type OSSL_FUNC_core_set_error_debug_fn = ::std::option::Option<
     ),
 >;
 pub type OSSL_FUNC_core_vset_error_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        prov: *const OSSL_CORE_HANDLE,
-        reason: u32,
-        fmt: *const ::std::os::raw::c_char,
-        args: va_list,
-    ),
+    unsafe extern "C" fn(prov: *const OSSL_CORE_HANDLE, reason: u32, fmt: *const ::std::os::raw::c_char, args: va_list),
 >;
-pub type OSSL_FUNC_core_set_error_mark_fn = ::std::option::Option<
-    unsafe extern "C" fn(prov: *const OSSL_CORE_HANDLE) -> ::std::os::raw::c_int,
->;
-pub type OSSL_FUNC_core_clear_last_error_mark_fn = ::std::option::Option<
-    unsafe extern "C" fn(prov: *const OSSL_CORE_HANDLE) -> ::std::os::raw::c_int,
->;
-pub type OSSL_FUNC_core_pop_error_to_mark_fn = ::std::option::Option<
-    unsafe extern "C" fn(prov: *const OSSL_CORE_HANDLE) -> ::std::os::raw::c_int,
->;
+pub type OSSL_FUNC_core_set_error_mark_fn =
+    ::std::option::Option<unsafe extern "C" fn(prov: *const OSSL_CORE_HANDLE) -> ::std::os::raw::c_int>;
+pub type OSSL_FUNC_core_clear_last_error_mark_fn =
+    ::std::option::Option<unsafe extern "C" fn(prov: *const OSSL_CORE_HANDLE) -> ::std::os::raw::c_int>;
+pub type OSSL_FUNC_core_pop_error_to_mark_fn =
+    ::std::option::Option<unsafe extern "C" fn(prov: *const OSSL_CORE_HANDLE) -> ::std::os::raw::c_int>;
 pub type OSSL_FUNC_core_obj_add_sigid_fn = ::std::option::Option<
     unsafe extern "C" fn(
         prov: *const OSSL_CORE_HANDLE,
@@ -14912,9 +14752,8 @@ pub type OSSL_FUNC_CRYPTO_secure_clear_free_fn = ::std::option::Option<
         line: ::std::os::raw::c_int,
     ),
 >;
-pub type OSSL_FUNC_CRYPTO_secure_allocated_fn = ::std::option::Option<
-    unsafe extern "C" fn(ptr: *const ::std::os::raw::c_void) -> ::std::os::raw::c_int,
->;
+pub type OSSL_FUNC_CRYPTO_secure_allocated_fn =
+    ::std::option::Option<unsafe extern "C" fn(ptr: *const ::std::os::raw::c_void) -> ::std::os::raw::c_int>;
 pub type OSSL_FUNC_OPENSSL_cleanse_fn =
     ::std::option::Option<unsafe extern "C" fn(ptr: *mut ::std::os::raw::c_void, len: usize)>;
 pub type OSSL_FUNC_BIO_new_file_fn = ::std::option::Option<
@@ -14924,10 +14763,7 @@ pub type OSSL_FUNC_BIO_new_file_fn = ::std::option::Option<
     ) -> *mut OSSL_CORE_BIO,
 >;
 pub type OSSL_FUNC_BIO_new_membuf_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        buf: *const ::std::os::raw::c_void,
-        len: ::std::os::raw::c_int,
-    ) -> *mut OSSL_CORE_BIO,
+    unsafe extern "C" fn(buf: *const ::std::os::raw::c_void, len: ::std::os::raw::c_int) -> *mut OSSL_CORE_BIO,
 >;
 pub type OSSL_FUNC_BIO_read_ex_fn = ::std::option::Option<
     unsafe extern "C" fn(
@@ -14953,10 +14789,7 @@ pub type OSSL_FUNC_BIO_gets_fn = ::std::option::Option<
     ) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_BIO_puts_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        bio: *mut OSSL_CORE_BIO,
-        str_: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(bio: *mut OSSL_CORE_BIO, str_: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_BIO_up_ref_fn =
     ::std::option::Option<unsafe extern "C" fn(bio: *mut OSSL_CORE_BIO) -> ::std::os::raw::c_int>;
@@ -14985,15 +14818,10 @@ pub type OSSL_FUNC_BIO_ctrl_fn = ::std::option::Option<
         ptr: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_indicator_cb_fn = ::std::option::Option<
-    unsafe extern "C" fn(ctx: *mut OPENSSL_CORE_CTX, cb: *mut OSSL_INDICATOR_CALLBACK),
->;
+pub type OSSL_FUNC_indicator_cb_fn =
+    ::std::option::Option<unsafe extern "C" fn(ctx: *mut OPENSSL_CORE_CTX, cb: *mut OSSL_INDICATOR_CALLBACK)>;
 pub type OSSL_FUNC_self_test_cb_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        ctx: *mut OPENSSL_CORE_CTX,
-        cb: *mut OSSL_CALLBACK,
-        cbarg: *mut *mut ::std::os::raw::c_void,
-    ),
+    unsafe extern "C" fn(ctx: *mut OPENSSL_CORE_CTX, cb: *mut OSSL_CALLBACK, cbarg: *mut *mut ::std::os::raw::c_void),
 >;
 pub type OSSL_FUNC_get_entropy_fn = ::std::option::Option<
     unsafe extern "C" fn(
@@ -15014,18 +14842,10 @@ pub type OSSL_FUNC_get_user_entropy_fn = ::std::option::Option<
     ) -> usize,
 >;
 pub type OSSL_FUNC_cleanup_entropy_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        handle: *const OSSL_CORE_HANDLE,
-        buf: *mut ::std::os::raw::c_uchar,
-        len: usize,
-    ),
+    unsafe extern "C" fn(handle: *const OSSL_CORE_HANDLE, buf: *mut ::std::os::raw::c_uchar, len: usize),
 >;
 pub type OSSL_FUNC_cleanup_user_entropy_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        handle: *const OSSL_CORE_HANDLE,
-        buf: *mut ::std::os::raw::c_uchar,
-        len: usize,
-    ),
+    unsafe extern "C" fn(handle: *const OSSL_CORE_HANDLE, buf: *mut ::std::os::raw::c_uchar, len: usize),
 >;
 pub type OSSL_FUNC_get_nonce_fn = ::std::option::Option<
     unsafe extern "C" fn(
@@ -15048,18 +14868,10 @@ pub type OSSL_FUNC_get_user_nonce_fn = ::std::option::Option<
     ) -> usize,
 >;
 pub type OSSL_FUNC_cleanup_nonce_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        handle: *const OSSL_CORE_HANDLE,
-        buf: *mut ::std::os::raw::c_uchar,
-        len: usize,
-    ),
+    unsafe extern "C" fn(handle: *const OSSL_CORE_HANDLE, buf: *mut ::std::os::raw::c_uchar, len: usize),
 >;
 pub type OSSL_FUNC_cleanup_user_nonce_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        handle: *const OSSL_CORE_HANDLE,
-        buf: *mut ::std::os::raw::c_uchar,
-        len: usize,
-    ),
+    unsafe extern "C" fn(handle: *const OSSL_CORE_HANDLE, buf: *mut ::std::os::raw::c_uchar, len: usize),
 >;
 pub type OSSL_FUNC_provider_register_child_cb_fn = ::std::option::Option<
     unsafe extern "C" fn(
@@ -15087,37 +14899,24 @@ pub type OSSL_FUNC_provider_register_child_cb_fn = ::std::option::Option<
 >;
 pub type OSSL_FUNC_provider_deregister_child_cb_fn =
     ::std::option::Option<unsafe extern "C" fn(handle: *const OSSL_CORE_HANDLE)>;
-pub type OSSL_FUNC_provider_name_fn = ::std::option::Option<
-    unsafe extern "C" fn(prov: *const OSSL_CORE_HANDLE) -> *const ::std::os::raw::c_char,
->;
-pub type OSSL_FUNC_provider_get0_provider_ctx_fn = ::std::option::Option<
-    unsafe extern "C" fn(prov: *const OSSL_CORE_HANDLE) -> *mut ::std::os::raw::c_void,
->;
-pub type OSSL_FUNC_provider_get0_dispatch_fn = ::std::option::Option<
-    unsafe extern "C" fn(prov: *const OSSL_CORE_HANDLE) -> *const OSSL_DISPATCH,
->;
+pub type OSSL_FUNC_provider_name_fn =
+    ::std::option::Option<unsafe extern "C" fn(prov: *const OSSL_CORE_HANDLE) -> *const ::std::os::raw::c_char>;
+pub type OSSL_FUNC_provider_get0_provider_ctx_fn =
+    ::std::option::Option<unsafe extern "C" fn(prov: *const OSSL_CORE_HANDLE) -> *mut ::std::os::raw::c_void>;
+pub type OSSL_FUNC_provider_get0_dispatch_fn =
+    ::std::option::Option<unsafe extern "C" fn(prov: *const OSSL_CORE_HANDLE) -> *const OSSL_DISPATCH>;
 pub type OSSL_FUNC_provider_up_ref_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        prov: *const OSSL_CORE_HANDLE,
-        activate: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(prov: *const OSSL_CORE_HANDLE, activate: ::std::os::raw::c_int) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_provider_free_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        prov: *const OSSL_CORE_HANDLE,
-        deactivate: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(prov: *const OSSL_CORE_HANDLE, deactivate: ::std::os::raw::c_int) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_provider_teardown_fn =
     ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void)>;
-pub type OSSL_FUNC_provider_gettable_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
->;
+pub type OSSL_FUNC_provider_gettable_params_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM>;
 pub type OSSL_FUNC_provider_get_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        provctx: *mut ::std::os::raw::c_void,
-        params: *mut OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void, params: *mut OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_provider_query_operation_fn = ::std::option::Option<
     unsafe extern "C" fn(
@@ -15133,9 +14932,8 @@ pub type OSSL_FUNC_provider_unquery_operation_fn = ::std::option::Option<
         arg1: *const OSSL_ALGORITHM,
     ),
 >;
-pub type OSSL_FUNC_provider_get_reason_strings_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_ITEM,
->;
+pub type OSSL_FUNC_provider_get_reason_strings_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_ITEM>;
 pub type OSSL_FUNC_provider_get_capabilities_fn = ::std::option::Option<
     unsafe extern "C" fn(
         provctx: *mut ::std::os::raw::c_void,
@@ -15144,9 +14942,8 @@ pub type OSSL_FUNC_provider_get_capabilities_fn = ::std::option::Option<
         arg: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_provider_self_test_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int,
->;
+pub type OSSL_FUNC_provider_self_test_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int>;
 pub type OSSL_FUNC_provider_random_bytes_fn = ::std::option::Option<
     unsafe extern "C" fn(
         provctx: *mut ::std::os::raw::c_void,
@@ -15174,11 +14971,7 @@ pub type OSSL_FUNC_SSL_QUIC_TLS_crypto_recv_rcd_fn = ::std::option::Option<
     ) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_SSL_QUIC_TLS_crypto_release_rcd_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        s: *mut SSL,
-        bytes_read: usize,
-        arg: *mut ::std::os::raw::c_void,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(s: *mut SSL, bytes_read: usize, arg: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_SSL_QUIC_TLS_yield_secret_fn = ::std::option::Option<
     unsafe extern "C" fn(
@@ -15205,14 +14998,10 @@ pub type OSSL_FUNC_SSL_QUIC_TLS_alert_fn = ::std::option::Option<
         arg: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_digest_newctx_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void,
->;
+pub type OSSL_FUNC_digest_newctx_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void>;
 pub type OSSL_FUNC_digest_init_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        dctx: *mut ::std::os::raw::c_void,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(dctx: *mut ::std::os::raw::c_void, params: *const OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_digest_update_fn = ::std::option::Option<
     unsafe extern "C" fn(
@@ -15247,46 +15036,30 @@ pub type OSSL_FUNC_digest_digest_fn = ::std::option::Option<
         outsz: usize,
     ) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_digest_freectx_fn =
-    ::std::option::Option<unsafe extern "C" fn(dctx: *mut ::std::os::raw::c_void)>;
-pub type OSSL_FUNC_digest_dupctx_fn = ::std::option::Option<
-    unsafe extern "C" fn(dctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void,
->;
+pub type OSSL_FUNC_digest_freectx_fn = ::std::option::Option<unsafe extern "C" fn(dctx: *mut ::std::os::raw::c_void)>;
+pub type OSSL_FUNC_digest_dupctx_fn =
+    ::std::option::Option<unsafe extern "C" fn(dctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void>;
 pub type OSSL_FUNC_digest_copyctx_fn = ::std::option::Option<
     unsafe extern "C" fn(outctx: *mut ::std::os::raw::c_void, inctx: *mut ::std::os::raw::c_void),
 >;
 pub type OSSL_FUNC_digest_get_params_fn =
     ::std::option::Option<unsafe extern "C" fn(params: *mut OSSL_PARAM) -> ::std::os::raw::c_int>;
 pub type OSSL_FUNC_digest_set_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        vctx: *mut ::std::os::raw::c_void,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(vctx: *mut ::std::os::raw::c_void, params: *const OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_digest_get_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        vctx: *mut ::std::os::raw::c_void,
-        params: *mut OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(vctx: *mut ::std::os::raw::c_void, params: *mut OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_digest_gettable_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
->;
+pub type OSSL_FUNC_digest_gettable_params_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM>;
 pub type OSSL_FUNC_digest_settable_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        dctx: *mut ::std::os::raw::c_void,
-        provctx: *mut ::std::os::raw::c_void,
-    ) -> *const OSSL_PARAM,
+    unsafe extern "C" fn(dctx: *mut ::std::os::raw::c_void, provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
 >;
 pub type OSSL_FUNC_digest_gettable_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        dctx: *mut ::std::os::raw::c_void,
-        provctx: *mut ::std::os::raw::c_void,
-    ) -> *const OSSL_PARAM,
+    unsafe extern "C" fn(dctx: *mut ::std::os::raw::c_void, provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
 >;
-pub type OSSL_FUNC_cipher_newctx_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void,
->;
+pub type OSSL_FUNC_cipher_newctx_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void>;
 pub type OSSL_FUNC_cipher_encrypt_init_fn = ::std::option::Option<
     unsafe extern "C" fn(
         cctx: *mut ::std::os::raw::c_void,
@@ -15377,39 +15150,24 @@ pub type OSSL_FUNC_cipher_pipeline_final_fn = ::std::option::Option<
         outsize: *const usize,
     ) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_cipher_freectx_fn =
-    ::std::option::Option<unsafe extern "C" fn(cctx: *mut ::std::os::raw::c_void)>;
-pub type OSSL_FUNC_cipher_dupctx_fn = ::std::option::Option<
-    unsafe extern "C" fn(cctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void,
->;
+pub type OSSL_FUNC_cipher_freectx_fn = ::std::option::Option<unsafe extern "C" fn(cctx: *mut ::std::os::raw::c_void)>;
+pub type OSSL_FUNC_cipher_dupctx_fn =
+    ::std::option::Option<unsafe extern "C" fn(cctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void>;
 pub type OSSL_FUNC_cipher_get_params_fn =
     ::std::option::Option<unsafe extern "C" fn(params: *mut OSSL_PARAM) -> ::std::os::raw::c_int>;
 pub type OSSL_FUNC_cipher_get_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        cctx: *mut ::std::os::raw::c_void,
-        params: *mut OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(cctx: *mut ::std::os::raw::c_void, params: *mut OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_cipher_set_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        cctx: *mut ::std::os::raw::c_void,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(cctx: *mut ::std::os::raw::c_void, params: *const OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_cipher_gettable_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
->;
+pub type OSSL_FUNC_cipher_gettable_params_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM>;
 pub type OSSL_FUNC_cipher_settable_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        cctx: *mut ::std::os::raw::c_void,
-        provctx: *mut ::std::os::raw::c_void,
-    ) -> *const OSSL_PARAM,
+    unsafe extern "C" fn(cctx: *mut ::std::os::raw::c_void, provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
 >;
 pub type OSSL_FUNC_cipher_gettable_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        cctx: *mut ::std::os::raw::c_void,
-        provctx: *mut ::std::os::raw::c_void,
-    ) -> *const OSSL_PARAM,
+    unsafe extern "C" fn(cctx: *mut ::std::os::raw::c_void, provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
 >;
 pub type OSSL_FUNC_cipher_encrypt_skey_init_fn = ::std::option::Option<
     unsafe extern "C" fn(
@@ -15429,14 +15187,11 @@ pub type OSSL_FUNC_cipher_decrypt_skey_init_fn = ::std::option::Option<
         params: *const OSSL_PARAM,
     ) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_mac_newctx_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void,
->;
-pub type OSSL_FUNC_mac_dupctx_fn = ::std::option::Option<
-    unsafe extern "C" fn(src: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void,
->;
-pub type OSSL_FUNC_mac_freectx_fn =
-    ::std::option::Option<unsafe extern "C" fn(mctx: *mut ::std::os::raw::c_void)>;
+pub type OSSL_FUNC_mac_newctx_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void>;
+pub type OSSL_FUNC_mac_dupctx_fn =
+    ::std::option::Option<unsafe extern "C" fn(src: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void>;
+pub type OSSL_FUNC_mac_freectx_fn = ::std::option::Option<unsafe extern "C" fn(mctx: *mut ::std::os::raw::c_void)>;
 pub type OSSL_FUNC_mac_init_fn = ::std::option::Option<
     unsafe extern "C" fn(
         mctx: *mut ::std::os::raw::c_void,
@@ -15460,34 +15215,21 @@ pub type OSSL_FUNC_mac_final_fn = ::std::option::Option<
         outsize: usize,
     ) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_mac_gettable_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
->;
+pub type OSSL_FUNC_mac_gettable_params_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM>;
 pub type OSSL_FUNC_mac_gettable_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        mctx: *mut ::std::os::raw::c_void,
-        provctx: *mut ::std::os::raw::c_void,
-    ) -> *const OSSL_PARAM,
+    unsafe extern "C" fn(mctx: *mut ::std::os::raw::c_void, provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
 >;
 pub type OSSL_FUNC_mac_settable_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        mctx: *mut ::std::os::raw::c_void,
-        provctx: *mut ::std::os::raw::c_void,
-    ) -> *const OSSL_PARAM,
+    unsafe extern "C" fn(mctx: *mut ::std::os::raw::c_void, provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
 >;
 pub type OSSL_FUNC_mac_get_params_fn =
     ::std::option::Option<unsafe extern "C" fn(params: *mut OSSL_PARAM) -> ::std::os::raw::c_int>;
 pub type OSSL_FUNC_mac_get_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        mctx: *mut ::std::os::raw::c_void,
-        params: *mut OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(mctx: *mut ::std::os::raw::c_void, params: *mut OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_mac_set_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        mctx: *mut ::std::os::raw::c_void,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(mctx: *mut ::std::os::raw::c_void, params: *const OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_mac_init_skey_fn = ::std::option::Option<
     unsafe extern "C" fn(
@@ -15496,16 +15238,12 @@ pub type OSSL_FUNC_mac_init_skey_fn = ::std::option::Option<
         params: *const OSSL_PARAM,
     ) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_kdf_newctx_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void,
->;
-pub type OSSL_FUNC_kdf_dupctx_fn = ::std::option::Option<
-    unsafe extern "C" fn(src: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void,
->;
-pub type OSSL_FUNC_kdf_freectx_fn =
-    ::std::option::Option<unsafe extern "C" fn(kctx: *mut ::std::os::raw::c_void)>;
-pub type OSSL_FUNC_kdf_reset_fn =
-    ::std::option::Option<unsafe extern "C" fn(kctx: *mut ::std::os::raw::c_void)>;
+pub type OSSL_FUNC_kdf_newctx_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void>;
+pub type OSSL_FUNC_kdf_dupctx_fn =
+    ::std::option::Option<unsafe extern "C" fn(src: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void>;
+pub type OSSL_FUNC_kdf_freectx_fn = ::std::option::Option<unsafe extern "C" fn(kctx: *mut ::std::os::raw::c_void)>;
+pub type OSSL_FUNC_kdf_reset_fn = ::std::option::Option<unsafe extern "C" fn(kctx: *mut ::std::os::raw::c_void)>;
 pub type OSSL_FUNC_kdf_derive_fn = ::std::option::Option<
     unsafe extern "C" fn(
         kctx: *mut ::std::os::raw::c_void,
@@ -15514,34 +15252,21 @@ pub type OSSL_FUNC_kdf_derive_fn = ::std::option::Option<
         params: *const OSSL_PARAM,
     ) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_kdf_gettable_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
->;
+pub type OSSL_FUNC_kdf_gettable_params_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM>;
 pub type OSSL_FUNC_kdf_gettable_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        kctx: *mut ::std::os::raw::c_void,
-        provctx: *mut ::std::os::raw::c_void,
-    ) -> *const OSSL_PARAM,
+    unsafe extern "C" fn(kctx: *mut ::std::os::raw::c_void, provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
 >;
 pub type OSSL_FUNC_kdf_settable_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        kctx: *mut ::std::os::raw::c_void,
-        provctx: *mut ::std::os::raw::c_void,
-    ) -> *const OSSL_PARAM,
+    unsafe extern "C" fn(kctx: *mut ::std::os::raw::c_void, provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
 >;
 pub type OSSL_FUNC_kdf_get_params_fn =
     ::std::option::Option<unsafe extern "C" fn(params: *mut OSSL_PARAM) -> ::std::os::raw::c_int>;
 pub type OSSL_FUNC_kdf_get_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        kctx: *mut ::std::os::raw::c_void,
-        params: *mut OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(kctx: *mut ::std::os::raw::c_void, params: *mut OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_kdf_set_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        kctx: *mut ::std::os::raw::c_void,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(kctx: *mut ::std::os::raw::c_void, params: *const OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_rand_newctx_fn = ::std::option::Option<
     unsafe extern "C" fn(
@@ -15550,8 +15275,7 @@ pub type OSSL_FUNC_rand_newctx_fn = ::std::option::Option<
         parent_calls: *const OSSL_DISPATCH,
     ) -> *mut ::std::os::raw::c_void,
 >;
-pub type OSSL_FUNC_rand_freectx_fn =
-    ::std::option::Option<unsafe extern "C" fn(vctx: *mut ::std::os::raw::c_void)>;
+pub type OSSL_FUNC_rand_freectx_fn = ::std::option::Option<unsafe extern "C" fn(vctx: *mut ::std::os::raw::c_void)>;
 pub type OSSL_FUNC_rand_instantiate_fn = ::std::option::Option<
     unsafe extern "C" fn(
         vdrbg: *mut ::std::os::raw::c_void,
@@ -15562,9 +15286,8 @@ pub type OSSL_FUNC_rand_instantiate_fn = ::std::option::Option<
         params: *const OSSL_PARAM,
     ) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_rand_uninstantiate_fn = ::std::option::Option<
-    unsafe extern "C" fn(vdrbg: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int,
->;
+pub type OSSL_FUNC_rand_uninstantiate_fn =
+    ::std::option::Option<unsafe extern "C" fn(vdrbg: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int>;
 pub type OSSL_FUNC_rand_generate_fn = ::std::option::Option<
     unsafe extern "C" fn(
         vctx: *mut ::std::os::raw::c_void,
@@ -15595,42 +15318,26 @@ pub type OSSL_FUNC_rand_nonce_fn = ::std::option::Option<
         max_noncelen: usize,
     ) -> usize,
 >;
-pub type OSSL_FUNC_rand_enable_locking_fn = ::std::option::Option<
-    unsafe extern "C" fn(vctx: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int,
->;
-pub type OSSL_FUNC_rand_lock_fn = ::std::option::Option<
-    unsafe extern "C" fn(vctx: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int,
->;
-pub type OSSL_FUNC_rand_unlock_fn =
-    ::std::option::Option<unsafe extern "C" fn(vctx: *mut ::std::os::raw::c_void)>;
-pub type OSSL_FUNC_rand_gettable_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
->;
+pub type OSSL_FUNC_rand_enable_locking_fn =
+    ::std::option::Option<unsafe extern "C" fn(vctx: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int>;
+pub type OSSL_FUNC_rand_lock_fn =
+    ::std::option::Option<unsafe extern "C" fn(vctx: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int>;
+pub type OSSL_FUNC_rand_unlock_fn = ::std::option::Option<unsafe extern "C" fn(vctx: *mut ::std::os::raw::c_void)>;
+pub type OSSL_FUNC_rand_gettable_params_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM>;
 pub type OSSL_FUNC_rand_gettable_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        vctx: *mut ::std::os::raw::c_void,
-        provctx: *mut ::std::os::raw::c_void,
-    ) -> *const OSSL_PARAM,
+    unsafe extern "C" fn(vctx: *mut ::std::os::raw::c_void, provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
 >;
 pub type OSSL_FUNC_rand_settable_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        vctx: *mut ::std::os::raw::c_void,
-        provctx: *mut ::std::os::raw::c_void,
-    ) -> *const OSSL_PARAM,
+    unsafe extern "C" fn(vctx: *mut ::std::os::raw::c_void, provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
 >;
 pub type OSSL_FUNC_rand_get_params_fn =
     ::std::option::Option<unsafe extern "C" fn(params: *mut OSSL_PARAM) -> ::std::os::raw::c_int>;
 pub type OSSL_FUNC_rand_get_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        vctx: *mut ::std::os::raw::c_void,
-        params: *mut OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(vctx: *mut ::std::os::raw::c_void, params: *mut OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_rand_set_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        vctx: *mut ::std::os::raw::c_void,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(vctx: *mut ::std::os::raw::c_void, params: *const OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_rand_set_callbacks_fn = ::std::option::Option<
     unsafe extern "C" fn(
@@ -15642,9 +15349,8 @@ pub type OSSL_FUNC_rand_set_callbacks_fn = ::std::option::Option<
         arg: *mut ::std::os::raw::c_void,
     ),
 >;
-pub type OSSL_FUNC_rand_verify_zeroization_fn = ::std::option::Option<
-    unsafe extern "C" fn(vctx: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int,
->;
+pub type OSSL_FUNC_rand_verify_zeroization_fn =
+    ::std::option::Option<unsafe extern "C" fn(vctx: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int>;
 pub type OSSL_FUNC_rand_get_seed_fn = ::std::option::Option<
     unsafe extern "C" fn(
         vctx: *mut ::std::os::raw::c_void,
@@ -15658,15 +15364,10 @@ pub type OSSL_FUNC_rand_get_seed_fn = ::std::option::Option<
     ) -> usize,
 >;
 pub type OSSL_FUNC_rand_clear_seed_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        vctx: *mut ::std::os::raw::c_void,
-        buffer: *mut ::std::os::raw::c_uchar,
-        b_len: usize,
-    ),
+    unsafe extern "C" fn(vctx: *mut ::std::os::raw::c_void, buffer: *mut ::std::os::raw::c_uchar, b_len: usize),
 >;
-pub type OSSL_FUNC_keymgmt_new_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void,
->;
+pub type OSSL_FUNC_keymgmt_new_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void>;
 pub type OSSL_FUNC_keymgmt_gen_init_fn = ::std::option::Option<
     unsafe extern "C" fn(
         provctx: *mut ::std::os::raw::c_void,
@@ -15681,10 +15382,7 @@ pub type OSSL_FUNC_keymgmt_gen_set_template_fn = ::std::option::Option<
     ) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_keymgmt_gen_set_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        genctx: *mut ::std::os::raw::c_void,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(genctx: *mut ::std::os::raw::c_void, params: *const OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_keymgmt_gen_settable_params_fn = ::std::option::Option<
     unsafe extern "C" fn(
@@ -15693,10 +15391,7 @@ pub type OSSL_FUNC_keymgmt_gen_settable_params_fn = ::std::option::Option<
     ) -> *const OSSL_PARAM,
 >;
 pub type OSSL_FUNC_keymgmt_gen_get_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        genctx: *mut ::std::os::raw::c_void,
-        params: *mut OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(genctx: *mut ::std::os::raw::c_void, params: *mut OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_keymgmt_gen_gettable_params_fn = ::std::option::Option<
     unsafe extern "C" fn(
@@ -15714,34 +15409,21 @@ pub type OSSL_FUNC_keymgmt_gen_fn = ::std::option::Option<
 pub type OSSL_FUNC_keymgmt_gen_cleanup_fn =
     ::std::option::Option<unsafe extern "C" fn(genctx: *mut ::std::os::raw::c_void)>;
 pub type OSSL_FUNC_keymgmt_load_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        reference: *const ::std::os::raw::c_void,
-        reference_sz: usize,
-    ) -> *mut ::std::os::raw::c_void,
+    unsafe extern "C" fn(reference: *const ::std::os::raw::c_void, reference_sz: usize) -> *mut ::std::os::raw::c_void,
 >;
-pub type OSSL_FUNC_keymgmt_free_fn =
-    ::std::option::Option<unsafe extern "C" fn(keydata: *mut ::std::os::raw::c_void)>;
+pub type OSSL_FUNC_keymgmt_free_fn = ::std::option::Option<unsafe extern "C" fn(keydata: *mut ::std::os::raw::c_void)>;
 pub type OSSL_FUNC_keymgmt_get_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        keydata: *mut ::std::os::raw::c_void,
-        params: *mut OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(keydata: *mut ::std::os::raw::c_void, params: *mut OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_keymgmt_gettable_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
->;
+pub type OSSL_FUNC_keymgmt_gettable_params_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM>;
 pub type OSSL_FUNC_keymgmt_set_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        keydata: *mut ::std::os::raw::c_void,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(keydata: *mut ::std::os::raw::c_void, params: *const OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_keymgmt_settable_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
->;
-pub type OSSL_FUNC_keymgmt_query_operation_name_fn = ::std::option::Option<
-    unsafe extern "C" fn(operation_id: ::std::os::raw::c_int) -> *const ::std::os::raw::c_char,
->;
+pub type OSSL_FUNC_keymgmt_settable_params_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM>;
+pub type OSSL_FUNC_keymgmt_query_operation_name_fn =
+    ::std::option::Option<unsafe extern "C" fn(operation_id: ::std::os::raw::c_int) -> *const ::std::os::raw::c_char>;
 pub type OSSL_FUNC_keymgmt_has_fn = ::std::option::Option<
     unsafe extern "C" fn(
         keydata: *const ::std::os::raw::c_void,
@@ -15769,9 +15451,8 @@ pub type OSSL_FUNC_keymgmt_import_fn = ::std::option::Option<
         params: *const OSSL_PARAM,
     ) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_keymgmt_import_types_fn = ::std::option::Option<
-    unsafe extern "C" fn(selection: ::std::os::raw::c_int) -> *const OSSL_PARAM,
->;
+pub type OSSL_FUNC_keymgmt_import_types_fn =
+    ::std::option::Option<unsafe extern "C" fn(selection: ::std::os::raw::c_int) -> *const OSSL_PARAM>;
 pub type OSSL_FUNC_keymgmt_export_fn = ::std::option::Option<
     unsafe extern "C" fn(
         keydata: *mut ::std::os::raw::c_void,
@@ -15780,9 +15461,8 @@ pub type OSSL_FUNC_keymgmt_export_fn = ::std::option::Option<
         cbarg: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_keymgmt_export_types_fn = ::std::option::Option<
-    unsafe extern "C" fn(selection: ::std::os::raw::c_int) -> *const OSSL_PARAM,
->;
+pub type OSSL_FUNC_keymgmt_export_types_fn =
+    ::std::option::Option<unsafe extern "C" fn(selection: ::std::os::raw::c_int) -> *const OSSL_PARAM>;
 pub type OSSL_FUNC_keymgmt_dup_fn = ::std::option::Option<
     unsafe extern "C" fn(
         keydata_from: *const ::std::os::raw::c_void,
@@ -15790,20 +15470,13 @@ pub type OSSL_FUNC_keymgmt_dup_fn = ::std::option::Option<
     ) -> *mut ::std::os::raw::c_void,
 >;
 pub type OSSL_FUNC_keymgmt_import_types_ex_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        provctx: *mut ::std::os::raw::c_void,
-        selection: ::std::os::raw::c_int,
-    ) -> *const OSSL_PARAM,
+    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void, selection: ::std::os::raw::c_int) -> *const OSSL_PARAM,
 >;
 pub type OSSL_FUNC_keymgmt_export_types_ex_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        provctx: *mut ::std::os::raw::c_void,
-        selection: ::std::os::raw::c_int,
-    ) -> *const OSSL_PARAM,
+    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void, selection: ::std::os::raw::c_int) -> *const OSSL_PARAM,
 >;
-pub type OSSL_FUNC_keyexch_newctx_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void,
->;
+pub type OSSL_FUNC_keyexch_newctx_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void>;
 pub type OSSL_FUNC_keyexch_init_fn = ::std::option::Option<
     unsafe extern "C" fn(
         ctx: *mut ::std::os::raw::c_void,
@@ -15825,34 +15498,20 @@ pub type OSSL_FUNC_keyexch_set_peer_fn = ::std::option::Option<
         provkey: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_keyexch_freectx_fn =
-    ::std::option::Option<unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void)>;
-pub type OSSL_FUNC_keyexch_dupctx_fn = ::std::option::Option<
-    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void,
->;
+pub type OSSL_FUNC_keyexch_freectx_fn = ::std::option::Option<unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void)>;
+pub type OSSL_FUNC_keyexch_dupctx_fn =
+    ::std::option::Option<unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void>;
 pub type OSSL_FUNC_keyexch_set_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        ctx: *mut ::std::os::raw::c_void,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void, params: *const OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_keyexch_settable_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        ctx: *mut ::std::os::raw::c_void,
-        provctx: *mut ::std::os::raw::c_void,
-    ) -> *const OSSL_PARAM,
+    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void, provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
 >;
 pub type OSSL_FUNC_keyexch_get_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        ctx: *mut ::std::os::raw::c_void,
-        params: *mut OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void, params: *mut OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_keyexch_gettable_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        ctx: *mut ::std::os::raw::c_void,
-        provctx: *mut ::std::os::raw::c_void,
-    ) -> *const OSSL_PARAM,
+    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void, provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
 >;
 pub type OSSL_FUNC_signature_newctx_fn = ::std::option::Option<
     unsafe extern "C" fn(
@@ -15929,9 +15588,8 @@ pub type OSSL_FUNC_signature_verify_message_update_fn = ::std::option::Option<
         inlen: usize,
     ) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_signature_verify_message_final_fn = ::std::option::Option<
-    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int,
->;
+pub type OSSL_FUNC_signature_verify_message_final_fn =
+    ::std::option::Option<unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int>;
 pub type OSSL_FUNC_signature_verify_recover_init_fn = ::std::option::Option<
     unsafe extern "C" fn(
         ctx: *mut ::std::os::raw::c_void,
@@ -16013,60 +15671,36 @@ pub type OSSL_FUNC_signature_digest_verify_fn = ::std::option::Option<
         tbslen: usize,
     ) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_signature_freectx_fn =
-    ::std::option::Option<unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void)>;
-pub type OSSL_FUNC_signature_dupctx_fn = ::std::option::Option<
-    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void,
->;
+pub type OSSL_FUNC_signature_freectx_fn = ::std::option::Option<unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void)>;
+pub type OSSL_FUNC_signature_dupctx_fn =
+    ::std::option::Option<unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void>;
 pub type OSSL_FUNC_signature_get_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        ctx: *mut ::std::os::raw::c_void,
-        params: *mut OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void, params: *mut OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_signature_gettable_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        ctx: *mut ::std::os::raw::c_void,
-        provctx: *mut ::std::os::raw::c_void,
-    ) -> *const OSSL_PARAM,
+    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void, provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
 >;
 pub type OSSL_FUNC_signature_set_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        ctx: *mut ::std::os::raw::c_void,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void, params: *const OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_signature_settable_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        ctx: *mut ::std::os::raw::c_void,
-        provctx: *mut ::std::os::raw::c_void,
-    ) -> *const OSSL_PARAM,
+    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void, provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
 >;
 pub type OSSL_FUNC_signature_get_ctx_md_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        ctx: *mut ::std::os::raw::c_void,
-        params: *mut OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void, params: *mut OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_signature_gettable_ctx_md_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
->;
+pub type OSSL_FUNC_signature_gettable_ctx_md_params_fn =
+    ::std::option::Option<unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM>;
 pub type OSSL_FUNC_signature_set_ctx_md_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        ctx: *mut ::std::os::raw::c_void,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void, params: *const OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_signature_settable_ctx_md_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
->;
+pub type OSSL_FUNC_signature_settable_ctx_md_params_fn =
+    ::std::option::Option<unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM>;
 pub type OSSL_FUNC_signature_query_key_types_fn =
     ::std::option::Option<unsafe extern "C" fn() -> *mut *const ::std::os::raw::c_char>;
-pub type OSSL_FUNC_skeymgmt_free_fn =
-    ::std::option::Option<unsafe extern "C" fn(keydata: *mut ::std::os::raw::c_void)>;
-pub type OSSL_FUNC_skeymgmt_imp_settable_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
->;
+pub type OSSL_FUNC_skeymgmt_free_fn = ::std::option::Option<unsafe extern "C" fn(keydata: *mut ::std::os::raw::c_void)>;
+pub type OSSL_FUNC_skeymgmt_imp_settable_params_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM>;
 pub type OSSL_FUNC_skeymgmt_import_fn = ::std::option::Option<
     unsafe extern "C" fn(
         provctx: *mut ::std::os::raw::c_void,
@@ -16082,21 +15716,18 @@ pub type OSSL_FUNC_skeymgmt_export_fn = ::std::option::Option<
         cbarg: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_skeymgmt_gen_settable_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
->;
+pub type OSSL_FUNC_skeymgmt_gen_settable_params_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM>;
 pub type OSSL_FUNC_skeymgmt_generate_fn = ::std::option::Option<
     unsafe extern "C" fn(
         provctx: *mut ::std::os::raw::c_void,
         params: *const OSSL_PARAM,
     ) -> *mut ::std::os::raw::c_void,
 >;
-pub type OSSL_FUNC_skeymgmt_get_key_id_fn = ::std::option::Option<
-    unsafe extern "C" fn(keydata: *mut ::std::os::raw::c_void) -> *const ::std::os::raw::c_char,
->;
-pub type OSSL_FUNC_asym_cipher_newctx_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void,
->;
+pub type OSSL_FUNC_skeymgmt_get_key_id_fn =
+    ::std::option::Option<unsafe extern "C" fn(keydata: *mut ::std::os::raw::c_void) -> *const ::std::os::raw::c_char>;
+pub type OSSL_FUNC_asym_cipher_newctx_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void>;
 pub type OSSL_FUNC_asym_cipher_encrypt_init_fn = ::std::option::Option<
     unsafe extern "C" fn(
         ctx: *mut ::std::os::raw::c_void,
@@ -16133,36 +15764,22 @@ pub type OSSL_FUNC_asym_cipher_decrypt_fn = ::std::option::Option<
 >;
 pub type OSSL_FUNC_asym_cipher_freectx_fn =
     ::std::option::Option<unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void)>;
-pub type OSSL_FUNC_asym_cipher_dupctx_fn = ::std::option::Option<
-    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void,
->;
+pub type OSSL_FUNC_asym_cipher_dupctx_fn =
+    ::std::option::Option<unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void>;
 pub type OSSL_FUNC_asym_cipher_get_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        ctx: *mut ::std::os::raw::c_void,
-        params: *mut OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void, params: *mut OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_asym_cipher_gettable_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        ctx: *mut ::std::os::raw::c_void,
-        provctx: *mut ::std::os::raw::c_void,
-    ) -> *const OSSL_PARAM,
+    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void, provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
 >;
 pub type OSSL_FUNC_asym_cipher_set_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        ctx: *mut ::std::os::raw::c_void,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void, params: *const OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_asym_cipher_settable_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        ctx: *mut ::std::os::raw::c_void,
-        provctx: *mut ::std::os::raw::c_void,
-    ) -> *const OSSL_PARAM,
+    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void, provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
 >;
-pub type OSSL_FUNC_kem_newctx_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void,
->;
+pub type OSSL_FUNC_kem_newctx_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void>;
 pub type OSSL_FUNC_kem_encapsulate_init_fn = ::std::option::Option<
     unsafe extern "C" fn(
         ctx: *mut ::std::os::raw::c_void,
@@ -16211,54 +15828,33 @@ pub type OSSL_FUNC_kem_decapsulate_fn = ::std::option::Option<
         inlen: usize,
     ) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_kem_freectx_fn =
-    ::std::option::Option<unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void)>;
-pub type OSSL_FUNC_kem_dupctx_fn = ::std::option::Option<
-    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void,
->;
+pub type OSSL_FUNC_kem_freectx_fn = ::std::option::Option<unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void)>;
+pub type OSSL_FUNC_kem_dupctx_fn =
+    ::std::option::Option<unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void>;
 pub type OSSL_FUNC_kem_get_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        ctx: *mut ::std::os::raw::c_void,
-        params: *mut OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void, params: *mut OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_kem_gettable_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        ctx: *mut ::std::os::raw::c_void,
-        provctx: *mut ::std::os::raw::c_void,
-    ) -> *const OSSL_PARAM,
+    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void, provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
 >;
 pub type OSSL_FUNC_kem_set_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        ctx: *mut ::std::os::raw::c_void,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void, params: *const OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_kem_settable_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        ctx: *mut ::std::os::raw::c_void,
-        provctx: *mut ::std::os::raw::c_void,
-    ) -> *const OSSL_PARAM,
+    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void, provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
 >;
-pub type OSSL_FUNC_encoder_newctx_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void,
->;
-pub type OSSL_FUNC_encoder_freectx_fn =
-    ::std::option::Option<unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void)>;
+pub type OSSL_FUNC_encoder_newctx_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void>;
+pub type OSSL_FUNC_encoder_freectx_fn = ::std::option::Option<unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void)>;
 pub type OSSL_FUNC_encoder_get_params_fn =
     ::std::option::Option<unsafe extern "C" fn(params: *mut OSSL_PARAM) -> ::std::os::raw::c_int>;
-pub type OSSL_FUNC_encoder_gettable_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
->;
+pub type OSSL_FUNC_encoder_gettable_params_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM>;
 pub type OSSL_FUNC_encoder_set_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        ctx: *mut ::std::os::raw::c_void,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void, params: *const OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_encoder_settable_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
->;
+pub type OSSL_FUNC_encoder_settable_ctx_params_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM>;
 pub type OSSL_FUNC_encoder_does_selection_fn = ::std::option::Option<
     unsafe extern "C" fn(
         provctx: *mut ::std::os::raw::c_void,
@@ -16285,25 +15881,18 @@ pub type OSSL_FUNC_encoder_import_object_fn = ::std::option::Option<
 >;
 pub type OSSL_FUNC_encoder_free_object_fn =
     ::std::option::Option<unsafe extern "C" fn(obj: *mut ::std::os::raw::c_void)>;
-pub type OSSL_FUNC_decoder_newctx_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void,
->;
-pub type OSSL_FUNC_decoder_freectx_fn =
-    ::std::option::Option<unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void)>;
+pub type OSSL_FUNC_decoder_newctx_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void>;
+pub type OSSL_FUNC_decoder_freectx_fn = ::std::option::Option<unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void)>;
 pub type OSSL_FUNC_decoder_get_params_fn =
     ::std::option::Option<unsafe extern "C" fn(params: *mut OSSL_PARAM) -> ::std::os::raw::c_int>;
-pub type OSSL_FUNC_decoder_gettable_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
->;
+pub type OSSL_FUNC_decoder_gettable_params_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM>;
 pub type OSSL_FUNC_decoder_set_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        ctx: *mut ::std::os::raw::c_void,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void, params: *const OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_decoder_settable_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
->;
+pub type OSSL_FUNC_decoder_settable_ctx_params_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM>;
 pub type OSSL_FUNC_decoder_does_selection_fn = ::std::option::Option<
     unsafe extern "C" fn(
         provctx: *mut ::std::os::raw::c_void,
@@ -16337,19 +15926,12 @@ pub type OSSL_FUNC_store_open_fn = ::std::option::Option<
     ) -> *mut ::std::os::raw::c_void,
 >;
 pub type OSSL_FUNC_store_attach_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        provctx: *mut ::std::os::raw::c_void,
-        in_: *mut OSSL_CORE_BIO,
-    ) -> *mut ::std::os::raw::c_void,
+    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void, in_: *mut OSSL_CORE_BIO) -> *mut ::std::os::raw::c_void,
 >;
-pub type OSSL_FUNC_store_settable_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM,
->;
+pub type OSSL_FUNC_store_settable_ctx_params_fn =
+    ::std::option::Option<unsafe extern "C" fn(provctx: *mut ::std::os::raw::c_void) -> *const OSSL_PARAM>;
 pub type OSSL_FUNC_store_set_ctx_params_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        loaderctx: *mut ::std::os::raw::c_void,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(loaderctx: *mut ::std::os::raw::c_void, params: *const OSSL_PARAM) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_store_load_fn = ::std::option::Option<
     unsafe extern "C" fn(
@@ -16360,12 +15942,10 @@ pub type OSSL_FUNC_store_load_fn = ::std::option::Option<
         pw_cbarg: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int,
 >;
-pub type OSSL_FUNC_store_eof_fn = ::std::option::Option<
-    unsafe extern "C" fn(loaderctx: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int,
->;
-pub type OSSL_FUNC_store_close_fn = ::std::option::Option<
-    unsafe extern "C" fn(loaderctx: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int,
->;
+pub type OSSL_FUNC_store_eof_fn =
+    ::std::option::Option<unsafe extern "C" fn(loaderctx: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int>;
+pub type OSSL_FUNC_store_close_fn =
+    ::std::option::Option<unsafe extern "C" fn(loaderctx: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int>;
 pub type OSSL_FUNC_store_export_object_fn = ::std::option::Option<
     unsafe extern "C" fn(
         loaderctx: *mut ::std::os::raw::c_void,
@@ -16457,10 +16037,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn OBJ_NAME_remove(
-        name: *const ::std::os::raw::c_char,
-        type_: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn OBJ_NAME_remove(name: *const ::std::os::raw::c_char, type_: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn OBJ_NAME_cleanup(type_: ::std::os::raw::c_int);
@@ -16468,18 +16045,14 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn OBJ_NAME_do_all(
         type_: ::std::os::raw::c_int,
-        fn_: ::std::option::Option<
-            unsafe extern "C" fn(arg1: *const OBJ_NAME, arg: *mut ::std::os::raw::c_void),
-        >,
+        fn_: ::std::option::Option<unsafe extern "C" fn(arg1: *const OBJ_NAME, arg: *mut ::std::os::raw::c_void)>,
         arg: *mut ::std::os::raw::c_void,
     );
 }
 unsafe extern "C" {
     pub fn OBJ_NAME_do_all_sorted(
         type_: ::std::os::raw::c_int,
-        fn_: ::std::option::Option<
-            unsafe extern "C" fn(arg1: *const OBJ_NAME, arg: *mut ::std::os::raw::c_void),
-        >,
+        fn_: ::std::option::Option<unsafe extern "C" fn(arg1: *const OBJ_NAME, arg: *mut ::std::os::raw::c_void)>,
         arg: *mut ::std::os::raw::c_void,
     );
 }
@@ -16499,10 +16072,7 @@ unsafe extern "C" {
     pub fn OBJ_obj2nid(o: *const ASN1_OBJECT) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn OBJ_txt2obj(
-        s: *const ::std::os::raw::c_char,
-        no_name: ::std::os::raw::c_int,
-    ) -> *mut ASN1_OBJECT;
+    pub fn OBJ_txt2obj(s: *const ::std::os::raw::c_char, no_name: ::std::os::raw::c_int) -> *mut ASN1_OBJECT;
 }
 unsafe extern "C" {
     pub fn OBJ_obj2txt(
@@ -16609,9 +16179,7 @@ unsafe extern "C" {
     pub fn EVP_get1_default_properties(libctx: *mut OSSL_LIB_CTX) -> *mut ::std::os::raw::c_char;
 }
 unsafe extern "C" {
-    pub fn EVP_default_properties_is_fips_enabled(
-        libctx: *mut OSSL_LIB_CTX,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_default_properties_is_fips_enabled(libctx: *mut OSSL_LIB_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_default_properties_enable_fips(
@@ -16620,10 +16188,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_MD_meth_new(
-        md_type: ::std::os::raw::c_int,
-        pkey_type: ::std::os::raw::c_int,
-    ) -> *mut EVP_MD;
+    pub fn EVP_MD_meth_new(md_type: ::std::os::raw::c_int, pkey_type: ::std::os::raw::c_int) -> *mut EVP_MD;
 }
 unsafe extern "C" {
     pub fn EVP_MD_meth_dup(md: *const EVP_MD) -> *mut EVP_MD;
@@ -16632,35 +16197,21 @@ unsafe extern "C" {
     pub fn EVP_MD_meth_free(md: *mut EVP_MD);
 }
 unsafe extern "C" {
-    pub fn EVP_MD_meth_set_input_blocksize(
-        md: *mut EVP_MD,
-        blocksize: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_MD_meth_set_input_blocksize(md: *mut EVP_MD, blocksize: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_MD_meth_set_result_size(
-        md: *mut EVP_MD,
-        resultsize: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_MD_meth_set_result_size(md: *mut EVP_MD, resultsize: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_MD_meth_set_app_datasize(
-        md: *mut EVP_MD,
-        datasize: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_MD_meth_set_app_datasize(md: *mut EVP_MD, datasize: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_MD_meth_set_flags(
-        md: *mut EVP_MD,
-        flags: ::std::os::raw::c_ulong,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_MD_meth_set_flags(md: *mut EVP_MD, flags: ::std::os::raw::c_ulong) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_MD_meth_set_init(
         md: *mut EVP_MD,
-        init: ::std::option::Option<
-            unsafe extern "C" fn(ctx: *mut EVP_MD_CTX) -> ::std::os::raw::c_int,
-        >,
+        init: ::std::option::Option<unsafe extern "C" fn(ctx: *mut EVP_MD_CTX) -> ::std::os::raw::c_int>,
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
@@ -16679,10 +16230,7 @@ unsafe extern "C" {
     pub fn EVP_MD_meth_set_final(
         md: *mut EVP_MD,
         final_: ::std::option::Option<
-            unsafe extern "C" fn(
-                ctx: *mut EVP_MD_CTX,
-                md: *mut ::std::os::raw::c_uchar,
-            ) -> ::std::os::raw::c_int,
+            unsafe extern "C" fn(ctx: *mut EVP_MD_CTX, md: *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int,
         >,
     ) -> ::std::os::raw::c_int;
 }
@@ -16690,19 +16238,14 @@ unsafe extern "C" {
     pub fn EVP_MD_meth_set_copy(
         md: *mut EVP_MD,
         copy: ::std::option::Option<
-            unsafe extern "C" fn(
-                to: *mut EVP_MD_CTX,
-                from: *const EVP_MD_CTX,
-            ) -> ::std::os::raw::c_int,
+            unsafe extern "C" fn(to: *mut EVP_MD_CTX, from: *const EVP_MD_CTX) -> ::std::os::raw::c_int,
         >,
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_MD_meth_set_cleanup(
         md: *mut EVP_MD,
-        cleanup: ::std::option::Option<
-            unsafe extern "C" fn(ctx: *mut EVP_MD_CTX) -> ::std::os::raw::c_int,
-        >,
+        cleanup: ::std::option::Option<unsafe extern "C" fn(ctx: *mut EVP_MD_CTX) -> ::std::os::raw::c_int>,
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
@@ -16750,10 +16293,7 @@ unsafe extern "C" {
     pub fn EVP_MD_meth_get_final(
         md: *const EVP_MD,
     ) -> ::std::option::Option<
-        unsafe extern "C" fn(
-            md: *mut EVP_MD_CTX,
-            arg1: *mut ::std::os::raw::c_uchar,
-        ) -> ::std::os::raw::c_int,
+        unsafe extern "C" fn(md: *mut EVP_MD_CTX, arg1: *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int,
     >;
 }
 unsafe extern "C" {
@@ -16800,10 +16340,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_CIPHER_meth_set_flags(
-        cipher: *mut EVP_CIPHER,
-        flags: ::std::os::raw::c_ulong,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_CIPHER_meth_set_flags(cipher: *mut EVP_CIPHER, flags: ::std::os::raw::c_ulong) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_CIPHER_meth_set_impl_ctx_size(
@@ -16840,19 +16377,14 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn EVP_CIPHER_meth_set_cleanup(
         cipher: *mut EVP_CIPHER,
-        cleanup: ::std::option::Option<
-            unsafe extern "C" fn(arg1: *mut EVP_CIPHER_CTX) -> ::std::os::raw::c_int,
-        >,
+        cleanup: ::std::option::Option<unsafe extern "C" fn(arg1: *mut EVP_CIPHER_CTX) -> ::std::os::raw::c_int>,
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_CIPHER_meth_set_set_asn1_params(
         cipher: *mut EVP_CIPHER,
         set_asn1_parameters: ::std::option::Option<
-            unsafe extern "C" fn(
-                arg1: *mut EVP_CIPHER_CTX,
-                arg2: *mut ASN1_TYPE,
-            ) -> ::std::os::raw::c_int,
+            unsafe extern "C" fn(arg1: *mut EVP_CIPHER_CTX, arg2: *mut ASN1_TYPE) -> ::std::os::raw::c_int,
         >,
     ) -> ::std::os::raw::c_int;
 }
@@ -16860,10 +16392,7 @@ unsafe extern "C" {
     pub fn EVP_CIPHER_meth_set_get_asn1_params(
         cipher: *mut EVP_CIPHER,
         get_asn1_parameters: ::std::option::Option<
-            unsafe extern "C" fn(
-                arg1: *mut EVP_CIPHER_CTX,
-                arg2: *mut ASN1_TYPE,
-            ) -> ::std::os::raw::c_int,
+            unsafe extern "C" fn(arg1: *mut EVP_CIPHER_CTX, arg2: *mut ASN1_TYPE) -> ::std::os::raw::c_int,
         >,
     ) -> ::std::os::raw::c_int;
 }
@@ -16907,28 +16436,20 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn EVP_CIPHER_meth_get_cleanup(
         cipher: *const EVP_CIPHER,
-    ) -> ::std::option::Option<
-        unsafe extern "C" fn(cipher: *mut EVP_CIPHER_CTX) -> ::std::os::raw::c_int,
-    >;
+    ) -> ::std::option::Option<unsafe extern "C" fn(cipher: *mut EVP_CIPHER_CTX) -> ::std::os::raw::c_int>;
 }
 unsafe extern "C" {
     pub fn EVP_CIPHER_meth_get_set_asn1_params(
         cipher: *const EVP_CIPHER,
     ) -> ::std::option::Option<
-        unsafe extern "C" fn(
-            cipher: *mut EVP_CIPHER_CTX,
-            arg1: *mut ASN1_TYPE,
-        ) -> ::std::os::raw::c_int,
+        unsafe extern "C" fn(cipher: *mut EVP_CIPHER_CTX, arg1: *mut ASN1_TYPE) -> ::std::os::raw::c_int,
     >;
 }
 unsafe extern "C" {
     pub fn EVP_CIPHER_meth_get_get_asn1_params(
         cipher: *const EVP_CIPHER,
     ) -> ::std::option::Option<
-        unsafe extern "C" fn(
-            cipher: *mut EVP_CIPHER_CTX,
-            arg1: *mut ASN1_TYPE,
-        ) -> ::std::os::raw::c_int,
+        unsafe extern "C" fn(cipher: *mut EVP_CIPHER_CTX, arg1: *mut ASN1_TYPE) -> ::std::os::raw::c_int,
     >;
 }
 unsafe extern "C" {
@@ -16953,8 +16474,7 @@ pub struct EVP_CTRL_TLS1_1_MULTIBLOCK_PARAM {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of EVP_CTRL_TLS1_1_MULTIBLOCK_PARAM"]
-        [::std::mem::size_of::<EVP_CTRL_TLS1_1_MULTIBLOCK_PARAM>() - 32usize];
+    ["Size of EVP_CTRL_TLS1_1_MULTIBLOCK_PARAM"][::std::mem::size_of::<EVP_CTRL_TLS1_1_MULTIBLOCK_PARAM>() - 32usize];
     ["Alignment of EVP_CTRL_TLS1_1_MULTIBLOCK_PARAM"]
         [::std::mem::align_of::<EVP_CTRL_TLS1_1_MULTIBLOCK_PARAM>() - 8usize];
     ["Offset of field: EVP_CTRL_TLS1_1_MULTIBLOCK_PARAM::out"]
@@ -16985,10 +16505,8 @@ pub struct evp_cipher_info_st {
 const _: () = {
     ["Size of evp_cipher_info_st"][::std::mem::size_of::<evp_cipher_info_st>() - 24usize];
     ["Alignment of evp_cipher_info_st"][::std::mem::align_of::<evp_cipher_info_st>() - 8usize];
-    ["Offset of field: evp_cipher_info_st::cipher"]
-        [::std::mem::offset_of!(evp_cipher_info_st, cipher) - 0usize];
-    ["Offset of field: evp_cipher_info_st::iv"]
-        [::std::mem::offset_of!(evp_cipher_info_st, iv) - 8usize];
+    ["Offset of field: evp_cipher_info_st::cipher"][::std::mem::offset_of!(evp_cipher_info_st, cipher) - 0usize];
+    ["Offset of field: evp_cipher_info_st::iv"][::std::mem::offset_of!(evp_cipher_info_st, iv) - 8usize];
 };
 impl Default for evp_cipher_info_st {
     fn default() -> Self {
@@ -17034,19 +16552,13 @@ unsafe extern "C" {
     pub fn EVP_MD_get0_description(md: *const EVP_MD) -> *const ::std::os::raw::c_char;
 }
 unsafe extern "C" {
-    pub fn EVP_MD_is_a(
-        md: *const EVP_MD,
-        name: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_MD_is_a(md: *const EVP_MD, name: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_MD_names_do_all(
         md: *const EVP_MD,
         fn_: ::std::option::Option<
-            unsafe extern "C" fn(
-                name: *const ::std::os::raw::c_char,
-                data: *mut ::std::os::raw::c_void,
-            ),
+            unsafe extern "C" fn(name: *const ::std::os::raw::c_char, data: *mut ::std::os::raw::c_void),
         >,
         data: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int;
@@ -17123,19 +16635,13 @@ unsafe extern "C" {
     pub fn EVP_CIPHER_get0_description(cipher: *const EVP_CIPHER) -> *const ::std::os::raw::c_char;
 }
 unsafe extern "C" {
-    pub fn EVP_CIPHER_is_a(
-        cipher: *const EVP_CIPHER,
-        name: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_CIPHER_is_a(cipher: *const EVP_CIPHER, name: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_CIPHER_names_do_all(
         cipher: *const EVP_CIPHER,
         fn_: ::std::option::Option<
-            unsafe extern "C" fn(
-                name: *const ::std::os::raw::c_char,
-                data: *mut ::std::os::raw::c_void,
-            ),
+            unsafe extern "C" fn(name: *const ::std::os::raw::c_char, data: *mut ::std::os::raw::c_void),
         >,
         data: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int;
@@ -17172,10 +16678,7 @@ unsafe extern "C" {
     ) -> *mut EVP_CIPHER;
 }
 unsafe extern "C" {
-    pub fn EVP_CIPHER_can_pipeline(
-        cipher: *const EVP_CIPHER,
-        enc: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_CIPHER_can_pipeline(cipher: *const EVP_CIPHER, enc: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_CIPHER_up_ref(cipher: *mut EVP_CIPHER) -> ::std::os::raw::c_int;
@@ -17214,8 +16717,7 @@ unsafe extern "C" {
     pub fn EVP_CIPHER_CTX_iv(ctx: *const EVP_CIPHER_CTX) -> *const ::std::os::raw::c_uchar;
 }
 unsafe extern "C" {
-    pub fn EVP_CIPHER_CTX_original_iv(ctx: *const EVP_CIPHER_CTX)
-    -> *const ::std::os::raw::c_uchar;
+    pub fn EVP_CIPHER_CTX_original_iv(ctx: *const EVP_CIPHER_CTX) -> *const ::std::os::raw::c_uchar;
 }
 unsafe extern "C" {
     pub fn EVP_CIPHER_CTX_iv_noconst(ctx: *mut EVP_CIPHER_CTX) -> *mut ::std::os::raw::c_uchar;
@@ -17241,19 +16743,13 @@ unsafe extern "C" {
     pub fn EVP_CIPHER_CTX_get_num(ctx: *const EVP_CIPHER_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_CIPHER_CTX_set_num(
-        ctx: *mut EVP_CIPHER_CTX,
-        num: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_CIPHER_CTX_set_num(ctx: *mut EVP_CIPHER_CTX, num: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_CIPHER_CTX_dup(in_: *const EVP_CIPHER_CTX) -> *mut EVP_CIPHER_CTX;
 }
 unsafe extern "C" {
-    pub fn EVP_CIPHER_CTX_copy(
-        out: *mut EVP_CIPHER_CTX,
-        in_: *const EVP_CIPHER_CTX,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_CIPHER_CTX_copy(out: *mut EVP_CIPHER_CTX, in_: *const EVP_CIPHER_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_CIPHER_CTX_get_app_data(ctx: *const EVP_CIPHER_CTX) -> *mut ::std::os::raw::c_void;
@@ -17262,9 +16758,7 @@ unsafe extern "C" {
     pub fn EVP_CIPHER_CTX_set_app_data(ctx: *mut EVP_CIPHER_CTX, data: *mut ::std::os::raw::c_void);
 }
 unsafe extern "C" {
-    pub fn EVP_CIPHER_CTX_get_cipher_data(
-        ctx: *const EVP_CIPHER_CTX,
-    ) -> *mut ::std::os::raw::c_void;
+    pub fn EVP_CIPHER_CTX_get_cipher_data(ctx: *const EVP_CIPHER_CTX) -> *mut ::std::os::raw::c_void;
 }
 unsafe extern "C" {
     pub fn EVP_CIPHER_CTX_set_cipher_data(
@@ -17281,22 +16775,13 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_MD_get_params(
-        digest: *const EVP_MD,
-        params: *mut OSSL_PARAM,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_MD_get_params(digest: *const EVP_MD, params: *mut OSSL_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_MD_CTX_set_params(
-        ctx: *mut EVP_MD_CTX,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_MD_CTX_set_params(ctx: *mut EVP_MD_CTX, params: *const OSSL_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_MD_CTX_get_params(
-        ctx: *mut EVP_MD_CTX,
-        params: *mut OSSL_PARAM,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_MD_CTX_get_params(ctx: *mut EVP_MD_CTX, params: *mut OSSL_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_MD_gettable_params(digest: *const EVP_MD) -> *const OSSL_PARAM;
@@ -17334,10 +16819,7 @@ unsafe extern "C" {
     pub fn EVP_MD_CTX_dup(in_: *const EVP_MD_CTX) -> *mut EVP_MD_CTX;
 }
 unsafe extern "C" {
-    pub fn EVP_MD_CTX_copy_ex(
-        out: *mut EVP_MD_CTX,
-        in_: *const EVP_MD_CTX,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_MD_CTX_copy_ex(out: *mut EVP_MD_CTX, in_: *const EVP_MD_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_MD_CTX_set_flags(ctx: *mut EVP_MD_CTX, flags: ::std::os::raw::c_int);
@@ -17346,10 +16828,7 @@ unsafe extern "C" {
     pub fn EVP_MD_CTX_clear_flags(ctx: *mut EVP_MD_CTX, flags: ::std::os::raw::c_int);
 }
 unsafe extern "C" {
-    pub fn EVP_MD_CTX_test_flags(
-        ctx: *const EVP_MD_CTX,
-        flags: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_MD_CTX_test_flags(ctx: *const EVP_MD_CTX, flags: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_DigestInit_ex2(
@@ -17359,11 +16838,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_DigestInit_ex(
-        ctx: *mut EVP_MD_CTX,
-        type_: *const EVP_MD,
-        impl_: *mut ENGINE,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_DigestInit_ex(ctx: *mut EVP_MD_CTX, type_: *const EVP_MD, impl_: *mut ENGINE) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_DigestUpdate(
@@ -17482,10 +16957,8 @@ unsafe extern "C" {
     pub fn EVP_CIPHER_CTX_clear_flags(ctx: *mut EVP_CIPHER_CTX, flags: ::std::os::raw::c_int);
 }
 unsafe extern "C" {
-    pub fn EVP_CIPHER_CTX_test_flags(
-        ctx: *const EVP_CIPHER_CTX,
-        flags: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_CIPHER_CTX_test_flags(ctx: *const EVP_CIPHER_CTX, flags: ::std::os::raw::c_int)
+    -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_EncryptInit(
@@ -17852,10 +17325,7 @@ unsafe extern "C" {
     pub fn EVP_ENCODE_CTX_free(ctx: *mut EVP_ENCODE_CTX);
 }
 unsafe extern "C" {
-    pub fn EVP_ENCODE_CTX_copy(
-        dctx: *mut EVP_ENCODE_CTX,
-        sctx: *const EVP_ENCODE_CTX,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_ENCODE_CTX_copy(dctx: *mut EVP_ENCODE_CTX, sctx: *const EVP_ENCODE_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_ENCODE_CTX_num(ctx: *mut EVP_ENCODE_CTX) -> ::std::os::raw::c_int;
@@ -17928,10 +17398,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_CIPHER_CTX_set_padding(
-        c: *mut EVP_CIPHER_CTX,
-        pad: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_CIPHER_CTX_set_padding(c: *mut EVP_CIPHER_CTX, pad: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_CIPHER_CTX_ctrl(
@@ -17948,22 +17415,13 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_CIPHER_get_params(
-        cipher: *mut EVP_CIPHER,
-        params: *mut OSSL_PARAM,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_CIPHER_get_params(cipher: *mut EVP_CIPHER, params: *mut OSSL_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_CIPHER_CTX_set_params(
-        ctx: *mut EVP_CIPHER_CTX,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_CIPHER_CTX_set_params(ctx: *mut EVP_CIPHER_CTX, params: *const OSSL_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_CIPHER_CTX_get_params(
-        ctx: *mut EVP_CIPHER_CTX,
-        params: *mut OSSL_PARAM,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_CIPHER_CTX_get_params(ctx: *mut EVP_CIPHER_CTX, params: *mut OSSL_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_CIPHER_gettable_params(cipher: *const EVP_CIPHER) -> *const OSSL_PARAM;
@@ -17981,22 +17439,13 @@ unsafe extern "C" {
     pub fn EVP_CIPHER_CTX_gettable_params(ctx: *mut EVP_CIPHER_CTX) -> *const OSSL_PARAM;
 }
 unsafe extern "C" {
-    pub fn EVP_CIPHER_CTX_set_algor_params(
-        ctx: *mut EVP_CIPHER_CTX,
-        alg: *const X509_ALGOR,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_CIPHER_CTX_set_algor_params(ctx: *mut EVP_CIPHER_CTX, alg: *const X509_ALGOR) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_CIPHER_CTX_get_algor_params(
-        ctx: *mut EVP_CIPHER_CTX,
-        alg: *mut X509_ALGOR,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_CIPHER_CTX_get_algor_params(ctx: *mut EVP_CIPHER_CTX, alg: *mut X509_ALGOR) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_CIPHER_CTX_get_algor(
-        ctx: *mut EVP_CIPHER_CTX,
-        alg: *mut *mut X509_ALGOR,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_CIPHER_CTX_get_algor(ctx: *mut EVP_CIPHER_CTX, alg: *mut *mut X509_ALGOR) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn BIO_f_md() -> *const BIO_METHOD;
@@ -18558,9 +18007,7 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn EVP_CIPHER_do_all_provided(
         libctx: *mut OSSL_LIB_CTX,
-        fn_: ::std::option::Option<
-            unsafe extern "C" fn(cipher: *mut EVP_CIPHER, arg: *mut ::std::os::raw::c_void),
-        >,
+        fn_: ::std::option::Option<unsafe extern "C" fn(cipher: *mut EVP_CIPHER, arg: *mut ::std::os::raw::c_void)>,
         arg: *mut ::std::os::raw::c_void,
     );
 }
@@ -18593,9 +18040,7 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn EVP_MD_do_all_provided(
         libctx: *mut OSSL_LIB_CTX,
-        fn_: ::std::option::Option<
-            unsafe extern "C" fn(md: *mut EVP_MD, arg: *mut ::std::os::raw::c_void),
-        >,
+        fn_: ::std::option::Option<unsafe extern "C" fn(md: *mut EVP_MD, arg: *mut ::std::os::raw::c_void)>,
         arg: *mut ::std::os::raw::c_void,
     );
 }
@@ -18619,10 +18064,7 @@ unsafe extern "C" {
     pub fn EVP_MAC_get0_description(mac: *const EVP_MAC) -> *const ::std::os::raw::c_char;
 }
 unsafe extern "C" {
-    pub fn EVP_MAC_is_a(
-        mac: *const EVP_MAC,
-        name: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_MAC_is_a(mac: *const EVP_MAC, name: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_MAC_get0_provider(mac: *const EVP_MAC) -> *const OSSL_PROVIDER;
@@ -18643,16 +18085,10 @@ unsafe extern "C" {
     pub fn EVP_MAC_CTX_get0_mac(ctx: *mut EVP_MAC_CTX) -> *mut EVP_MAC;
 }
 unsafe extern "C" {
-    pub fn EVP_MAC_CTX_get_params(
-        ctx: *mut EVP_MAC_CTX,
-        params: *mut OSSL_PARAM,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_MAC_CTX_get_params(ctx: *mut EVP_MAC_CTX, params: *mut OSSL_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_MAC_CTX_set_params(
-        ctx: *mut EVP_MAC_CTX,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_MAC_CTX_set_params(ctx: *mut EVP_MAC_CTX, params: *const OSSL_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_MAC_CTX_get_mac_size(ctx: *mut EVP_MAC_CTX) -> usize;
@@ -18731,9 +18167,7 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn EVP_MAC_do_all_provided(
         libctx: *mut OSSL_LIB_CTX,
-        fn_: ::std::option::Option<
-            unsafe extern "C" fn(mac: *mut EVP_MAC, arg: *mut ::std::os::raw::c_void),
-        >,
+        fn_: ::std::option::Option<unsafe extern "C" fn(mac: *mut EVP_MAC, arg: *mut ::std::os::raw::c_void)>,
         arg: *mut ::std::os::raw::c_void,
     );
 }
@@ -18741,10 +18175,7 @@ unsafe extern "C" {
     pub fn EVP_MAC_names_do_all(
         mac: *const EVP_MAC,
         fn_: ::std::option::Option<
-            unsafe extern "C" fn(
-                name: *const ::std::os::raw::c_char,
-                data: *mut ::std::os::raw::c_void,
-            ),
+            unsafe extern "C" fn(name: *const ::std::os::raw::c_char, data: *mut ::std::os::raw::c_void),
         >,
         data: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int;
@@ -18769,19 +18200,13 @@ unsafe extern "C" {
     pub fn EVP_RAND_get0_description(md: *const EVP_RAND) -> *const ::std::os::raw::c_char;
 }
 unsafe extern "C" {
-    pub fn EVP_RAND_is_a(
-        rand: *const EVP_RAND,
-        name: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_RAND_is_a(rand: *const EVP_RAND, name: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_RAND_get0_provider(rand: *const EVP_RAND) -> *const OSSL_PROVIDER;
 }
 unsafe extern "C" {
-    pub fn EVP_RAND_get_params(
-        rand: *mut EVP_RAND,
-        params: *mut OSSL_PARAM,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_RAND_get_params(rand: *mut EVP_RAND, params: *mut OSSL_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_RAND_CTX_new(rand: *mut EVP_RAND, parent: *mut EVP_RAND_CTX) -> *mut EVP_RAND_CTX;
@@ -18796,16 +18221,10 @@ unsafe extern "C" {
     pub fn EVP_RAND_CTX_get0_rand(ctx: *mut EVP_RAND_CTX) -> *mut EVP_RAND;
 }
 unsafe extern "C" {
-    pub fn EVP_RAND_CTX_get_params(
-        ctx: *mut EVP_RAND_CTX,
-        params: *mut OSSL_PARAM,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_RAND_CTX_get_params(ctx: *mut EVP_RAND_CTX, params: *mut OSSL_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_RAND_CTX_set_params(
-        ctx: *mut EVP_RAND_CTX,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_RAND_CTX_set_params(ctx: *mut EVP_RAND_CTX, params: *const OSSL_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_RAND_gettable_params(rand: *const EVP_RAND) -> *const OSSL_PARAM;
@@ -18825,9 +18244,7 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn EVP_RAND_do_all_provided(
         libctx: *mut OSSL_LIB_CTX,
-        fn_: ::std::option::Option<
-            unsafe extern "C" fn(rand: *mut EVP_RAND, arg: *mut ::std::os::raw::c_void),
-        >,
+        fn_: ::std::option::Option<unsafe extern "C" fn(rand: *mut EVP_RAND, arg: *mut ::std::os::raw::c_void)>,
         arg: *mut ::std::os::raw::c_void,
     );
 }
@@ -18835,10 +18252,7 @@ unsafe extern "C" {
     pub fn EVP_RAND_names_do_all(
         rand: *const EVP_RAND,
         fn_: ::std::option::Option<
-            unsafe extern "C" fn(
-                name: *const ::std::os::raw::c_char,
-                data: *mut ::std::os::raw::c_void,
-            ),
+            unsafe extern "C" fn(name: *const ::std::os::raw::c_char, data: *mut ::std::os::raw::c_void),
         >,
         data: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int;
@@ -18913,19 +18327,13 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_is_a(
-        pkey: *const EVP_PKEY,
-        name: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_is_a(pkey: *const EVP_PKEY, name: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_type_names_do_all(
         pkey: *const EVP_PKEY,
         fn_: ::std::option::Option<
-            unsafe extern "C" fn(
-                name: *const ::std::os::raw::c_char,
-                data: *mut ::std::os::raw::c_void,
-            ),
+            unsafe extern "C" fn(name: *const ::std::os::raw::c_char, data: *mut ::std::os::raw::c_void),
         >,
         data: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int;
@@ -18952,10 +18360,7 @@ unsafe extern "C" {
     pub fn EVP_PKEY_can_sign(pkey: *const EVP_PKEY) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_set_type(
-        pkey: *mut EVP_PKEY,
-        type_: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_set_type(pkey: *mut EVP_PKEY, type_: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_set_type_str(
@@ -18965,10 +18370,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_set_type_by_keymgmt(
-        pkey: *mut EVP_PKEY,
-        keymgmt: *mut EVP_KEYMGMT,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_set_type_by_keymgmt(pkey: *mut EVP_PKEY, keymgmt: *mut EVP_KEYMGMT) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_set1_engine(pkey: *mut EVP_PKEY, e: *mut ENGINE) -> ::std::os::raw::c_int;
@@ -18987,22 +18389,13 @@ unsafe extern "C" {
     pub fn EVP_PKEY_get0(pkey: *const EVP_PKEY) -> *mut ::std::os::raw::c_void;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_get0_hmac(
-        pkey: *const EVP_PKEY,
-        len: *mut usize,
-    ) -> *const ::std::os::raw::c_uchar;
+    pub fn EVP_PKEY_get0_hmac(pkey: *const EVP_PKEY, len: *mut usize) -> *const ::std::os::raw::c_uchar;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_get0_poly1305(
-        pkey: *const EVP_PKEY,
-        len: *mut usize,
-    ) -> *const ::std::os::raw::c_uchar;
+    pub fn EVP_PKEY_get0_poly1305(pkey: *const EVP_PKEY, len: *mut usize) -> *const ::std::os::raw::c_uchar;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_get0_siphash(
-        pkey: *const EVP_PKEY,
-        len: *mut usize,
-    ) -> *const ::std::os::raw::c_uchar;
+    pub fn EVP_PKEY_get0_siphash(pkey: *const EVP_PKEY, len: *mut usize) -> *const ::std::os::raw::c_uchar;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_set1_RSA(pkey: *mut EVP_PKEY, key: *mut rsa_st) -> ::std::os::raw::c_int;
@@ -19067,10 +18460,7 @@ unsafe extern "C" {
     ) -> *mut EVP_PKEY;
 }
 unsafe extern "C" {
-    pub fn i2d_PublicKey(
-        a: *const EVP_PKEY,
-        pp: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_PublicKey(a: *const EVP_PKEY, pp: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn d2i_PrivateKey_ex(
@@ -19107,16 +18497,10 @@ unsafe extern "C" {
     ) -> *mut EVP_PKEY;
 }
 unsafe extern "C" {
-    pub fn i2d_PrivateKey(
-        a: *const EVP_PKEY,
-        pp: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_PrivateKey(a: *const EVP_PKEY, pp: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn i2d_KeyParams(
-        a: *const EVP_PKEY,
-        pp: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_KeyParams(a: *const EVP_PKEY, pp: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn d2i_KeyParams(
@@ -19130,26 +18514,16 @@ unsafe extern "C" {
     pub fn i2d_KeyParams_bio(bp: *mut BIO, pkey: *const EVP_PKEY) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn d2i_KeyParams_bio(
-        type_: ::std::os::raw::c_int,
-        a: *mut *mut EVP_PKEY,
-        in_: *mut BIO,
-    ) -> *mut EVP_PKEY;
+    pub fn d2i_KeyParams_bio(type_: ::std::os::raw::c_int, a: *mut *mut EVP_PKEY, in_: *mut BIO) -> *mut EVP_PKEY;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_copy_parameters(
-        to: *mut EVP_PKEY,
-        from: *const EVP_PKEY,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_copy_parameters(to: *mut EVP_PKEY, from: *const EVP_PKEY) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_missing_parameters(pkey: *const EVP_PKEY) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_save_parameters(
-        pkey: *mut EVP_PKEY,
-        mode: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_save_parameters(pkey: *mut EVP_PKEY, mode: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_parameters_eq(a: *const EVP_PKEY, b: *const EVP_PKEY) -> ::std::os::raw::c_int;
@@ -19158,8 +18532,7 @@ unsafe extern "C" {
     pub fn EVP_PKEY_eq(a: *const EVP_PKEY, b: *const EVP_PKEY) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_cmp_parameters(a: *const EVP_PKEY, b: *const EVP_PKEY)
-    -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_cmp_parameters(a: *const EVP_PKEY, b: *const EVP_PKEY) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_cmp(a: *const EVP_PKEY, b: *const EVP_PKEY) -> ::std::os::raw::c_int;
@@ -19217,34 +18590,19 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_get1_encoded_public_key(
-        pkey: *mut EVP_PKEY,
-        ppub: *mut *mut ::std::os::raw::c_uchar,
-    ) -> usize;
+    pub fn EVP_PKEY_get1_encoded_public_key(pkey: *mut EVP_PKEY, ppub: *mut *mut ::std::os::raw::c_uchar) -> usize;
 }
 unsafe extern "C" {
-    pub fn EVP_CIPHER_param_to_asn1(
-        c: *mut EVP_CIPHER_CTX,
-        type_: *mut ASN1_TYPE,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_CIPHER_param_to_asn1(c: *mut EVP_CIPHER_CTX, type_: *mut ASN1_TYPE) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_CIPHER_asn1_to_param(
-        c: *mut EVP_CIPHER_CTX,
-        type_: *mut ASN1_TYPE,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_CIPHER_asn1_to_param(c: *mut EVP_CIPHER_CTX, type_: *mut ASN1_TYPE) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_CIPHER_set_asn1_iv(
-        c: *mut EVP_CIPHER_CTX,
-        type_: *mut ASN1_TYPE,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_CIPHER_set_asn1_iv(c: *mut EVP_CIPHER_CTX, type_: *mut ASN1_TYPE) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_CIPHER_get_asn1_iv(
-        c: *mut EVP_CIPHER_CTX,
-        type_: *mut ASN1_TYPE,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_CIPHER_get_asn1_iv(c: *mut EVP_CIPHER_CTX, type_: *mut ASN1_TYPE) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn PKCS5_PBE_keyivgen(
@@ -19449,10 +18807,7 @@ unsafe extern "C" {
     pub fn EVP_PKEY_asn1_get0(idx: ::std::os::raw::c_int) -> *const EVP_PKEY_ASN1_METHOD;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_asn1_find(
-        pe: *mut *mut ENGINE,
-        type_: ::std::os::raw::c_int,
-    ) -> *const EVP_PKEY_ASN1_METHOD;
+    pub fn EVP_PKEY_asn1_find(pe: *mut *mut ENGINE, type_: ::std::os::raw::c_int) -> *const EVP_PKEY_ASN1_METHOD;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_asn1_find_str(
@@ -19465,10 +18820,7 @@ unsafe extern "C" {
     pub fn EVP_PKEY_asn1_add0(ameth: *const EVP_PKEY_ASN1_METHOD) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_asn1_add_alias(
-        to: ::std::os::raw::c_int,
-        from: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_asn1_add_alias(to: ::std::os::raw::c_int, from: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_asn1_get0_info(
@@ -19501,16 +18853,10 @@ unsafe extern "C" {
     pub fn EVP_PKEY_asn1_set_public(
         ameth: *mut EVP_PKEY_ASN1_METHOD,
         pub_decode: ::std::option::Option<
-            unsafe extern "C" fn(
-                pk: *mut EVP_PKEY,
-                pub_: *const X509_PUBKEY,
-            ) -> ::std::os::raw::c_int,
+            unsafe extern "C" fn(pk: *mut EVP_PKEY, pub_: *const X509_PUBKEY) -> ::std::os::raw::c_int,
         >,
         pub_encode: ::std::option::Option<
-            unsafe extern "C" fn(
-                pub_: *mut X509_PUBKEY,
-                pk: *const EVP_PKEY,
-            ) -> ::std::os::raw::c_int,
+            unsafe extern "C" fn(pub_: *mut X509_PUBKEY, pk: *const EVP_PKEY) -> ::std::os::raw::c_int,
         >,
         pub_cmp: ::std::option::Option<
             unsafe extern "C" fn(a: *const EVP_PKEY, b: *const EVP_PKEY) -> ::std::os::raw::c_int,
@@ -19523,28 +18869,18 @@ unsafe extern "C" {
                 pctx: *mut ASN1_PCTX,
             ) -> ::std::os::raw::c_int,
         >,
-        pkey_size: ::std::option::Option<
-            unsafe extern "C" fn(pk: *const EVP_PKEY) -> ::std::os::raw::c_int,
-        >,
-        pkey_bits: ::std::option::Option<
-            unsafe extern "C" fn(pk: *const EVP_PKEY) -> ::std::os::raw::c_int,
-        >,
+        pkey_size: ::std::option::Option<unsafe extern "C" fn(pk: *const EVP_PKEY) -> ::std::os::raw::c_int>,
+        pkey_bits: ::std::option::Option<unsafe extern "C" fn(pk: *const EVP_PKEY) -> ::std::os::raw::c_int>,
     );
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_asn1_set_private(
         ameth: *mut EVP_PKEY_ASN1_METHOD,
         priv_decode: ::std::option::Option<
-            unsafe extern "C" fn(
-                pk: *mut EVP_PKEY,
-                p8inf: *const PKCS8_PRIV_KEY_INFO,
-            ) -> ::std::os::raw::c_int,
+            unsafe extern "C" fn(pk: *mut EVP_PKEY, p8inf: *const PKCS8_PRIV_KEY_INFO) -> ::std::os::raw::c_int,
         >,
         priv_encode: ::std::option::Option<
-            unsafe extern "C" fn(
-                p8: *mut PKCS8_PRIV_KEY_INFO,
-                pk: *const EVP_PKEY,
-            ) -> ::std::os::raw::c_int,
+            unsafe extern "C" fn(p8: *mut PKCS8_PRIV_KEY_INFO, pk: *const EVP_PKEY) -> ::std::os::raw::c_int,
         >,
         priv_print: ::std::option::Option<
             unsafe extern "C" fn(
@@ -19572,9 +18908,7 @@ unsafe extern "C" {
                 pder: *mut *mut ::std::os::raw::c_uchar,
             ) -> ::std::os::raw::c_int,
         >,
-        param_missing: ::std::option::Option<
-            unsafe extern "C" fn(pk: *const EVP_PKEY) -> ::std::os::raw::c_int,
-        >,
+        param_missing: ::std::option::Option<unsafe extern "C" fn(pk: *const EVP_PKEY) -> ::std::os::raw::c_int>,
         param_copy: ::std::option::Option<
             unsafe extern "C" fn(to: *mut EVP_PKEY, from: *const EVP_PKEY) -> ::std::os::raw::c_int,
         >,
@@ -19650,25 +18984,19 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn EVP_PKEY_asn1_set_check(
         ameth: *mut EVP_PKEY_ASN1_METHOD,
-        pkey_check: ::std::option::Option<
-            unsafe extern "C" fn(pk: *const EVP_PKEY) -> ::std::os::raw::c_int,
-        >,
+        pkey_check: ::std::option::Option<unsafe extern "C" fn(pk: *const EVP_PKEY) -> ::std::os::raw::c_int>,
     );
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_asn1_set_public_check(
         ameth: *mut EVP_PKEY_ASN1_METHOD,
-        pkey_pub_check: ::std::option::Option<
-            unsafe extern "C" fn(pk: *const EVP_PKEY) -> ::std::os::raw::c_int,
-        >,
+        pkey_pub_check: ::std::option::Option<unsafe extern "C" fn(pk: *const EVP_PKEY) -> ::std::os::raw::c_int>,
     );
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_asn1_set_param_check(
         ameth: *mut EVP_PKEY_ASN1_METHOD,
-        pkey_param_check: ::std::option::Option<
-            unsafe extern "C" fn(pk: *const EVP_PKEY) -> ::std::os::raw::c_int,
-        >,
+        pkey_param_check: ::std::option::Option<unsafe extern "C" fn(pk: *const EVP_PKEY) -> ::std::os::raw::c_int>,
     );
 }
 unsafe extern "C" {
@@ -19722,22 +19050,14 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn EVP_PKEY_asn1_set_security_bits(
         ameth: *mut EVP_PKEY_ASN1_METHOD,
-        pkey_security_bits: ::std::option::Option<
-            unsafe extern "C" fn(pk: *const EVP_PKEY) -> ::std::os::raw::c_int,
-        >,
+        pkey_security_bits: ::std::option::Option<unsafe extern "C" fn(pk: *const EVP_PKEY) -> ::std::os::raw::c_int>,
     );
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_get_signature_md(
-        ctx: *mut EVP_PKEY_CTX,
-        md: *mut *const EVP_MD,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_get_signature_md(ctx: *mut EVP_PKEY_CTX, md: *mut *const EVP_MD) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_set_signature_md(
-        ctx: *mut EVP_PKEY_CTX,
-        md: *const EVP_MD,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_set_signature_md(ctx: *mut EVP_PKEY_CTX, md: *const EVP_MD) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_CTX_set1_id(
@@ -19747,22 +19067,13 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_get1_id(
-        ctx: *mut EVP_PKEY_CTX,
-        id: *mut ::std::os::raw::c_void,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_get1_id(ctx: *mut EVP_PKEY_CTX, id: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_get1_id_len(
-        ctx: *mut EVP_PKEY_CTX,
-        id_len: *mut usize,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_get1_id_len(ctx: *mut EVP_PKEY_CTX, id_len: *mut usize) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_set_kem_op(
-        ctx: *mut EVP_PKEY_CTX,
-        op: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_set_kem_op(ctx: *mut EVP_PKEY_CTX, op: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_get0_type_name(key: *const EVP_PKEY) -> *const ::std::os::raw::c_char;
@@ -19778,10 +19089,7 @@ unsafe extern "C" {
     pub fn EVP_PKEY_meth_find(type_: ::std::os::raw::c_int) -> *const EVP_PKEY_METHOD;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_meth_new(
-        id: ::std::os::raw::c_int,
-        flags: ::std::os::raw::c_int,
-    ) -> *mut EVP_PKEY_METHOD;
+    pub fn EVP_PKEY_meth_new(id: ::std::os::raw::c_int, flags: ::std::os::raw::c_int) -> *mut EVP_PKEY_METHOD;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_meth_get0_info(
@@ -19828,22 +19136,15 @@ unsafe extern "C" {
     pub fn EVP_KEYMGMT_get0_name(keymgmt: *const EVP_KEYMGMT) -> *const ::std::os::raw::c_char;
 }
 unsafe extern "C" {
-    pub fn EVP_KEYMGMT_get0_description(
-        keymgmt: *const EVP_KEYMGMT,
-    ) -> *const ::std::os::raw::c_char;
+    pub fn EVP_KEYMGMT_get0_description(keymgmt: *const EVP_KEYMGMT) -> *const ::std::os::raw::c_char;
 }
 unsafe extern "C" {
-    pub fn EVP_KEYMGMT_is_a(
-        keymgmt: *const EVP_KEYMGMT,
-        name: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_KEYMGMT_is_a(keymgmt: *const EVP_KEYMGMT, name: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_KEYMGMT_do_all_provided(
         libctx: *mut OSSL_LIB_CTX,
-        fn_: ::std::option::Option<
-            unsafe extern "C" fn(keymgmt: *mut EVP_KEYMGMT, arg: *mut ::std::os::raw::c_void),
-        >,
+        fn_: ::std::option::Option<unsafe extern "C" fn(keymgmt: *mut EVP_KEYMGMT, arg: *mut ::std::os::raw::c_void)>,
         arg: *mut ::std::os::raw::c_void,
     );
 }
@@ -19851,10 +19152,7 @@ unsafe extern "C" {
     pub fn EVP_KEYMGMT_names_do_all(
         keymgmt: *const EVP_KEYMGMT,
         fn_: ::std::option::Option<
-            unsafe extern "C" fn(
-                name: *const ::std::os::raw::c_char,
-                data: *mut ::std::os::raw::c_void,
-            ),
+            unsafe extern "C" fn(name: *const ::std::os::raw::c_char, data: *mut ::std::os::raw::c_void),
         >,
         data: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int;
@@ -19891,9 +19189,7 @@ unsafe extern "C" {
     pub fn EVP_SKEYMGMT_get0_name(keymgmt: *const EVP_SKEYMGMT) -> *const ::std::os::raw::c_char;
 }
 unsafe extern "C" {
-    pub fn EVP_SKEYMGMT_get0_description(
-        keymgmt: *const EVP_SKEYMGMT,
-    ) -> *const ::std::os::raw::c_char;
+    pub fn EVP_SKEYMGMT_get0_description(keymgmt: *const EVP_SKEYMGMT) -> *const ::std::os::raw::c_char;
 }
 unsafe extern "C" {
     pub fn EVP_SKEYMGMT_is_a(
@@ -19904,9 +19200,7 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn EVP_SKEYMGMT_do_all_provided(
         libctx: *mut OSSL_LIB_CTX,
-        fn_: ::std::option::Option<
-            unsafe extern "C" fn(keymgmt: *mut EVP_SKEYMGMT, arg: *mut ::std::os::raw::c_void),
-        >,
+        fn_: ::std::option::Option<unsafe extern "C" fn(keymgmt: *mut EVP_SKEYMGMT, arg: *mut ::std::os::raw::c_void)>,
         arg: *mut ::std::os::raw::c_void,
     );
 }
@@ -19914,23 +19208,16 @@ unsafe extern "C" {
     pub fn EVP_SKEYMGMT_names_do_all(
         keymgmt: *const EVP_SKEYMGMT,
         fn_: ::std::option::Option<
-            unsafe extern "C" fn(
-                name: *const ::std::os::raw::c_char,
-                data: *mut ::std::os::raw::c_void,
-            ),
+            unsafe extern "C" fn(name: *const ::std::os::raw::c_char, data: *mut ::std::os::raw::c_void),
         >,
         data: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_SKEYMGMT_get0_gen_settable_params(
-        skeymgmt: *const EVP_SKEYMGMT,
-    ) -> *const OSSL_PARAM;
+    pub fn EVP_SKEYMGMT_get0_gen_settable_params(skeymgmt: *const EVP_SKEYMGMT) -> *const OSSL_PARAM;
 }
 unsafe extern "C" {
-    pub fn EVP_SKEYMGMT_get0_imp_settable_params(
-        skeymgmt: *const EVP_SKEYMGMT,
-    ) -> *const OSSL_PARAM;
+    pub fn EVP_SKEYMGMT_get0_imp_settable_params(skeymgmt: *const EVP_SKEYMGMT) -> *const OSSL_PARAM;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_CTX_new(pkey: *mut EVP_PKEY, e: *mut ENGINE) -> *mut EVP_PKEY_CTX;
@@ -19959,46 +19246,28 @@ unsafe extern "C" {
     pub fn EVP_PKEY_CTX_free(ctx: *mut EVP_PKEY_CTX);
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_is_a(
-        ctx: *mut EVP_PKEY_CTX,
-        keytype: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_is_a(ctx: *mut EVP_PKEY_CTX, keytype: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_get_params(
-        ctx: *mut EVP_PKEY_CTX,
-        params: *mut OSSL_PARAM,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_get_params(ctx: *mut EVP_PKEY_CTX, params: *mut OSSL_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_CTX_gettable_params(ctx: *const EVP_PKEY_CTX) -> *const OSSL_PARAM;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_set_params(
-        ctx: *mut EVP_PKEY_CTX,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_set_params(ctx: *mut EVP_PKEY_CTX, params: *const OSSL_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_CTX_settable_params(ctx: *const EVP_PKEY_CTX) -> *const OSSL_PARAM;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_set_algor_params(
-        ctx: *mut EVP_PKEY_CTX,
-        alg: *const X509_ALGOR,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_set_algor_params(ctx: *mut EVP_PKEY_CTX, alg: *const X509_ALGOR) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_get_algor_params(
-        ctx: *mut EVP_PKEY_CTX,
-        alg: *mut X509_ALGOR,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_get_algor_params(ctx: *mut EVP_PKEY_CTX, alg: *mut X509_ALGOR) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_get_algor(
-        ctx: *mut EVP_PKEY_CTX,
-        alg: *mut *mut X509_ALGOR,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_get_algor(ctx: *mut EVP_PKEY_CTX, alg: *mut *mut X509_ALGOR) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_CTX_ctrl(
@@ -20170,14 +19439,10 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_SIGNATURE_get0_name(
-        signature: *const EVP_SIGNATURE,
-    ) -> *const ::std::os::raw::c_char;
+    pub fn EVP_SIGNATURE_get0_name(signature: *const EVP_SIGNATURE) -> *const ::std::os::raw::c_char;
 }
 unsafe extern "C" {
-    pub fn EVP_SIGNATURE_get0_description(
-        signature: *const EVP_SIGNATURE,
-    ) -> *const ::std::os::raw::c_char;
+    pub fn EVP_SIGNATURE_get0_description(signature: *const EVP_SIGNATURE) -> *const ::std::os::raw::c_char;
 }
 unsafe extern "C" {
     pub fn EVP_SIGNATURE_do_all_provided(
@@ -20192,10 +19457,7 @@ unsafe extern "C" {
     pub fn EVP_SIGNATURE_names_do_all(
         signature: *const EVP_SIGNATURE,
         fn_: ::std::option::Option<
-            unsafe extern "C" fn(
-                name: *const ::std::os::raw::c_char,
-                data: *mut ::std::os::raw::c_void,
-            ),
+            unsafe extern "C" fn(name: *const ::std::os::raw::c_char, data: *mut ::std::os::raw::c_void),
         >,
         data: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int;
@@ -20229,14 +19491,10 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_ASYM_CIPHER_get0_name(
-        cipher: *const EVP_ASYM_CIPHER,
-    ) -> *const ::std::os::raw::c_char;
+    pub fn EVP_ASYM_CIPHER_get0_name(cipher: *const EVP_ASYM_CIPHER) -> *const ::std::os::raw::c_char;
 }
 unsafe extern "C" {
-    pub fn EVP_ASYM_CIPHER_get0_description(
-        cipher: *const EVP_ASYM_CIPHER,
-    ) -> *const ::std::os::raw::c_char;
+    pub fn EVP_ASYM_CIPHER_get0_description(cipher: *const EVP_ASYM_CIPHER) -> *const ::std::os::raw::c_char;
 }
 unsafe extern "C" {
     pub fn EVP_ASYM_CIPHER_do_all_provided(
@@ -20251,10 +19509,7 @@ unsafe extern "C" {
     pub fn EVP_ASYM_CIPHER_names_do_all(
         cipher: *const EVP_ASYM_CIPHER,
         fn_: ::std::option::Option<
-            unsafe extern "C" fn(
-                name: *const ::std::os::raw::c_char,
-                data: *mut ::std::os::raw::c_void,
-            ),
+            unsafe extern "C" fn(name: *const ::std::os::raw::c_char, data: *mut ::std::os::raw::c_void),
         >,
         data: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int;
@@ -20282,10 +19537,7 @@ unsafe extern "C" {
     ) -> *mut EVP_KEM;
 }
 unsafe extern "C" {
-    pub fn EVP_KEM_is_a(
-        wrap: *const EVP_KEM,
-        name: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_KEM_is_a(wrap: *const EVP_KEM, name: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_KEM_get0_name(wrap: *const EVP_KEM) -> *const ::std::os::raw::c_char;
@@ -20296,9 +19548,7 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn EVP_KEM_do_all_provided(
         libctx: *mut OSSL_LIB_CTX,
-        fn_: ::std::option::Option<
-            unsafe extern "C" fn(wrap: *mut EVP_KEM, arg: *mut ::std::os::raw::c_void),
-        >,
+        fn_: ::std::option::Option<unsafe extern "C" fn(wrap: *mut EVP_KEM, arg: *mut ::std::os::raw::c_void)>,
         arg: *mut ::std::os::raw::c_void,
     );
 }
@@ -20306,10 +19556,7 @@ unsafe extern "C" {
     pub fn EVP_KEM_names_do_all(
         wrap: *const EVP_KEM,
         fn_: ::std::option::Option<
-            unsafe extern "C" fn(
-                name: *const ::std::os::raw::c_char,
-                data: *mut ::std::os::raw::c_void,
-            ),
+            unsafe extern "C" fn(name: *const ::std::os::raw::c_char, data: *mut ::std::os::raw::c_void),
         >,
         data: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int;
@@ -20324,10 +19571,7 @@ unsafe extern "C" {
     pub fn EVP_PKEY_sign_init(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_sign_init_ex(
-        ctx: *mut EVP_PKEY_CTX,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_sign_init_ex(ctx: *mut EVP_PKEY_CTX, params: *const OSSL_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_sign_init_ex2(
@@ -20370,10 +19614,7 @@ unsafe extern "C" {
     pub fn EVP_PKEY_verify_init(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_verify_init_ex(
-        ctx: *mut EVP_PKEY_CTX,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_verify_init_ex(ctx: *mut EVP_PKEY_CTX, params: *const OSSL_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_verify_init_ex2(
@@ -20412,10 +19653,7 @@ unsafe extern "C" {
     pub fn EVP_PKEY_verify_recover_init(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_verify_recover_init_ex(
-        ctx: *mut EVP_PKEY_CTX,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_verify_recover_init_ex(ctx: *mut EVP_PKEY_CTX, params: *const OSSL_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_verify_recover_init_ex2(
@@ -20437,10 +19675,7 @@ unsafe extern "C" {
     pub fn EVP_PKEY_encrypt_init(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_encrypt_init_ex(
-        ctx: *mut EVP_PKEY_CTX,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_encrypt_init_ex(ctx: *mut EVP_PKEY_CTX, params: *const OSSL_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_encrypt(
@@ -20455,10 +19690,7 @@ unsafe extern "C" {
     pub fn EVP_PKEY_decrypt_init(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_decrypt_init_ex(
-        ctx: *mut EVP_PKEY_CTX,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_decrypt_init_ex(ctx: *mut EVP_PKEY_CTX, params: *const OSSL_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_decrypt(
@@ -20473,10 +19705,7 @@ unsafe extern "C" {
     pub fn EVP_PKEY_derive_init(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_derive_init_ex(
-        ctx: *mut EVP_PKEY_CTX,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_derive_init_ex(ctx: *mut EVP_PKEY_CTX, params: *const OSSL_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_derive_set_peer_ex(
@@ -20486,10 +19715,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_derive_set_peer(
-        ctx: *mut EVP_PKEY_CTX,
-        peer: *mut EVP_PKEY,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_derive_set_peer(ctx: *mut EVP_PKEY_CTX, peer: *mut EVP_PKEY) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_derive(
@@ -20499,10 +19725,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_encapsulate_init(
-        ctx: *mut EVP_PKEY_CTX,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_encapsulate_init(ctx: *mut EVP_PKEY_CTX, params: *const OSSL_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_auth_encapsulate_init(
@@ -20521,10 +19744,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_decapsulate_init(
-        ctx: *mut EVP_PKEY_CTX,
-        params: *const OSSL_PARAM,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_decapsulate_init(ctx: *mut EVP_PKEY_CTX, params: *const OSSL_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_auth_decapsulate_init(
@@ -20542,8 +19762,7 @@ unsafe extern "C" {
         wrappedlen: usize,
     ) -> ::std::os::raw::c_int;
 }
-pub type EVP_PKEY_gen_cb =
-    ::std::option::Option<unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int>;
+pub type EVP_PKEY_gen_cb = ::std::option::Option<unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int>;
 unsafe extern "C" {
     pub fn EVP_PKEY_fromdata_init(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int;
 }
@@ -20556,10 +19775,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_fromdata_settable(
-        ctx: *mut EVP_PKEY_CTX,
-        selection: ::std::os::raw::c_int,
-    ) -> *const OSSL_PARAM;
+    pub fn EVP_PKEY_fromdata_settable(ctx: *mut EVP_PKEY_CTX, selection: ::std::os::raw::c_int) -> *const OSSL_PARAM;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_todata(
@@ -20580,10 +19796,7 @@ unsafe extern "C" {
     pub fn EVP_PKEY_gettable_params(pkey: *const EVP_PKEY) -> *const OSSL_PARAM;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_get_params(
-        pkey: *const EVP_PKEY,
-        params: *mut OSSL_PARAM,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_get_params(pkey: *const EVP_PKEY, params: *mut OSSL_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_get_int_param(
@@ -20628,10 +19841,7 @@ unsafe extern "C" {
     pub fn EVP_PKEY_settable_params(pkey: *const EVP_PKEY) -> *const OSSL_PARAM;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_set_params(
-        pkey: *mut EVP_PKEY,
-        params: *mut OSSL_PARAM,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_set_params(pkey: *mut EVP_PKEY, params: *mut OSSL_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_set_int_param(
@@ -20687,25 +19897,16 @@ unsafe extern "C" {
     pub fn EVP_PKEY_paramgen_init(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_paramgen(
-        ctx: *mut EVP_PKEY_CTX,
-        ppkey: *mut *mut EVP_PKEY,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_paramgen(ctx: *mut EVP_PKEY_CTX, ppkey: *mut *mut EVP_PKEY) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_keygen_init(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_keygen(
-        ctx: *mut EVP_PKEY_CTX,
-        ppkey: *mut *mut EVP_PKEY,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_keygen(ctx: *mut EVP_PKEY_CTX, ppkey: *mut *mut EVP_PKEY) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_generate(
-        ctx: *mut EVP_PKEY_CTX,
-        ppkey: *mut *mut EVP_PKEY,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_generate(ctx: *mut EVP_PKEY_CTX, ppkey: *mut *mut EVP_PKEY) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_check(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int;
@@ -20736,10 +19937,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_get_ex_data(
-        key: *const EVP_PKEY,
-        idx: ::std::os::raw::c_int,
-    ) -> *mut ::std::os::raw::c_void;
+    pub fn EVP_PKEY_get_ex_data(key: *const EVP_PKEY, idx: ::std::os::raw::c_int) -> *mut ::std::os::raw::c_void;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_CTX_set_cb(ctx: *mut EVP_PKEY_CTX, cb: EVP_PKEY_gen_cb);
@@ -20748,27 +19946,19 @@ unsafe extern "C" {
     pub fn EVP_PKEY_CTX_get_cb(ctx: *mut EVP_PKEY_CTX) -> EVP_PKEY_gen_cb;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_get_keygen_info(
-        ctx: *mut EVP_PKEY_CTX,
-        idx: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_get_keygen_info(ctx: *mut EVP_PKEY_CTX, idx: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_meth_set_init(
         pmeth: *mut EVP_PKEY_METHOD,
-        init: ::std::option::Option<
-            unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int,
-        >,
+        init: ::std::option::Option<unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int>,
     );
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_meth_set_copy(
         pmeth: *mut EVP_PKEY_METHOD,
         copy: ::std::option::Option<
-            unsafe extern "C" fn(
-                dst: *mut EVP_PKEY_CTX,
-                src: *const EVP_PKEY_CTX,
-            ) -> ::std::os::raw::c_int,
+            unsafe extern "C" fn(dst: *mut EVP_PKEY_CTX, src: *const EVP_PKEY_CTX) -> ::std::os::raw::c_int,
         >,
     );
 }
@@ -20781,37 +19971,25 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn EVP_PKEY_meth_set_paramgen(
         pmeth: *mut EVP_PKEY_METHOD,
-        paramgen_init: ::std::option::Option<
-            unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int,
-        >,
+        paramgen_init: ::std::option::Option<unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int>,
         paramgen: ::std::option::Option<
-            unsafe extern "C" fn(
-                ctx: *mut EVP_PKEY_CTX,
-                pkey: *mut EVP_PKEY,
-            ) -> ::std::os::raw::c_int,
+            unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX, pkey: *mut EVP_PKEY) -> ::std::os::raw::c_int,
         >,
     );
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_meth_set_keygen(
         pmeth: *mut EVP_PKEY_METHOD,
-        keygen_init: ::std::option::Option<
-            unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int,
-        >,
+        keygen_init: ::std::option::Option<unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int>,
         keygen: ::std::option::Option<
-            unsafe extern "C" fn(
-                ctx: *mut EVP_PKEY_CTX,
-                pkey: *mut EVP_PKEY,
-            ) -> ::std::os::raw::c_int,
+            unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX, pkey: *mut EVP_PKEY) -> ::std::os::raw::c_int,
         >,
     );
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_meth_set_sign(
         pmeth: *mut EVP_PKEY_METHOD,
-        sign_init: ::std::option::Option<
-            unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int,
-        >,
+        sign_init: ::std::option::Option<unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int>,
         sign: ::std::option::Option<
             unsafe extern "C" fn(
                 ctx: *mut EVP_PKEY_CTX,
@@ -20826,9 +20004,7 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn EVP_PKEY_meth_set_verify(
         pmeth: *mut EVP_PKEY_METHOD,
-        verify_init: ::std::option::Option<
-            unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int,
-        >,
+        verify_init: ::std::option::Option<unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int>,
         verify: ::std::option::Option<
             unsafe extern "C" fn(
                 ctx: *mut EVP_PKEY_CTX,
@@ -20861,10 +20037,7 @@ unsafe extern "C" {
     pub fn EVP_PKEY_meth_set_signctx(
         pmeth: *mut EVP_PKEY_METHOD,
         signctx_init: ::std::option::Option<
-            unsafe extern "C" fn(
-                ctx: *mut EVP_PKEY_CTX,
-                mctx: *mut EVP_MD_CTX,
-            ) -> ::std::os::raw::c_int,
+            unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX, mctx: *mut EVP_MD_CTX) -> ::std::os::raw::c_int,
         >,
         signctx: ::std::option::Option<
             unsafe extern "C" fn(
@@ -20880,10 +20053,7 @@ unsafe extern "C" {
     pub fn EVP_PKEY_meth_set_verifyctx(
         pmeth: *mut EVP_PKEY_METHOD,
         verifyctx_init: ::std::option::Option<
-            unsafe extern "C" fn(
-                ctx: *mut EVP_PKEY_CTX,
-                mctx: *mut EVP_MD_CTX,
-            ) -> ::std::os::raw::c_int,
+            unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX, mctx: *mut EVP_MD_CTX) -> ::std::os::raw::c_int,
         >,
         verifyctx: ::std::option::Option<
             unsafe extern "C" fn(
@@ -20898,9 +20068,7 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn EVP_PKEY_meth_set_encrypt(
         pmeth: *mut EVP_PKEY_METHOD,
-        encrypt_init: ::std::option::Option<
-            unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int,
-        >,
+        encrypt_init: ::std::option::Option<unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int>,
         encryptfn: ::std::option::Option<
             unsafe extern "C" fn(
                 ctx: *mut EVP_PKEY_CTX,
@@ -20915,9 +20083,7 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn EVP_PKEY_meth_set_decrypt(
         pmeth: *mut EVP_PKEY_METHOD,
-        decrypt_init: ::std::option::Option<
-            unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int,
-        >,
+        decrypt_init: ::std::option::Option<unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int>,
         decrypt: ::std::option::Option<
             unsafe extern "C" fn(
                 ctx: *mut EVP_PKEY_CTX,
@@ -20932,9 +20098,7 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn EVP_PKEY_meth_set_derive(
         pmeth: *mut EVP_PKEY_METHOD,
-        derive_init: ::std::option::Option<
-            unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int,
-        >,
+        derive_init: ::std::option::Option<unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int>,
         derive: ::std::option::Option<
             unsafe extern "C" fn(
                 ctx: *mut EVP_PKEY_CTX,
@@ -20995,54 +20159,40 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn EVP_PKEY_meth_set_check(
         pmeth: *mut EVP_PKEY_METHOD,
-        check: ::std::option::Option<
-            unsafe extern "C" fn(pkey: *mut EVP_PKEY) -> ::std::os::raw::c_int,
-        >,
+        check: ::std::option::Option<unsafe extern "C" fn(pkey: *mut EVP_PKEY) -> ::std::os::raw::c_int>,
     );
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_meth_set_public_check(
         pmeth: *mut EVP_PKEY_METHOD,
-        check: ::std::option::Option<
-            unsafe extern "C" fn(pkey: *mut EVP_PKEY) -> ::std::os::raw::c_int,
-        >,
+        check: ::std::option::Option<unsafe extern "C" fn(pkey: *mut EVP_PKEY) -> ::std::os::raw::c_int>,
     );
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_meth_set_param_check(
         pmeth: *mut EVP_PKEY_METHOD,
-        check: ::std::option::Option<
-            unsafe extern "C" fn(pkey: *mut EVP_PKEY) -> ::std::os::raw::c_int,
-        >,
+        check: ::std::option::Option<unsafe extern "C" fn(pkey: *mut EVP_PKEY) -> ::std::os::raw::c_int>,
     );
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_meth_set_digest_custom(
         pmeth: *mut EVP_PKEY_METHOD,
         digest_custom: ::std::option::Option<
-            unsafe extern "C" fn(
-                ctx: *mut EVP_PKEY_CTX,
-                mctx: *mut EVP_MD_CTX,
-            ) -> ::std::os::raw::c_int,
+            unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX, mctx: *mut EVP_MD_CTX) -> ::std::os::raw::c_int,
         >,
     );
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_meth_get_init(
         pmeth: *const EVP_PKEY_METHOD,
-        pinit: *mut ::std::option::Option<
-            unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int,
-        >,
+        pinit: *mut ::std::option::Option<unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int>,
     );
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_meth_get_copy(
         pmeth: *const EVP_PKEY_METHOD,
         pcopy: *mut ::std::option::Option<
-            unsafe extern "C" fn(
-                dst: *mut EVP_PKEY_CTX,
-                src: *const EVP_PKEY_CTX,
-            ) -> ::std::os::raw::c_int,
+            unsafe extern "C" fn(dst: *mut EVP_PKEY_CTX, src: *const EVP_PKEY_CTX) -> ::std::os::raw::c_int,
         >,
     );
 }
@@ -21059,33 +20209,23 @@ unsafe extern "C" {
             unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int,
         >,
         pparamgen: *mut ::std::option::Option<
-            unsafe extern "C" fn(
-                ctx: *mut EVP_PKEY_CTX,
-                pkey: *mut EVP_PKEY,
-            ) -> ::std::os::raw::c_int,
+            unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX, pkey: *mut EVP_PKEY) -> ::std::os::raw::c_int,
         >,
     );
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_meth_get_keygen(
         pmeth: *const EVP_PKEY_METHOD,
-        pkeygen_init: *mut ::std::option::Option<
-            unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int,
-        >,
+        pkeygen_init: *mut ::std::option::Option<unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int>,
         pkeygen: *mut ::std::option::Option<
-            unsafe extern "C" fn(
-                ctx: *mut EVP_PKEY_CTX,
-                pkey: *mut EVP_PKEY,
-            ) -> ::std::os::raw::c_int,
+            unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX, pkey: *mut EVP_PKEY) -> ::std::os::raw::c_int,
         >,
     );
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_meth_get_sign(
         pmeth: *const EVP_PKEY_METHOD,
-        psign_init: *mut ::std::option::Option<
-            unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int,
-        >,
+        psign_init: *mut ::std::option::Option<unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int>,
         psign: *mut ::std::option::Option<
             unsafe extern "C" fn(
                 ctx: *mut EVP_PKEY_CTX,
@@ -21100,9 +20240,7 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn EVP_PKEY_meth_get_verify(
         pmeth: *const EVP_PKEY_METHOD,
-        pverify_init: *mut ::std::option::Option<
-            unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int,
-        >,
+        pverify_init: *mut ::std::option::Option<unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int>,
         pverify: *mut ::std::option::Option<
             unsafe extern "C" fn(
                 ctx: *mut EVP_PKEY_CTX,
@@ -21135,10 +20273,7 @@ unsafe extern "C" {
     pub fn EVP_PKEY_meth_get_signctx(
         pmeth: *const EVP_PKEY_METHOD,
         psignctx_init: *mut ::std::option::Option<
-            unsafe extern "C" fn(
-                ctx: *mut EVP_PKEY_CTX,
-                mctx: *mut EVP_MD_CTX,
-            ) -> ::std::os::raw::c_int,
+            unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX, mctx: *mut EVP_MD_CTX) -> ::std::os::raw::c_int,
         >,
         psignctx: *mut ::std::option::Option<
             unsafe extern "C" fn(
@@ -21154,10 +20289,7 @@ unsafe extern "C" {
     pub fn EVP_PKEY_meth_get_verifyctx(
         pmeth: *const EVP_PKEY_METHOD,
         pverifyctx_init: *mut ::std::option::Option<
-            unsafe extern "C" fn(
-                ctx: *mut EVP_PKEY_CTX,
-                mctx: *mut EVP_MD_CTX,
-            ) -> ::std::os::raw::c_int,
+            unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX, mctx: *mut EVP_MD_CTX) -> ::std::os::raw::c_int,
         >,
         pverifyctx: *mut ::std::option::Option<
             unsafe extern "C" fn(
@@ -21206,9 +20338,7 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn EVP_PKEY_meth_get_derive(
         pmeth: *const EVP_PKEY_METHOD,
-        pderive_init: *mut ::std::option::Option<
-            unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int,
-        >,
+        pderive_init: *mut ::std::option::Option<unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int>,
         pderive: *mut ::std::option::Option<
             unsafe extern "C" fn(
                 ctx: *mut EVP_PKEY_CTX,
@@ -21269,35 +20399,26 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn EVP_PKEY_meth_get_check(
         pmeth: *const EVP_PKEY_METHOD,
-        pcheck: *mut ::std::option::Option<
-            unsafe extern "C" fn(pkey: *mut EVP_PKEY) -> ::std::os::raw::c_int,
-        >,
+        pcheck: *mut ::std::option::Option<unsafe extern "C" fn(pkey: *mut EVP_PKEY) -> ::std::os::raw::c_int>,
     );
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_meth_get_public_check(
         pmeth: *const EVP_PKEY_METHOD,
-        pcheck: *mut ::std::option::Option<
-            unsafe extern "C" fn(pkey: *mut EVP_PKEY) -> ::std::os::raw::c_int,
-        >,
+        pcheck: *mut ::std::option::Option<unsafe extern "C" fn(pkey: *mut EVP_PKEY) -> ::std::os::raw::c_int>,
     );
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_meth_get_param_check(
         pmeth: *const EVP_PKEY_METHOD,
-        pcheck: *mut ::std::option::Option<
-            unsafe extern "C" fn(pkey: *mut EVP_PKEY) -> ::std::os::raw::c_int,
-        >,
+        pcheck: *mut ::std::option::Option<unsafe extern "C" fn(pkey: *mut EVP_PKEY) -> ::std::os::raw::c_int>,
     );
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_meth_get_digest_custom(
         pmeth: *const EVP_PKEY_METHOD,
         pdigest_custom: *mut ::std::option::Option<
-            unsafe extern "C" fn(
-                ctx: *mut EVP_PKEY_CTX,
-                mctx: *mut EVP_MD_CTX,
-            ) -> ::std::os::raw::c_int,
+            unsafe extern "C" fn(ctx: *mut EVP_PKEY_CTX, mctx: *mut EVP_MD_CTX) -> ::std::os::raw::c_int,
         >,
     );
 }
@@ -21318,25 +20439,18 @@ unsafe extern "C" {
     pub fn EVP_KEYEXCH_get0_provider(exchange: *const EVP_KEYEXCH) -> *mut OSSL_PROVIDER;
 }
 unsafe extern "C" {
-    pub fn EVP_KEYEXCH_is_a(
-        keyexch: *const EVP_KEYEXCH,
-        name: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_KEYEXCH_is_a(keyexch: *const EVP_KEYEXCH, name: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_KEYEXCH_get0_name(keyexch: *const EVP_KEYEXCH) -> *const ::std::os::raw::c_char;
 }
 unsafe extern "C" {
-    pub fn EVP_KEYEXCH_get0_description(
-        keyexch: *const EVP_KEYEXCH,
-    ) -> *const ::std::os::raw::c_char;
+    pub fn EVP_KEYEXCH_get0_description(keyexch: *const EVP_KEYEXCH) -> *const ::std::os::raw::c_char;
 }
 unsafe extern "C" {
     pub fn EVP_KEYEXCH_do_all_provided(
         libctx: *mut OSSL_LIB_CTX,
-        fn_: ::std::option::Option<
-            unsafe extern "C" fn(keyexch: *mut EVP_KEYEXCH, data: *mut ::std::os::raw::c_void),
-        >,
+        fn_: ::std::option::Option<unsafe extern "C" fn(keyexch: *mut EVP_KEYEXCH, data: *mut ::std::os::raw::c_void)>,
         data: *mut ::std::os::raw::c_void,
     );
 }
@@ -21344,10 +20458,7 @@ unsafe extern "C" {
     pub fn EVP_KEYEXCH_names_do_all(
         keyexch: *const EVP_KEYEXCH,
         fn_: ::std::option::Option<
-            unsafe extern "C" fn(
-                name: *const ::std::os::raw::c_char,
-                data: *mut ::std::os::raw::c_void,
-            ),
+            unsafe extern "C" fn(name: *const ::std::os::raw::c_char, data: *mut ::std::os::raw::c_void),
         >,
         data: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int;
@@ -21392,10 +20503,7 @@ unsafe extern "C" {
     pub fn EVP_PKEY_CTX_get0_provider(ctx: *const EVP_PKEY_CTX) -> *const OSSL_PROVIDER;
 }
 unsafe extern "C" {
-    pub fn EVP_SKEY_is_a(
-        skey: *const EVP_SKEY,
-        name: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_SKEY_is_a(skey: *const EVP_SKEY, name: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_SKEY_import(
@@ -21503,11 +20611,7 @@ unsafe extern "C" {
     pub fn BUF_MEM_grow_clean(str_: *mut BUF_MEM, len: usize) -> usize;
 }
 unsafe extern "C" {
-    pub fn BUF_reverse(
-        out: *mut ::std::os::raw::c_uchar,
-        in_: *const ::std::os::raw::c_uchar,
-        siz: usize,
-    );
+    pub fn BUF_reverse(out: *mut ::std::os::raw::c_uchar, in_: *const ::std::os::raw::c_uchar, siz: usize);
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_CTX_set_rsa_padding(
@@ -21540,10 +20644,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_set1_rsa_keygen_pubexp(
-        ctx: *mut EVP_PKEY_CTX,
-        pubexp: *mut BIGNUM,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_set1_rsa_keygen_pubexp(ctx: *mut EVP_PKEY_CTX, pubexp: *mut BIGNUM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_CTX_set_rsa_keygen_primes(
@@ -21558,16 +20659,10 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_set_rsa_keygen_pubexp(
-        ctx: *mut EVP_PKEY_CTX,
-        pubexp: *mut BIGNUM,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_set_rsa_keygen_pubexp(ctx: *mut EVP_PKEY_CTX, pubexp: *mut BIGNUM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_set_rsa_mgf1_md(
-        ctx: *mut EVP_PKEY_CTX,
-        md: *const EVP_MD,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_set_rsa_mgf1_md(ctx: *mut EVP_PKEY_CTX, md: *const EVP_MD) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_CTX_set_rsa_mgf1_md_name(
@@ -21577,10 +20672,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_get_rsa_mgf1_md(
-        ctx: *mut EVP_PKEY_CTX,
-        md: *mut *const EVP_MD,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_get_rsa_mgf1_md(ctx: *mut EVP_PKEY_CTX, md: *mut *const EVP_MD) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_CTX_get_rsa_mgf1_md_name(
@@ -21590,10 +20682,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_set_rsa_pss_keygen_mgf1_md(
-        ctx: *mut EVP_PKEY_CTX,
-        md: *const EVP_MD,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_set_rsa_pss_keygen_mgf1_md(ctx: *mut EVP_PKEY_CTX, md: *const EVP_MD) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_CTX_set_rsa_pss_keygen_mgf1_md_name(
@@ -21602,10 +20691,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_set_rsa_pss_keygen_md(
-        ctx: *mut EVP_PKEY_CTX,
-        md: *const EVP_MD,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_set_rsa_pss_keygen_md(ctx: *mut EVP_PKEY_CTX, md: *const EVP_MD) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_CTX_set_rsa_pss_keygen_md_name(
@@ -21615,10 +20701,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_set_rsa_oaep_md(
-        ctx: *mut EVP_PKEY_CTX,
-        md: *const EVP_MD,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_set_rsa_oaep_md(ctx: *mut EVP_PKEY_CTX, md: *const EVP_MD) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_CTX_set_rsa_oaep_md_name(
@@ -21628,10 +20711,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_get_rsa_oaep_md(
-        ctx: *mut EVP_PKEY_CTX,
-        md: *mut *const EVP_MD,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_get_rsa_oaep_md(ctx: *mut EVP_PKEY_CTX, md: *mut *const EVP_MD) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_CTX_get_rsa_oaep_md_name(
@@ -21669,12 +20749,7 @@ unsafe extern "C" {
     pub fn RSA_security_bits(rsa: *const RSA) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn RSA_set0_key(
-        r: *mut RSA,
-        n: *mut BIGNUM,
-        e: *mut BIGNUM,
-        d: *mut BIGNUM,
-    ) -> ::std::os::raw::c_int;
+    pub fn RSA_set0_key(r: *mut RSA, n: *mut BIGNUM, e: *mut BIGNUM, d: *mut BIGNUM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn RSA_set0_factors(r: *mut RSA, p: *mut BIGNUM, q: *mut BIGNUM) -> ::std::os::raw::c_int;
@@ -21697,12 +20772,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn RSA_get0_key(
-        r: *const RSA,
-        n: *mut *const BIGNUM,
-        e: *mut *const BIGNUM,
-        d: *mut *const BIGNUM,
-    );
+    pub fn RSA_get0_key(r: *const RSA, n: *mut *const BIGNUM, e: *mut *const BIGNUM, d: *mut *const BIGNUM);
 }
 unsafe extern "C" {
     pub fn RSA_get0_factors(r: *const RSA, p: *mut *const BIGNUM, q: *mut *const BIGNUM);
@@ -21711,10 +20781,7 @@ unsafe extern "C" {
     pub fn RSA_get_multi_prime_extra_count(r: *const RSA) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn RSA_get0_multi_prime_factors(
-        r: *const RSA,
-        primes: *mut *const BIGNUM,
-    ) -> ::std::os::raw::c_int;
+    pub fn RSA_get0_multi_prime_factors(r: *const RSA, primes: *mut *const BIGNUM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn RSA_get0_crt_params(
@@ -21906,10 +20973,7 @@ unsafe extern "C" {
     ) -> *mut RSA;
 }
 unsafe extern "C" {
-    pub fn i2d_RSAPublicKey(
-        a: *const RSA,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_RSAPublicKey(a: *const RSA, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn RSAPublicKey_it() -> *const ASN1_ITEM;
@@ -21922,10 +20986,7 @@ unsafe extern "C" {
     ) -> *mut RSA;
 }
 unsafe extern "C" {
-    pub fn i2d_RSAPrivateKey(
-        a: *const RSA,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_RSAPrivateKey(a: *const RSA, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn RSAPrivateKey_it() -> *const ASN1_ITEM;
@@ -21956,12 +21017,10 @@ const _: () = {
         [::std::mem::offset_of!(rsa_pss_params_st, hashAlgorithm) - 0usize];
     ["Offset of field: rsa_pss_params_st::maskGenAlgorithm"]
         [::std::mem::offset_of!(rsa_pss_params_st, maskGenAlgorithm) - 8usize];
-    ["Offset of field: rsa_pss_params_st::saltLength"]
-        [::std::mem::offset_of!(rsa_pss_params_st, saltLength) - 16usize];
+    ["Offset of field: rsa_pss_params_st::saltLength"][::std::mem::offset_of!(rsa_pss_params_st, saltLength) - 16usize];
     ["Offset of field: rsa_pss_params_st::trailerField"]
         [::std::mem::offset_of!(rsa_pss_params_st, trailerField) - 24usize];
-    ["Offset of field: rsa_pss_params_st::maskHash"]
-        [::std::mem::offset_of!(rsa_pss_params_st, maskHash) - 32usize];
+    ["Offset of field: rsa_pss_params_st::maskHash"][::std::mem::offset_of!(rsa_pss_params_st, maskHash) - 32usize];
 };
 impl Default for rsa_pss_params_st {
     fn default() -> Self {
@@ -22009,14 +21068,12 @@ pub struct rsa_oaep_params_st {
 const _: () = {
     ["Size of rsa_oaep_params_st"][::std::mem::size_of::<rsa_oaep_params_st>() - 32usize];
     ["Alignment of rsa_oaep_params_st"][::std::mem::align_of::<rsa_oaep_params_st>() - 8usize];
-    ["Offset of field: rsa_oaep_params_st::hashFunc"]
-        [::std::mem::offset_of!(rsa_oaep_params_st, hashFunc) - 0usize];
+    ["Offset of field: rsa_oaep_params_st::hashFunc"][::std::mem::offset_of!(rsa_oaep_params_st, hashFunc) - 0usize];
     ["Offset of field: rsa_oaep_params_st::maskGenFunc"]
         [::std::mem::offset_of!(rsa_oaep_params_st, maskGenFunc) - 8usize];
     ["Offset of field: rsa_oaep_params_st::pSourceFunc"]
         [::std::mem::offset_of!(rsa_oaep_params_st, pSourceFunc) - 16usize];
-    ["Offset of field: rsa_oaep_params_st::maskHash"]
-        [::std::mem::offset_of!(rsa_oaep_params_st, maskHash) - 24usize];
+    ["Offset of field: rsa_oaep_params_st::maskHash"][::std::mem::offset_of!(rsa_oaep_params_st, maskHash) - 24usize];
 };
 impl Default for rsa_oaep_params_st {
     fn default() -> Self {
@@ -22051,11 +21108,7 @@ unsafe extern "C" {
     pub fn RSA_OAEP_PARAMS_it() -> *const ASN1_ITEM;
 }
 unsafe extern "C" {
-    pub fn RSA_print(
-        bp: *mut BIO,
-        r: *const RSA,
-        offset: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn RSA_print(bp: *mut BIO, r: *const RSA, offset: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn RSA_sign(
@@ -22278,10 +21331,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn RSA_get_ex_data(
-        r: *const RSA,
-        idx: ::std::os::raw::c_int,
-    ) -> *mut ::std::os::raw::c_void;
+    pub fn RSA_get_ex_data(r: *const RSA, idx: ::std::os::raw::c_int) -> *mut ::std::os::raw::c_void;
 }
 unsafe extern "C" {
     pub fn RSAPublicKey_dup(a: *const RSA) -> *mut RSA;
@@ -22290,10 +21340,7 @@ unsafe extern "C" {
     pub fn RSAPrivateKey_dup(a: *const RSA) -> *mut RSA;
 }
 unsafe extern "C" {
-    pub fn RSA_meth_new(
-        name: *const ::std::os::raw::c_char,
-        flags: ::std::os::raw::c_int,
-    ) -> *mut RSA_METHOD;
+    pub fn RSA_meth_new(name: *const ::std::os::raw::c_char, flags: ::std::os::raw::c_int) -> *mut RSA_METHOD;
 }
 unsafe extern "C" {
     pub fn RSA_meth_free(meth: *mut RSA_METHOD);
@@ -22305,19 +21352,13 @@ unsafe extern "C" {
     pub fn RSA_meth_get0_name(meth: *const RSA_METHOD) -> *const ::std::os::raw::c_char;
 }
 unsafe extern "C" {
-    pub fn RSA_meth_set1_name(
-        meth: *mut RSA_METHOD,
-        name: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn RSA_meth_set1_name(meth: *mut RSA_METHOD, name: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn RSA_meth_get_flags(meth: *const RSA_METHOD) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn RSA_meth_set_flags(
-        meth: *mut RSA_METHOD,
-        flags: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn RSA_meth_set_flags(meth: *mut RSA_METHOD, flags: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn RSA_meth_get0_app_data(meth: *const RSA_METHOD) -> *mut ::std::os::raw::c_void;
@@ -22660,67 +21701,37 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_set_dh_nid(
-        ctx: *mut EVP_PKEY_CTX,
-        nid: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_set_dh_nid(ctx: *mut EVP_PKEY_CTX, nid: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_set_dh_rfc5114(
-        ctx: *mut EVP_PKEY_CTX,
-        gen_: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_set_dh_rfc5114(ctx: *mut EVP_PKEY_CTX, gen_: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_set_dhx_rfc5114(
-        ctx: *mut EVP_PKEY_CTX,
-        gen_: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_set_dhx_rfc5114(ctx: *mut EVP_PKEY_CTX, gen_: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_set_dh_pad(
-        ctx: *mut EVP_PKEY_CTX,
-        pad: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_set_dh_pad(ctx: *mut EVP_PKEY_CTX, pad: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_set_dh_kdf_type(
-        ctx: *mut EVP_PKEY_CTX,
-        kdf: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_set_dh_kdf_type(ctx: *mut EVP_PKEY_CTX, kdf: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_CTX_get_dh_kdf_type(ctx: *mut EVP_PKEY_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_set0_dh_kdf_oid(
-        ctx: *mut EVP_PKEY_CTX,
-        oid: *mut ASN1_OBJECT,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_set0_dh_kdf_oid(ctx: *mut EVP_PKEY_CTX, oid: *mut ASN1_OBJECT) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_get0_dh_kdf_oid(
-        ctx: *mut EVP_PKEY_CTX,
-        oid: *mut *mut ASN1_OBJECT,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_get0_dh_kdf_oid(ctx: *mut EVP_PKEY_CTX, oid: *mut *mut ASN1_OBJECT) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_set_dh_kdf_md(
-        ctx: *mut EVP_PKEY_CTX,
-        md: *const EVP_MD,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_set_dh_kdf_md(ctx: *mut EVP_PKEY_CTX, md: *const EVP_MD) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_get_dh_kdf_md(
-        ctx: *mut EVP_PKEY_CTX,
-        md: *mut *const EVP_MD,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_get_dh_kdf_md(ctx: *mut EVP_PKEY_CTX, md: *mut *const EVP_MD) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_set_dh_kdf_outlen(
-        ctx: *mut EVP_PKEY_CTX,
-        len: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_set_dh_kdf_outlen(ctx: *mut EVP_PKEY_CTX, len: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_CTX_get_dh_kdf_outlen(
@@ -22808,8 +21819,7 @@ unsafe extern "C" {
     pub fn DH_check_pub_key_ex(dh: *const DH, pub_key: *const BIGNUM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn DH_check_params(dh: *const DH, ret: *mut ::std::os::raw::c_int)
-    -> ::std::os::raw::c_int;
+    pub fn DH_check_params(dh: *const DH, ret: *mut ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn DH_check(dh: *const DH, codes: *mut ::std::os::raw::c_int) -> ::std::os::raw::c_int;
@@ -22846,10 +21856,7 @@ unsafe extern "C" {
     ) -> *mut DH;
 }
 unsafe extern "C" {
-    pub fn i2d_DHparams(
-        a: *const DH,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_DHparams(a: *const DH, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn d2i_DHxparams(
@@ -22859,10 +21866,7 @@ unsafe extern "C" {
     ) -> *mut DH;
 }
 unsafe extern "C" {
-    pub fn i2d_DHxparams(
-        a: *const DH,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_DHxparams(a: *const DH, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn DHparams_print(bp: *mut BIO, x: *const DH) -> ::std::os::raw::c_int;
@@ -22895,30 +21899,16 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn DH_get0_pqg(
-        dh: *const DH,
-        p: *mut *const BIGNUM,
-        q: *mut *const BIGNUM,
-        g: *mut *const BIGNUM,
-    );
+    pub fn DH_get0_pqg(dh: *const DH, p: *mut *const BIGNUM, q: *mut *const BIGNUM, g: *mut *const BIGNUM);
 }
 unsafe extern "C" {
-    pub fn DH_set0_pqg(
-        dh: *mut DH,
-        p: *mut BIGNUM,
-        q: *mut BIGNUM,
-        g: *mut BIGNUM,
-    ) -> ::std::os::raw::c_int;
+    pub fn DH_set0_pqg(dh: *mut DH, p: *mut BIGNUM, q: *mut BIGNUM, g: *mut BIGNUM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn DH_get0_key(dh: *const DH, pub_key: *mut *const BIGNUM, priv_key: *mut *const BIGNUM);
 }
 unsafe extern "C" {
-    pub fn DH_set0_key(
-        dh: *mut DH,
-        pub_key: *mut BIGNUM,
-        priv_key: *mut BIGNUM,
-    ) -> ::std::os::raw::c_int;
+    pub fn DH_set0_key(dh: *mut DH, pub_key: *mut BIGNUM, priv_key: *mut BIGNUM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn DH_get0_p(dh: *const DH) -> *const BIGNUM;
@@ -22954,10 +21944,7 @@ unsafe extern "C" {
     pub fn DH_set_length(dh: *mut DH, length: ::std::os::raw::c_long) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn DH_meth_new(
-        name: *const ::std::os::raw::c_char,
-        flags: ::std::os::raw::c_int,
-    ) -> *mut DH_METHOD;
+    pub fn DH_meth_new(name: *const ::std::os::raw::c_char, flags: ::std::os::raw::c_int) -> *mut DH_METHOD;
 }
 unsafe extern "C" {
     pub fn DH_meth_free(dhm: *mut DH_METHOD);
@@ -22969,28 +21956,19 @@ unsafe extern "C" {
     pub fn DH_meth_get0_name(dhm: *const DH_METHOD) -> *const ::std::os::raw::c_char;
 }
 unsafe extern "C" {
-    pub fn DH_meth_set1_name(
-        dhm: *mut DH_METHOD,
-        name: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn DH_meth_set1_name(dhm: *mut DH_METHOD, name: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn DH_meth_get_flags(dhm: *const DH_METHOD) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn DH_meth_set_flags(
-        dhm: *mut DH_METHOD,
-        flags: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn DH_meth_set_flags(dhm: *mut DH_METHOD, flags: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn DH_meth_get0_app_data(dhm: *const DH_METHOD) -> *mut ::std::os::raw::c_void;
 }
 unsafe extern "C" {
-    pub fn DH_meth_set0_app_data(
-        dhm: *mut DH_METHOD,
-        app_data: *mut ::std::os::raw::c_void,
-    ) -> ::std::os::raw::c_int;
+    pub fn DH_meth_set0_app_data(dhm: *mut DH_METHOD, app_data: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn DH_meth_get_generate_key(
@@ -23000,9 +21978,7 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn DH_meth_set_generate_key(
         dhm: *mut DH_METHOD,
-        generate_key: ::std::option::Option<
-            unsafe extern "C" fn(arg1: *mut DH) -> ::std::os::raw::c_int,
-        >,
+        generate_key: ::std::option::Option<unsafe extern "C" fn(arg1: *mut DH) -> ::std::os::raw::c_int>,
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
@@ -23159,10 +22135,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_CTX_set_dsa_paramgen_md(
-        ctx: *mut EVP_PKEY_CTX,
-        md: *const EVP_MD,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_CTX_set_dsa_paramgen_md(ctx: *mut EVP_PKEY_CTX, md: *const EVP_MD) -> ::std::os::raw::c_int;
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -23184,17 +22157,13 @@ unsafe extern "C" {
     ) -> *mut DSA_SIG;
 }
 unsafe extern "C" {
-    pub fn i2d_DSA_SIG(
-        a: *const DSA_SIG,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_DSA_SIG(a: *const DSA_SIG, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn DSA_SIG_get0(sig: *const DSA_SIG, pr: *mut *const BIGNUM, ps: *mut *const BIGNUM);
 }
 unsafe extern "C" {
-    pub fn DSA_SIG_set0(sig: *mut DSA_SIG, r: *mut BIGNUM, s: *mut BIGNUM)
-    -> ::std::os::raw::c_int;
+    pub fn DSA_SIG_set0(sig: *mut DSA_SIG, r: *mut BIGNUM, s: *mut BIGNUM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn DSAparams_dup(a: *const DSA) -> *mut DSA;
@@ -23286,10 +22255,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn DSA_get_ex_data(
-        d: *const DSA,
-        idx: ::std::os::raw::c_int,
-    ) -> *mut ::std::os::raw::c_void;
+    pub fn DSA_get_ex_data(d: *const DSA, idx: ::std::os::raw::c_int) -> *mut ::std::os::raw::c_void;
 }
 unsafe extern "C" {
     pub fn d2i_DSAPublicKey(
@@ -23299,10 +22265,7 @@ unsafe extern "C" {
     ) -> *mut DSA;
 }
 unsafe extern "C" {
-    pub fn i2d_DSAPublicKey(
-        a: *const DSA,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_DSAPublicKey(a: *const DSA, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn d2i_DSAPrivateKey(
@@ -23312,10 +22275,7 @@ unsafe extern "C" {
     ) -> *mut DSA;
 }
 unsafe extern "C" {
-    pub fn i2d_DSAPrivateKey(
-        a: *const DSA,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_DSAPrivateKey(a: *const DSA, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn d2i_DSAparams(
@@ -23325,10 +22285,7 @@ unsafe extern "C" {
     ) -> *mut DSA;
 }
 unsafe extern "C" {
-    pub fn i2d_DSAparams(
-        a: *const DSA,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_DSAparams(a: *const DSA, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn DSA_generate_parameters(
@@ -23365,40 +22322,22 @@ unsafe extern "C" {
     pub fn DSAparams_print(bp: *mut BIO, x: *const DSA) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn DSA_print(
-        bp: *mut BIO,
-        x: *const DSA,
-        off: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn DSA_print(bp: *mut BIO, x: *const DSA, off: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn DSA_dup_DH(r: *const DSA) -> *mut DH;
 }
 unsafe extern "C" {
-    pub fn DSA_get0_pqg(
-        d: *const DSA,
-        p: *mut *const BIGNUM,
-        q: *mut *const BIGNUM,
-        g: *mut *const BIGNUM,
-    );
+    pub fn DSA_get0_pqg(d: *const DSA, p: *mut *const BIGNUM, q: *mut *const BIGNUM, g: *mut *const BIGNUM);
 }
 unsafe extern "C" {
-    pub fn DSA_set0_pqg(
-        d: *mut DSA,
-        p: *mut BIGNUM,
-        q: *mut BIGNUM,
-        g: *mut BIGNUM,
-    ) -> ::std::os::raw::c_int;
+    pub fn DSA_set0_pqg(d: *mut DSA, p: *mut BIGNUM, q: *mut BIGNUM, g: *mut BIGNUM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn DSA_get0_key(d: *const DSA, pub_key: *mut *const BIGNUM, priv_key: *mut *const BIGNUM);
 }
 unsafe extern "C" {
-    pub fn DSA_set0_key(
-        d: *mut DSA,
-        pub_key: *mut BIGNUM,
-        priv_key: *mut BIGNUM,
-    ) -> ::std::os::raw::c_int;
+    pub fn DSA_set0_key(d: *mut DSA, pub_key: *mut BIGNUM, priv_key: *mut BIGNUM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn DSA_get0_p(d: *const DSA) -> *const BIGNUM;
@@ -23428,10 +22367,7 @@ unsafe extern "C" {
     pub fn DSA_get0_engine(d: *mut DSA) -> *mut ENGINE;
 }
 unsafe extern "C" {
-    pub fn DSA_meth_new(
-        name: *const ::std::os::raw::c_char,
-        flags: ::std::os::raw::c_int,
-    ) -> *mut DSA_METHOD;
+    pub fn DSA_meth_new(name: *const ::std::os::raw::c_char, flags: ::std::os::raw::c_int) -> *mut DSA_METHOD;
 }
 unsafe extern "C" {
     pub fn DSA_meth_free(dsam: *mut DSA_METHOD);
@@ -23443,19 +22379,13 @@ unsafe extern "C" {
     pub fn DSA_meth_get0_name(dsam: *const DSA_METHOD) -> *const ::std::os::raw::c_char;
 }
 unsafe extern "C" {
-    pub fn DSA_meth_set1_name(
-        dsam: *mut DSA_METHOD,
-        name: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn DSA_meth_set1_name(dsam: *mut DSA_METHOD, name: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn DSA_meth_get_flags(dsam: *const DSA_METHOD) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn DSA_meth_set_flags(
-        dsam: *mut DSA_METHOD,
-        flags: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn DSA_meth_set_flags(dsam: *mut DSA_METHOD, flags: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn DSA_meth_get0_app_data(dsam: *const DSA_METHOD) -> *mut ::std::os::raw::c_void;
@@ -23624,9 +22554,7 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn DSA_meth_set_finish(
         dsam: *mut DSA_METHOD,
-        finish: ::std::option::Option<
-            unsafe extern "C" fn(arg1: *mut DSA) -> ::std::os::raw::c_int,
-        >,
+        finish: ::std::option::Option<unsafe extern "C" fn(arg1: *mut DSA) -> ::std::os::raw::c_int>,
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
@@ -23668,9 +22596,7 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn DSA_meth_set_keygen(
         dsam: *mut DSA_METHOD,
-        keygen: ::std::option::Option<
-            unsafe extern "C" fn(arg1: *mut DSA) -> ::std::os::raw::c_int,
-        >,
+        keygen: ::std::option::Option<unsafe extern "C" fn(arg1: *mut DSA) -> ::std::os::raw::c_int>,
     ) -> ::std::os::raw::c_int;
 }
 #[repr(C)]
@@ -23705,11 +22631,7 @@ unsafe extern "C" {
     pub fn SHA1_Init(c: *mut SHA_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn SHA1_Update(
-        c: *mut SHA_CTX,
-        data: *const ::std::os::raw::c_void,
-        len: usize,
-    ) -> ::std::os::raw::c_int;
+    pub fn SHA1_Update(c: *mut SHA_CTX, data: *const ::std::os::raw::c_void, len: usize) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn SHA1_Final(md: *mut ::std::os::raw::c_uchar, c: *mut SHA_CTX) -> ::std::os::raw::c_int;
@@ -23741,45 +22663,28 @@ const _: () = {
     ["Offset of field: SHA256state_st::h"][::std::mem::offset_of!(SHA256state_st, h) - 0usize];
     ["Offset of field: SHA256state_st::Nl"][::std::mem::offset_of!(SHA256state_st, Nl) - 32usize];
     ["Offset of field: SHA256state_st::Nh"][::std::mem::offset_of!(SHA256state_st, Nh) - 36usize];
-    ["Offset of field: SHA256state_st::data"]
-        [::std::mem::offset_of!(SHA256state_st, data) - 40usize];
-    ["Offset of field: SHA256state_st::num"]
-        [::std::mem::offset_of!(SHA256state_st, num) - 104usize];
-    ["Offset of field: SHA256state_st::md_len"]
-        [::std::mem::offset_of!(SHA256state_st, md_len) - 108usize];
+    ["Offset of field: SHA256state_st::data"][::std::mem::offset_of!(SHA256state_st, data) - 40usize];
+    ["Offset of field: SHA256state_st::num"][::std::mem::offset_of!(SHA256state_st, num) - 104usize];
+    ["Offset of field: SHA256state_st::md_len"][::std::mem::offset_of!(SHA256state_st, md_len) - 108usize];
 };
 pub type SHA256_CTX = SHA256state_st;
 unsafe extern "C" {
     pub fn SHA224_Init(c: *mut SHA256_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn SHA224_Update(
-        c: *mut SHA256_CTX,
-        data: *const ::std::os::raw::c_void,
-        len: usize,
-    ) -> ::std::os::raw::c_int;
+    pub fn SHA224_Update(c: *mut SHA256_CTX, data: *const ::std::os::raw::c_void, len: usize) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn SHA224_Final(
-        md: *mut ::std::os::raw::c_uchar,
-        c: *mut SHA256_CTX,
-    ) -> ::std::os::raw::c_int;
+    pub fn SHA224_Final(md: *mut ::std::os::raw::c_uchar, c: *mut SHA256_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn SHA256_Init(c: *mut SHA256_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn SHA256_Update(
-        c: *mut SHA256_CTX,
-        data: *const ::std::os::raw::c_void,
-        len: usize,
-    ) -> ::std::os::raw::c_int;
+    pub fn SHA256_Update(c: *mut SHA256_CTX, data: *const ::std::os::raw::c_void, len: usize) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn SHA256_Final(
-        md: *mut ::std::os::raw::c_uchar,
-        c: *mut SHA256_CTX,
-    ) -> ::std::os::raw::c_int;
+    pub fn SHA256_Final(md: *mut ::std::os::raw::c_uchar, c: *mut SHA256_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn SHA256_Transform(c: *mut SHA256_CTX, data: *const ::std::os::raw::c_uchar);
@@ -23816,10 +22721,8 @@ pub union SHA512state_st__bindgen_ty_1 {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of SHA512state_st__bindgen_ty_1"]
-        [::std::mem::size_of::<SHA512state_st__bindgen_ty_1>() - 128usize];
-    ["Alignment of SHA512state_st__bindgen_ty_1"]
-        [::std::mem::align_of::<SHA512state_st__bindgen_ty_1>() - 8usize];
+    ["Size of SHA512state_st__bindgen_ty_1"][::std::mem::size_of::<SHA512state_st__bindgen_ty_1>() - 128usize];
+    ["Alignment of SHA512state_st__bindgen_ty_1"][::std::mem::align_of::<SHA512state_st__bindgen_ty_1>() - 8usize];
     ["Offset of field: SHA512state_st__bindgen_ty_1::d"]
         [::std::mem::offset_of!(SHA512state_st__bindgen_ty_1, d) - 0usize];
     ["Offset of field: SHA512state_st__bindgen_ty_1::p"]
@@ -23842,10 +22745,8 @@ const _: () = {
     ["Offset of field: SHA512state_st::Nl"][::std::mem::offset_of!(SHA512state_st, Nl) - 64usize];
     ["Offset of field: SHA512state_st::Nh"][::std::mem::offset_of!(SHA512state_st, Nh) - 72usize];
     ["Offset of field: SHA512state_st::u"][::std::mem::offset_of!(SHA512state_st, u) - 80usize];
-    ["Offset of field: SHA512state_st::num"]
-        [::std::mem::offset_of!(SHA512state_st, num) - 208usize];
-    ["Offset of field: SHA512state_st::md_len"]
-        [::std::mem::offset_of!(SHA512state_st, md_len) - 212usize];
+    ["Offset of field: SHA512state_st::num"][::std::mem::offset_of!(SHA512state_st, num) - 208usize];
+    ["Offset of field: SHA512state_st::md_len"][::std::mem::offset_of!(SHA512state_st, md_len) - 212usize];
 };
 impl Default for SHA512state_st {
     fn default() -> Self {
@@ -23861,33 +22762,19 @@ unsafe extern "C" {
     pub fn SHA384_Init(c: *mut SHA512_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn SHA384_Update(
-        c: *mut SHA512_CTX,
-        data: *const ::std::os::raw::c_void,
-        len: usize,
-    ) -> ::std::os::raw::c_int;
+    pub fn SHA384_Update(c: *mut SHA512_CTX, data: *const ::std::os::raw::c_void, len: usize) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn SHA384_Final(
-        md: *mut ::std::os::raw::c_uchar,
-        c: *mut SHA512_CTX,
-    ) -> ::std::os::raw::c_int;
+    pub fn SHA384_Final(md: *mut ::std::os::raw::c_uchar, c: *mut SHA512_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn SHA512_Init(c: *mut SHA512_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn SHA512_Update(
-        c: *mut SHA512_CTX,
-        data: *const ::std::os::raw::c_void,
-        len: usize,
-    ) -> ::std::os::raw::c_int;
+    pub fn SHA512_Update(c: *mut SHA512_CTX, data: *const ::std::os::raw::c_void, len: usize) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn SHA512_Final(
-        md: *mut ::std::os::raw::c_uchar,
-        c: *mut SHA512_CTX,
-    ) -> ::std::os::raw::c_int;
+    pub fn SHA512_Final(md: *mut ::std::os::raw::c_uchar, c: *mut SHA512_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn SHA512_Transform(c: *mut SHA512_CTX, data: *const ::std::os::raw::c_uchar);
@@ -23912,38 +22799,28 @@ pub struct stack_st_X509_NAME {
     _unused: [u8; 0],
 }
 pub type sk_X509_NAME_compfunc = ::std::option::Option<
-    unsafe extern "C" fn(
-        a: *const *const X509_NAME,
-        b: *const *const X509_NAME,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(a: *const *const X509_NAME, b: *const *const X509_NAME) -> ::std::os::raw::c_int,
 >;
 pub type sk_X509_NAME_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut X509_NAME)>;
-pub type sk_X509_NAME_copyfunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *const X509_NAME) -> *mut X509_NAME>;
+pub type sk_X509_NAME_copyfunc = ::std::option::Option<unsafe extern "C" fn(a: *const X509_NAME) -> *mut X509_NAME>;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct stack_st_X509 {
     _unused: [u8; 0],
 }
-pub type sk_X509_compfunc = ::std::option::Option<
-    unsafe extern "C" fn(a: *const *const X509, b: *const *const X509) -> ::std::os::raw::c_int,
->;
+pub type sk_X509_compfunc =
+    ::std::option::Option<unsafe extern "C" fn(a: *const *const X509, b: *const *const X509) -> ::std::os::raw::c_int>;
 pub type sk_X509_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut X509)>;
-pub type sk_X509_copyfunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *const X509) -> *mut X509>;
+pub type sk_X509_copyfunc = ::std::option::Option<unsafe extern "C" fn(a: *const X509) -> *mut X509>;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct stack_st_X509_REVOKED {
     _unused: [u8; 0],
 }
 pub type sk_X509_REVOKED_compfunc = ::std::option::Option<
-    unsafe extern "C" fn(
-        a: *const *const X509_REVOKED,
-        b: *const *const X509_REVOKED,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(a: *const *const X509_REVOKED, b: *const *const X509_REVOKED) -> ::std::os::raw::c_int,
 >;
-pub type sk_X509_REVOKED_freefunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *mut X509_REVOKED)>;
+pub type sk_X509_REVOKED_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut X509_REVOKED)>;
 pub type sk_X509_REVOKED_copyfunc =
     ::std::option::Option<unsafe extern "C" fn(a: *const X509_REVOKED) -> *mut X509_REVOKED>;
 #[repr(C)]
@@ -23952,14 +22829,10 @@ pub struct stack_st_X509_CRL {
     _unused: [u8; 0],
 }
 pub type sk_X509_CRL_compfunc = ::std::option::Option<
-    unsafe extern "C" fn(
-        a: *const *const X509_CRL,
-        b: *const *const X509_CRL,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(a: *const *const X509_CRL, b: *const *const X509_CRL) -> ::std::os::raw::c_int,
 >;
 pub type sk_X509_CRL_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut X509_CRL)>;
-pub type sk_X509_CRL_copyfunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *const X509_CRL) -> *mut X509_CRL>;
+pub type sk_X509_CRL_copyfunc = ::std::option::Option<unsafe extern "C" fn(a: *const X509_CRL) -> *mut X509_CRL>;
 #[repr(C)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct X509_algor_st {
@@ -23970,10 +22843,8 @@ pub struct X509_algor_st {
 const _: () = {
     ["Size of X509_algor_st"][::std::mem::size_of::<X509_algor_st>() - 16usize];
     ["Alignment of X509_algor_st"][::std::mem::align_of::<X509_algor_st>() - 8usize];
-    ["Offset of field: X509_algor_st::algorithm"]
-        [::std::mem::offset_of!(X509_algor_st, algorithm) - 0usize];
-    ["Offset of field: X509_algor_st::parameter"]
-        [::std::mem::offset_of!(X509_algor_st, parameter) - 8usize];
+    ["Offset of field: X509_algor_st::algorithm"][::std::mem::offset_of!(X509_algor_st, algorithm) - 0usize];
+    ["Offset of field: X509_algor_st::parameter"][::std::mem::offset_of!(X509_algor_st, parameter) - 8usize];
 };
 impl Default for X509_algor_st {
     fn default() -> Self {
@@ -23995,10 +22866,8 @@ pub struct X509_val_st {
 const _: () = {
     ["Size of X509_val_st"][::std::mem::size_of::<X509_val_st>() - 16usize];
     ["Alignment of X509_val_st"][::std::mem::align_of::<X509_val_st>() - 8usize];
-    ["Offset of field: X509_val_st::notBefore"]
-        [::std::mem::offset_of!(X509_val_st, notBefore) - 0usize];
-    ["Offset of field: X509_val_st::notAfter"]
-        [::std::mem::offset_of!(X509_val_st, notAfter) - 8usize];
+    ["Offset of field: X509_val_st::notBefore"][::std::mem::offset_of!(X509_val_st, notBefore) - 0usize];
+    ["Offset of field: X509_val_st::notAfter"][::std::mem::offset_of!(X509_val_st, notAfter) - 8usize];
 };
 impl Default for X509_val_st {
     fn default() -> Self {
@@ -24028,13 +22897,9 @@ pub struct stack_st_X509_NAME_ENTRY {
     _unused: [u8; 0],
 }
 pub type sk_X509_NAME_ENTRY_compfunc = ::std::option::Option<
-    unsafe extern "C" fn(
-        a: *const *const X509_NAME_ENTRY,
-        b: *const *const X509_NAME_ENTRY,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(a: *const *const X509_NAME_ENTRY, b: *const *const X509_NAME_ENTRY) -> ::std::os::raw::c_int,
 >;
-pub type sk_X509_NAME_ENTRY_freefunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *mut X509_NAME_ENTRY)>;
+pub type sk_X509_NAME_ENTRY_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut X509_NAME_ENTRY)>;
 pub type sk_X509_NAME_ENTRY_copyfunc =
     ::std::option::Option<unsafe extern "C" fn(a: *const X509_NAME_ENTRY) -> *mut X509_NAME_ENTRY>;
 #[repr(C)]
@@ -24049,13 +22914,9 @@ pub struct stack_st_X509_EXTENSION {
     _unused: [u8; 0],
 }
 pub type sk_X509_EXTENSION_compfunc = ::std::option::Option<
-    unsafe extern "C" fn(
-        a: *const *const X509_EXTENSION,
-        b: *const *const X509_EXTENSION,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(a: *const *const X509_EXTENSION, b: *const *const X509_EXTENSION) -> ::std::os::raw::c_int,
 >;
-pub type sk_X509_EXTENSION_freefunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *mut X509_EXTENSION)>;
+pub type sk_X509_EXTENSION_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut X509_EXTENSION)>;
 pub type sk_X509_EXTENSION_copyfunc =
     ::std::option::Option<unsafe extern "C" fn(a: *const X509_EXTENSION) -> *mut X509_EXTENSION>;
 pub type X509_EXTENSIONS = stack_st_X509_EXTENSION;
@@ -24071,13 +22932,9 @@ pub struct stack_st_X509_ATTRIBUTE {
     _unused: [u8; 0],
 }
 pub type sk_X509_ATTRIBUTE_compfunc = ::std::option::Option<
-    unsafe extern "C" fn(
-        a: *const *const X509_ATTRIBUTE,
-        b: *const *const X509_ATTRIBUTE,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(a: *const *const X509_ATTRIBUTE, b: *const *const X509_ATTRIBUTE) -> ::std::os::raw::c_int,
 >;
-pub type sk_X509_ATTRIBUTE_freefunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *mut X509_ATTRIBUTE)>;
+pub type sk_X509_ATTRIBUTE_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut X509_ATTRIBUTE)>;
 pub type sk_X509_ATTRIBUTE_copyfunc =
     ::std::option::Option<unsafe extern "C" fn(a: *const X509_ATTRIBUTE) -> *mut X509_ATTRIBUTE>;
 #[repr(C)]
@@ -24126,22 +22983,14 @@ pub struct private_key_st {
 const _: () = {
     ["Size of private_key_st"][::std::mem::size_of::<private_key_st>() - 80usize];
     ["Alignment of private_key_st"][::std::mem::align_of::<private_key_st>() - 8usize];
-    ["Offset of field: private_key_st::version"]
-        [::std::mem::offset_of!(private_key_st, version) - 0usize];
-    ["Offset of field: private_key_st::enc_algor"]
-        [::std::mem::offset_of!(private_key_st, enc_algor) - 8usize];
-    ["Offset of field: private_key_st::enc_pkey"]
-        [::std::mem::offset_of!(private_key_st, enc_pkey) - 16usize];
-    ["Offset of field: private_key_st::dec_pkey"]
-        [::std::mem::offset_of!(private_key_st, dec_pkey) - 24usize];
-    ["Offset of field: private_key_st::key_length"]
-        [::std::mem::offset_of!(private_key_st, key_length) - 32usize];
-    ["Offset of field: private_key_st::key_data"]
-        [::std::mem::offset_of!(private_key_st, key_data) - 40usize];
-    ["Offset of field: private_key_st::key_free"]
-        [::std::mem::offset_of!(private_key_st, key_free) - 48usize];
-    ["Offset of field: private_key_st::cipher"]
-        [::std::mem::offset_of!(private_key_st, cipher) - 56usize];
+    ["Offset of field: private_key_st::version"][::std::mem::offset_of!(private_key_st, version) - 0usize];
+    ["Offset of field: private_key_st::enc_algor"][::std::mem::offset_of!(private_key_st, enc_algor) - 8usize];
+    ["Offset of field: private_key_st::enc_pkey"][::std::mem::offset_of!(private_key_st, enc_pkey) - 16usize];
+    ["Offset of field: private_key_st::dec_pkey"][::std::mem::offset_of!(private_key_st, dec_pkey) - 24usize];
+    ["Offset of field: private_key_st::key_length"][::std::mem::offset_of!(private_key_st, key_length) - 32usize];
+    ["Offset of field: private_key_st::key_data"][::std::mem::offset_of!(private_key_st, key_data) - 40usize];
+    ["Offset of field: private_key_st::key_free"][::std::mem::offset_of!(private_key_st, key_free) - 48usize];
+    ["Offset of field: private_key_st::cipher"][::std::mem::offset_of!(private_key_st, cipher) - 56usize];
 };
 impl Default for private_key_st {
     fn default() -> Self {
@@ -24169,14 +23018,10 @@ const _: () = {
     ["Alignment of X509_info_st"][::std::mem::align_of::<X509_info_st>() - 8usize];
     ["Offset of field: X509_info_st::x509"][::std::mem::offset_of!(X509_info_st, x509) - 0usize];
     ["Offset of field: X509_info_st::crl"][::std::mem::offset_of!(X509_info_st, crl) - 8usize];
-    ["Offset of field: X509_info_st::x_pkey"]
-        [::std::mem::offset_of!(X509_info_st, x_pkey) - 16usize];
-    ["Offset of field: X509_info_st::enc_cipher"]
-        [::std::mem::offset_of!(X509_info_st, enc_cipher) - 24usize];
-    ["Offset of field: X509_info_st::enc_len"]
-        [::std::mem::offset_of!(X509_info_st, enc_len) - 48usize];
-    ["Offset of field: X509_info_st::enc_data"]
-        [::std::mem::offset_of!(X509_info_st, enc_data) - 56usize];
+    ["Offset of field: X509_info_st::x_pkey"][::std::mem::offset_of!(X509_info_st, x_pkey) - 16usize];
+    ["Offset of field: X509_info_st::enc_cipher"][::std::mem::offset_of!(X509_info_st, enc_cipher) - 24usize];
+    ["Offset of field: X509_info_st::enc_len"][::std::mem::offset_of!(X509_info_st, enc_len) - 48usize];
+    ["Offset of field: X509_info_st::enc_data"][::std::mem::offset_of!(X509_info_st, enc_data) - 56usize];
 };
 impl Default for X509_info_st {
     fn default() -> Self {
@@ -24194,14 +23039,10 @@ pub struct stack_st_X509_INFO {
     _unused: [u8; 0],
 }
 pub type sk_X509_INFO_compfunc = ::std::option::Option<
-    unsafe extern "C" fn(
-        a: *const *const X509_INFO,
-        b: *const *const X509_INFO,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(a: *const *const X509_INFO, b: *const *const X509_INFO) -> ::std::os::raw::c_int,
 >;
 pub type sk_X509_INFO_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut X509_INFO)>;
-pub type sk_X509_INFO_copyfunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *const X509_INFO) -> *mut X509_INFO>;
+pub type sk_X509_INFO_copyfunc = ::std::option::Option<unsafe extern "C" fn(a: *const X509_INFO) -> *mut X509_INFO>;
 #[repr(C)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Netscape_spkac_st {
@@ -24212,10 +23053,8 @@ pub struct Netscape_spkac_st {
 const _: () = {
     ["Size of Netscape_spkac_st"][::std::mem::size_of::<Netscape_spkac_st>() - 16usize];
     ["Alignment of Netscape_spkac_st"][::std::mem::align_of::<Netscape_spkac_st>() - 8usize];
-    ["Offset of field: Netscape_spkac_st::pubkey"]
-        [::std::mem::offset_of!(Netscape_spkac_st, pubkey) - 0usize];
-    ["Offset of field: Netscape_spkac_st::challenge"]
-        [::std::mem::offset_of!(Netscape_spkac_st, challenge) - 8usize];
+    ["Offset of field: Netscape_spkac_st::pubkey"][::std::mem::offset_of!(Netscape_spkac_st, pubkey) - 0usize];
+    ["Offset of field: Netscape_spkac_st::challenge"][::std::mem::offset_of!(Netscape_spkac_st, challenge) - 8usize];
 };
 impl Default for Netscape_spkac_st {
     fn default() -> Self {
@@ -24238,12 +23077,9 @@ pub struct Netscape_spki_st {
 const _: () = {
     ["Size of Netscape_spki_st"][::std::mem::size_of::<Netscape_spki_st>() - 32usize];
     ["Alignment of Netscape_spki_st"][::std::mem::align_of::<Netscape_spki_st>() - 8usize];
-    ["Offset of field: Netscape_spki_st::spkac"]
-        [::std::mem::offset_of!(Netscape_spki_st, spkac) - 0usize];
-    ["Offset of field: Netscape_spki_st::sig_algor"]
-        [::std::mem::offset_of!(Netscape_spki_st, sig_algor) - 8usize];
-    ["Offset of field: Netscape_spki_st::signature"]
-        [::std::mem::offset_of!(Netscape_spki_st, signature) - 24usize];
+    ["Offset of field: Netscape_spki_st::spkac"][::std::mem::offset_of!(Netscape_spki_st, spkac) - 0usize];
+    ["Offset of field: Netscape_spki_st::sig_algor"][::std::mem::offset_of!(Netscape_spki_st, sig_algor) - 8usize];
+    ["Offset of field: Netscape_spki_st::signature"][::std::mem::offset_of!(Netscape_spki_st, signature) - 24usize];
 };
 impl Default for Netscape_spki_st {
     fn default() -> Self {
@@ -24263,10 +23099,8 @@ pub struct Netscape_certificate_sequence {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of Netscape_certificate_sequence"]
-        [::std::mem::size_of::<Netscape_certificate_sequence>() - 16usize];
-    ["Alignment of Netscape_certificate_sequence"]
-        [::std::mem::align_of::<Netscape_certificate_sequence>() - 8usize];
+    ["Size of Netscape_certificate_sequence"][::std::mem::size_of::<Netscape_certificate_sequence>() - 16usize];
+    ["Alignment of Netscape_certificate_sequence"][::std::mem::align_of::<Netscape_certificate_sequence>() - 8usize];
     ["Offset of field: Netscape_certificate_sequence::type_"]
         [::std::mem::offset_of!(Netscape_certificate_sequence, type_) - 0usize];
     ["Offset of field: Netscape_certificate_sequence::certs"]
@@ -24315,10 +23149,8 @@ pub struct PBE2PARAM_st {
 const _: () = {
     ["Size of PBE2PARAM_st"][::std::mem::size_of::<PBE2PARAM_st>() - 16usize];
     ["Alignment of PBE2PARAM_st"][::std::mem::align_of::<PBE2PARAM_st>() - 8usize];
-    ["Offset of field: PBE2PARAM_st::keyfunc"]
-        [::std::mem::offset_of!(PBE2PARAM_st, keyfunc) - 0usize];
-    ["Offset of field: PBE2PARAM_st::encryption"]
-        [::std::mem::offset_of!(PBE2PARAM_st, encryption) - 8usize];
+    ["Offset of field: PBE2PARAM_st::keyfunc"][::std::mem::offset_of!(PBE2PARAM_st, keyfunc) - 0usize];
+    ["Offset of field: PBE2PARAM_st::encryption"][::std::mem::offset_of!(PBE2PARAM_st, encryption) - 8usize];
 };
 impl Default for PBE2PARAM_st {
     fn default() -> Self {
@@ -24342,12 +23174,9 @@ pub struct PBKDF2PARAM_st {
 const _: () = {
     ["Size of PBKDF2PARAM_st"][::std::mem::size_of::<PBKDF2PARAM_st>() - 32usize];
     ["Alignment of PBKDF2PARAM_st"][::std::mem::align_of::<PBKDF2PARAM_st>() - 8usize];
-    ["Offset of field: PBKDF2PARAM_st::salt"]
-        [::std::mem::offset_of!(PBKDF2PARAM_st, salt) - 0usize];
-    ["Offset of field: PBKDF2PARAM_st::iter"]
-        [::std::mem::offset_of!(PBKDF2PARAM_st, iter) - 8usize];
-    ["Offset of field: PBKDF2PARAM_st::keylength"]
-        [::std::mem::offset_of!(PBKDF2PARAM_st, keylength) - 16usize];
+    ["Offset of field: PBKDF2PARAM_st::salt"][::std::mem::offset_of!(PBKDF2PARAM_st, salt) - 0usize];
+    ["Offset of field: PBKDF2PARAM_st::iter"][::std::mem::offset_of!(PBKDF2PARAM_st, iter) - 8usize];
+    ["Offset of field: PBKDF2PARAM_st::keylength"][::std::mem::offset_of!(PBKDF2PARAM_st, keylength) - 16usize];
     ["Offset of field: PBKDF2PARAM_st::prf"][::std::mem::offset_of!(PBKDF2PARAM_st, prf) - 24usize];
 };
 impl Default for PBKDF2PARAM_st {
@@ -24397,16 +23226,13 @@ pub struct SCRYPT_PARAMS_st {
 const _: () = {
     ["Size of SCRYPT_PARAMS_st"][::std::mem::size_of::<SCRYPT_PARAMS_st>() - 40usize];
     ["Alignment of SCRYPT_PARAMS_st"][::std::mem::align_of::<SCRYPT_PARAMS_st>() - 8usize];
-    ["Offset of field: SCRYPT_PARAMS_st::salt"]
-        [::std::mem::offset_of!(SCRYPT_PARAMS_st, salt) - 0usize];
+    ["Offset of field: SCRYPT_PARAMS_st::salt"][::std::mem::offset_of!(SCRYPT_PARAMS_st, salt) - 0usize];
     ["Offset of field: SCRYPT_PARAMS_st::costParameter"]
         [::std::mem::offset_of!(SCRYPT_PARAMS_st, costParameter) - 8usize];
-    ["Offset of field: SCRYPT_PARAMS_st::blockSize"]
-        [::std::mem::offset_of!(SCRYPT_PARAMS_st, blockSize) - 16usize];
+    ["Offset of field: SCRYPT_PARAMS_st::blockSize"][::std::mem::offset_of!(SCRYPT_PARAMS_st, blockSize) - 16usize];
     ["Offset of field: SCRYPT_PARAMS_st::parallelizationParameter"]
         [::std::mem::offset_of!(SCRYPT_PARAMS_st, parallelizationParameter) - 24usize];
-    ["Offset of field: SCRYPT_PARAMS_st::keyLength"]
-        [::std::mem::offset_of!(SCRYPT_PARAMS_st, keyLength) - 32usize];
+    ["Offset of field: SCRYPT_PARAMS_st::keyLength"][::std::mem::offset_of!(SCRYPT_PARAMS_st, keyLength) - 32usize];
 };
 impl Default for SCRYPT_PARAMS_st {
     fn default() -> Self {
@@ -24437,23 +23263,16 @@ pub type OPENSSL_LH_COMPFUNCTHUNK = ::std::option::Option<
         cfn: OPENSSL_LH_COMPFUNC,
     ) -> ::std::os::raw::c_int,
 >;
-pub type OPENSSL_LH_HASHFUNC = ::std::option::Option<
-    unsafe extern "C" fn(arg1: *const ::std::os::raw::c_void) -> ::std::os::raw::c_ulong,
->;
+pub type OPENSSL_LH_HASHFUNC =
+    ::std::option::Option<unsafe extern "C" fn(arg1: *const ::std::os::raw::c_void) -> ::std::os::raw::c_ulong>;
 pub type OPENSSL_LH_HASHFUNCTHUNK = ::std::option::Option<
-    unsafe extern "C" fn(
-        arg1: *const ::std::os::raw::c_void,
-        hfn: OPENSSL_LH_HASHFUNC,
-    ) -> ::std::os::raw::c_ulong,
+    unsafe extern "C" fn(arg1: *const ::std::os::raw::c_void, hfn: OPENSSL_LH_HASHFUNC) -> ::std::os::raw::c_ulong,
 >;
-pub type OPENSSL_LH_DOALL_FUNC =
-    ::std::option::Option<unsafe extern "C" fn(arg1: *mut ::std::os::raw::c_void)>;
-pub type OPENSSL_LH_DOALL_FUNC_THUNK = ::std::option::Option<
-    unsafe extern "C" fn(arg1: *mut ::std::os::raw::c_void, doall: OPENSSL_LH_DOALL_FUNC),
->;
-pub type OPENSSL_LH_DOALL_FUNCARG = ::std::option::Option<
-    unsafe extern "C" fn(arg1: *mut ::std::os::raw::c_void, arg2: *mut ::std::os::raw::c_void),
->;
+pub type OPENSSL_LH_DOALL_FUNC = ::std::option::Option<unsafe extern "C" fn(arg1: *mut ::std::os::raw::c_void)>;
+pub type OPENSSL_LH_DOALL_FUNC_THUNK =
+    ::std::option::Option<unsafe extern "C" fn(arg1: *mut ::std::os::raw::c_void, doall: OPENSSL_LH_DOALL_FUNC)>;
+pub type OPENSSL_LH_DOALL_FUNCARG =
+    ::std::option::Option<unsafe extern "C" fn(arg1: *mut ::std::os::raw::c_void, arg2: *mut ::std::os::raw::c_void)>;
 pub type OPENSSL_LH_DOALL_FUNCARG_THUNK = ::std::option::Option<
     unsafe extern "C" fn(
         arg1: *mut ::std::os::raw::c_void,
@@ -24489,10 +23308,7 @@ unsafe extern "C" {
     pub fn OPENSSL_LH_flush(lh: *mut OPENSSL_LHASH);
 }
 unsafe extern "C" {
-    pub fn OPENSSL_LH_insert(
-        lh: *mut OPENSSL_LHASH,
-        data: *mut ::std::os::raw::c_void,
-    ) -> *mut ::std::os::raw::c_void;
+    pub fn OPENSSL_LH_insert(lh: *mut OPENSSL_LHASH, data: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void;
 }
 unsafe extern "C" {
     pub fn OPENSSL_LH_delete(
@@ -24582,8 +23398,7 @@ impl Default for lhash_st_OPENSSL_STRING_lh_OPENSSL_STRING_dummy {
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
     ["Size of lhash_st_OPENSSL_STRING"][::std::mem::size_of::<lhash_st_OPENSSL_STRING>() - 8usize];
-    ["Alignment of lhash_st_OPENSSL_STRING"]
-        [::std::mem::align_of::<lhash_st_OPENSSL_STRING>() - 8usize];
+    ["Alignment of lhash_st_OPENSSL_STRING"][::std::mem::align_of::<lhash_st_OPENSSL_STRING>() - 8usize];
     ["Offset of field: lhash_st_OPENSSL_STRING::dummy"]
         [::std::mem::offset_of!(lhash_st_OPENSSL_STRING, dummy) - 0usize];
 };
@@ -24597,16 +23412,11 @@ impl Default for lhash_st_OPENSSL_STRING {
     }
 }
 pub type lh_OPENSSL_STRING_compfunc = ::std::option::Option<
-    unsafe extern "C" fn(
-        a: *const OPENSSL_STRING,
-        b: *const OPENSSL_STRING,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(a: *const OPENSSL_STRING, b: *const OPENSSL_STRING) -> ::std::os::raw::c_int,
 >;
-pub type lh_OPENSSL_STRING_hashfunc = ::std::option::Option<
-    unsafe extern "C" fn(a: *const OPENSSL_STRING) -> ::std::os::raw::c_ulong,
->;
-pub type lh_OPENSSL_STRING_doallfunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *mut OPENSSL_STRING)>;
+pub type lh_OPENSSL_STRING_hashfunc =
+    ::std::option::Option<unsafe extern "C" fn(a: *const OPENSSL_STRING) -> ::std::os::raw::c_ulong>;
+pub type lh_OPENSSL_STRING_doallfunc = ::std::option::Option<unsafe extern "C" fn(a: *mut OPENSSL_STRING)>;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct lhash_st_OPENSSL_CSTRING {
@@ -24643,10 +23453,8 @@ impl Default for lhash_st_OPENSSL_CSTRING_lh_OPENSSL_CSTRING_dummy {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of lhash_st_OPENSSL_CSTRING"]
-        [::std::mem::size_of::<lhash_st_OPENSSL_CSTRING>() - 8usize];
-    ["Alignment of lhash_st_OPENSSL_CSTRING"]
-        [::std::mem::align_of::<lhash_st_OPENSSL_CSTRING>() - 8usize];
+    ["Size of lhash_st_OPENSSL_CSTRING"][::std::mem::size_of::<lhash_st_OPENSSL_CSTRING>() - 8usize];
+    ["Alignment of lhash_st_OPENSSL_CSTRING"][::std::mem::align_of::<lhash_st_OPENSSL_CSTRING>() - 8usize];
     ["Offset of field: lhash_st_OPENSSL_CSTRING::dummy"]
         [::std::mem::offset_of!(lhash_st_OPENSSL_CSTRING, dummy) - 0usize];
 };
@@ -24660,16 +23468,11 @@ impl Default for lhash_st_OPENSSL_CSTRING {
     }
 }
 pub type lh_OPENSSL_CSTRING_compfunc = ::std::option::Option<
-    unsafe extern "C" fn(
-        a: *const OPENSSL_CSTRING,
-        b: *const OPENSSL_CSTRING,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(a: *const OPENSSL_CSTRING, b: *const OPENSSL_CSTRING) -> ::std::os::raw::c_int,
 >;
-pub type lh_OPENSSL_CSTRING_hashfunc = ::std::option::Option<
-    unsafe extern "C" fn(a: *const OPENSSL_CSTRING) -> ::std::os::raw::c_ulong,
->;
-pub type lh_OPENSSL_CSTRING_doallfunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *mut OPENSSL_CSTRING)>;
+pub type lh_OPENSSL_CSTRING_hashfunc =
+    ::std::option::Option<unsafe extern "C" fn(a: *const OPENSSL_CSTRING) -> ::std::os::raw::c_ulong>;
+pub type lh_OPENSSL_CSTRING_doallfunc = ::std::option::Option<unsafe extern "C" fn(a: *mut OPENSSL_CSTRING)>;
 pub const X509_LOOKUP_TYPE_X509_LU_NONE: X509_LOOKUP_TYPE = 0;
 pub const X509_LOOKUP_TYPE_X509_LU_X509: X509_LOOKUP_TYPE = 1;
 pub const X509_LOOKUP_TYPE_X509_LU_CRL: X509_LOOKUP_TYPE = 2;
@@ -24680,10 +23483,7 @@ pub struct stack_st_X509_LOOKUP {
     _unused: [u8; 0],
 }
 pub type sk_X509_LOOKUP_compfunc = ::std::option::Option<
-    unsafe extern "C" fn(
-        a: *const *const X509_LOOKUP,
-        b: *const *const X509_LOOKUP,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(a: *const *const X509_LOOKUP, b: *const *const X509_LOOKUP) -> ::std::os::raw::c_int,
 >;
 pub type sk_X509_LOOKUP_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut X509_LOOKUP)>;
 pub type sk_X509_LOOKUP_copyfunc =
@@ -24694,10 +23494,7 @@ pub struct stack_st_X509_OBJECT {
     _unused: [u8; 0],
 }
 pub type sk_X509_OBJECT_compfunc = ::std::option::Option<
-    unsafe extern "C" fn(
-        a: *const *const X509_OBJECT,
-        b: *const *const X509_OBJECT,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(a: *const *const X509_OBJECT, b: *const *const X509_OBJECT) -> ::std::os::raw::c_int,
 >;
 pub type sk_X509_OBJECT_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut X509_OBJECT)>;
 pub type sk_X509_OBJECT_copyfunc =
@@ -24713,11 +23510,9 @@ pub type sk_X509_VERIFY_PARAM_compfunc = ::std::option::Option<
         b: *const *const X509_VERIFY_PARAM,
     ) -> ::std::os::raw::c_int,
 >;
-pub type sk_X509_VERIFY_PARAM_freefunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *mut X509_VERIFY_PARAM)>;
-pub type sk_X509_VERIFY_PARAM_copyfunc = ::std::option::Option<
-    unsafe extern "C" fn(a: *const X509_VERIFY_PARAM) -> *mut X509_VERIFY_PARAM,
->;
+pub type sk_X509_VERIFY_PARAM_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut X509_VERIFY_PARAM)>;
+pub type sk_X509_VERIFY_PARAM_copyfunc =
+    ::std::option::Option<unsafe extern "C" fn(a: *const X509_VERIFY_PARAM) -> *mut X509_VERIFY_PARAM>;
 #[repr(C)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct x509_trust_st {
@@ -24738,12 +23533,9 @@ pub struct x509_trust_st {
 const _: () = {
     ["Size of x509_trust_st"][::std::mem::size_of::<x509_trust_st>() - 40usize];
     ["Alignment of x509_trust_st"][::std::mem::align_of::<x509_trust_st>() - 8usize];
-    ["Offset of field: x509_trust_st::trust"]
-        [::std::mem::offset_of!(x509_trust_st, trust) - 0usize];
-    ["Offset of field: x509_trust_st::flags"]
-        [::std::mem::offset_of!(x509_trust_st, flags) - 4usize];
-    ["Offset of field: x509_trust_st::check_trust"]
-        [::std::mem::offset_of!(x509_trust_st, check_trust) - 8usize];
+    ["Offset of field: x509_trust_st::trust"][::std::mem::offset_of!(x509_trust_st, trust) - 0usize];
+    ["Offset of field: x509_trust_st::flags"][::std::mem::offset_of!(x509_trust_st, flags) - 4usize];
+    ["Offset of field: x509_trust_st::check_trust"][::std::mem::offset_of!(x509_trust_st, check_trust) - 8usize];
     ["Offset of field: x509_trust_st::name"][::std::mem::offset_of!(x509_trust_st, name) - 16usize];
     ["Offset of field: x509_trust_st::arg1"][::std::mem::offset_of!(x509_trust_st, arg1) - 24usize];
     ["Offset of field: x509_trust_st::arg2"][::std::mem::offset_of!(x509_trust_st, arg2) - 32usize];
@@ -24764,19 +23556,12 @@ pub struct stack_st_X509_TRUST {
     _unused: [u8; 0],
 }
 pub type sk_X509_TRUST_compfunc = ::std::option::Option<
-    unsafe extern "C" fn(
-        a: *const *const X509_TRUST,
-        b: *const *const X509_TRUST,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(a: *const *const X509_TRUST, b: *const *const X509_TRUST) -> ::std::os::raw::c_int,
 >;
 pub type sk_X509_TRUST_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut X509_TRUST)>;
-pub type sk_X509_TRUST_copyfunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *const X509_TRUST) -> *mut X509_TRUST>;
+pub type sk_X509_TRUST_copyfunc = ::std::option::Option<unsafe extern "C" fn(a: *const X509_TRUST) -> *mut X509_TRUST>;
 unsafe extern "C" {
-    pub fn X509_TRUST_set(
-        t: *mut ::std::os::raw::c_int,
-        trust: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_TRUST_set(t: *mut ::std::os::raw::c_int, trust: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_TRUST_get_count() -> ::std::os::raw::c_int;
@@ -24877,68 +23662,39 @@ unsafe extern "C" {
     ) -> *mut stack_st_X509;
 }
 unsafe extern "C" {
-    pub fn X509_STORE_set_depth(
-        store: *mut X509_STORE,
-        depth: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_STORE_set_depth(store: *mut X509_STORE, depth: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 pub type X509_STORE_CTX_verify_cb = ::std::option::Option<
-    unsafe extern "C" fn(
-        arg1: ::std::os::raw::c_int,
-        arg2: *mut X509_STORE_CTX,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(arg1: ::std::os::raw::c_int, arg2: *mut X509_STORE_CTX) -> ::std::os::raw::c_int,
 >;
 unsafe extern "C" {
-    pub fn X509_STORE_CTX_print_verify_cb(
-        ok: ::std::os::raw::c_int,
-        ctx: *mut X509_STORE_CTX,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_STORE_CTX_print_verify_cb(ok: ::std::os::raw::c_int, ctx: *mut X509_STORE_CTX)
+    -> ::std::os::raw::c_int;
 }
 pub type X509_STORE_CTX_verify_fn =
     ::std::option::Option<unsafe extern "C" fn(arg1: *mut X509_STORE_CTX) -> ::std::os::raw::c_int>;
 pub type X509_STORE_CTX_get_issuer_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        issuer: *mut *mut X509,
-        ctx: *mut X509_STORE_CTX,
-        x: *mut X509,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(issuer: *mut *mut X509, ctx: *mut X509_STORE_CTX, x: *mut X509) -> ::std::os::raw::c_int,
 >;
 pub type X509_STORE_CTX_check_issued_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        ctx: *mut X509_STORE_CTX,
-        x: *mut X509,
-        issuer: *mut X509,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(ctx: *mut X509_STORE_CTX, x: *mut X509, issuer: *mut X509) -> ::std::os::raw::c_int,
 >;
 pub type X509_STORE_CTX_check_revocation_fn =
     ::std::option::Option<unsafe extern "C" fn(ctx: *mut X509_STORE_CTX) -> ::std::os::raw::c_int>;
 pub type X509_STORE_CTX_get_crl_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        ctx: *mut X509_STORE_CTX,
-        crl: *mut *mut X509_CRL,
-        x: *mut X509,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(ctx: *mut X509_STORE_CTX, crl: *mut *mut X509_CRL, x: *mut X509) -> ::std::os::raw::c_int,
 >;
-pub type X509_STORE_CTX_check_crl_fn = ::std::option::Option<
-    unsafe extern "C" fn(ctx: *mut X509_STORE_CTX, crl: *mut X509_CRL) -> ::std::os::raw::c_int,
->;
+pub type X509_STORE_CTX_check_crl_fn =
+    ::std::option::Option<unsafe extern "C" fn(ctx: *mut X509_STORE_CTX, crl: *mut X509_CRL) -> ::std::os::raw::c_int>;
 pub type X509_STORE_CTX_cert_crl_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        ctx: *mut X509_STORE_CTX,
-        crl: *mut X509_CRL,
-        x: *mut X509,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(ctx: *mut X509_STORE_CTX, crl: *mut X509_CRL, x: *mut X509) -> ::std::os::raw::c_int,
 >;
 pub type X509_STORE_CTX_check_policy_fn =
     ::std::option::Option<unsafe extern "C" fn(ctx: *mut X509_STORE_CTX) -> ::std::os::raw::c_int>;
-pub type X509_STORE_CTX_lookup_certs_fn = ::std::option::Option<
-    unsafe extern "C" fn(ctx: *mut X509_STORE_CTX, nm: *const X509_NAME) -> *mut stack_st_X509,
->;
+pub type X509_STORE_CTX_lookup_certs_fn =
+    ::std::option::Option<unsafe extern "C" fn(ctx: *mut X509_STORE_CTX, nm: *const X509_NAME) -> *mut stack_st_X509>;
 pub type X509_STORE_CTX_lookup_crls_fn = ::std::option::Option<
-    unsafe extern "C" fn(
-        ctx: *const X509_STORE_CTX,
-        nm: *const X509_NAME,
-    ) -> *mut stack_st_X509_CRL,
+    unsafe extern "C" fn(ctx: *const X509_STORE_CTX, nm: *const X509_NAME) -> *mut stack_st_X509_CRL,
 >;
 pub type X509_STORE_CTX_cleanup_fn =
     ::std::option::Option<unsafe extern "C" fn(ctx: *mut X509_STORE_CTX) -> ::std::os::raw::c_int>;
@@ -24960,10 +23716,7 @@ unsafe extern "C" {
     ) -> *mut X509_OBJECT;
 }
 unsafe extern "C" {
-    pub fn X509_OBJECT_retrieve_match(
-        h: *mut stack_st_X509_OBJECT,
-        x: *mut X509_OBJECT,
-    ) -> *mut X509_OBJECT;
+    pub fn X509_OBJECT_retrieve_match(h: *mut stack_st_X509_OBJECT, x: *mut X509_OBJECT) -> *mut X509_OBJECT;
 }
 unsafe extern "C" {
     pub fn X509_OBJECT_up_ref_count(a: *mut X509_OBJECT) -> ::std::os::raw::c_int;
@@ -24987,10 +23740,7 @@ unsafe extern "C" {
     pub fn X509_OBJECT_get0_X509_CRL(a: *const X509_OBJECT) -> *mut X509_CRL;
 }
 unsafe extern "C" {
-    pub fn X509_OBJECT_set1_X509_CRL(
-        a: *mut X509_OBJECT,
-        obj: *mut X509_CRL,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_OBJECT_set1_X509_CRL(a: *mut X509_OBJECT, obj: *mut X509_CRL) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_STORE_new() -> *mut X509_STORE;
@@ -25017,40 +23767,22 @@ unsafe extern "C" {
     pub fn X509_STORE_get1_all_certs(xs: *mut X509_STORE) -> *mut stack_st_X509;
 }
 unsafe extern "C" {
-    pub fn X509_STORE_CTX_get1_certs(
-        xs: *mut X509_STORE_CTX,
-        nm: *const X509_NAME,
-    ) -> *mut stack_st_X509;
+    pub fn X509_STORE_CTX_get1_certs(xs: *mut X509_STORE_CTX, nm: *const X509_NAME) -> *mut stack_st_X509;
 }
 unsafe extern "C" {
-    pub fn X509_STORE_CTX_get1_crls(
-        st: *const X509_STORE_CTX,
-        nm: *const X509_NAME,
-    ) -> *mut stack_st_X509_CRL;
+    pub fn X509_STORE_CTX_get1_crls(st: *const X509_STORE_CTX, nm: *const X509_NAME) -> *mut stack_st_X509_CRL;
 }
 unsafe extern "C" {
-    pub fn X509_STORE_set_flags(
-        xs: *mut X509_STORE,
-        flags: ::std::os::raw::c_ulong,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_STORE_set_flags(xs: *mut X509_STORE, flags: ::std::os::raw::c_ulong) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_STORE_set_purpose(
-        xs: *mut X509_STORE,
-        purpose: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_STORE_set_purpose(xs: *mut X509_STORE, purpose: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_STORE_set_trust(
-        xs: *mut X509_STORE,
-        trust: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_STORE_set_trust(xs: *mut X509_STORE, trust: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_STORE_set1_param(
-        xs: *mut X509_STORE,
-        pm: *const X509_VERIFY_PARAM,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_STORE_set1_param(xs: *mut X509_STORE, pm: *const X509_VERIFY_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_STORE_get0_param(xs: *const X509_STORE) -> *mut X509_VERIFY_PARAM;
@@ -25077,24 +23809,16 @@ unsafe extern "C" {
     pub fn X509_STORE_get_get_issuer(xs: *const X509_STORE) -> X509_STORE_CTX_get_issuer_fn;
 }
 unsafe extern "C" {
-    pub fn X509_STORE_set_check_issued(
-        xs: *mut X509_STORE,
-        check_issued: X509_STORE_CTX_check_issued_fn,
-    );
+    pub fn X509_STORE_set_check_issued(xs: *mut X509_STORE, check_issued: X509_STORE_CTX_check_issued_fn);
 }
 unsafe extern "C" {
     pub fn X509_STORE_get_check_issued(s: *const X509_STORE) -> X509_STORE_CTX_check_issued_fn;
 }
 unsafe extern "C" {
-    pub fn X509_STORE_set_check_revocation(
-        xs: *mut X509_STORE,
-        check_revocation: X509_STORE_CTX_check_revocation_fn,
-    );
+    pub fn X509_STORE_set_check_revocation(xs: *mut X509_STORE, check_revocation: X509_STORE_CTX_check_revocation_fn);
 }
 unsafe extern "C" {
-    pub fn X509_STORE_get_check_revocation(
-        xs: *const X509_STORE,
-    ) -> X509_STORE_CTX_check_revocation_fn;
+    pub fn X509_STORE_get_check_revocation(xs: *const X509_STORE) -> X509_STORE_CTX_check_revocation_fn;
 }
 unsafe extern "C" {
     pub fn X509_STORE_set_get_crl(xs: *mut X509_STORE, get_crl: X509_STORE_CTX_get_crl_fn);
@@ -25115,28 +23839,19 @@ unsafe extern "C" {
     pub fn X509_STORE_get_cert_crl(xs: *const X509_STORE) -> X509_STORE_CTX_cert_crl_fn;
 }
 unsafe extern "C" {
-    pub fn X509_STORE_set_check_policy(
-        xs: *mut X509_STORE,
-        check_policy: X509_STORE_CTX_check_policy_fn,
-    );
+    pub fn X509_STORE_set_check_policy(xs: *mut X509_STORE, check_policy: X509_STORE_CTX_check_policy_fn);
 }
 unsafe extern "C" {
     pub fn X509_STORE_get_check_policy(s: *const X509_STORE) -> X509_STORE_CTX_check_policy_fn;
 }
 unsafe extern "C" {
-    pub fn X509_STORE_set_lookup_certs(
-        xs: *mut X509_STORE,
-        lookup_certs: X509_STORE_CTX_lookup_certs_fn,
-    );
+    pub fn X509_STORE_set_lookup_certs(xs: *mut X509_STORE, lookup_certs: X509_STORE_CTX_lookup_certs_fn);
 }
 unsafe extern "C" {
     pub fn X509_STORE_get_lookup_certs(s: *const X509_STORE) -> X509_STORE_CTX_lookup_certs_fn;
 }
 unsafe extern "C" {
-    pub fn X509_STORE_set_lookup_crls(
-        xs: *mut X509_STORE,
-        lookup_crls: X509_STORE_CTX_lookup_crls_fn,
-    );
+    pub fn X509_STORE_set_lookup_crls(xs: *mut X509_STORE, lookup_crls: X509_STORE_CTX_lookup_crls_fn);
 }
 unsafe extern "C" {
     pub fn X509_STORE_get_lookup_crls(xs: *const X509_STORE) -> X509_STORE_CTX_lookup_crls_fn;
@@ -25155,10 +23870,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_STORE_get_ex_data(
-        xs: *const X509_STORE,
-        idx: ::std::os::raw::c_int,
-    ) -> *mut ::std::os::raw::c_void;
+    pub fn X509_STORE_get_ex_data(xs: *const X509_STORE, idx: ::std::os::raw::c_int) -> *mut ::std::os::raw::c_void;
 }
 unsafe extern "C" {
     pub fn X509_STORE_CTX_new_ex(
@@ -25225,19 +23937,13 @@ unsafe extern "C" {
     pub fn X509_STORE_CTX_get_verify(ctx: *const X509_STORE_CTX) -> X509_STORE_CTX_verify_fn;
 }
 unsafe extern "C" {
-    pub fn X509_STORE_CTX_get_get_issuer(
-        ctx: *const X509_STORE_CTX,
-    ) -> X509_STORE_CTX_get_issuer_fn;
+    pub fn X509_STORE_CTX_get_get_issuer(ctx: *const X509_STORE_CTX) -> X509_STORE_CTX_get_issuer_fn;
 }
 unsafe extern "C" {
-    pub fn X509_STORE_CTX_get_check_issued(
-        ctx: *const X509_STORE_CTX,
-    ) -> X509_STORE_CTX_check_issued_fn;
+    pub fn X509_STORE_CTX_get_check_issued(ctx: *const X509_STORE_CTX) -> X509_STORE_CTX_check_issued_fn;
 }
 unsafe extern "C" {
-    pub fn X509_STORE_CTX_get_check_revocation(
-        ctx: *const X509_STORE_CTX,
-    ) -> X509_STORE_CTX_check_revocation_fn;
+    pub fn X509_STORE_CTX_get_check_revocation(ctx: *const X509_STORE_CTX) -> X509_STORE_CTX_check_revocation_fn;
 }
 unsafe extern "C" {
     pub fn X509_STORE_CTX_set_get_crl(ctx: *mut X509_STORE_CTX, get_crl: X509_STORE_CTX_get_crl_fn);
@@ -25252,28 +23958,19 @@ unsafe extern "C" {
     pub fn X509_STORE_CTX_get_cert_crl(ctx: *const X509_STORE_CTX) -> X509_STORE_CTX_cert_crl_fn;
 }
 unsafe extern "C" {
-    pub fn X509_STORE_CTX_get_check_policy(
-        ctx: *const X509_STORE_CTX,
-    ) -> X509_STORE_CTX_check_policy_fn;
+    pub fn X509_STORE_CTX_get_check_policy(ctx: *const X509_STORE_CTX) -> X509_STORE_CTX_check_policy_fn;
 }
 unsafe extern "C" {
-    pub fn X509_STORE_CTX_get_lookup_certs(
-        ctx: *const X509_STORE_CTX,
-    ) -> X509_STORE_CTX_lookup_certs_fn;
+    pub fn X509_STORE_CTX_get_lookup_certs(ctx: *const X509_STORE_CTX) -> X509_STORE_CTX_lookup_certs_fn;
 }
 unsafe extern "C" {
-    pub fn X509_STORE_CTX_get_lookup_crls(
-        ctx: *const X509_STORE_CTX,
-    ) -> X509_STORE_CTX_lookup_crls_fn;
+    pub fn X509_STORE_CTX_get_lookup_crls(ctx: *const X509_STORE_CTX) -> X509_STORE_CTX_lookup_crls_fn;
 }
 unsafe extern "C" {
     pub fn X509_STORE_CTX_get_cleanup(ctx: *const X509_STORE_CTX) -> X509_STORE_CTX_cleanup_fn;
 }
 unsafe extern "C" {
-    pub fn X509_STORE_add_lookup(
-        xs: *mut X509_STORE,
-        m: *mut X509_LOOKUP_METHOD,
-    ) -> *mut X509_LOOKUP;
+    pub fn X509_STORE_add_lookup(xs: *mut X509_STORE, m: *mut X509_LOOKUP_METHOD) -> *mut X509_LOOKUP;
 }
 unsafe extern "C" {
     pub fn X509_LOOKUP_hash_dir() -> *mut X509_LOOKUP_METHOD;
@@ -25358,17 +24055,13 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn X509_LOOKUP_meth_set_new_item(
         method: *mut X509_LOOKUP_METHOD,
-        new_item: ::std::option::Option<
-            unsafe extern "C" fn(ctx: *mut X509_LOOKUP) -> ::std::os::raw::c_int,
-        >,
+        new_item: ::std::option::Option<unsafe extern "C" fn(ctx: *mut X509_LOOKUP) -> ::std::os::raw::c_int>,
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_LOOKUP_meth_get_new_item(
         method: *const X509_LOOKUP_METHOD,
-    ) -> ::std::option::Option<
-        unsafe extern "C" fn(method: *mut X509_LOOKUP) -> ::std::os::raw::c_int,
-    >;
+    ) -> ::std::option::Option<unsafe extern "C" fn(method: *mut X509_LOOKUP) -> ::std::os::raw::c_int>;
 }
 unsafe extern "C" {
     pub fn X509_LOOKUP_meth_set_free(
@@ -25384,32 +24077,24 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn X509_LOOKUP_meth_set_init(
         method: *mut X509_LOOKUP_METHOD,
-        init: ::std::option::Option<
-            unsafe extern "C" fn(ctx: *mut X509_LOOKUP) -> ::std::os::raw::c_int,
-        >,
+        init: ::std::option::Option<unsafe extern "C" fn(ctx: *mut X509_LOOKUP) -> ::std::os::raw::c_int>,
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_LOOKUP_meth_get_init(
         method: *const X509_LOOKUP_METHOD,
-    ) -> ::std::option::Option<
-        unsafe extern "C" fn(method: *mut X509_LOOKUP) -> ::std::os::raw::c_int,
-    >;
+    ) -> ::std::option::Option<unsafe extern "C" fn(method: *mut X509_LOOKUP) -> ::std::os::raw::c_int>;
 }
 unsafe extern "C" {
     pub fn X509_LOOKUP_meth_set_shutdown(
         method: *mut X509_LOOKUP_METHOD,
-        shutdown: ::std::option::Option<
-            unsafe extern "C" fn(ctx: *mut X509_LOOKUP) -> ::std::os::raw::c_int,
-        >,
+        shutdown: ::std::option::Option<unsafe extern "C" fn(ctx: *mut X509_LOOKUP) -> ::std::os::raw::c_int>,
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_LOOKUP_meth_get_shutdown(
         method: *const X509_LOOKUP_METHOD,
-    ) -> ::std::option::Option<
-        unsafe extern "C" fn(method: *mut X509_LOOKUP) -> ::std::os::raw::c_int,
-    >;
+    ) -> ::std::option::Option<unsafe extern "C" fn(method: *mut X509_LOOKUP) -> ::std::os::raw::c_int>;
 }
 unsafe extern "C" {
     pub fn X509_LOOKUP_meth_set_ctrl(
@@ -25427,9 +24112,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_LOOKUP_meth_get_get_by_subject(
-        method: *const X509_LOOKUP_METHOD,
-    ) -> X509_LOOKUP_get_by_subject_fn;
+    pub fn X509_LOOKUP_meth_get_get_by_subject(method: *const X509_LOOKUP_METHOD) -> X509_LOOKUP_get_by_subject_fn;
 }
 unsafe extern "C" {
     pub fn X509_LOOKUP_meth_set_get_by_issuer_serial(
@@ -25460,9 +24143,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_LOOKUP_meth_get_get_by_alias(
-        method: *const X509_LOOKUP_METHOD,
-    ) -> X509_LOOKUP_get_by_alias_fn;
+    pub fn X509_LOOKUP_meth_get_get_by_alias(method: *const X509_LOOKUP_METHOD) -> X509_LOOKUP_get_by_alias_fn;
 }
 unsafe extern "C" {
     pub fn X509_STORE_add_cert(xs: *mut X509_STORE, x: *mut X509) -> ::std::os::raw::c_int;
@@ -25614,22 +24295,13 @@ unsafe extern "C" {
     pub fn X509_LOOKUP_shutdown(ctx: *mut X509_LOOKUP) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_STORE_load_file(
-        xs: *mut X509_STORE,
-        file: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_STORE_load_file(xs: *mut X509_STORE, file: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_STORE_load_path(
-        xs: *mut X509_STORE,
-        path: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_STORE_load_path(xs: *mut X509_STORE, path: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_STORE_load_store(
-        xs: *mut X509_STORE,
-        store: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_STORE_load_store(xs: *mut X509_STORE, store: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_STORE_load_locations(
@@ -25738,10 +24410,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_STORE_CTX_set_trust(
-        ctx: *mut X509_STORE_CTX,
-        trust: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_STORE_CTX_set_trust(ctx: *mut X509_STORE_CTX, trust: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_STORE_CTX_purpose_inherit(
@@ -25755,17 +24424,10 @@ unsafe extern "C" {
     pub fn X509_STORE_CTX_set_flags(ctx: *mut X509_STORE_CTX, flags: ::std::os::raw::c_ulong);
 }
 unsafe extern "C" {
-    pub fn X509_STORE_CTX_set_time(
-        ctx: *mut X509_STORE_CTX,
-        flags: ::std::os::raw::c_ulong,
-        t: time_t,
-    );
+    pub fn X509_STORE_CTX_set_time(ctx: *mut X509_STORE_CTX, flags: ::std::os::raw::c_ulong, t: time_t);
 }
 unsafe extern "C" {
-    pub fn X509_STORE_CTX_set_current_reasons(
-        ctx: *mut X509_STORE_CTX,
-        current_reasons: ::std::os::raw::c_uint,
-    );
+    pub fn X509_STORE_CTX_set_current_reasons(ctx: *mut X509_STORE_CTX, current_reasons: ::std::os::raw::c_uint);
 }
 unsafe extern "C" {
     pub fn X509_STORE_CTX_get0_policy_tree(ctx: *const X509_STORE_CTX) -> *mut X509_POLICY_TREE;
@@ -25804,10 +24466,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_VERIFY_PARAM_set1(
-        to: *mut X509_VERIFY_PARAM,
-        from: *const X509_VERIFY_PARAM,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_VERIFY_PARAM_set1(to: *mut X509_VERIFY_PARAM, from: *const X509_VERIFY_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_VERIFY_PARAM_set1_name(
@@ -25849,10 +24508,7 @@ unsafe extern "C" {
     pub fn X509_VERIFY_PARAM_set_depth(param: *mut X509_VERIFY_PARAM, depth: ::std::os::raw::c_int);
 }
 unsafe extern "C" {
-    pub fn X509_VERIFY_PARAM_set_auth_level(
-        param: *mut X509_VERIFY_PARAM,
-        auth_level: ::std::os::raw::c_int,
-    );
+    pub fn X509_VERIFY_PARAM_set_auth_level(param: *mut X509_VERIFY_PARAM, auth_level: ::std::os::raw::c_int);
 }
 unsafe extern "C" {
     pub fn X509_VERIFY_PARAM_get_time(param: *const X509_VERIFY_PARAM) -> time_t;
@@ -25873,10 +24529,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_VERIFY_PARAM_set_inh_flags(
-        param: *mut X509_VERIFY_PARAM,
-        flags: u32,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_VERIFY_PARAM_set_inh_flags(param: *mut X509_VERIFY_PARAM, flags: u32) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_VERIFY_PARAM_get_inh_flags(param: *const X509_VERIFY_PARAM) -> u32;
@@ -25902,31 +24555,19 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_VERIFY_PARAM_set_hostflags(
-        param: *mut X509_VERIFY_PARAM,
-        flags: ::std::os::raw::c_uint,
-    );
+    pub fn X509_VERIFY_PARAM_set_hostflags(param: *mut X509_VERIFY_PARAM, flags: ::std::os::raw::c_uint);
 }
 unsafe extern "C" {
-    pub fn X509_VERIFY_PARAM_get_hostflags(
-        param: *const X509_VERIFY_PARAM,
-    ) -> ::std::os::raw::c_uint;
+    pub fn X509_VERIFY_PARAM_get_hostflags(param: *const X509_VERIFY_PARAM) -> ::std::os::raw::c_uint;
 }
 unsafe extern "C" {
-    pub fn X509_VERIFY_PARAM_get0_peername(
-        param: *const X509_VERIFY_PARAM,
-    ) -> *mut ::std::os::raw::c_char;
+    pub fn X509_VERIFY_PARAM_get0_peername(param: *const X509_VERIFY_PARAM) -> *mut ::std::os::raw::c_char;
 }
 unsafe extern "C" {
-    pub fn X509_VERIFY_PARAM_move_peername(
-        arg1: *mut X509_VERIFY_PARAM,
-        arg2: *mut X509_VERIFY_PARAM,
-    );
+    pub fn X509_VERIFY_PARAM_move_peername(arg1: *mut X509_VERIFY_PARAM, arg2: *mut X509_VERIFY_PARAM);
 }
 unsafe extern "C" {
-    pub fn X509_VERIFY_PARAM_get0_email(
-        param: *mut X509_VERIFY_PARAM,
-    ) -> *mut ::std::os::raw::c_char;
+    pub fn X509_VERIFY_PARAM_get0_email(param: *mut X509_VERIFY_PARAM) -> *mut ::std::os::raw::c_char;
 }
 unsafe extern "C" {
     pub fn X509_VERIFY_PARAM_set1_email(
@@ -25936,9 +24577,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_VERIFY_PARAM_get1_ip_asc(
-        param: *mut X509_VERIFY_PARAM,
-    ) -> *mut ::std::os::raw::c_char;
+    pub fn X509_VERIFY_PARAM_get1_ip_asc(param: *mut X509_VERIFY_PARAM) -> *mut ::std::os::raw::c_char;
 }
 unsafe extern "C" {
     pub fn X509_VERIFY_PARAM_set1_ip(
@@ -25957,14 +24596,10 @@ unsafe extern "C" {
     pub fn X509_VERIFY_PARAM_get_depth(param: *const X509_VERIFY_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_VERIFY_PARAM_get_auth_level(
-        param: *const X509_VERIFY_PARAM,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_VERIFY_PARAM_get_auth_level(param: *const X509_VERIFY_PARAM) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_VERIFY_PARAM_get0_name(
-        param: *const X509_VERIFY_PARAM,
-    ) -> *const ::std::os::raw::c_char;
+    pub fn X509_VERIFY_PARAM_get0_name(param: *const X509_VERIFY_PARAM) -> *const ::std::os::raw::c_char;
 }
 unsafe extern "C" {
     pub fn X509_VERIFY_PARAM_add0_table(param: *mut X509_VERIFY_PARAM) -> ::std::os::raw::c_int;
@@ -25976,9 +24611,7 @@ unsafe extern "C" {
     pub fn X509_VERIFY_PARAM_get0(id: ::std::os::raw::c_int) -> *const X509_VERIFY_PARAM;
 }
 unsafe extern "C" {
-    pub fn X509_VERIFY_PARAM_lookup(
-        name: *const ::std::os::raw::c_char,
-    ) -> *const X509_VERIFY_PARAM;
+    pub fn X509_VERIFY_PARAM_lookup(name: *const ::std::os::raw::c_char) -> *const X509_VERIFY_PARAM;
 }
 unsafe extern "C" {
     pub fn X509_VERIFY_PARAM_table_cleanup();
@@ -26010,14 +24643,10 @@ pub struct stack_st_X509_POLICY_NODE {
     _unused: [u8; 0],
 }
 unsafe extern "C" {
-    pub fn X509_policy_tree_get0_policies(
-        tree: *const X509_POLICY_TREE,
-    ) -> *mut stack_st_X509_POLICY_NODE;
+    pub fn X509_policy_tree_get0_policies(tree: *const X509_POLICY_TREE) -> *mut stack_st_X509_POLICY_NODE;
 }
 unsafe extern "C" {
-    pub fn X509_policy_tree_get0_user_policies(
-        tree: *const X509_POLICY_TREE,
-    ) -> *mut stack_st_X509_POLICY_NODE;
+    pub fn X509_policy_tree_get0_user_policies(tree: *const X509_POLICY_TREE) -> *mut stack_st_X509_POLICY_NODE;
 }
 unsafe extern "C" {
     pub fn X509_policy_level_node_count(level: *mut X509_POLICY_LEVEL) -> ::std::os::raw::c_int;
@@ -26037,9 +24666,7 @@ pub struct stack_st_POLICYQUALINFO {
     _unused: [u8; 0],
 }
 unsafe extern "C" {
-    pub fn X509_policy_node_get0_qualifiers(
-        node: *const X509_POLICY_NODE,
-    ) -> *mut stack_st_POLICYQUALINFO;
+    pub fn X509_policy_node_get0_qualifiers(node: *const X509_POLICY_NODE) -> *mut stack_st_POLICYQUALINFO;
 }
 unsafe extern "C" {
     pub fn X509_policy_node_get0_parent(node: *const X509_POLICY_NODE) -> *const X509_POLICY_NODE;
@@ -26054,8 +24681,7 @@ pub struct PKCS7_CTX_st {
 const _: () = {
     ["Size of PKCS7_CTX_st"][::std::mem::size_of::<PKCS7_CTX_st>() - 16usize];
     ["Alignment of PKCS7_CTX_st"][::std::mem::align_of::<PKCS7_CTX_st>() - 8usize];
-    ["Offset of field: PKCS7_CTX_st::libctx"]
-        [::std::mem::offset_of!(PKCS7_CTX_st, libctx) - 0usize];
+    ["Offset of field: PKCS7_CTX_st::libctx"][::std::mem::offset_of!(PKCS7_CTX_st, libctx) - 0usize];
     ["Offset of field: PKCS7_CTX_st::propq"][::std::mem::offset_of!(PKCS7_CTX_st, propq) - 8usize];
 };
 impl Default for PKCS7_CTX_st {
@@ -26076,10 +24702,8 @@ pub struct pkcs7_issuer_and_serial_st {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of pkcs7_issuer_and_serial_st"]
-        [::std::mem::size_of::<pkcs7_issuer_and_serial_st>() - 16usize];
-    ["Alignment of pkcs7_issuer_and_serial_st"]
-        [::std::mem::align_of::<pkcs7_issuer_and_serial_st>() - 8usize];
+    ["Size of pkcs7_issuer_and_serial_st"][::std::mem::size_of::<pkcs7_issuer_and_serial_st>() - 16usize];
+    ["Alignment of pkcs7_issuer_and_serial_st"][::std::mem::align_of::<pkcs7_issuer_and_serial_st>() - 8usize];
     ["Offset of field: pkcs7_issuer_and_serial_st::issuer"]
         [::std::mem::offset_of!(pkcs7_issuer_and_serial_st, issuer) - 0usize];
     ["Offset of field: pkcs7_issuer_and_serial_st::serial"]
@@ -26112,8 +24736,7 @@ pub struct pkcs7_signer_info_st {
 const _: () = {
     ["Size of pkcs7_signer_info_st"][::std::mem::size_of::<pkcs7_signer_info_st>() - 72usize];
     ["Alignment of pkcs7_signer_info_st"][::std::mem::align_of::<pkcs7_signer_info_st>() - 8usize];
-    ["Offset of field: pkcs7_signer_info_st::version"]
-        [::std::mem::offset_of!(pkcs7_signer_info_st, version) - 0usize];
+    ["Offset of field: pkcs7_signer_info_st::version"][::std::mem::offset_of!(pkcs7_signer_info_st, version) - 0usize];
     ["Offset of field: pkcs7_signer_info_st::issuer_and_serial"]
         [::std::mem::offset_of!(pkcs7_signer_info_st, issuer_and_serial) - 8usize];
     ["Offset of field: pkcs7_signer_info_st::digest_alg"]
@@ -26126,10 +24749,8 @@ const _: () = {
         [::std::mem::offset_of!(pkcs7_signer_info_st, enc_digest) - 40usize];
     ["Offset of field: pkcs7_signer_info_st::unauth_attr"]
         [::std::mem::offset_of!(pkcs7_signer_info_st, unauth_attr) - 48usize];
-    ["Offset of field: pkcs7_signer_info_st::pkey"]
-        [::std::mem::offset_of!(pkcs7_signer_info_st, pkey) - 56usize];
-    ["Offset of field: pkcs7_signer_info_st::ctx"]
-        [::std::mem::offset_of!(pkcs7_signer_info_st, ctx) - 64usize];
+    ["Offset of field: pkcs7_signer_info_st::pkey"][::std::mem::offset_of!(pkcs7_signer_info_st, pkey) - 56usize];
+    ["Offset of field: pkcs7_signer_info_st::ctx"][::std::mem::offset_of!(pkcs7_signer_info_st, ctx) - 64usize];
 };
 impl Default for pkcs7_signer_info_st {
     fn default() -> Self {
@@ -26152,11 +24773,9 @@ pub type sk_PKCS7_SIGNER_INFO_compfunc = ::std::option::Option<
         b: *const *const PKCS7_SIGNER_INFO,
     ) -> ::std::os::raw::c_int,
 >;
-pub type sk_PKCS7_SIGNER_INFO_freefunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *mut PKCS7_SIGNER_INFO)>;
-pub type sk_PKCS7_SIGNER_INFO_copyfunc = ::std::option::Option<
-    unsafe extern "C" fn(a: *const PKCS7_SIGNER_INFO) -> *mut PKCS7_SIGNER_INFO,
->;
+pub type sk_PKCS7_SIGNER_INFO_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut PKCS7_SIGNER_INFO)>;
+pub type sk_PKCS7_SIGNER_INFO_copyfunc =
+    ::std::option::Option<unsafe extern "C" fn(a: *const PKCS7_SIGNER_INFO) -> *mut PKCS7_SIGNER_INFO>;
 #[repr(C)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct pkcs7_recip_info_st {
@@ -26171,18 +24790,14 @@ pub struct pkcs7_recip_info_st {
 const _: () = {
     ["Size of pkcs7_recip_info_st"][::std::mem::size_of::<pkcs7_recip_info_st>() - 48usize];
     ["Alignment of pkcs7_recip_info_st"][::std::mem::align_of::<pkcs7_recip_info_st>() - 8usize];
-    ["Offset of field: pkcs7_recip_info_st::version"]
-        [::std::mem::offset_of!(pkcs7_recip_info_st, version) - 0usize];
+    ["Offset of field: pkcs7_recip_info_st::version"][::std::mem::offset_of!(pkcs7_recip_info_st, version) - 0usize];
     ["Offset of field: pkcs7_recip_info_st::issuer_and_serial"]
         [::std::mem::offset_of!(pkcs7_recip_info_st, issuer_and_serial) - 8usize];
     ["Offset of field: pkcs7_recip_info_st::key_enc_algor"]
         [::std::mem::offset_of!(pkcs7_recip_info_st, key_enc_algor) - 16usize];
-    ["Offset of field: pkcs7_recip_info_st::enc_key"]
-        [::std::mem::offset_of!(pkcs7_recip_info_st, enc_key) - 24usize];
-    ["Offset of field: pkcs7_recip_info_st::cert"]
-        [::std::mem::offset_of!(pkcs7_recip_info_st, cert) - 32usize];
-    ["Offset of field: pkcs7_recip_info_st::ctx"]
-        [::std::mem::offset_of!(pkcs7_recip_info_st, ctx) - 40usize];
+    ["Offset of field: pkcs7_recip_info_st::enc_key"][::std::mem::offset_of!(pkcs7_recip_info_st, enc_key) - 24usize];
+    ["Offset of field: pkcs7_recip_info_st::cert"][::std::mem::offset_of!(pkcs7_recip_info_st, cert) - 32usize];
+    ["Offset of field: pkcs7_recip_info_st::ctx"][::std::mem::offset_of!(pkcs7_recip_info_st, ctx) - 40usize];
 };
 impl Default for pkcs7_recip_info_st {
     fn default() -> Self {
@@ -26200,16 +24815,11 @@ pub struct stack_st_PKCS7_RECIP_INFO {
     _unused: [u8; 0],
 }
 pub type sk_PKCS7_RECIP_INFO_compfunc = ::std::option::Option<
-    unsafe extern "C" fn(
-        a: *const *const PKCS7_RECIP_INFO,
-        b: *const *const PKCS7_RECIP_INFO,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(a: *const *const PKCS7_RECIP_INFO, b: *const *const PKCS7_RECIP_INFO) -> ::std::os::raw::c_int,
 >;
-pub type sk_PKCS7_RECIP_INFO_freefunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *mut PKCS7_RECIP_INFO)>;
-pub type sk_PKCS7_RECIP_INFO_copyfunc = ::std::option::Option<
-    unsafe extern "C" fn(a: *const PKCS7_RECIP_INFO) -> *mut PKCS7_RECIP_INFO,
->;
+pub type sk_PKCS7_RECIP_INFO_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut PKCS7_RECIP_INFO)>;
+pub type sk_PKCS7_RECIP_INFO_copyfunc =
+    ::std::option::Option<unsafe extern "C" fn(a: *const PKCS7_RECIP_INFO) -> *mut PKCS7_RECIP_INFO>;
 #[repr(C)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct pkcs7_signed_st {
@@ -26224,18 +24834,12 @@ pub struct pkcs7_signed_st {
 const _: () = {
     ["Size of pkcs7_signed_st"][::std::mem::size_of::<pkcs7_signed_st>() - 48usize];
     ["Alignment of pkcs7_signed_st"][::std::mem::align_of::<pkcs7_signed_st>() - 8usize];
-    ["Offset of field: pkcs7_signed_st::version"]
-        [::std::mem::offset_of!(pkcs7_signed_st, version) - 0usize];
-    ["Offset of field: pkcs7_signed_st::md_algs"]
-        [::std::mem::offset_of!(pkcs7_signed_st, md_algs) - 8usize];
-    ["Offset of field: pkcs7_signed_st::cert"]
-        [::std::mem::offset_of!(pkcs7_signed_st, cert) - 16usize];
-    ["Offset of field: pkcs7_signed_st::crl"]
-        [::std::mem::offset_of!(pkcs7_signed_st, crl) - 24usize];
-    ["Offset of field: pkcs7_signed_st::signer_info"]
-        [::std::mem::offset_of!(pkcs7_signed_st, signer_info) - 32usize];
-    ["Offset of field: pkcs7_signed_st::contents"]
-        [::std::mem::offset_of!(pkcs7_signed_st, contents) - 40usize];
+    ["Offset of field: pkcs7_signed_st::version"][::std::mem::offset_of!(pkcs7_signed_st, version) - 0usize];
+    ["Offset of field: pkcs7_signed_st::md_algs"][::std::mem::offset_of!(pkcs7_signed_st, md_algs) - 8usize];
+    ["Offset of field: pkcs7_signed_st::cert"][::std::mem::offset_of!(pkcs7_signed_st, cert) - 16usize];
+    ["Offset of field: pkcs7_signed_st::crl"][::std::mem::offset_of!(pkcs7_signed_st, crl) - 24usize];
+    ["Offset of field: pkcs7_signed_st::signer_info"][::std::mem::offset_of!(pkcs7_signed_st, signer_info) - 32usize];
+    ["Offset of field: pkcs7_signed_st::contents"][::std::mem::offset_of!(pkcs7_signed_st, contents) - 40usize];
 };
 impl Default for pkcs7_signed_st {
     fn default() -> Self {
@@ -26266,10 +24870,8 @@ const _: () = {
         [::std::mem::offset_of!(pkcs7_enc_content_st, algorithm) - 8usize];
     ["Offset of field: pkcs7_enc_content_st::enc_data"]
         [::std::mem::offset_of!(pkcs7_enc_content_st, enc_data) - 16usize];
-    ["Offset of field: pkcs7_enc_content_st::cipher"]
-        [::std::mem::offset_of!(pkcs7_enc_content_st, cipher) - 24usize];
-    ["Offset of field: pkcs7_enc_content_st::ctx"]
-        [::std::mem::offset_of!(pkcs7_enc_content_st, ctx) - 32usize];
+    ["Offset of field: pkcs7_enc_content_st::cipher"][::std::mem::offset_of!(pkcs7_enc_content_st, cipher) - 24usize];
+    ["Offset of field: pkcs7_enc_content_st::ctx"][::std::mem::offset_of!(pkcs7_enc_content_st, ctx) - 32usize];
 };
 impl Default for pkcs7_enc_content_st {
     fn default() -> Self {
@@ -26292,12 +24894,10 @@ pub struct pkcs7_enveloped_st {
 const _: () = {
     ["Size of pkcs7_enveloped_st"][::std::mem::size_of::<pkcs7_enveloped_st>() - 24usize];
     ["Alignment of pkcs7_enveloped_st"][::std::mem::align_of::<pkcs7_enveloped_st>() - 8usize];
-    ["Offset of field: pkcs7_enveloped_st::version"]
-        [::std::mem::offset_of!(pkcs7_enveloped_st, version) - 0usize];
+    ["Offset of field: pkcs7_enveloped_st::version"][::std::mem::offset_of!(pkcs7_enveloped_st, version) - 0usize];
     ["Offset of field: pkcs7_enveloped_st::recipientinfo"]
         [::std::mem::offset_of!(pkcs7_enveloped_st, recipientinfo) - 8usize];
-    ["Offset of field: pkcs7_enveloped_st::enc_data"]
-        [::std::mem::offset_of!(pkcs7_enveloped_st, enc_data) - 16usize];
+    ["Offset of field: pkcs7_enveloped_st::enc_data"][::std::mem::offset_of!(pkcs7_enveloped_st, enc_data) - 16usize];
 };
 impl Default for pkcs7_enveloped_st {
     fn default() -> Self {
@@ -26322,10 +24922,8 @@ pub struct pkcs7_signedandenveloped_st {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of pkcs7_signedandenveloped_st"]
-        [::std::mem::size_of::<pkcs7_signedandenveloped_st>() - 56usize];
-    ["Alignment of pkcs7_signedandenveloped_st"]
-        [::std::mem::align_of::<pkcs7_signedandenveloped_st>() - 8usize];
+    ["Size of pkcs7_signedandenveloped_st"][::std::mem::size_of::<pkcs7_signedandenveloped_st>() - 56usize];
+    ["Alignment of pkcs7_signedandenveloped_st"][::std::mem::align_of::<pkcs7_signedandenveloped_st>() - 8usize];
     ["Offset of field: pkcs7_signedandenveloped_st::version"]
         [::std::mem::offset_of!(pkcs7_signedandenveloped_st, version) - 0usize];
     ["Offset of field: pkcs7_signedandenveloped_st::md_algs"]
@@ -26363,13 +24961,10 @@ pub struct pkcs7_digest_st {
 const _: () = {
     ["Size of pkcs7_digest_st"][::std::mem::size_of::<pkcs7_digest_st>() - 32usize];
     ["Alignment of pkcs7_digest_st"][::std::mem::align_of::<pkcs7_digest_st>() - 8usize];
-    ["Offset of field: pkcs7_digest_st::version"]
-        [::std::mem::offset_of!(pkcs7_digest_st, version) - 0usize];
+    ["Offset of field: pkcs7_digest_st::version"][::std::mem::offset_of!(pkcs7_digest_st, version) - 0usize];
     ["Offset of field: pkcs7_digest_st::md"][::std::mem::offset_of!(pkcs7_digest_st, md) - 8usize];
-    ["Offset of field: pkcs7_digest_st::contents"]
-        [::std::mem::offset_of!(pkcs7_digest_st, contents) - 16usize];
-    ["Offset of field: pkcs7_digest_st::digest"]
-        [::std::mem::offset_of!(pkcs7_digest_st, digest) - 24usize];
+    ["Offset of field: pkcs7_digest_st::contents"][::std::mem::offset_of!(pkcs7_digest_st, contents) - 16usize];
+    ["Offset of field: pkcs7_digest_st::digest"][::std::mem::offset_of!(pkcs7_digest_st, digest) - 24usize];
 };
 impl Default for pkcs7_digest_st {
     fn default() -> Self {
@@ -26391,10 +24986,8 @@ pub struct pkcs7_encrypted_st {
 const _: () = {
     ["Size of pkcs7_encrypted_st"][::std::mem::size_of::<pkcs7_encrypted_st>() - 16usize];
     ["Alignment of pkcs7_encrypted_st"][::std::mem::align_of::<pkcs7_encrypted_st>() - 8usize];
-    ["Offset of field: pkcs7_encrypted_st::version"]
-        [::std::mem::offset_of!(pkcs7_encrypted_st, version) - 0usize];
-    ["Offset of field: pkcs7_encrypted_st::enc_data"]
-        [::std::mem::offset_of!(pkcs7_encrypted_st, enc_data) - 8usize];
+    ["Offset of field: pkcs7_encrypted_st::version"][::std::mem::offset_of!(pkcs7_encrypted_st, version) - 0usize];
+    ["Offset of field: pkcs7_encrypted_st::enc_data"][::std::mem::offset_of!(pkcs7_encrypted_st, enc_data) - 8usize];
 };
 impl Default for pkcs7_encrypted_st {
     fn default() -> Self {
@@ -26432,14 +25025,10 @@ pub union pkcs7_st__bindgen_ty_1 {
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
     ["Size of pkcs7_st__bindgen_ty_1"][::std::mem::size_of::<pkcs7_st__bindgen_ty_1>() - 8usize];
-    ["Alignment of pkcs7_st__bindgen_ty_1"]
-        [::std::mem::align_of::<pkcs7_st__bindgen_ty_1>() - 8usize];
-    ["Offset of field: pkcs7_st__bindgen_ty_1::ptr"]
-        [::std::mem::offset_of!(pkcs7_st__bindgen_ty_1, ptr) - 0usize];
-    ["Offset of field: pkcs7_st__bindgen_ty_1::data"]
-        [::std::mem::offset_of!(pkcs7_st__bindgen_ty_1, data) - 0usize];
-    ["Offset of field: pkcs7_st__bindgen_ty_1::sign"]
-        [::std::mem::offset_of!(pkcs7_st__bindgen_ty_1, sign) - 0usize];
+    ["Alignment of pkcs7_st__bindgen_ty_1"][::std::mem::align_of::<pkcs7_st__bindgen_ty_1>() - 8usize];
+    ["Offset of field: pkcs7_st__bindgen_ty_1::ptr"][::std::mem::offset_of!(pkcs7_st__bindgen_ty_1, ptr) - 0usize];
+    ["Offset of field: pkcs7_st__bindgen_ty_1::data"][::std::mem::offset_of!(pkcs7_st__bindgen_ty_1, data) - 0usize];
+    ["Offset of field: pkcs7_st__bindgen_ty_1::sign"][::std::mem::offset_of!(pkcs7_st__bindgen_ty_1, sign) - 0usize];
     ["Offset of field: pkcs7_st__bindgen_ty_1::enveloped"]
         [::std::mem::offset_of!(pkcs7_st__bindgen_ty_1, enveloped) - 0usize];
     ["Offset of field: pkcs7_st__bindgen_ty_1::signed_and_enveloped"]
@@ -26448,8 +25037,7 @@ const _: () = {
         [::std::mem::offset_of!(pkcs7_st__bindgen_ty_1, digest) - 0usize];
     ["Offset of field: pkcs7_st__bindgen_ty_1::encrypted"]
         [::std::mem::offset_of!(pkcs7_st__bindgen_ty_1, encrypted) - 0usize];
-    ["Offset of field: pkcs7_st__bindgen_ty_1::other"]
-        [::std::mem::offset_of!(pkcs7_st__bindgen_ty_1, other) - 0usize];
+    ["Offset of field: pkcs7_st__bindgen_ty_1::other"][::std::mem::offset_of!(pkcs7_st__bindgen_ty_1, other) - 0usize];
 };
 impl Default for pkcs7_st__bindgen_ty_1 {
     fn default() -> Self {
@@ -26491,8 +25079,7 @@ pub type sk_PKCS7_compfunc = ::std::option::Option<
     unsafe extern "C" fn(a: *const *const PKCS7, b: *const *const PKCS7) -> ::std::os::raw::c_int,
 >;
 pub type sk_PKCS7_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut PKCS7)>;
-pub type sk_PKCS7_copyfunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *const PKCS7) -> *mut PKCS7>;
+pub type sk_PKCS7_copyfunc = ::std::option::Option<unsafe extern "C" fn(a: *const PKCS7) -> *mut PKCS7>;
 unsafe extern "C" {
     pub fn PKCS7_ISSUER_AND_SERIAL_new() -> *mut PKCS7_ISSUER_AND_SERIAL;
 }
@@ -26606,10 +25193,7 @@ unsafe extern "C" {
     ) -> *mut PKCS7_SIGNED;
 }
 unsafe extern "C" {
-    pub fn i2d_PKCS7_SIGNED(
-        a: *const PKCS7_SIGNED,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_PKCS7_SIGNED(a: *const PKCS7_SIGNED, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn PKCS7_SIGNED_it() -> *const ASN1_ITEM;
@@ -26694,10 +25278,7 @@ unsafe extern "C" {
     ) -> *mut PKCS7_DIGEST;
 }
 unsafe extern "C" {
-    pub fn i2d_PKCS7_DIGEST(
-        a: *const PKCS7_DIGEST,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_PKCS7_DIGEST(a: *const PKCS7_DIGEST, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn PKCS7_DIGEST_it() -> *const ASN1_ITEM;
@@ -26716,10 +25297,7 @@ unsafe extern "C" {
     ) -> *mut PKCS7_ENCRYPT;
 }
 unsafe extern "C" {
-    pub fn i2d_PKCS7_ENCRYPT(
-        a: *const PKCS7_ENCRYPT,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_PKCS7_ENCRYPT(a: *const PKCS7_ENCRYPT, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn PKCS7_ENCRYPT_it() -> *const ASN1_ITEM;
@@ -26738,19 +25316,13 @@ unsafe extern "C" {
     ) -> *mut PKCS7;
 }
 unsafe extern "C" {
-    pub fn i2d_PKCS7(
-        a: *const PKCS7,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_PKCS7(a: *const PKCS7, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn PKCS7_it() -> *const ASN1_ITEM;
 }
 unsafe extern "C" {
-    pub fn PKCS7_new_ex(
-        libctx: *mut OSSL_LIB_CTX,
-        propq: *const ::std::os::raw::c_char,
-    ) -> *mut PKCS7;
+    pub fn PKCS7_new_ex(libctx: *mut OSSL_LIB_CTX, propq: *const ::std::os::raw::c_char) -> *mut PKCS7;
 }
 unsafe extern "C" {
     pub fn PKCS7_ATTR_SIGN_it() -> *const ASN1_ITEM;
@@ -26759,10 +25331,7 @@ unsafe extern "C" {
     pub fn PKCS7_ATTR_VERIFY_it() -> *const ASN1_ITEM;
 }
 unsafe extern "C" {
-    pub fn i2d_PKCS7_NDEF(
-        a: *const PKCS7,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_PKCS7_NDEF(a: *const PKCS7, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn PKCS7_print_ctx(
@@ -26843,12 +25412,7 @@ unsafe extern "C" {
     pub fn PKCS7_dataFinal(p7: *mut PKCS7, bio: *mut BIO) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn PKCS7_dataDecode(
-        p7: *mut PKCS7,
-        pkey: *mut EVP_PKEY,
-        in_bio: *mut BIO,
-        pcert: *mut X509,
-    ) -> *mut BIO;
+    pub fn PKCS7_dataDecode(p7: *mut PKCS7, pkey: *mut EVP_PKEY, in_bio: *mut BIO, pcert: *mut X509) -> *mut BIO;
 }
 unsafe extern "C" {
     pub fn PKCS7_add_signature(
@@ -26882,38 +25446,25 @@ unsafe extern "C" {
     pub fn PKCS7_RECIP_INFO_get0_alg(ri: *mut PKCS7_RECIP_INFO, penc: *mut *mut X509_ALGOR);
 }
 unsafe extern "C" {
-    pub fn PKCS7_add_recipient_info(
-        p7: *mut PKCS7,
-        ri: *mut PKCS7_RECIP_INFO,
-    ) -> ::std::os::raw::c_int;
+    pub fn PKCS7_add_recipient_info(p7: *mut PKCS7, ri: *mut PKCS7_RECIP_INFO) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn PKCS7_RECIP_INFO_set(
-        p7i: *mut PKCS7_RECIP_INFO,
-        x509: *mut X509,
-    ) -> ::std::os::raw::c_int;
+    pub fn PKCS7_RECIP_INFO_set(p7i: *mut PKCS7_RECIP_INFO, x509: *mut X509) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn PKCS7_set_cipher(p7: *mut PKCS7, cipher: *const EVP_CIPHER) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn PKCS7_stream(
-        boundary: *mut *mut *mut ::std::os::raw::c_uchar,
-        p7: *mut PKCS7,
-    ) -> ::std::os::raw::c_int;
+    pub fn PKCS7_stream(boundary: *mut *mut *mut ::std::os::raw::c_uchar, p7: *mut PKCS7) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn PKCS7_get_issuer_and_serial(
-        p7: *mut PKCS7,
-        idx: ::std::os::raw::c_int,
-    ) -> *mut PKCS7_ISSUER_AND_SERIAL;
+    pub fn PKCS7_get_issuer_and_serial(p7: *mut PKCS7, idx: ::std::os::raw::c_int) -> *mut PKCS7_ISSUER_AND_SERIAL;
 }
 unsafe extern "C" {
     pub fn PKCS7_get_octet_string(p7: *mut PKCS7) -> *mut ASN1_OCTET_STRING;
 }
 unsafe extern "C" {
-    pub fn PKCS7_digest_from_attributes(sk: *mut stack_st_X509_ATTRIBUTE)
-    -> *mut ASN1_OCTET_STRING;
+    pub fn PKCS7_digest_from_attributes(sk: *mut stack_st_X509_ATTRIBUTE) -> *mut ASN1_OCTET_STRING;
 }
 unsafe extern "C" {
     pub fn PKCS7_add_signed_attribute(
@@ -26932,16 +25483,10 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn PKCS7_get_attribute(
-        si: *const PKCS7_SIGNER_INFO,
-        nid: ::std::os::raw::c_int,
-    ) -> *mut ASN1_TYPE;
+    pub fn PKCS7_get_attribute(si: *const PKCS7_SIGNER_INFO, nid: ::std::os::raw::c_int) -> *mut ASN1_TYPE;
 }
 unsafe extern "C" {
-    pub fn PKCS7_get_signed_attribute(
-        si: *const PKCS7_SIGNER_INFO,
-        nid: ::std::os::raw::c_int,
-    ) -> *mut ASN1_TYPE;
+    pub fn PKCS7_get_signed_attribute(si: *const PKCS7_SIGNER_INFO, nid: ::std::os::raw::c_int) -> *mut ASN1_TYPE;
 }
 unsafe extern "C" {
     pub fn PKCS7_set_signed_attributes(
@@ -26985,11 +25530,7 @@ unsafe extern "C" {
     ) -> *mut PKCS7_SIGNER_INFO;
 }
 unsafe extern "C" {
-    pub fn PKCS7_final(
-        p7: *mut PKCS7,
-        data: *mut BIO,
-        flags: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn PKCS7_final(p7: *mut PKCS7, data: *mut BIO, flags: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn PKCS7_verify(
@@ -27052,16 +25593,10 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn PKCS7_add_attrib_content_type(
-        si: *mut PKCS7_SIGNER_INFO,
-        coid: *mut ASN1_OBJECT,
-    ) -> ::std::os::raw::c_int;
+    pub fn PKCS7_add_attrib_content_type(si: *mut PKCS7_SIGNER_INFO, coid: *mut ASN1_OBJECT) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn PKCS7_add0_attrib_signing_time(
-        si: *mut PKCS7_SIGNER_INFO,
-        t: *mut ASN1_TIME,
-    ) -> ::std::os::raw::c_int;
+    pub fn PKCS7_add0_attrib_signing_time(si: *mut PKCS7_SIGNER_INFO, t: *mut ASN1_TIME) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn PKCS7_add1_attrib_digest(
@@ -27079,11 +25614,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn SMIME_read_PKCS7_ex(
-        bio: *mut BIO,
-        bcont: *mut *mut BIO,
-        p7: *mut *mut PKCS7,
-    ) -> *mut PKCS7;
+    pub fn SMIME_read_PKCS7_ex(bio: *mut BIO, bcont: *mut *mut BIO, p7: *mut *mut PKCS7) -> *mut PKCS7;
 }
 unsafe extern "C" {
     pub fn SMIME_read_PKCS7(bio: *mut BIO, bcont: *mut *mut BIO) -> *mut PKCS7;
@@ -27096,12 +25627,8 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn X509_CRL_METHOD_new(
-        crl_init: ::std::option::Option<
-            unsafe extern "C" fn(crl: *mut X509_CRL) -> ::std::os::raw::c_int,
-        >,
-        crl_free: ::std::option::Option<
-            unsafe extern "C" fn(crl: *mut X509_CRL) -> ::std::os::raw::c_int,
-        >,
+        crl_init: ::std::option::Option<unsafe extern "C" fn(crl: *mut X509_CRL) -> ::std::os::raw::c_int>,
+        crl_free: ::std::option::Option<unsafe extern "C" fn(crl: *mut X509_CRL) -> ::std::os::raw::c_int>,
         crl_lookup: ::std::option::Option<
             unsafe extern "C" fn(
                 crl: *mut X509_CRL,
@@ -27125,18 +25652,13 @@ unsafe extern "C" {
     pub fn X509_CRL_get_meth_data(crl: *mut X509_CRL) -> *mut ::std::os::raw::c_void;
 }
 unsafe extern "C" {
-    pub fn X509_verify_cert_error_string(
-        n: ::std::os::raw::c_long,
-    ) -> *const ::std::os::raw::c_char;
+    pub fn X509_verify_cert_error_string(n: ::std::os::raw::c_long) -> *const ::std::os::raw::c_char;
 }
 unsafe extern "C" {
     pub fn X509_verify(a: *mut X509, r: *mut EVP_PKEY) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_self_signed(
-        cert: *mut X509,
-        verify_signature: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_self_signed(cert: *mut X509, verify_signature: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_REQ_verify_ex(
@@ -27168,10 +25690,7 @@ unsafe extern "C" {
     pub fn NETSCAPE_SPKI_get_pubkey(x: *mut NETSCAPE_SPKI) -> *mut EVP_PKEY;
 }
 unsafe extern "C" {
-    pub fn NETSCAPE_SPKI_set_pubkey(
-        x: *mut NETSCAPE_SPKI,
-        pkey: *mut EVP_PKEY,
-    ) -> ::std::os::raw::c_int;
+    pub fn NETSCAPE_SPKI_set_pubkey(x: *mut NETSCAPE_SPKI, pkey: *mut EVP_PKEY) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn NETSCAPE_SPKI_print(out: *mut BIO, spki: *mut NETSCAPE_SPKI) -> ::std::os::raw::c_int;
@@ -27184,45 +25703,29 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_signature_print(
-        bp: *mut BIO,
-        alg: *const X509_ALGOR,
-        sig: *const ASN1_STRING,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_signature_print(bp: *mut BIO, alg: *const X509_ALGOR, sig: *const ASN1_STRING)
+    -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_sign(x: *mut X509, pkey: *mut EVP_PKEY, md: *const EVP_MD)
-    -> ::std::os::raw::c_int;
+    pub fn X509_sign(x: *mut X509, pkey: *mut EVP_PKEY, md: *const EVP_MD) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_sign_ctx(x: *mut X509, ctx: *mut EVP_MD_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_REQ_sign(
-        x: *mut X509_REQ,
-        pkey: *mut EVP_PKEY,
-        md: *const EVP_MD,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_REQ_sign(x: *mut X509_REQ, pkey: *mut EVP_PKEY, md: *const EVP_MD) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_REQ_sign_ctx(x: *mut X509_REQ, ctx: *mut EVP_MD_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_CRL_sign(
-        x: *mut X509_CRL,
-        pkey: *mut EVP_PKEY,
-        md: *const EVP_MD,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_CRL_sign(x: *mut X509_CRL, pkey: *mut EVP_PKEY, md: *const EVP_MD) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_CRL_sign_ctx(x: *mut X509_CRL, ctx: *mut EVP_MD_CTX) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn NETSCAPE_SPKI_sign(
-        x: *mut NETSCAPE_SPKI,
-        pkey: *mut EVP_PKEY,
-        md: *const EVP_MD,
-    ) -> ::std::os::raw::c_int;
+    pub fn NETSCAPE_SPKI_sign(x: *mut NETSCAPE_SPKI, pkey: *mut EVP_PKEY, md: *const EVP_MD) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_pubkey_digest(
@@ -27317,14 +25820,10 @@ pub struct stack_st_CONF_VALUE {
     _unused: [u8; 0],
 }
 pub type sk_CONF_VALUE_compfunc = ::std::option::Option<
-    unsafe extern "C" fn(
-        a: *const *const CONF_VALUE,
-        b: *const *const CONF_VALUE,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(a: *const *const CONF_VALUE, b: *const *const CONF_VALUE) -> ::std::os::raw::c_int,
 >;
 pub type sk_CONF_VALUE_freefunc = ::std::option::Option<unsafe extern "C" fn(a: *mut CONF_VALUE)>;
-pub type sk_CONF_VALUE_copyfunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *const CONF_VALUE) -> *mut CONF_VALUE>;
+pub type sk_CONF_VALUE_copyfunc = ::std::option::Option<unsafe extern "C" fn(a: *const CONF_VALUE) -> *mut CONF_VALUE>;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct lhash_st_CONF_VALUE {
@@ -27363,8 +25862,7 @@ impl Default for lhash_st_CONF_VALUE_lh_CONF_VALUE_dummy {
 const _: () = {
     ["Size of lhash_st_CONF_VALUE"][::std::mem::size_of::<lhash_st_CONF_VALUE>() - 8usize];
     ["Alignment of lhash_st_CONF_VALUE"][::std::mem::align_of::<lhash_st_CONF_VALUE>() - 8usize];
-    ["Offset of field: lhash_st_CONF_VALUE::dummy"]
-        [::std::mem::offset_of!(lhash_st_CONF_VALUE, dummy) - 0usize];
+    ["Offset of field: lhash_st_CONF_VALUE::dummy"][::std::mem::offset_of!(lhash_st_CONF_VALUE, dummy) - 0usize];
 };
 impl Default for lhash_st_CONF_VALUE {
     fn default() -> Self {
@@ -27375,9 +25873,8 @@ impl Default for lhash_st_CONF_VALUE {
         }
     }
 }
-pub type lh_CONF_VALUE_compfunc = ::std::option::Option<
-    unsafe extern "C" fn(a: *const CONF_VALUE, b: *const CONF_VALUE) -> ::std::os::raw::c_int,
->;
+pub type lh_CONF_VALUE_compfunc =
+    ::std::option::Option<unsafe extern "C" fn(a: *const CONF_VALUE, b: *const CONF_VALUE) -> ::std::os::raw::c_int>;
 pub type lh_CONF_VALUE_hashfunc =
     ::std::option::Option<unsafe extern "C" fn(a: *const CONF_VALUE) -> ::std::os::raw::c_ulong>;
 pub type lh_CONF_VALUE_doallfunc = ::std::option::Option<unsafe extern "C" fn(a: *mut CONF_VALUE)>;
@@ -27388,10 +25885,8 @@ pub struct conf_method_st {
     pub name: *const ::std::os::raw::c_char,
     pub create: ::std::option::Option<unsafe extern "C" fn(meth: *mut CONF_METHOD) -> *mut CONF>,
     pub init: ::std::option::Option<unsafe extern "C" fn(conf: *mut CONF) -> ::std::os::raw::c_int>,
-    pub destroy:
-        ::std::option::Option<unsafe extern "C" fn(conf: *mut CONF) -> ::std::os::raw::c_int>,
-    pub destroy_data:
-        ::std::option::Option<unsafe extern "C" fn(conf: *mut CONF) -> ::std::os::raw::c_int>,
+    pub destroy: ::std::option::Option<unsafe extern "C" fn(conf: *mut CONF) -> ::std::os::raw::c_int>,
+    pub destroy_data: ::std::option::Option<unsafe extern "C" fn(conf: *mut CONF) -> ::std::os::raw::c_int>,
     pub load_bio: ::std::option::Option<
         unsafe extern "C" fn(
             conf: *mut CONF,
@@ -27399,9 +25894,7 @@ pub struct conf_method_st {
             eline: *mut ::std::os::raw::c_long,
         ) -> ::std::os::raw::c_int,
     >,
-    pub dump: ::std::option::Option<
-        unsafe extern "C" fn(conf: *const CONF, bp: *mut BIO) -> ::std::os::raw::c_int,
-    >,
+    pub dump: ::std::option::Option<unsafe extern "C" fn(conf: *const CONF, bp: *mut BIO) -> ::std::os::raw::c_int>,
     pub is_number: ::std::option::Option<
         unsafe extern "C" fn(conf: *const CONF, c: ::std::os::raw::c_char) -> ::std::os::raw::c_int,
     >,
@@ -27420,26 +25913,16 @@ pub struct conf_method_st {
 const _: () = {
     ["Size of conf_method_st"][::std::mem::size_of::<conf_method_st>() - 80usize];
     ["Alignment of conf_method_st"][::std::mem::align_of::<conf_method_st>() - 8usize];
-    ["Offset of field: conf_method_st::name"]
-        [::std::mem::offset_of!(conf_method_st, name) - 0usize];
-    ["Offset of field: conf_method_st::create"]
-        [::std::mem::offset_of!(conf_method_st, create) - 8usize];
-    ["Offset of field: conf_method_st::init"]
-        [::std::mem::offset_of!(conf_method_st, init) - 16usize];
-    ["Offset of field: conf_method_st::destroy"]
-        [::std::mem::offset_of!(conf_method_st, destroy) - 24usize];
-    ["Offset of field: conf_method_st::destroy_data"]
-        [::std::mem::offset_of!(conf_method_st, destroy_data) - 32usize];
-    ["Offset of field: conf_method_st::load_bio"]
-        [::std::mem::offset_of!(conf_method_st, load_bio) - 40usize];
-    ["Offset of field: conf_method_st::dump"]
-        [::std::mem::offset_of!(conf_method_st, dump) - 48usize];
-    ["Offset of field: conf_method_st::is_number"]
-        [::std::mem::offset_of!(conf_method_st, is_number) - 56usize];
-    ["Offset of field: conf_method_st::to_int"]
-        [::std::mem::offset_of!(conf_method_st, to_int) - 64usize];
-    ["Offset of field: conf_method_st::load"]
-        [::std::mem::offset_of!(conf_method_st, load) - 72usize];
+    ["Offset of field: conf_method_st::name"][::std::mem::offset_of!(conf_method_st, name) - 0usize];
+    ["Offset of field: conf_method_st::create"][::std::mem::offset_of!(conf_method_st, create) - 8usize];
+    ["Offset of field: conf_method_st::init"][::std::mem::offset_of!(conf_method_st, init) - 16usize];
+    ["Offset of field: conf_method_st::destroy"][::std::mem::offset_of!(conf_method_st, destroy) - 24usize];
+    ["Offset of field: conf_method_st::destroy_data"][::std::mem::offset_of!(conf_method_st, destroy_data) - 32usize];
+    ["Offset of field: conf_method_st::load_bio"][::std::mem::offset_of!(conf_method_st, load_bio) - 40usize];
+    ["Offset of field: conf_method_st::dump"][::std::mem::offset_of!(conf_method_st, dump) - 48usize];
+    ["Offset of field: conf_method_st::is_number"][::std::mem::offset_of!(conf_method_st, is_number) - 56usize];
+    ["Offset of field: conf_method_st::to_int"][::std::mem::offset_of!(conf_method_st, to_int) - 64usize];
+    ["Offset of field: conf_method_st::load"][::std::mem::offset_of!(conf_method_st, load) - 72usize];
 };
 impl Default for conf_method_st {
     fn default() -> Self {
@@ -27468,10 +25951,8 @@ const _: () = {
     ["Offset of field: conf_st::meth"][::std::mem::offset_of!(conf_st, meth) - 0usize];
     ["Offset of field: conf_st::meth_data"][::std::mem::offset_of!(conf_st, meth_data) - 8usize];
     ["Offset of field: conf_st::data"][::std::mem::offset_of!(conf_st, data) - 16usize];
-    ["Offset of field: conf_st::flag_dollarid"]
-        [::std::mem::offset_of!(conf_st, flag_dollarid) - 24usize];
-    ["Offset of field: conf_st::flag_abspath"]
-        [::std::mem::offset_of!(conf_st, flag_abspath) - 28usize];
+    ["Offset of field: conf_st::flag_dollarid"][::std::mem::offset_of!(conf_st, flag_dollarid) - 24usize];
+    ["Offset of field: conf_st::flag_abspath"][::std::mem::offset_of!(conf_st, flag_abspath) - 28usize];
     ["Offset of field: conf_st::includedir"][::std::mem::offset_of!(conf_st, includedir) - 32usize];
     ["Offset of field: conf_st::libctx"][::std::mem::offset_of!(conf_st, libctx) - 40usize];
 };
@@ -27506,9 +25987,8 @@ pub struct stack_st_CONF_MODULE {
 pub struct stack_st_CONF_IMODULE {
     _unused: [u8; 0],
 }
-pub type conf_init_func = ::std::option::Option<
-    unsafe extern "C" fn(md: *mut CONF_IMODULE, cnf: *const CONF) -> ::std::os::raw::c_int,
->;
+pub type conf_init_func =
+    ::std::option::Option<unsafe extern "C" fn(md: *mut CONF_IMODULE, cnf: *const CONF) -> ::std::os::raw::c_int>;
 pub type conf_finish_func = ::std::option::Option<unsafe extern "C" fn(md: *mut CONF_IMODULE)>;
 unsafe extern "C" {
     pub fn CONF_set_default_method(meth: *mut CONF_METHOD) -> ::std::os::raw::c_int;
@@ -27588,20 +26068,13 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn NCONF_load_bio(
-        conf: *mut CONF,
-        bp: *mut BIO,
-        eline: *mut ::std::os::raw::c_long,
-    ) -> ::std::os::raw::c_int;
+    pub fn NCONF_load_bio(conf: *mut CONF, bp: *mut BIO, eline: *mut ::std::os::raw::c_long) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn NCONF_get_section_names(conf: *const CONF) -> *mut stack_st_OPENSSL_CSTRING;
 }
 unsafe extern "C" {
-    pub fn NCONF_get_section(
-        conf: *const CONF,
-        section: *const ::std::os::raw::c_char,
-    ) -> *mut stack_st_CONF_VALUE;
+    pub fn NCONF_get_section(conf: *const CONF, section: *const ::std::os::raw::c_char) -> *mut stack_st_CONF_VALUE;
 }
 unsafe extern "C" {
     pub fn NCONF_get_string(
@@ -27780,10 +26253,7 @@ unsafe extern "C" {
     pub fn OSSL_HTTP_REQ_CTX_get_resp_len(rctx: *const OSSL_HTTP_REQ_CTX) -> usize;
 }
 unsafe extern "C" {
-    pub fn OSSL_HTTP_REQ_CTX_set_max_response_length(
-        rctx: *mut OSSL_HTTP_REQ_CTX,
-        len: ::std::os::raw::c_ulong,
-    );
+    pub fn OSSL_HTTP_REQ_CTX_set_max_response_length(rctx: *mut OSSL_HTTP_REQ_CTX, len: ::std::os::raw::c_ulong);
 }
 unsafe extern "C" {
     pub fn OSSL_HTTP_REQ_CTX_set_max_response_hdr_lines(rctx: *mut OSSL_HTTP_REQ_CTX, count: usize);
@@ -27888,10 +26358,7 @@ unsafe extern "C" {
     ) -> *mut BIO;
 }
 unsafe extern "C" {
-    pub fn OSSL_HTTP_close(
-        rctx: *mut OSSL_HTTP_REQ_CTX,
-        ok: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn OSSL_HTTP_close(rctx: *mut OSSL_HTTP_REQ_CTX, ok: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn OSSL_HTTP_parse_url(
@@ -27987,20 +26454,13 @@ unsafe extern "C" {
     pub fn i2d_X509_PUBKEY_bio(bp: *mut BIO, xpk: *const X509_PUBKEY) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn d2i_PKCS8_PRIV_KEY_INFO_bio(
-        bp: *mut BIO,
-        p8inf: *mut *mut PKCS8_PRIV_KEY_INFO,
-    ) -> *mut PKCS8_PRIV_KEY_INFO;
+    pub fn d2i_PKCS8_PRIV_KEY_INFO_bio(bp: *mut BIO, p8inf: *mut *mut PKCS8_PRIV_KEY_INFO) -> *mut PKCS8_PRIV_KEY_INFO;
 }
 unsafe extern "C" {
-    pub fn i2d_PKCS8_PRIV_KEY_INFO_bio(
-        bp: *mut BIO,
-        p8inf: *const PKCS8_PRIV_KEY_INFO,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_PKCS8_PRIV_KEY_INFO_bio(bp: *mut BIO, p8inf: *const PKCS8_PRIV_KEY_INFO) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn i2d_PKCS8PrivateKeyInfo_bio(bp: *mut BIO, key: *const EVP_PKEY)
-    -> ::std::os::raw::c_int;
+    pub fn i2d_PKCS8PrivateKeyInfo_bio(bp: *mut BIO, key: *const EVP_PKEY) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn i2d_PrivateKey_bio(bp: *mut BIO, pkey: *const EVP_PKEY) -> ::std::os::raw::c_int;
@@ -28099,11 +26559,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_time_adj(
-        s: *mut ASN1_TIME,
-        adj: ::std::os::raw::c_long,
-        t: *mut time_t,
-    ) -> *mut ASN1_TIME;
+    pub fn X509_time_adj(s: *mut ASN1_TIME, adj: ::std::os::raw::c_long, t: *mut time_t) -> *mut ASN1_TIME;
 }
 unsafe extern "C" {
     pub fn X509_time_adj_ex(
@@ -28138,11 +26594,7 @@ unsafe extern "C" {
     pub fn X509_to_X509_REQ(x: *mut X509, pkey: *mut EVP_PKEY, md: *const EVP_MD) -> *mut X509_REQ;
 }
 unsafe extern "C" {
-    pub fn X509_REQ_to_X509(
-        r: *mut X509_REQ,
-        days: ::std::os::raw::c_int,
-        pkey: *mut EVP_PKEY,
-    ) -> *mut X509;
+    pub fn X509_REQ_to_X509(r: *mut X509_REQ, days: ::std::os::raw::c_int, pkey: *mut EVP_PKEY) -> *mut X509;
 }
 unsafe extern "C" {
     pub fn X509_ALGOR_new() -> *mut X509_ALGOR;
@@ -28158,10 +26610,7 @@ unsafe extern "C" {
     ) -> *mut X509_ALGOR;
 }
 unsafe extern "C" {
-    pub fn i2d_X509_ALGOR(
-        a: *const X509_ALGOR,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_X509_ALGOR(a: *const X509_ALGOR, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_ALGOR_it() -> *const ASN1_ITEM;
@@ -28174,10 +26623,7 @@ unsafe extern "C" {
     ) -> *mut X509_ALGORS;
 }
 unsafe extern "C" {
-    pub fn i2d_X509_ALGORS(
-        a: *const X509_ALGORS,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_X509_ALGORS(a: *const X509_ALGORS, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_ALGORS_it() -> *const ASN1_ITEM;
@@ -28196,10 +26642,7 @@ unsafe extern "C" {
     ) -> *mut X509_VAL;
 }
 unsafe extern "C" {
-    pub fn i2d_X509_VAL(
-        a: *const X509_VAL,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_X509_VAL(a: *const X509_VAL, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_VAL_it() -> *const ASN1_ITEM;
@@ -28218,19 +26661,13 @@ unsafe extern "C" {
     ) -> *mut X509_PUBKEY;
 }
 unsafe extern "C" {
-    pub fn i2d_X509_PUBKEY(
-        a: *const X509_PUBKEY,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_X509_PUBKEY(a: *const X509_PUBKEY, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_PUBKEY_it() -> *const ASN1_ITEM;
 }
 unsafe extern "C" {
-    pub fn X509_PUBKEY_new_ex(
-        libctx: *mut OSSL_LIB_CTX,
-        propq: *const ::std::os::raw::c_char,
-    ) -> *mut X509_PUBKEY;
+    pub fn X509_PUBKEY_new_ex(libctx: *mut OSSL_LIB_CTX, propq: *const ::std::os::raw::c_char) -> *mut X509_PUBKEY;
 }
 unsafe extern "C" {
     pub fn X509_PUBKEY_set(x: *mut *mut X509_PUBKEY, pkey: *mut EVP_PKEY) -> ::std::os::raw::c_int;
@@ -28242,10 +26679,7 @@ unsafe extern "C" {
     pub fn X509_PUBKEY_get(key: *const X509_PUBKEY) -> *mut EVP_PKEY;
 }
 unsafe extern "C" {
-    pub fn X509_get_pubkey_parameters(
-        pkey: *mut EVP_PKEY,
-        chain: *mut stack_st_X509,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_get_pubkey_parameters(pkey: *mut EVP_PKEY, chain: *mut stack_st_X509) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_get_pathlen(x: *mut X509) -> ::std::os::raw::c_long;
@@ -28258,10 +26692,7 @@ unsafe extern "C" {
     ) -> *mut EVP_PKEY;
 }
 unsafe extern "C" {
-    pub fn i2d_PUBKEY(
-        a: *const EVP_PKEY,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_PUBKEY(a: *const EVP_PKEY, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn d2i_PUBKEY_ex(
@@ -28280,10 +26711,7 @@ unsafe extern "C" {
     ) -> *mut RSA;
 }
 unsafe extern "C" {
-    pub fn i2d_RSA_PUBKEY(
-        a: *const RSA,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_RSA_PUBKEY(a: *const RSA, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn d2i_DSA_PUBKEY(
@@ -28293,10 +26721,7 @@ unsafe extern "C" {
     ) -> *mut DSA;
 }
 unsafe extern "C" {
-    pub fn i2d_DSA_PUBKEY(
-        a: *const DSA,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_DSA_PUBKEY(a: *const DSA, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn d2i_EC_PUBKEY(
@@ -28306,10 +26731,7 @@ unsafe extern "C" {
     ) -> *mut EC_KEY;
 }
 unsafe extern "C" {
-    pub fn i2d_EC_PUBKEY(
-        a: *const EC_KEY,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_EC_PUBKEY(a: *const EC_KEY, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_SIG_new() -> *mut X509_SIG;
@@ -28325,27 +26747,16 @@ unsafe extern "C" {
     ) -> *mut X509_SIG;
 }
 unsafe extern "C" {
-    pub fn i2d_X509_SIG(
-        a: *const X509_SIG,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_X509_SIG(a: *const X509_SIG, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_SIG_it() -> *const ASN1_ITEM;
 }
 unsafe extern "C" {
-    pub fn X509_SIG_get0(
-        sig: *const X509_SIG,
-        palg: *mut *const X509_ALGOR,
-        pdigest: *mut *const ASN1_OCTET_STRING,
-    );
+    pub fn X509_SIG_get0(sig: *const X509_SIG, palg: *mut *const X509_ALGOR, pdigest: *mut *const ASN1_OCTET_STRING);
 }
 unsafe extern "C" {
-    pub fn X509_SIG_getm(
-        sig: *mut X509_SIG,
-        palg: *mut *mut X509_ALGOR,
-        pdigest: *mut *mut ASN1_OCTET_STRING,
-    );
+    pub fn X509_SIG_getm(sig: *mut X509_SIG, palg: *mut *mut X509_ALGOR, pdigest: *mut *mut ASN1_OCTET_STRING);
 }
 unsafe extern "C" {
     pub fn X509_REQ_INFO_new() -> *mut X509_REQ_INFO;
@@ -28361,10 +26772,7 @@ unsafe extern "C" {
     ) -> *mut X509_REQ_INFO;
 }
 unsafe extern "C" {
-    pub fn i2d_X509_REQ_INFO(
-        a: *const X509_REQ_INFO,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_X509_REQ_INFO(a: *const X509_REQ_INFO, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_REQ_INFO_it() -> *const ASN1_ITEM;
@@ -28383,19 +26791,13 @@ unsafe extern "C" {
     ) -> *mut X509_REQ;
 }
 unsafe extern "C" {
-    pub fn i2d_X509_REQ(
-        a: *const X509_REQ,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_X509_REQ(a: *const X509_REQ, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_REQ_it() -> *const ASN1_ITEM;
 }
 unsafe extern "C" {
-    pub fn X509_REQ_new_ex(
-        libctx: *mut OSSL_LIB_CTX,
-        propq: *const ::std::os::raw::c_char,
-    ) -> *mut X509_REQ;
+    pub fn X509_REQ_new_ex(libctx: *mut OSSL_LIB_CTX, propq: *const ::std::os::raw::c_char) -> *mut X509_REQ;
 }
 unsafe extern "C" {
     pub fn X509_ATTRIBUTE_new() -> *mut X509_ATTRIBUTE;
@@ -28500,10 +26902,7 @@ unsafe extern "C" {
     ) -> *mut X509_NAME;
 }
 unsafe extern "C" {
-    pub fn i2d_X509_NAME(
-        a: *const X509_NAME,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_X509_NAME(a: *const X509_NAME, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_NAME_it() -> *const ASN1_ITEM;
@@ -28525,10 +26924,7 @@ unsafe extern "C" {
     ) -> *mut X509_CINF;
 }
 unsafe extern "C" {
-    pub fn i2d_X509_CINF(
-        a: *const X509_CINF,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_X509_CINF(a: *const X509_CINF, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_CINF_it() -> *const ASN1_ITEM;
@@ -28547,19 +26943,13 @@ unsafe extern "C" {
     ) -> *mut X509;
 }
 unsafe extern "C" {
-    pub fn i2d_X509(
-        a: *const X509,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_X509(a: *const X509, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_it() -> *const ASN1_ITEM;
 }
 unsafe extern "C" {
-    pub fn X509_new_ex(
-        libctx: *mut OSSL_LIB_CTX,
-        propq: *const ::std::os::raw::c_char,
-    ) -> *mut X509;
+    pub fn X509_new_ex(libctx: *mut OSSL_LIB_CTX, propq: *const ::std::os::raw::c_char) -> *mut X509;
 }
 unsafe extern "C" {
     pub fn X509_CERT_AUX_new() -> *mut X509_CERT_AUX;
@@ -28575,10 +26965,7 @@ unsafe extern "C" {
     ) -> *mut X509_CERT_AUX;
 }
 unsafe extern "C" {
-    pub fn i2d_X509_CERT_AUX(
-        a: *const X509_CERT_AUX,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_X509_CERT_AUX(a: *const X509_CERT_AUX, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_CERT_AUX_it() -> *const ASN1_ITEM;
@@ -28591,10 +26978,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_get_ex_data(
-        r: *const X509,
-        idx: ::std::os::raw::c_int,
-    ) -> *mut ::std::os::raw::c_void;
+    pub fn X509_get_ex_data(r: *const X509, idx: ::std::os::raw::c_int) -> *mut ::std::os::raw::c_void;
 }
 unsafe extern "C" {
     pub fn d2i_X509_AUX(
@@ -28604,16 +26988,10 @@ unsafe extern "C" {
     ) -> *mut X509;
 }
 unsafe extern "C" {
-    pub fn i2d_X509_AUX(
-        a: *const X509,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_X509_AUX(a: *const X509, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn i2d_re_X509_tbs(
-        x: *mut X509,
-        pp: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_re_X509_tbs(x: *mut X509, pp: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_SIG_INFO_get(
@@ -28643,11 +27021,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_get0_signature(
-        psig: *mut *const ASN1_BIT_STRING,
-        palg: *mut *const X509_ALGOR,
-        x: *const X509,
-    );
+    pub fn X509_get0_signature(psig: *mut *const ASN1_BIT_STRING, palg: *mut *const X509_ALGOR, x: *const X509);
 }
 unsafe extern "C" {
     pub fn X509_get_signature_nid(x: *const X509) -> ::std::os::raw::c_int;
@@ -28679,16 +27053,10 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_alias_get0(
-        x: *mut X509,
-        len: *mut ::std::os::raw::c_int,
-    ) -> *mut ::std::os::raw::c_uchar;
+    pub fn X509_alias_get0(x: *mut X509, len: *mut ::std::os::raw::c_int) -> *mut ::std::os::raw::c_uchar;
 }
 unsafe extern "C" {
-    pub fn X509_keyid_get0(
-        x: *mut X509,
-        len: *mut ::std::os::raw::c_int,
-    ) -> *mut ::std::os::raw::c_uchar;
+    pub fn X509_keyid_get0(x: *mut X509, len: *mut ::std::os::raw::c_int) -> *mut ::std::os::raw::c_uchar;
 }
 unsafe extern "C" {
     pub fn X509_REVOKED_new() -> *mut X509_REVOKED;
@@ -28704,10 +27072,7 @@ unsafe extern "C" {
     ) -> *mut X509_REVOKED;
 }
 unsafe extern "C" {
-    pub fn i2d_X509_REVOKED(
-        a: *const X509_REVOKED,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_X509_REVOKED(a: *const X509_REVOKED, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_REVOKED_it() -> *const ASN1_ITEM;
@@ -28726,10 +27091,7 @@ unsafe extern "C" {
     ) -> *mut X509_CRL_INFO;
 }
 unsafe extern "C" {
-    pub fn i2d_X509_CRL_INFO(
-        a: *const X509_CRL_INFO,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_X509_CRL_INFO(a: *const X509_CRL_INFO, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_CRL_INFO_it() -> *const ASN1_ITEM;
@@ -28748,25 +27110,16 @@ unsafe extern "C" {
     ) -> *mut X509_CRL;
 }
 unsafe extern "C" {
-    pub fn i2d_X509_CRL(
-        a: *const X509_CRL,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_X509_CRL(a: *const X509_CRL, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_CRL_it() -> *const ASN1_ITEM;
 }
 unsafe extern "C" {
-    pub fn X509_CRL_new_ex(
-        libctx: *mut OSSL_LIB_CTX,
-        propq: *const ::std::os::raw::c_char,
-    ) -> *mut X509_CRL;
+    pub fn X509_CRL_new_ex(libctx: *mut OSSL_LIB_CTX, propq: *const ::std::os::raw::c_char) -> *mut X509_CRL;
 }
 unsafe extern "C" {
-    pub fn X509_CRL_add0_revoked(
-        crl: *mut X509_CRL,
-        rev: *mut X509_REVOKED,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_CRL_add0_revoked(crl: *mut X509_CRL, rev: *mut X509_REVOKED) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_CRL_get0_by_serial(
@@ -28802,10 +27155,7 @@ unsafe extern "C" {
     ) -> *mut NETSCAPE_SPKI;
 }
 unsafe extern "C" {
-    pub fn i2d_NETSCAPE_SPKI(
-        a: *const NETSCAPE_SPKI,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_NETSCAPE_SPKI(a: *const NETSCAPE_SPKI, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn NETSCAPE_SPKI_it() -> *const ASN1_ITEM;
@@ -28948,8 +27298,7 @@ unsafe extern "C" {
     pub fn X509_get_version(x: *const X509) -> ::std::os::raw::c_long;
 }
 unsafe extern "C" {
-    pub fn X509_set_version(x: *mut X509, version: ::std::os::raw::c_long)
-    -> ::std::os::raw::c_int;
+    pub fn X509_set_version(x: *mut X509, version: ::std::os::raw::c_long) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_set_serialNumber(x: *mut X509, serial: *mut ASN1_INTEGER) -> ::std::os::raw::c_int;
@@ -29006,11 +27355,7 @@ unsafe extern "C" {
     pub fn X509_get0_extensions(x: *const X509) -> *const stack_st_X509_EXTENSION;
 }
 unsafe extern "C" {
-    pub fn X509_get0_uids(
-        x: *const X509,
-        piuid: *mut *const ASN1_BIT_STRING,
-        psuid: *mut *const ASN1_BIT_STRING,
-    );
+    pub fn X509_get0_uids(x: *const X509, piuid: *mut *const ASN1_BIT_STRING, psuid: *mut *const ASN1_BIT_STRING);
 }
 unsafe extern "C" {
     pub fn X509_get0_tbs_sigalg(x: *const X509) -> *const X509_ALGOR;
@@ -29028,19 +27373,13 @@ unsafe extern "C" {
     pub fn X509_REQ_get_version(req: *const X509_REQ) -> ::std::os::raw::c_long;
 }
 unsafe extern "C" {
-    pub fn X509_REQ_set_version(
-        x: *mut X509_REQ,
-        version: ::std::os::raw::c_long,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_REQ_set_version(x: *mut X509_REQ, version: ::std::os::raw::c_long) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_REQ_get_subject_name(req: *const X509_REQ) -> *mut X509_NAME;
 }
 unsafe extern "C" {
-    pub fn X509_REQ_set_subject_name(
-        req: *mut X509_REQ,
-        name: *const X509_NAME,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_REQ_set_subject_name(req: *mut X509_REQ, name: *const X509_NAME) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_REQ_get0_signature(
@@ -29053,19 +27392,13 @@ unsafe extern "C" {
     pub fn X509_REQ_set0_signature(req: *mut X509_REQ, psig: *mut ASN1_BIT_STRING);
 }
 unsafe extern "C" {
-    pub fn X509_REQ_set1_signature_algo(
-        req: *mut X509_REQ,
-        palg: *mut X509_ALGOR,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_REQ_set1_signature_algo(req: *mut X509_REQ, palg: *mut X509_ALGOR) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_REQ_get_signature_nid(req: *const X509_REQ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn i2d_re_X509_REQ_tbs(
-        req: *mut X509_REQ,
-        pp: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_re_X509_REQ_tbs(req: *mut X509_REQ, pp: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_REQ_set_pubkey(x: *mut X509_REQ, pkey: *mut EVP_PKEY) -> ::std::os::raw::c_int;
@@ -29099,10 +27432,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_REQ_add_extensions(
-        req: *mut X509_REQ,
-        ext: *const stack_st_X509_EXTENSION,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_REQ_add_extensions(req: *mut X509_REQ, ext: *const stack_st_X509_EXTENSION) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_REQ_get_attr_count(req: *const X509_REQ) -> ::std::os::raw::c_int;
@@ -29122,22 +27452,13 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_REQ_get_attr(
-        req: *const X509_REQ,
-        loc: ::std::os::raw::c_int,
-    ) -> *mut X509_ATTRIBUTE;
+    pub fn X509_REQ_get_attr(req: *const X509_REQ, loc: ::std::os::raw::c_int) -> *mut X509_ATTRIBUTE;
 }
 unsafe extern "C" {
-    pub fn X509_REQ_delete_attr(
-        req: *mut X509_REQ,
-        loc: ::std::os::raw::c_int,
-    ) -> *mut X509_ATTRIBUTE;
+    pub fn X509_REQ_delete_attr(req: *mut X509_REQ, loc: ::std::os::raw::c_int) -> *mut X509_ATTRIBUTE;
 }
 unsafe extern "C" {
-    pub fn X509_REQ_add1_attr(
-        req: *mut X509_REQ,
-        attr: *mut X509_ATTRIBUTE,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_REQ_add1_attr(req: *mut X509_REQ, attr: *mut X509_ATTRIBUTE) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_REQ_add1_attr_by_OBJ(
@@ -29167,28 +27488,16 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_CRL_set_version(
-        x: *mut X509_CRL,
-        version: ::std::os::raw::c_long,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_CRL_set_version(x: *mut X509_CRL, version: ::std::os::raw::c_long) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_CRL_set_issuer_name(
-        x: *mut X509_CRL,
-        name: *const X509_NAME,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_CRL_set_issuer_name(x: *mut X509_CRL, name: *const X509_NAME) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_CRL_set1_lastUpdate(
-        x: *mut X509_CRL,
-        tm: *const ASN1_TIME,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_CRL_set1_lastUpdate(x: *mut X509_CRL, tm: *const ASN1_TIME) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_CRL_set1_nextUpdate(
-        x: *mut X509_CRL,
-        tm: *const ASN1_TIME,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_CRL_set1_nextUpdate(x: *mut X509_CRL, tm: *const ASN1_TIME) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_CRL_sort(crl: *mut X509_CRL) -> ::std::os::raw::c_int;
@@ -29231,28 +27540,19 @@ unsafe extern "C" {
     pub fn X509_CRL_get_signature_nid(crl: *const X509_CRL) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn i2d_re_X509_CRL_tbs(
-        req: *mut X509_CRL,
-        pp: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_re_X509_CRL_tbs(req: *mut X509_CRL, pp: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_REVOKED_get0_serialNumber(x: *const X509_REVOKED) -> *const ASN1_INTEGER;
 }
 unsafe extern "C" {
-    pub fn X509_REVOKED_set_serialNumber(
-        x: *mut X509_REVOKED,
-        serial: *mut ASN1_INTEGER,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_REVOKED_set_serialNumber(x: *mut X509_REVOKED, serial: *mut ASN1_INTEGER) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_REVOKED_get0_revocationDate(x: *const X509_REVOKED) -> *const ASN1_TIME;
 }
 unsafe extern "C" {
-    pub fn X509_REVOKED_set_revocationDate(
-        r: *mut X509_REVOKED,
-        tm: *mut ASN1_TIME,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_REVOKED_set_revocationDate(r: *mut X509_REVOKED, tm: *mut ASN1_TIME) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_REVOKED_get0_extensions(r: *const X509_REVOKED) -> *const stack_st_X509_EXTENSION;
@@ -29267,16 +27567,10 @@ unsafe extern "C" {
     ) -> *mut X509_CRL;
 }
 unsafe extern "C" {
-    pub fn X509_REQ_check_private_key(
-        req: *const X509_REQ,
-        pkey: *mut EVP_PKEY,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_REQ_check_private_key(req: *const X509_REQ, pkey: *mut EVP_PKEY) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_check_private_key(
-        cert: *const X509,
-        pkey: *const EVP_PKEY,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_check_private_key(cert: *const X509, pkey: *const EVP_PKEY) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_chain_check_suiteb(
@@ -29364,18 +27658,11 @@ unsafe extern "C" {
     pub fn X509_CRL_match(a: *const X509_CRL, b: *const X509_CRL) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_aux_print(
-        out: *mut BIO,
-        x: *mut X509,
-        indent: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_aux_print(out: *mut BIO, x: *mut X509, indent: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_NAME_print(
-        bp: *mut BIO,
-        name: *const X509_NAME,
-        obase: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_NAME_print(bp: *mut BIO, name: *const X509_NAME, obase: ::std::os::raw::c_int)
+    -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_NAME_print_ex(
@@ -29400,11 +27687,8 @@ unsafe extern "C" {
     pub fn X509_ocspid_print(bp: *mut BIO, x: *mut X509) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_CRL_print_ex(
-        out: *mut BIO,
-        x: *mut X509_CRL,
-        nmflag: ::std::os::raw::c_ulong,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_CRL_print_ex(out: *mut BIO, x: *mut X509_CRL, nmflag: ::std::os::raw::c_ulong)
+    -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_CRL_print(bp: *mut BIO, x: *mut X509_CRL) -> ::std::os::raw::c_int;
@@ -29454,16 +27738,10 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_NAME_get_entry(
-        name: *const X509_NAME,
-        loc: ::std::os::raw::c_int,
-    ) -> *mut X509_NAME_ENTRY;
+    pub fn X509_NAME_get_entry(name: *const X509_NAME, loc: ::std::os::raw::c_int) -> *mut X509_NAME_ENTRY;
 }
 unsafe extern "C" {
-    pub fn X509_NAME_delete_entry(
-        name: *mut X509_NAME,
-        loc: ::std::os::raw::c_int,
-    ) -> *mut X509_NAME_ENTRY;
+    pub fn X509_NAME_delete_entry(name: *mut X509_NAME, loc: ::std::os::raw::c_int) -> *mut X509_NAME_ENTRY;
 }
 unsafe extern "C" {
     pub fn X509_NAME_add_entry(
@@ -29534,10 +27812,7 @@ unsafe extern "C" {
     ) -> *mut X509_NAME_ENTRY;
 }
 unsafe extern "C" {
-    pub fn X509_NAME_ENTRY_set_object(
-        ne: *mut X509_NAME_ENTRY,
-        obj: *const ASN1_OBJECT,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_NAME_ENTRY_set_object(ne: *mut X509_NAME_ENTRY, obj: *const ASN1_OBJECT) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_NAME_ENTRY_set_data(
@@ -29588,16 +27863,10 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509v3_get_ext(
-        x: *const stack_st_X509_EXTENSION,
-        loc: ::std::os::raw::c_int,
-    ) -> *mut X509_EXTENSION;
+    pub fn X509v3_get_ext(x: *const stack_st_X509_EXTENSION, loc: ::std::os::raw::c_int) -> *mut X509_EXTENSION;
 }
 unsafe extern "C" {
-    pub fn X509v3_delete_ext(
-        x: *mut stack_st_X509_EXTENSION,
-        loc: ::std::os::raw::c_int,
-    ) -> *mut X509_EXTENSION;
+    pub fn X509v3_delete_ext(x: *mut stack_st_X509_EXTENSION, loc: ::std::os::raw::c_int) -> *mut X509_EXTENSION;
 }
 unsafe extern "C" {
     pub fn X509v3_add_ext(
@@ -29643,11 +27912,7 @@ unsafe extern "C" {
     pub fn X509_delete_ext(x: *mut X509, loc: ::std::os::raw::c_int) -> *mut X509_EXTENSION;
 }
 unsafe extern "C" {
-    pub fn X509_add_ext(
-        x: *mut X509,
-        ex: *mut X509_EXTENSION,
-        loc: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_add_ext(x: *mut X509, ex: *mut X509_EXTENSION, loc: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_get_ext_d2i(
@@ -29694,8 +27959,7 @@ unsafe extern "C" {
     pub fn X509_CRL_get_ext(x: *const X509_CRL, loc: ::std::os::raw::c_int) -> *mut X509_EXTENSION;
 }
 unsafe extern "C" {
-    pub fn X509_CRL_delete_ext(x: *mut X509_CRL, loc: ::std::os::raw::c_int)
-    -> *mut X509_EXTENSION;
+    pub fn X509_CRL_delete_ext(x: *mut X509_CRL, loc: ::std::os::raw::c_int) -> *mut X509_EXTENSION;
 }
 unsafe extern "C" {
     pub fn X509_CRL_add_ext(
@@ -29746,16 +28010,10 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_REVOKED_get_ext(
-        x: *const X509_REVOKED,
-        loc: ::std::os::raw::c_int,
-    ) -> *mut X509_EXTENSION;
+    pub fn X509_REVOKED_get_ext(x: *const X509_REVOKED, loc: ::std::os::raw::c_int) -> *mut X509_EXTENSION;
 }
 unsafe extern "C" {
-    pub fn X509_REVOKED_delete_ext(
-        x: *mut X509_REVOKED,
-        loc: ::std::os::raw::c_int,
-    ) -> *mut X509_EXTENSION;
+    pub fn X509_REVOKED_delete_ext(x: *mut X509_REVOKED, loc: ::std::os::raw::c_int) -> *mut X509_EXTENSION;
 }
 unsafe extern "C" {
     pub fn X509_REVOKED_add_ext(
@@ -29798,22 +28056,13 @@ unsafe extern "C" {
     ) -> *mut X509_EXTENSION;
 }
 unsafe extern "C" {
-    pub fn X509_EXTENSION_set_object(
-        ex: *mut X509_EXTENSION,
-        obj: *const ASN1_OBJECT,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_EXTENSION_set_object(ex: *mut X509_EXTENSION, obj: *const ASN1_OBJECT) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_EXTENSION_set_critical(
-        ex: *mut X509_EXTENSION,
-        crit: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_EXTENSION_set_critical(ex: *mut X509_EXTENSION, crit: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509_EXTENSION_set_data(
-        ex: *mut X509_EXTENSION,
-        data: *mut ASN1_OCTET_STRING,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_EXTENSION_set_data(ex: *mut X509_EXTENSION, data: *mut ASN1_OCTET_STRING) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_EXTENSION_get_object(ex: *mut X509_EXTENSION) -> *mut ASN1_OBJECT;
@@ -29842,16 +28091,10 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn X509at_get_attr(
-        x: *const stack_st_X509_ATTRIBUTE,
-        loc: ::std::os::raw::c_int,
-    ) -> *mut X509_ATTRIBUTE;
+    pub fn X509at_get_attr(x: *const stack_st_X509_ATTRIBUTE, loc: ::std::os::raw::c_int) -> *mut X509_ATTRIBUTE;
 }
 unsafe extern "C" {
-    pub fn X509at_delete_attr(
-        x: *mut stack_st_X509_ATTRIBUTE,
-        loc: ::std::os::raw::c_int,
-    ) -> *mut X509_ATTRIBUTE;
+    pub fn X509at_delete_attr(x: *mut stack_st_X509_ATTRIBUTE, loc: ::std::os::raw::c_int) -> *mut X509_ATTRIBUTE;
 }
 unsafe extern "C" {
     pub fn X509at_add1_attr(
@@ -29922,10 +28165,7 @@ unsafe extern "C" {
     ) -> *mut X509_ATTRIBUTE;
 }
 unsafe extern "C" {
-    pub fn X509_ATTRIBUTE_set1_object(
-        attr: *mut X509_ATTRIBUTE,
-        obj: *const ASN1_OBJECT,
-    ) -> ::std::os::raw::c_int;
+    pub fn X509_ATTRIBUTE_set1_object(attr: *mut X509_ATTRIBUTE, obj: *const ASN1_OBJECT) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn X509_ATTRIBUTE_set1_data(
@@ -29950,10 +28190,7 @@ unsafe extern "C" {
     pub fn X509_ATTRIBUTE_get0_object(attr: *mut X509_ATTRIBUTE) -> *mut ASN1_OBJECT;
 }
 unsafe extern "C" {
-    pub fn X509_ATTRIBUTE_get0_type(
-        attr: *mut X509_ATTRIBUTE,
-        idx: ::std::os::raw::c_int,
-    ) -> *mut ASN1_TYPE;
+    pub fn X509_ATTRIBUTE_get0_type(attr: *mut X509_ATTRIBUTE, idx: ::std::os::raw::c_int) -> *mut ASN1_TYPE;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_get_attr_count(key: *const EVP_PKEY) -> ::std::os::raw::c_int;
@@ -29973,22 +28210,13 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_get_attr(
-        key: *const EVP_PKEY,
-        loc: ::std::os::raw::c_int,
-    ) -> *mut X509_ATTRIBUTE;
+    pub fn EVP_PKEY_get_attr(key: *const EVP_PKEY, loc: ::std::os::raw::c_int) -> *mut X509_ATTRIBUTE;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_delete_attr(
-        key: *mut EVP_PKEY,
-        loc: ::std::os::raw::c_int,
-    ) -> *mut X509_ATTRIBUTE;
+    pub fn EVP_PKEY_delete_attr(key: *mut EVP_PKEY, loc: ::std::os::raw::c_int) -> *mut X509_ATTRIBUTE;
 }
 unsafe extern "C" {
-    pub fn EVP_PKEY_add1_attr(
-        key: *mut EVP_PKEY,
-        attr: *mut X509_ATTRIBUTE,
-    ) -> ::std::os::raw::c_int;
+    pub fn EVP_PKEY_add1_attr(key: *mut EVP_PKEY, attr: *mut X509_ATTRIBUTE) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn EVP_PKEY_add1_attr_by_OBJ(
@@ -30041,10 +28269,7 @@ unsafe extern "C" {
     ) -> *mut PBEPARAM;
 }
 unsafe extern "C" {
-    pub fn i2d_PBEPARAM(
-        a: *const PBEPARAM,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_PBEPARAM(a: *const PBEPARAM, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn PBEPARAM_it() -> *const ASN1_ITEM;
@@ -30063,10 +28288,7 @@ unsafe extern "C" {
     ) -> *mut PBE2PARAM;
 }
 unsafe extern "C" {
-    pub fn i2d_PBE2PARAM(
-        a: *const PBE2PARAM,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_PBE2PARAM(a: *const PBE2PARAM, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn PBE2PARAM_it() -> *const ASN1_ITEM;
@@ -30085,10 +28307,7 @@ unsafe extern "C" {
     ) -> *mut PBKDF2PARAM;
 }
 unsafe extern "C" {
-    pub fn i2d_PBKDF2PARAM(
-        a: *const PBKDF2PARAM,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_PBKDF2PARAM(a: *const PBKDF2PARAM, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn PBKDF2PARAM_it() -> *const ASN1_ITEM;
@@ -30107,10 +28326,7 @@ unsafe extern "C" {
     ) -> *mut PBMAC1PARAM;
 }
 unsafe extern "C" {
-    pub fn i2d_PBMAC1PARAM(
-        a: *const PBMAC1PARAM,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_PBMAC1PARAM(a: *const PBMAC1PARAM, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn PBMAC1PARAM_it() -> *const ASN1_ITEM;
@@ -30129,10 +28345,7 @@ unsafe extern "C" {
     ) -> *mut SCRYPT_PARAMS;
 }
 unsafe extern "C" {
-    pub fn i2d_SCRYPT_PARAMS(
-        a: *const SCRYPT_PARAMS,
-        out: *mut *mut ::std::os::raw::c_uchar,
-    ) -> ::std::os::raw::c_int;
+    pub fn i2d_SCRYPT_PARAMS(a: *const SCRYPT_PARAMS, out: *mut *mut ::std::os::raw::c_uchar) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn SCRYPT_PARAMS_it() -> *const ASN1_ITEM;
@@ -30294,10 +28507,7 @@ unsafe extern "C" {
     pub fn PKCS8_pkey_get0_attrs(p8: *const PKCS8_PRIV_KEY_INFO) -> *const stack_st_X509_ATTRIBUTE;
 }
 unsafe extern "C" {
-    pub fn PKCS8_pkey_add1_attr(
-        p8: *mut PKCS8_PRIV_KEY_INFO,
-        attr: *mut X509_ATTRIBUTE,
-    ) -> ::std::os::raw::c_int;
+    pub fn PKCS8_pkey_add1_attr(p8: *mut PKCS8_PRIV_KEY_INFO, attr: *mut X509_ATTRIBUTE) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn PKCS8_pkey_add1_attr_by_NID(
@@ -30570,8 +28780,7 @@ unsafe extern "C" {
     ) -> *mut X509_PUBKEY;
 }
 unsafe extern "C" {
-    pub fn PEM_write_bio_X509_PUBKEY(out: *mut BIO, x: *const X509_PUBKEY)
-    -> ::std::os::raw::c_int;
+    pub fn PEM_write_bio_X509_PUBKEY(out: *mut BIO, x: *const X509_PUBKEY) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn PEM_read_bio_PKCS7(
@@ -30618,10 +28827,7 @@ unsafe extern "C" {
     ) -> *mut PKCS8_PRIV_KEY_INFO;
 }
 unsafe extern "C" {
-    pub fn PEM_write_bio_PKCS8_PRIV_KEY_INFO(
-        out: *mut BIO,
-        x: *const PKCS8_PRIV_KEY_INFO,
-    ) -> ::std::os::raw::c_int;
+    pub fn PEM_write_bio_PKCS8_PRIV_KEY_INFO(out: *mut BIO, x: *const PKCS8_PRIV_KEY_INFO) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn PEM_read_bio_RSAPrivateKey(
@@ -30714,8 +28920,7 @@ unsafe extern "C" {
     ) -> *mut EC_GROUP;
 }
 unsafe extern "C" {
-    pub fn PEM_write_bio_ECPKParameters(out: *mut BIO, x: *const EC_GROUP)
-    -> ::std::os::raw::c_int;
+    pub fn PEM_write_bio_ECPKParameters(out: *mut BIO, x: *const EC_GROUP) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn PEM_read_bio_ECPrivateKey(
@@ -30910,16 +29115,10 @@ unsafe extern "C" {
     pub fn PEM_write_bio_Parameters(bp: *mut BIO, x: *const EVP_PKEY) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn b2i_PrivateKey(
-        in_: *mut *const ::std::os::raw::c_uchar,
-        length: ::std::os::raw::c_long,
-    ) -> *mut EVP_PKEY;
+    pub fn b2i_PrivateKey(in_: *mut *const ::std::os::raw::c_uchar, length: ::std::os::raw::c_long) -> *mut EVP_PKEY;
 }
 unsafe extern "C" {
-    pub fn b2i_PublicKey(
-        in_: *mut *const ::std::os::raw::c_uchar,
-        length: ::std::os::raw::c_long,
-    ) -> *mut EVP_PKEY;
+    pub fn b2i_PublicKey(in_: *mut *const ::std::os::raw::c_uchar, length: ::std::os::raw::c_long) -> *mut EVP_PKEY;
 }
 unsafe extern "C" {
     pub fn b2i_PrivateKey_bio(in_: *mut BIO) -> *mut EVP_PKEY;
@@ -30934,11 +29133,7 @@ unsafe extern "C" {
     pub fn i2b_PublicKey_bio(out: *mut BIO, pk: *const EVP_PKEY) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn b2i_PVK_bio(
-        in_: *mut BIO,
-        cb: pem_password_cb,
-        u: *mut ::std::os::raw::c_void,
-    ) -> *mut EVP_PKEY;
+    pub fn b2i_PVK_bio(in_: *mut BIO, cb: pem_password_cb, u: *mut ::std::os::raw::c_void) -> *mut EVP_PKEY;
 }
 unsafe extern "C" {
     pub fn b2i_PVK_bio_ex(
@@ -30988,27 +29183,17 @@ pub struct err_state_st {
 const _: () = {
     ["Size of err_state_st"][::std::mem::size_of::<err_state_st>() - 904usize];
     ["Alignment of err_state_st"][::std::mem::align_of::<err_state_st>() - 8usize];
-    ["Offset of field: err_state_st::err_flags"]
-        [::std::mem::offset_of!(err_state_st, err_flags) - 0usize];
-    ["Offset of field: err_state_st::err_marks"]
-        [::std::mem::offset_of!(err_state_st, err_marks) - 64usize];
-    ["Offset of field: err_state_st::err_buffer"]
-        [::std::mem::offset_of!(err_state_st, err_buffer) - 128usize];
-    ["Offset of field: err_state_st::err_data"]
-        [::std::mem::offset_of!(err_state_st, err_data) - 256usize];
-    ["Offset of field: err_state_st::err_data_size"]
-        [::std::mem::offset_of!(err_state_st, err_data_size) - 384usize];
-    ["Offset of field: err_state_st::err_data_flags"]
-        [::std::mem::offset_of!(err_state_st, err_data_flags) - 512usize];
-    ["Offset of field: err_state_st::err_file"]
-        [::std::mem::offset_of!(err_state_st, err_file) - 576usize];
-    ["Offset of field: err_state_st::err_line"]
-        [::std::mem::offset_of!(err_state_st, err_line) - 704usize];
-    ["Offset of field: err_state_st::err_func"]
-        [::std::mem::offset_of!(err_state_st, err_func) - 768usize];
+    ["Offset of field: err_state_st::err_flags"][::std::mem::offset_of!(err_state_st, err_flags) - 0usize];
+    ["Offset of field: err_state_st::err_marks"][::std::mem::offset_of!(err_state_st, err_marks) - 64usize];
+    ["Offset of field: err_state_st::err_buffer"][::std::mem::offset_of!(err_state_st, err_buffer) - 128usize];
+    ["Offset of field: err_state_st::err_data"][::std::mem::offset_of!(err_state_st, err_data) - 256usize];
+    ["Offset of field: err_state_st::err_data_size"][::std::mem::offset_of!(err_state_st, err_data_size) - 384usize];
+    ["Offset of field: err_state_st::err_data_flags"][::std::mem::offset_of!(err_state_st, err_data_flags) - 512usize];
+    ["Offset of field: err_state_st::err_file"][::std::mem::offset_of!(err_state_st, err_file) - 576usize];
+    ["Offset of field: err_state_st::err_line"][::std::mem::offset_of!(err_state_st, err_line) - 704usize];
+    ["Offset of field: err_state_st::err_func"][::std::mem::offset_of!(err_state_st, err_func) - 768usize];
     ["Offset of field: err_state_st::top"][::std::mem::offset_of!(err_state_st, top) - 896usize];
-    ["Offset of field: err_state_st::bottom"]
-        [::std::mem::offset_of!(err_state_st, bottom) - 900usize];
+    ["Offset of field: err_state_st::bottom"][::std::mem::offset_of!(err_state_st, bottom) - 900usize];
 };
 impl Default for err_state_st {
     fn default() -> Self {
@@ -31029,10 +29214,8 @@ pub struct ERR_string_data_st {
 const _: () = {
     ["Size of ERR_string_data_st"][::std::mem::size_of::<ERR_string_data_st>() - 16usize];
     ["Alignment of ERR_string_data_st"][::std::mem::align_of::<ERR_string_data_st>() - 8usize];
-    ["Offset of field: ERR_string_data_st::error"]
-        [::std::mem::offset_of!(ERR_string_data_st, error) - 0usize];
-    ["Offset of field: ERR_string_data_st::string"]
-        [::std::mem::offset_of!(ERR_string_data_st, string) - 8usize];
+    ["Offset of field: ERR_string_data_st::error"][::std::mem::offset_of!(ERR_string_data_st, error) - 0usize];
+    ["Offset of field: ERR_string_data_st::string"][::std::mem::offset_of!(ERR_string_data_st, string) - 8usize];
 };
 impl Default for ERR_string_data_st {
     fn default() -> Self {
@@ -31080,10 +29263,8 @@ impl Default for lhash_st_ERR_STRING_DATA_lh_ERR_STRING_DATA_dummy {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of lhash_st_ERR_STRING_DATA"]
-        [::std::mem::size_of::<lhash_st_ERR_STRING_DATA>() - 8usize];
-    ["Alignment of lhash_st_ERR_STRING_DATA"]
-        [::std::mem::align_of::<lhash_st_ERR_STRING_DATA>() - 8usize];
+    ["Size of lhash_st_ERR_STRING_DATA"][::std::mem::size_of::<lhash_st_ERR_STRING_DATA>() - 8usize];
+    ["Alignment of lhash_st_ERR_STRING_DATA"][::std::mem::align_of::<lhash_st_ERR_STRING_DATA>() - 8usize];
     ["Offset of field: lhash_st_ERR_STRING_DATA::dummy"]
         [::std::mem::offset_of!(lhash_st_ERR_STRING_DATA, dummy) - 0usize];
 };
@@ -31097,16 +29278,11 @@ impl Default for lhash_st_ERR_STRING_DATA {
     }
 }
 pub type lh_ERR_STRING_DATA_compfunc = ::std::option::Option<
-    unsafe extern "C" fn(
-        a: *const ERR_STRING_DATA,
-        b: *const ERR_STRING_DATA,
-    ) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(a: *const ERR_STRING_DATA, b: *const ERR_STRING_DATA) -> ::std::os::raw::c_int,
 >;
-pub type lh_ERR_STRING_DATA_hashfunc = ::std::option::Option<
-    unsafe extern "C" fn(a: *const ERR_STRING_DATA) -> ::std::os::raw::c_ulong,
->;
-pub type lh_ERR_STRING_DATA_doallfunc =
-    ::std::option::Option<unsafe extern "C" fn(a: *mut ERR_STRING_DATA)>;
+pub type lh_ERR_STRING_DATA_hashfunc =
+    ::std::option::Option<unsafe extern "C" fn(a: *const ERR_STRING_DATA) -> ::std::os::raw::c_ulong>;
+pub type lh_ERR_STRING_DATA_doallfunc = ::std::option::Option<unsafe extern "C" fn(a: *mut ERR_STRING_DATA)>;
 unsafe extern "C" {
     pub fn ERR_new();
 }
@@ -31172,8 +29348,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_ulong;
 }
 unsafe extern "C" {
-    pub fn ERR_peek_error_func(func: *mut *const ::std::os::raw::c_char)
-    -> ::std::os::raw::c_ulong;
+    pub fn ERR_peek_error_func(func: *mut *const ::std::os::raw::c_char) -> ::std::os::raw::c_ulong;
 }
 unsafe extern "C" {
     pub fn ERR_peek_error_data(
@@ -31208,9 +29383,7 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_ulong;
 }
 unsafe extern "C" {
-    pub fn ERR_peek_last_error_func(
-        func: *mut *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_ulong;
+    pub fn ERR_peek_last_error_func(func: *mut *const ::std::os::raw::c_char) -> ::std::os::raw::c_ulong;
 }
 unsafe extern "C" {
     pub fn ERR_peek_last_error_data(
@@ -31245,11 +29418,7 @@ unsafe extern "C" {
     ) -> *mut ::std::os::raw::c_char;
 }
 unsafe extern "C" {
-    pub fn ERR_error_string_n(
-        e: ::std::os::raw::c_ulong,
-        buf: *mut ::std::os::raw::c_char,
-        len: usize,
-    );
+    pub fn ERR_error_string_n(e: ::std::os::raw::c_ulong, buf: *mut ::std::os::raw::c_char, len: usize);
 }
 unsafe extern "C" {
     pub fn ERR_lib_error_string(e: ::std::os::raw::c_ulong) -> *const ::std::os::raw::c_char;
@@ -31282,28 +29451,19 @@ unsafe extern "C" {
     pub fn ERR_add_error_vdata(num: ::std::os::raw::c_int, args: va_list);
 }
 unsafe extern "C" {
-    pub fn ERR_add_error_txt(
-        sepr: *const ::std::os::raw::c_char,
-        txt: *const ::std::os::raw::c_char,
-    );
+    pub fn ERR_add_error_txt(sepr: *const ::std::os::raw::c_char, txt: *const ::std::os::raw::c_char);
 }
 unsafe extern "C" {
     pub fn ERR_add_error_mem_bio(sep: *const ::std::os::raw::c_char, bio: *mut BIO);
 }
 unsafe extern "C" {
-    pub fn ERR_load_strings(
-        lib: ::std::os::raw::c_int,
-        str_: *mut ERR_STRING_DATA,
-    ) -> ::std::os::raw::c_int;
+    pub fn ERR_load_strings(lib: ::std::os::raw::c_int, str_: *mut ERR_STRING_DATA) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn ERR_load_strings_const(str_: *const ERR_STRING_DATA) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn ERR_unload_strings(
-        lib: ::std::os::raw::c_int,
-        str_: *mut ERR_STRING_DATA,
-    ) -> ::std::os::raw::c_int;
+    pub fn ERR_unload_strings(lib: ::std::os::raw::c_int, str_: *mut ERR_STRING_DATA) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn ERR_remove_thread_state(arg1: *mut ::std::os::raw::c_void);
@@ -31346,6 +29506,128 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn OSSL_ERR_STATE_free(es: *mut ERR_STATE);
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_set_default_search_path(
+        arg1: *mut OSSL_LIB_CTX,
+        path: *const ::std::os::raw::c_char,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_get0_default_search_path(libctx: *mut OSSL_LIB_CTX) -> *const ::std::os::raw::c_char;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_load(arg1: *mut OSSL_LIB_CTX, name: *const ::std::os::raw::c_char) -> *mut OSSL_PROVIDER;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_load_ex(
+        arg1: *mut OSSL_LIB_CTX,
+        name: *const ::std::os::raw::c_char,
+        params: *mut OSSL_PARAM,
+    ) -> *mut OSSL_PROVIDER;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_try_load(
+        arg1: *mut OSSL_LIB_CTX,
+        name: *const ::std::os::raw::c_char,
+        retain_fallbacks: ::std::os::raw::c_int,
+    ) -> *mut OSSL_PROVIDER;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_try_load_ex(
+        arg1: *mut OSSL_LIB_CTX,
+        name: *const ::std::os::raw::c_char,
+        params: *mut OSSL_PARAM,
+        retain_fallbacks: ::std::os::raw::c_int,
+    ) -> *mut OSSL_PROVIDER;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_unload(prov: *mut OSSL_PROVIDER) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_available(
+        arg1: *mut OSSL_LIB_CTX,
+        name: *const ::std::os::raw::c_char,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_do_all(
+        ctx: *mut OSSL_LIB_CTX,
+        cb: ::std::option::Option<
+            unsafe extern "C" fn(
+                provider: *mut OSSL_PROVIDER,
+                cbdata: *mut ::std::os::raw::c_void,
+            ) -> ::std::os::raw::c_int,
+        >,
+        cbdata: *mut ::std::os::raw::c_void,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_gettable_params(prov: *const OSSL_PROVIDER) -> *const OSSL_PARAM;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_get_params(prov: *const OSSL_PROVIDER, params: *mut OSSL_PARAM) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_self_test(prov: *const OSSL_PROVIDER) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_get_capabilities(
+        prov: *const OSSL_PROVIDER,
+        capability: *const ::std::os::raw::c_char,
+        cb: OSSL_CALLBACK,
+        arg: *mut ::std::os::raw::c_void,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_add_conf_parameter(
+        prov: *mut OSSL_PROVIDER,
+        name: *const ::std::os::raw::c_char,
+        value: *const ::std::os::raw::c_char,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_get_conf_parameters(
+        prov: *const OSSL_PROVIDER,
+        params: *mut OSSL_PARAM,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_conf_get_bool(
+        prov: *const OSSL_PROVIDER,
+        name: *const ::std::os::raw::c_char,
+        defval: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_query_operation(
+        prov: *const OSSL_PROVIDER,
+        operation_id: ::std::os::raw::c_int,
+        no_cache: *mut ::std::os::raw::c_int,
+    ) -> *const OSSL_ALGORITHM;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_unquery_operation(
+        prov: *const OSSL_PROVIDER,
+        operation_id: ::std::os::raw::c_int,
+        algs: *const OSSL_ALGORITHM,
+    );
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_get0_provider_ctx(prov: *const OSSL_PROVIDER) -> *mut ::std::os::raw::c_void;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_get0_dispatch(prov: *const OSSL_PROVIDER) -> *const OSSL_DISPATCH;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_add_builtin(
+        arg1: *mut OSSL_LIB_CTX,
+        name: *const ::std::os::raw::c_char,
+        init_fn: OSSL_provider_init_fn,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn OSSL_PROVIDER_get0_name(prov: *const OSSL_PROVIDER) -> *const ::std::os::raw::c_char;
 }
 unsafe extern "C" {
     pub fn OPENSSL_free_fn(ptr: *mut ::std::os::raw::c_void);

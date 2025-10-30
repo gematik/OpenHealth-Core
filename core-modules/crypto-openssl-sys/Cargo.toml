@@ -28,3 +28,4 @@ build = "builder/main.rs"
 [build-dependencies]
 bindgen = "0.72.0"
 num_cpus = "1.17.0"
+cc = "1.2.38"

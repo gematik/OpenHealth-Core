@@ -19,4 +19,4 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-mod kem;
+pub mod aes;

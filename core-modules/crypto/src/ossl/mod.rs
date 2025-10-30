@@ -19,5 +19,11 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-mod cypher;
-mod aes;
+pub(crate) mod api;
+mod bio;
+pub(crate) mod cipher;
+pub(crate) mod digest;
+pub(crate) mod ec;
+mod key;
+pub(crate) mod mac;
+pub(crate) mod mlkem;

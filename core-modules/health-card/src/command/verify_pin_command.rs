@@ -20,10 +20,10 @@
 // find details in the "Readme" file.
 
 use crate::card::card_key_reference::CardKeyReference;
+use crate::card::encrypted_pin_format2::EncryptedPinFormat2;
+use crate::card::password_reference::PasswordReference;
 use crate::command::health_card_command::HealthCardCommand;
 use crate::command::health_card_status::VERIFY_SECRET_STATUS;
-use crate::card::password_reference::PasswordReference;
-use crate::card::encrypted_pin_format2::EncryptedPinFormat2;
 
 /// CLA byte for the VERIFY SECRET command
 const CLA: u8 = 0x00;
@@ -71,8 +71,8 @@ impl VerifyCommand for HealthCardCommand {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::card::password_reference::PasswordReference;
     use crate::card::encrypted_pin_format2::EncryptedPinFormat2;
+    use crate::card::password_reference::PasswordReference;
 
     #[test]
     fn test_verify_pin_command() {

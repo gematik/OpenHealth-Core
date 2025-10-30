@@ -37,17 +37,9 @@ const FILE_OCCURRENCE_NEXT: u8 = 0x02;
 
 /// Calculate the P2 parameter based on whether FCP is requested and whether to select next occurrence
 fn calculate_p2(request_fcp: bool, next_occurrence: bool) -> u8 {
-    let response_type = if request_fcp {
-        RESPONSE_TYPE_FCP
-    } else {
-        RESPONSE_TYPE_NO_RESPONSE
-    };
+    let response_type = if request_fcp { RESPONSE_TYPE_FCP } else { RESPONSE_TYPE_NO_RESPONSE };
 
-    let file_occurrence = if next_occurrence {
-        FILE_OCCURRENCE_NEXT
-    } else {
-        FILE_OCCURRENCE_FIRST
-    };
+    let file_occurrence = if next_occurrence { FILE_OCCURRENCE_NEXT } else { FILE_OCCURRENCE_FIRST };
 
     response_type + file_occurrence
 }
@@ -115,29 +107,13 @@ pub trait SelectCommand {
 
 impl SelectCommand for HealthCardCommand {
     fn select(select_parent_else_root: bool, read_first: bool) -> HealthCardCommand {
-        let p1 = if select_parent_else_root {
-            SELECTION_MODE_PARENT
-        } else {
-            SELECTION_MODE_AID
-        };
+        let p1 = if select_parent_else_root { SELECTION_MODE_PARENT } else { SELECTION_MODE_AID };
 
         let p2 = calculate_p2(read_first, false);
 
-        let ne = if read_first {
-            Some(EXPECTED_LENGTH_WILDCARD_SHORT)
-        } else {
-            None
-        };
+        let ne = if read_first { Some(EXPECTED_LENGTH_WILDCARD_SHORT) } else { None };
 
-        HealthCardCommand {
-            expected_status: SELECT_STATUS.clone(),
-            cla: CLA,
-            ins: INS,
-            p1,
-            p2,
-            data: None,
-            ne,
-        }
+        HealthCardCommand { expected_status: SELECT_STATUS.clone(), cla: CLA, ins: INS, p1, p2, data: None, ne }
     }
 
     fn select_aid(aid: &ApplicationIdentifier) -> HealthCardCommand {
@@ -183,17 +159,9 @@ impl SelectCommand for HealthCardCommand {
         request_fcp: bool,
         fcp_length: i32,
     ) -> HealthCardCommand {
-        let p1 = if select_df_else_ef {
-            SELECTION_MODE_DF_BY_FID
-        } else {
-            SELECTION_MODE_EF_BY_FID
-        };
+        let p1 = if select_df_else_ef { SELECTION_MODE_DF_BY_FID } else { SELECTION_MODE_EF_BY_FID };
 
-        let p2 = if request_fcp {
-            RESPONSE_TYPE_FCP
-        } else {
-            RESPONSE_TYPE_NO_RESPONSE
-        };
+        let p2 = if request_fcp { RESPONSE_TYPE_FCP } else { RESPONSE_TYPE_NO_RESPONSE };
 
         let ne = if request_fcp {
             if fcp_length <= 0 {
@@ -258,9 +226,7 @@ mod tests {
 
     #[test]
     fn test_select_aid() {
-        let aid = ApplicationIdentifier {
-            aid: vec![0x12, 0x34, 0x56],
-        };
+        let aid = ApplicationIdentifier { aid: vec![0x12, 0x34, 0x56] };
         let cmd = HealthCardCommand::select_aid(&aid);
         assert_eq!(cmd.cla, CLA);
         assert_eq!(cmd.ins, INS);
@@ -272,9 +238,7 @@ mod tests {
 
     #[test]
     fn test_select_aid_with_options() {
-        let aid = ApplicationIdentifier {
-            aid: vec![0x12, 0x34, 0x56],
-        };
+        let aid = ApplicationIdentifier { aid: vec![0x12, 0x34, 0x56] };
         let cmd = HealthCardCommand::select_aid_with_options(&aid, true, true, 128);
         assert_eq!(cmd.cla, CLA);
         assert_eq!(cmd.ins, INS);

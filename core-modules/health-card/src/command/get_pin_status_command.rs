@@ -41,17 +41,11 @@ pub trait GetPinStatusCommand {
     /// # Arguments
     /// * `password` - The password reference.
     /// * `df_specific` - Indicates if the password object specifies a DF-specific (true) or global (false) reference.
-    fn get_pin_status(
-        password: &PasswordReference,
-        df_specific: bool,
-    ) -> HealthCardCommand;
+    fn get_pin_status(password: &PasswordReference, df_specific: bool) -> HealthCardCommand;
 }
 
 impl GetPinStatusCommand for HealthCardCommand {
-    fn get_pin_status(
-        password: &PasswordReference,
-        df_specific: bool,
-    ) -> HealthCardCommand {
+    fn get_pin_status(password: &PasswordReference, df_specific: bool) -> HealthCardCommand {
         HealthCardCommand {
             expected_status: PIN_STATUS.clone(),
             cla: CLA,

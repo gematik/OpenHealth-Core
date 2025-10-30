@@ -19,11 +19,5 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-/// Base interface for cryptographic cipher operations.
-pub trait Cipher {
-    /// Processes the next chunk of data.
-    fn update(&mut self, data: &[u8]) -> Vec<u8>;
-
-    /// Completes the cipher operation and returns any remaining data.
-    fn final_(&mut self) -> Vec<u8>;
-}
+pub mod ec_key;
+pub mod ec_point;

@@ -28,7 +28,7 @@ SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
 path = [
-    "core-modules/crypto-openssl-sys/src/bindings.rs",
+    "core-modules/crypto-openssl-sys/src/ossl.rs",
 ]
 SPDX-FileCopyrightText = "NONE"
 SPDX-License-Identifier = "CC0-1.0"

@@ -19,65 +19,71 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use crate::key::ec_key::{EcCurve, EcPrivateKey, EcPublicKey};
+use crate::ec::ec_key::{EcCurve, EcPrivateKey, EcPublicKey};
+use crate::error::CryptoResult;
+use crate::key::SecretKey;
+use crate::ossl;
+use zeroize::Zeroizing;
 
-/// Interface for Elliptic Curve Diffie-Hellman key exchange operations.
-pub trait Ecdh {
-    fn spec(&self) -> &EcdhSpec;
+pub type EcdhSharedSecret = SecretKey;
 
-    /// Computes the shared secret using the other party's public key.
-    fn compute_secret(&self, other_public_key: &EcPublicKey) -> Vec<u8>;
+/// ECDH context for deriving shared secrets.
+///
+/// Construct from a private key (DER PKCS#8), then call `derive` with a peer
+/// public key (DER SubjectPublicKeyInfo) to compute the raw ECDH shared secret.
+pub struct Ecdh {
+    ctx: ossl::ec::Ecdh,
+    pkey: EcPrivateKey,
 }
 
-/// Specification for ECDH key exchange operations.
-pub struct EcdhSpec {
-    pub curve: EcCurve,
-}
+impl Ecdh {
+    /// Create a new ECDH context from a private key in DER (PKCS#8) form.
+    pub fn new(private_key: EcPrivateKey) -> CryptoResult<Self> {
+        let ctx = ossl::ec::Ecdh::new(private_key.encode_to_asn1()?.as_ref())?;
+        Ok(Self { ctx, pkey: private_key })
+    }
 
-impl EcdhSpec {
-    pub fn new(curve: EcCurve) -> Self {
-        Self { curve }
+    /// Derive the ECDH shared secret from the peer's public key (DER SPKI).
+    pub fn derive(&self, peer_public_key: EcPublicKey) -> CryptoResult<EcdhSharedSecret> {
+        let secret = self.ctx.compute_secret(peer_public_key.encode_to_asn1()?.as_ref())?;
+        Ok(EcdhSharedSecret::new_secret(secret))
     }
 }
 
-/// Creates a native ECDH key exchange instance.
-pub(crate) fn native_create_key_exchange(
-    spec: &EcdhSpec,
-    private_key: &EcPrivateKey,
-) -> Box<dyn Ecdh> {
-    unimplemented!()
-}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ec::ec_key::EcKeyPairSpec;
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//     use crate::utils::test_utils::{hex_to_bytes, to_hex_string};
-//
-//     const EC_PUBLIC_KEY_PEM: &str = r#"-----BEGIN PUBLIC KEY-----
-// MFowFAYHKoZIzj0CAQYJKyQDAwIIAQEHA0IABJBhNcQG6SALcDA4AOUgfySk4E0o
-// LGTt+qP6dgv9qYMtojIMVQKNWfT14xR7LQnoSPABZlLJmWgh2cYKz3WbpVM=
-// -----END PUBLIC KEY-----"#;
-//
-//     const EC_PRIVATE_KEY_PEM: &str = r#"-----BEGIN EC PRIVATE KEY-----
-// MIGIAgEAMBQGByqGSM49AgEGCSskAwMCCAEBBwRtMGsCAQEEIBu09g2V3coZsiK7
-// AUT8gHFehP7KK77g83GJH2aeYxJ1oUQDQgAEkGE1xAbpIAtwMDgA5SB/JKTgTSgs
-// ZO36o/p2C/2pgy2iMgxVAo1Z9PXjFHstCehI8AFmUsmZaCHZxgrPdZulUw==
-// -----END EC PRIVATE KEY-----"#;
-//
-//     #[test]
-//     fn compute_secret() {
-//         let public_key = EcPublicKey::decode_from_pem(EC_PUBLIC_KEY_PEM).unwrap();
-//         let private_key = EcPrivateKey::decode_from_pem(EC_PRIVATE_KEY_PEM).unwrap();
-//
-//         let result = EcdhSpec {
-//             curve: EcCurve::BrainpoolP256r1,
-//         }
-//             .create_key_exchange(&private_key)
-//             .compute_secret(&public_key);
-//
-//         assert_eq!(
-//             to_hex_string(&result),
-//             "A6 00 6D F4 D0 9A A6 B7 AF 41 B8 FF E6 62 78 CE B2 F6 B8 44 E1 6F 1A 73 F3 3E CB EA D3 AF 0A 7B"
-//         );
-//     }
-// }
+    fn roundtrip(spec: EcKeyPairSpec) {
+        let (a_pub, a_priv) = spec.generate_keypair().expect("keypair a");
+        let (b_pub, b_priv) = spec.generate_keypair().expect("keypair b");
+
+        let a = Ecdh::new(a_priv).expect("ecdh a");
+        let b = Ecdh::new(b_priv).expect("ecdh b");
+
+        let secret_ab = a.derive(b_pub).expect("derive A with B");
+        let secret_ba = b.derive(a_pub).expect("derive B with A");
+
+        let s_ab = secret_ab.as_ref();
+        let s_ba = secret_ba.as_ref();
+
+        assert_eq!(s_ab, s_ba, "shared secret equality");
+        assert!(s_ab.len() > 0);
+    }
+
+    #[test]
+    fn ecdh_roundtrip_bp256() {
+        roundtrip(EcKeyPairSpec { curve: EcCurve::BrainpoolP256r1 });
+    }
+
+    #[test]
+    fn ecdh_roundtrip_bp384() {
+        roundtrip(EcKeyPairSpec { curve: EcCurve::BrainpoolP384r1 });
+    }
+
+    #[test]
+    fn ecdh_roundtrip_bp512() {
+        roundtrip(EcKeyPairSpec { curve: EcCurve::BrainpoolP512r1 });
+    }
+}

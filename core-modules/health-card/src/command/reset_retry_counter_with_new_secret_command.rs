@@ -95,12 +95,7 @@ mod tests {
         let new_secret = EncryptedPinFormat2 { bytes: new_pin_data.clone() };
 
         // Test with df_specific = false
-        let cmd = HealthCardCommand::reset_retry_counter_with_new_secret(
-            &password_ref,
-            false,
-            &puk,
-            &new_secret
-        );
+        let cmd = HealthCardCommand::reset_retry_counter_with_new_secret(&password_ref, false, &puk, &new_secret);
 
         assert_eq!(cmd.cla, CLA);
         assert_eq!(cmd.ins, UNLOCK_EGK_INS);
@@ -115,12 +110,7 @@ mod tests {
         assert_eq!(cmd.ne, None);
 
         // Test with df_specific = true
-        let cmd = HealthCardCommand::reset_retry_counter_with_new_secret(
-            &password_ref,
-            true,
-            &puk,
-            &new_secret
-        );
+        let cmd = HealthCardCommand::reset_retry_counter_with_new_secret(&password_ref, true, &puk, &new_secret);
 
         assert_eq!(cmd.cla, CLA);
         assert_eq!(cmd.ins, UNLOCK_EGK_INS);

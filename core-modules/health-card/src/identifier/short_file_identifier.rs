@@ -53,17 +53,11 @@ pub enum ShortFileIdentifierError {
 impl fmt::Display for ShortFileIdentifierError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::OutOfRange(val) => write!(
-                f,
-                "Short File Identifier out of valid range [{},{}]: {}",
-                MIN_VALUE, MAX_VALUE, val
-            ),
+            Self::OutOfRange(val) => {
+                write!(f, "Short File Identifier out of valid range [{},{}]: {}", MIN_VALUE, MAX_VALUE, val)
+            }
             Self::ParseError(e) => write!(f, "Failed to parse hex string: {}", e),
-            Self::InvalidLength(len) => write!(
-                f,
-                "Invalid hex string length: {}. Expected 2 characters.",
-                len
-            ),
+            Self::InvalidLength(len) => write!(f, "Invalid hex string length: {}. Expected 2 characters.", len),
         }
     }
 }
@@ -92,8 +86,7 @@ impl ShortFileIdentifier {
             return Err(ShortFileIdentifierError::InvalidLength(hex_sf_id.len()));
         }
 
-        let value =
-            u8::from_str_radix(hex_sf_id, 16).map_err(ShortFileIdentifierError::ParseError)?;
+        let value = u8::from_str_radix(hex_sf_id, 16).map_err(ShortFileIdentifierError::ParseError)?;
 
         Self::new(value)
     }

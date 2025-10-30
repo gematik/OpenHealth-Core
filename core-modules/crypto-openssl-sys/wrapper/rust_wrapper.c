@@ -1,5 +1,4 @@
 /*
- * SPDX-FileCopyrightText: 2025 gematik GmbH
  * SPDX-FileCopyrightText: Copyright 2025 gematik GmbH
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -22,12 +21,8 @@
  * find details in the "Readme" file.
  */
 
-#include "openssl/ec.h"
-#include "openssl/evp.h"
-#include "openssl/x509.h"
-#include "openssl/pem.h"
-#include "openssl/bio.h"
-#include "openssl/err.h"
+#include "rust_wrapper.h"
+#include "openssl/crypto.h"
 
 void OPENSSL_free_fn(void *ptr) {
     if (ptr != NULL) {
