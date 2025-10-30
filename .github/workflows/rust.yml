@@ -48,6 +48,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: ${{ runner.os }}-rust
       - name: Install toolchains
         run: |
           rustup toolchain install nightly --profile minimal
