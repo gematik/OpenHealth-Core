@@ -19,7 +19,11 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use std::{env, fs, path::PathBuf, process::Command};
+use std::{
+    env, fs,
+    path::{Path, PathBuf},
+    process::Command,
+};
 
 fn current_dir() -> PathBuf {
     env::current_dir().unwrap()
@@ -80,7 +84,8 @@ fn build_openssl() {
     run_command("make", &["install"], Some(&src));
 
     // Tell Cargo where to find the built libs
-    println!("cargo:rustc-link-search=native={}", install.join("lib").display());
+    let lib_dir = locate_openssl_lib_dir(&install);
+    println!("cargo:rustc-link-search=native={}", lib_dir.display());
     println!("cargo:rustc-link-lib=static=crypto");
     println!("cargo:rustc-link-lib=static=ssl");
 }
@@ -114,15 +119,18 @@ fn build_openssl_bindings() {
     let target = env::var("TARGET").unwrap_or_else(|_| "aarch64-apple-darwin".to_string());
     let openssl_target = get_openssl_target(&target);
     let openssl_dir = format!("openssl-{}", openssl_target);
+    let install_dir = manifest_dir.join(&openssl_dir);
+    let lib_dir = locate_openssl_lib_dir(&install_dir);
 
     // Set up library linking
-    println!("cargo:rustc-link-search=native={}/{}/lib", manifest_dir.display(), openssl_dir);
+    println!("cargo:rustc-link-search=native={}", lib_dir.display());
     println!("cargo:rustc-link-lib=static=crypto");
     println!("cargo:rustc-link-lib=static=ssl");
 
     // Build clang args for bindgen
-    let include_path = format!("{}/{}/include/", manifest_dir.display(), openssl_dir);
-    let clang_args = vec!["-I".to_string(), include_path.clone()];
+    let include_path = install_dir.join("include");
+    let clang_args = vec!["-I".to_string(), include_path.display().to_string()];
+    let wrapper_header = manifest_dir.join("wrapper/rust_wrapper.h");
 
     // Generate ossl
     let bindings = bindgen::Builder::default()
@@ -140,20 +148,28 @@ fn build_openssl_bindings() {
         .layout_tests(true)
         .prepend_enum_name(true)
         .formatter(bindgen::Formatter::Rustfmt)
-        .header(format!("{}/wrapper/rust_wrapper.h", manifest_dir.display()))
+        .header(wrapper_header.display().to_string())
         .clang_args(clang_args)
         .generate()
         .expect("Unable to generate ossl");
 
-    let bindings_path = format!("{}/src/ossl.rs", manifest_dir.display());
+    let bindings_path = manifest_dir.join("src/ossl.rs");
     bindings.write_to_file(&bindings_path).expect("Failed to write ossl to file");
 
     println!("cargo:rerun-if-changed=wrapper/rust_wrapper.h");
 
-    cc::Build::new()
-        .file(format!("{}/wrapper/rust_wrapper.c", manifest_dir.display()))
-        .include(include_path.clone())
-        .compile("rust_wrapper");
+    cc::Build::new().file(manifest_dir.join("wrapper/rust_wrapper.c")).include(&include_path).compile("rust_wrapper");
 
     println!("cargo:rerun-if-changed=wrapper/rust_wrapper.c");
+}
+
+fn locate_openssl_lib_dir(install_root: &Path) -> PathBuf {
+    for candidate in ["lib", "lib64"] {
+        let dir = install_root.join(candidate);
+        if dir.is_dir() {
+            return dir;
+        }
+    }
+
+    panic!("OpenSSL install directory at '{}' has no lib or lib64 directory", install_root.display());
 }
