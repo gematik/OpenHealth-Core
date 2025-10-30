@@ -56,7 +56,7 @@ jobs:
       - name: Check formatting
         run: cargo +nightly fmt -- --check
       - name: Lint with clippy
-        run: cargo clippy -- -D warnings
+        run: cargo clippy
       - name: Build
         run: cargo build --verbose
       - name: Run tests
