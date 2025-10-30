@@ -19,16 +19,13 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use crate::ec::ec_key::EcCurve;
+use crate::ec::ec_key::{EcCurve, EcPrivateKey, EcPublicKey};
 use crate::error::CryptoResult;
-use crate::key::{KeyMaterial, PrivateKey, PublicKey};
+use crate::key::SecretKey;
 use crate::ossl;
 use zeroize::Zeroizing;
 
-struct EcdhSecret;
-impl crate::key::Role for EcdhSecret {}
-
-pub type EcdhSharedSecret = KeyMaterial<EcdhSecret, Zeroizing<Vec<u8>>>;
+pub type EcdhSharedSecret = SecretKey;
 
 /// ECDH context for deriving shared secrets.
 ///
@@ -36,31 +33,31 @@ pub type EcdhSharedSecret = KeyMaterial<EcdhSecret, Zeroizing<Vec<u8>>>;
 /// public key (DER SubjectPublicKeyInfo) to compute the raw ECDH shared secret.
 pub struct Ecdh {
     ctx: ossl::ec::Ecdh,
-    pkey: PrivateKey,
+    pkey: EcPrivateKey,
 }
 
 impl Ecdh {
     /// Create a new ECDH context from a private key in DER (PKCS#8) form.
-    pub fn new(private_key: PrivateKey) -> CryptoResult<Self> {
-        let ctx = ossl::ec::Ecdh::new(private_key.as_ref())?;
+    pub fn new(private_key: EcPrivateKey) -> CryptoResult<Self> {
+        let ctx = ossl::ec::Ecdh::new(private_key.encode_to_asn1()?.as_ref())?;
         Ok(Self { ctx, pkey: private_key })
     }
 
     /// Derive the ECDH shared secret from the peer's public key (DER SPKI).
-    pub fn derive(&self, peer_public_key: PublicKey) -> CryptoResult<EcdhSharedSecret> {
-        let secret = self.ctx.compute_secret(peer_public_key.as_ref())?;
+    pub fn derive(&self, peer_public_key: EcPublicKey) -> CryptoResult<EcdhSharedSecret> {
+        let secret = self.ctx.compute_secret(peer_public_key.encode_to_asn1()?.as_ref())?;
         Ok(EcdhSharedSecret::new_secret(secret))
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::ec::ec_key::EcKeyPairSpec;
     use super::*;
+    use crate::ec::ec_key::EcKeyPairSpec;
 
     fn roundtrip(spec: EcKeyPairSpec) {
-        let (a_priv, a_pub) = spec.generate_keypair().expect("keypair a");
-        let (b_priv, b_pub) = spec.generate_keypair().expect("keypair b");
+        let (a_pub, a_priv) = spec.generate_keypair().expect("keypair a");
+        let (b_pub, b_priv) = spec.generate_keypair().expect("keypair b");
 
         let a = Ecdh::new(a_priv).expect("ecdh a");
         let b = Ecdh::new(b_priv).expect("ecdh b");
@@ -68,8 +65,8 @@ mod tests {
         let secret_ab = a.derive(b_pub).expect("derive A with B");
         let secret_ba = b.derive(a_pub).expect("derive B with A");
 
-        let s_ab = secret_ab.as_bytes();
-        let s_ba = secret_ba.as_bytes();
+        let s_ab = secret_ab.as_ref();
+        let s_ba = secret_ba.as_ref();
 
         assert_eq!(s_ab, s_ba, "shared secret equality");
         assert!(s_ab.len() > 0);

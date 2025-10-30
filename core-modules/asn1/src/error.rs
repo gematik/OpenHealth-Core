@@ -58,8 +58,8 @@ pub enum DecoderError {
     MalformedUtcTimeEncoding,
     #[error("Malformed GENERALIZED_TIME (non-UTF8)")]
     MalformedGeneralizedTimeEncoding,
-    #[error("{kind}")]
-    InvalidTimeValue { kind: TimeValueError },
+    #[error("Invalid {context}: `{value}`")]
+    InvalidTimeValue { context: &'static str, value: String },
     #[error("{message}")]
     Custom { message: Cow<'static, str> },
 }
@@ -76,6 +76,10 @@ impl DecoderError {
     pub fn integer_overflow(context: &'static str) -> Self {
         Self::IntegerOverflow { context }
     }
+
+    pub fn invalid_time_value(context: &'static str, value: impl Into<String>) -> Self {
+        Self::InvalidTimeValue { context, value: value.into() }
+    }
 }
 
 impl From<&'static str> for DecoderError {
@@ -88,50 +92,6 @@ impl From<String> for DecoderError {
     fn from(value: String) -> Self {
         Self::Custom { message: Cow::from(value) }
     }
-}
-
-impl From<TimeValueError> for DecoderError {
-    fn from(kind: TimeValueError) -> Self {
-        Self::InvalidTimeValue { kind }
-    }
-}
-
-#[derive(Debug, Error, Clone)]
-pub enum TimeValueError {
-    #[error("Invalid hour in offset: `{value}`")]
-    InvalidOffsetHour { value: String },
-    #[error("Invalid minute in offset: `{value}`")]
-    InvalidOffsetMinute { value: String },
-    #[error("Wrong utc time format: `{value}`")]
-    InvalidUtcFormat { value: String },
-    #[error("Invalid year in UTC_TIME: `{value}`")]
-    InvalidUtcYear { value: String },
-    #[error("Invalid month in UTC_TIME: `{value}`")]
-    InvalidUtcMonth { value: String },
-    #[error("Invalid day in UTC_TIME: `{value}`")]
-    InvalidUtcDay { value: String },
-    #[error("Invalid hour in UTC_TIME: `{value}`")]
-    InvalidUtcHour { value: String },
-    #[error("Invalid minute in UTC_TIME: `{value}`")]
-    InvalidUtcMinute { value: String },
-    #[error("Invalid second in UTC_TIME: `{value}`")]
-    InvalidUtcSecond { value: String },
-    #[error("Wrong generalized time format: `{value}`")]
-    InvalidGeneralizedTimeFormat { value: String },
-    #[error("Invalid year in GENERALIZED_TIME: `{value}`")]
-    InvalidGeneralizedYear { value: String },
-    #[error("Invalid month in GENERALIZED_TIME: `{value}`")]
-    InvalidGeneralizedMonth { value: String },
-    #[error("Invalid day in GENERALIZED_TIME: `{value}`")]
-    InvalidGeneralizedDay { value: String },
-    #[error("Invalid hour in GENERALIZED_TIME: `{value}`")]
-    InvalidGeneralizedHour { value: String },
-    #[error("Invalid minute in GENERALIZED_TIME: `{value}`")]
-    InvalidGeneralizedMinute { value: String },
-    #[error("Invalid second in GENERALIZED_TIME: `{value}`")]
-    InvalidGeneralizedSecond { value: String },
-    #[error("Invalid fraction in GENERALIZED_TIME: `{value}`")]
-    InvalidGeneralizedFraction { value: String },
 }
 
 #[derive(Debug, Error, Clone)]

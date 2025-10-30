@@ -20,7 +20,7 @@
 // find details in the "Readme" file.
 
 use crate::error::CryptoResult;
-use crate::key::PrivateKey;
+use crate::key::SecretKey;
 use crate::ossl;
 use crate::utils::byte_unit::ByteUnit;
 
@@ -52,7 +52,7 @@ impl MacSpec {
 
 impl MacSpec {
     /// Create a MAC instance with the given secret key.
-    pub fn create(self, secret: PrivateKey) -> CryptoResult<Mac> {
+    pub fn create(self, secret: SecretKey) -> CryptoResult<Mac> {
         let mac = ossl::mac::Mac::create(secret.as_ref(), "CMAC", Some(self.cipher(&secret.size()).as_str()), None)?;
         Ok(Mac { mac, spec: self, secret })
     }
@@ -62,7 +62,7 @@ impl MacSpec {
 pub struct Mac {
     mac: ossl::mac::Mac,
     spec: MacSpec,
-    secret: PrivateKey,
+    secret: SecretKey,
 }
 
 impl Mac {
@@ -80,7 +80,7 @@ impl Mac {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::key::PrivateKey;
+    use crate::key::SecretKey;
 
     // RFC 4493 / SP 800-38B test key
     const K128_HEX: &str = "2B 7E 15 16 28 AE D2 A6 AB F7 15 88 09 CF 4F 3C";
@@ -109,7 +109,7 @@ mod tests {
     }
 
     fn mac_aes128_tag(msg_hex: &str) -> Vec<u8> {
-        let key = PrivateKey::new_secret(hex_to_bytes(K128_HEX));
+        let key = SecretKey::new_secret(hex_to_bytes(K128_HEX));
         let spec = MacSpec::Cmac { algorithm: CmacAlgorithm::Aes };
         let mut mac = spec.create(key).unwrap();
 

@@ -29,6 +29,7 @@ pub struct Asn1Encoder;
 
 /// Scope for writing ASN.1 encoded data. (Top-level, not nested)
 pub struct WriterScope {
+    // TODO: support zeroizing vec
     buffer: Vec<u8>,
 }
 

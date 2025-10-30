@@ -19,11 +19,11 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use crate::key::PrivateKey;
 use crate::ossl;
 use crate::utils::byte_unit::ByteUnit;
 
 pub use crate::error::CryptoResult;
+use crate::key::SecretKey;
 
 /// Initialization vector for AES-based operations.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -139,7 +139,7 @@ impl AesCipherSpec {
     }
 
     /// Create an encryptor for the given key and spec.
-    pub fn cipher(self, key: PrivateKey) -> CryptoResult<AesCipher> {
+    pub fn cipher(self, key: SecretKey) -> CryptoResult<AesCipher> {
         let algorithm = self.algorithm(&key.size());
         let mut cipher =
             ossl::cipher::AesCipher::create_encryptor(&algorithm, key.as_ref(), self.iv_bytes().unwrap_or(&[]))?;
@@ -163,7 +163,7 @@ impl AesCipherSpec {
 pub struct AesCipher {
     cipher: ossl::cipher::AesCipher,
     spec: AesCipherSpec,
-    key: PrivateKey,
+    key: SecretKey,
 }
 
 /// Specification for AES decryption.
@@ -212,7 +212,7 @@ impl AesDecipherSpec {
     }
 
     /// Create a decryptor for the given key and spec.
-    pub fn cipher(self, key: PrivateKey) -> CryptoResult<AesDecipher> {
+    pub fn cipher(self, key: SecretKey) -> CryptoResult<AesDecipher> {
         let algorithm = self.algorithm(&key.size());
         let mut cipher =
             ossl::cipher::AesCipher::create_decryptor(&algorithm, key.as_ref(), self.iv_bytes().unwrap_or(&[]))?;
@@ -239,7 +239,7 @@ impl AesDecipherSpec {
 pub struct AesDecipher {
     cipher: ossl::cipher::AesCipher,
     spec: AesDecipherSpec,
-    key: PrivateKey,
+    key: SecretKey,
 }
 
 /// Streaming cipher interface (encrypt/decrypt). Caller supplies output buffer.
@@ -287,7 +287,7 @@ impl Cipher for AesDecipher {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::key::PrivateKey;
+    use crate::key::SecretKey;
     use crate::utils::byte_unit::BytesExt;
     use crate::utils::test_utils::{hex_to_bytes, to_hex_string};
 
@@ -300,8 +300,8 @@ mod tests {
     const GCM_CT_HEX: &str = "CE C1 89 D0 E8 4D EC A8 E6 08 DD";
     const GCM_TAG_HEX: &str = "0F 98 50 42 1A DA DC FF 64 5F 7E 79 79 E2 E6 8A";
 
-    fn key() -> PrivateKey {
-        PrivateKey::new_secret(KEY_16)
+    fn key() -> SecretKey {
+        SecretKey::new_secret(KEY_16)
     }
 
     #[test]

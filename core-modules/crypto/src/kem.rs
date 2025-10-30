@@ -20,16 +20,16 @@
 // find details in the "Readme" file.
 
 use crate::error::CryptoResult;
-use crate::key::{KeyMaterial, PublicKey};
+use crate::key::SecretKey;
 use crate::ossl;
 use crate::utils::byte_unit::{ByteUnit, BytesExt};
 use zeroize::Zeroizing;
 
 struct MlkemSecret;
-impl crate::key::Role for MlkemSecret {}
 
-pub type MlkemSharedSecret = KeyMaterial<MlkemSecret, Zeroizing<Vec<u8>>>;
-pub type MlkemWrappedKey = PublicKey;
+pub type MlkemSharedSecret = SecretKey;
+pub type MlkemWrappedKey = Vec<u8>;
+pub type MlkemEncapsulationKey = Vec<u8>;
 
 /// ML-KEM parameter sets.
 #[derive(Debug, Clone)]
@@ -56,7 +56,7 @@ impl MlkemSpec {
     }
 
     /// Create an encapsulator from a public (encapsulation) key.
-    pub fn encapsulator(self, public_key: PublicKey) -> CryptoResult<MlkemEncapsulator> {
+    pub fn encapsulator(self, public_key: MlkemEncapsulationKey) -> CryptoResult<MlkemEncapsulator> {
         let enc = ossl::mlkem::MlkemEncapsulation::create(self.algorithm(), public_key.as_ref())?;
         Ok(MlkemEncapsulator { spec: self, enc })
     }
@@ -72,7 +72,7 @@ impl MlkemEncapsulator {
     /// Perform KEM encapsulation, returning `(wrapped_key, shared_secret)`.
     pub fn encapsulate(&self) -> CryptoResult<(MlkemWrappedKey, MlkemSharedSecret)> {
         let (wrapped, secret) = self.enc.encapsulate()?;
-        Ok((MlkemWrappedKey::new(wrapped), MlkemSharedSecret::new_secret(secret)))
+        Ok((MlkemWrappedKey::from(wrapped), MlkemSharedSecret::new_secret(secret)))
     }
 }
 
@@ -90,8 +90,8 @@ impl MlkemDecapsulator {
     }
 
     /// Export the public (encapsulation) key corresponding to this decapsulator.
-    pub fn public_key(&self) -> CryptoResult<PublicKey> {
-        Ok(PublicKey::new(self.dec.get_encapsulation_key()?))
+    pub fn public_key(&self) -> CryptoResult<MlkemEncapsulationKey> {
+        Ok(self.dec.get_encapsulation_key()?)
     }
 }
 
@@ -109,7 +109,7 @@ mod tests {
         let ss_dec = dec.decapsulate(wrapped).expect("decapsulate");
 
         // Shared secret must match
-        assert_eq!(ss_enc.as_bytes(), ss_dec.as_bytes(), "shared secret equality");
+        assert_eq!(ss_enc.as_ref(), ss_dec.as_ref(), "shared secret equality");
     }
 
     #[test]

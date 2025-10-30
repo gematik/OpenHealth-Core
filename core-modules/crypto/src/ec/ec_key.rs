@@ -21,13 +21,13 @@
 
 use crate::ec::ec_point::EcPoint;
 use crate::error::{CryptoError, CryptoResult};
+use crate::key::SecretKey;
+use crate::ossl;
 use asn1::decoder::Asn1Decoder;
 use asn1::encoder::Asn1Encoder;
 use asn1::tag::UniversalTag;
 use num_bigint::BigInt;
 use zeroize::Zeroize;
-use crate::key::{PrivateKey, PublicKey};
-use crate::ossl;
 
 /// Supported elliptic curves.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -124,11 +124,11 @@ pub struct EcKeyPairSpec {
 
 impl EcKeyPairSpec {
     /// Create new keypair parameters for the given curve.
-    pub fn generate_keypair(&self) -> CryptoResult<(PrivateKey, PublicKey)> {
+    pub fn generate_keypair(&self) -> CryptoResult<(EcPublicKey, EcPrivateKey)> {
         let keypair = ossl::ec::EcKeypair::generate(self.curve.name())?;
         let priv_der = keypair.private_key_der()?;
         let pub_der = keypair.public_key_der()?;
-        Ok((PrivateKey::new_secret(priv_der), PublicKey::new(pub_der)))
+        Ok((EcPublicKey::decode_from_asn1(pub_der.as_ref())?, EcPrivateKey::decode_from_asn1(priv_der.as_ref())?))
     }
 }
 
@@ -136,6 +136,12 @@ impl EcKeyPairSpec {
 pub struct EcPublicKey {
     curve: EcCurve,
     data: Vec<u8>,
+}
+
+impl AsRef<[u8]> for EcPublicKey {
+    fn as_ref(&self) -> &[u8] {
+        self.data.as_ref()
+    }
 }
 
 impl EcPublicKey {
@@ -246,13 +252,13 @@ impl EcPublicKey {
 /// Elliptic curve private key.
 pub struct EcPrivateKey {
     pub(crate) curve: EcCurve,
-    scalar: Vec<u8>,
+    scalar: SecretKey,
 }
 
 impl EcPrivateKey {
     /// Construct from raw private key bytes (big-endian).
     pub fn from_bytes(curve: EcCurve, scalar: impl Into<Vec<u8>>) -> Self {
-        EcPrivateKey { curve, scalar: scalar.into() }
+        EcPrivateKey { curve, scalar: SecretKey::new_secret(scalar) }
     }
 
     pub fn curve(&self) -> &EcCurve {
@@ -297,7 +303,7 @@ impl EcPrivateKey {
                         // version (INTEGER 1)
                         scope.write_asn1_int(1)?;
                         // privateKey (OCTET STRING)
-                        scope.write_asn1_octet_string(&self.scalar)?;
+                        scope.write_asn1_octet_string(&self.scalar.as_ref())?;
                         Ok(())
                     })
                 })?;
@@ -365,13 +371,6 @@ impl EcPrivateKey {
     }
 }
 
-impl Drop for EcPrivateKey {
-    fn drop(&mut self) {
-        // Best-effort wipe of secret bytes
-        self.scalar.zeroize();
-    }
-}
-
 /// Parses an ASN.1 DER encoded algorithm identifier and returns an [EcCurve].
 ///
 /// AlgorithmIdentifier  ::=  SEQUENCE  {
@@ -401,10 +400,7 @@ fn read_ec_curve_from_algorithm_identifier(
             "1.3.36.3.3.2.8.1.1.7" => Ok(EcCurve::BrainpoolP256r1),
             "1.3.36.3.3.2.8.1.1.11" => Ok(EcCurve::BrainpoolP384r1),
             "1.3.36.3.3.2.8.1.1.13" => Ok(EcCurve::BrainpoolP512r1),
-            _ => Err(asn1::decoder::Asn1DecoderError::custom(format!(
-                "Unknown curve with OID `{}`",
-                curve_oid
-            ))),
+            _ => Err(asn1::decoder::Asn1DecoderError::custom(format!("Unknown curve with OID `{}`", curve_oid))),
         }
     })
 }
