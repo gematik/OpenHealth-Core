@@ -51,7 +51,7 @@ pub mod mac;
 pub mod utils;
 // mod exchange;
 
-mod ec;
+pub mod ec;
 #[cfg(feature = "uniffi")]
 pub mod ffi;
 

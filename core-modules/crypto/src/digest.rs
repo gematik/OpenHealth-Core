@@ -26,6 +26,7 @@ use crate::utils::byte_unit::ByteUnit;
 /// Supported hash algorithms (and XOFs) for streaming digests.
 #[derive(Clone)]
 pub enum DigestSpec {
+    Sha1,
     Sha256,
     Sha384,
     Sha512,
@@ -45,6 +46,7 @@ pub enum DigestSpec {
 impl DigestSpec {
     fn algorithm(&self) -> &'static str {
         match self {
+            Self::Sha1 => "SHA1",
             Self::Sha256 => "SHA256",
             Self::Sha384 => "SHA384",
             Self::Sha512 => "SHA512",
@@ -104,6 +106,15 @@ mod tests {
         d.update(msg).unwrap();
         let out = d.finalize().unwrap();
         to_hex_string(&out)
+    }
+
+    #[test]
+    fn sha1_abc() {
+        // NIST FIPS 180-4
+        let expected =
+            "A9 99 3E 36 47 06 81 6A BA 3E 25 71 78 50 C2 6C 9C D0 D8 9D";
+        let got = digest_hex(DigestSpec::Sha1, b"abc");
+        assert_eq!(got, expected);
     }
 
     #[test]

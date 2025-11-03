@@ -19,12 +19,10 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use crate::error::{DecoderError, DecoderResult};
+use crate::error::Asn1DecoderResult;
+
+pub use crate::error::Asn1DecoderError;
 use crate::tag::{Asn1Class, Asn1Form, Asn1Id, UniversalTag};
-
-pub use crate::error::DecoderError as Asn1DecoderError;
-
-pub type Result<T> = DecoderResult<T>;
 
 /// Constructs an `Asn1Decoder` from the given data.
 /// The data slice will not be copied!
@@ -50,11 +48,14 @@ impl<'a> ParserScope<'a> {
 
     /// Advances the parser with the given tag and executes the provided block.
     /// Returns an error if the tag does not match or if the closure returns an error.
-    pub fn advance_with_tag<T>(
+    pub fn advance_with_tag<T, E>(
         &mut self,
         expected: Asn1Id,
-        mut block: impl FnMut(&mut ParserScope<'a>) -> Result<T>,
-    ) -> Result<T> {
+        mut block: impl FnMut(&mut ParserScope<'a>) -> Result<T, E>,
+    ) -> Result<T, E>
+    where
+        E: From<Asn1DecoderError>,
+    {
         let tag = self.read_tag()?;
         if tag != expected {
             let describe = |id: &Asn1Id| {
@@ -62,7 +63,9 @@ impl<'a> ParserScope<'a> {
                 let form: u8 = id.form.into();
                 format!("Asn1Id(class=0x{class:02X}, form=0x{form:02X}, number=0x{:X})", id.number)
             };
-            return Err(DecoderError::UnexpectedTag { expected: describe(&expected), actual: describe(&tag) });
+            return Err(
+                Asn1DecoderError::UnexpectedTag { expected: describe(&expected), actual: describe(&tag) }.into()
+            );
         }
         let length = self.read_length()?;
         let is_infinite = length == -1;
@@ -81,13 +84,13 @@ impl<'a> ParserScope<'a> {
         if !is_infinite {
             if self.end_offset != self.offset {
                 self.end_offset = original_end;
-                return Err(DecoderError::UnparsedBytesRemaining);
+                return Err(Asn1DecoderError::UnparsedBytesRemaining.into());
             }
         } else {
             let end = self.read_bytes(2)?;
             if end != [0x00, 0x00] {
                 self.end_offset = original_end;
-                return Err(DecoderError::MissingEndOfContentMarker);
+                return Err(Asn1DecoderError::MissingEndOfContentMarker.into());
             }
         }
 
@@ -97,9 +100,9 @@ impl<'a> ParserScope<'a> {
 
     /// Read one byte.
     #[inline]
-    pub fn read_byte(&mut self) -> Result<u8> {
+    pub fn read_byte(&mut self) -> Result<u8, Asn1DecoderError> {
         if self.offset >= self.end_offset {
-            return Err(DecoderError::unexpected_end_of_data("reading byte"));
+            return Err(Asn1DecoderError::unexpected_end_of_data("reading byte"));
         }
         let b = self.data[self.offset];
         self.offset += 1;
@@ -107,10 +110,10 @@ impl<'a> ParserScope<'a> {
     }
 
     /// Read `length` bytes.
-    pub fn read_bytes(&mut self, length: usize) -> Result<Vec<u8>> {
-        let end = self.offset.checked_add(length).ok_or_else(|| DecoderError::integer_overflow("slice end"))?;
+    pub fn read_bytes(&mut self, length: usize) -> Result<Vec<u8>, Asn1DecoderError> {
+        let end = self.offset.checked_add(length).ok_or_else(|| Asn1DecoderError::integer_overflow("slice end"))?;
         if end > self.end_offset {
-            return Err(DecoderError::unexpected_end_of_data("reading bytes"));
+            return Err(Asn1DecoderError::unexpected_end_of_data("reading bytes"));
         }
         let data = &self.data[self.offset..end];
         self.offset = end;
@@ -118,7 +121,7 @@ impl<'a> ParserScope<'a> {
     }
 
     /// Reads the next tag from the data, handling multi-byte tags.
-    pub fn read_tag(&mut self) -> Result<Asn1Id> {
+    pub fn read_tag(&mut self) -> Result<Asn1Id, Asn1DecoderError> {
         let first = self.read_byte()?;
         let class = match first & 0xC0 {
             0x00 => Asn1Class::Universal,
@@ -146,7 +149,7 @@ impl<'a> ParserScope<'a> {
     }
 
     /// Read the length. Returns `-1` for infinite length.
-    pub fn read_length(&mut self) -> Result<i32> {
+    pub fn read_length(&mut self) -> Result<i32, Asn1DecoderError> {
         let length_byte = (self.read_byte()? as i32) & 0xFF;
         if length_byte == 0x80 {
             Ok(-1)
@@ -161,9 +164,9 @@ impl<'a> ParserScope<'a> {
     }
 
     /// Read `length` bytes as an integer.
-    pub fn read_int(&mut self, length: usize, signed: bool) -> Result<i32> {
+    pub fn read_int(&mut self, length: usize, signed: bool) -> Result<i32, Asn1DecoderError> {
         if !(1..=4).contains(&length) {
-            return Err(DecoderError::InvalidLength { length });
+            return Err(Asn1DecoderError::InvalidLength { length });
         }
         let bytes = self.read_bytes(length)?;
         let mut result = bytes[0] as i32;
@@ -176,31 +179,31 @@ impl<'a> ParserScope<'a> {
 
     /// Skip `length` bytes.
     #[inline]
-    pub fn skip(&mut self, length: usize) -> Result<()> {
-        let end = self.offset.checked_add(length).ok_or_else(|| DecoderError::integer_overflow("skip end"))?;
+    pub fn skip(&mut self, length: usize) -> Result<(), Asn1DecoderError> {
+        let end = self.offset.checked_add(length).ok_or_else(|| Asn1DecoderError::integer_overflow("skip end"))?;
         if end > self.end_offset {
-            return Err(DecoderError::SkipExceedsAvailableData);
+            return Err(Asn1DecoderError::SkipExceedsAvailableData);
         }
         self.offset = end;
         Ok(())
     }
 
     /// Skip to the `end_offset`.
-    pub fn skip_to_end(&mut self) -> Result<()> {
+    pub fn skip_to_end(&mut self) -> Result<(), Asn1DecoderError> {
         if self.end_offset == usize::MAX {
-            return Err(DecoderError::SkipInsideInfiniteLengthObject);
+            return Err(Asn1DecoderError::SkipInsideInfiniteLengthObject);
         }
         self.offset = self.end_offset;
         Ok(())
     }
 
     /// Read [Asn1Type.BOOLEAN].
-    pub fn read_boolean(&mut self) -> Result<bool> {
+    pub fn read_boolean(&mut self) -> Result<bool, Asn1DecoderError> {
         self.advance_with_tag(UniversalTag::Boolean.primitive(), |s| Ok(s.read_byte()? == 0xFF))
     }
 
     /// Read [Asn1Type.INTEGER].
-    pub fn read_int_tagged(&mut self) -> Result<i32> {
+    pub fn read_int_tagged(&mut self) -> Result<i32, Asn1DecoderError> {
         self.advance_with_tag(UniversalTag::Integer.primitive(), |s| {
             let len = s.remaining_length();
             s.read_int(len, true)
@@ -208,18 +211,18 @@ impl<'a> ParserScope<'a> {
     }
 
     /// Read [Asn1Type.BIT_STRING].
-    pub fn read_bit_string(&mut self) -> Result<Vec<u8>> {
+    pub fn read_bit_string(&mut self) -> Result<Vec<u8>, Asn1DecoderError> {
         self.advance_with_tag(UniversalTag::BitString.primitive(), |s| {
             let unused_bits = s.read_byte()? as i32;
             if !(0..=7).contains(&unused_bits) {
-                return Err(DecoderError::InvalidUnusedBitCount { count: unused_bits });
+                return Err(Asn1DecoderError::InvalidUnusedBitCount { count: unused_bits });
             }
             let mut bit_string = s.read_bytes(s.remaining_length())?;
             if unused_bits == 0 {
                 Ok(bit_string)
             } else {
                 if bit_string.is_empty() {
-                    return Err(DecoderError::BitStringIndicatesUnusedBits);
+                    return Err(Asn1DecoderError::BitStringIndicatesUnusedBits);
                 }
                 let last = bit_string[bit_string.len() - 1];
                 let mask = (((0xFFu16 << unused_bits) & 0xFF) as u8) & 0xFF;
@@ -231,32 +234,32 @@ impl<'a> ParserScope<'a> {
     }
 
     /// Read [Asn1Type.UTF8_STRING].
-    pub fn read_utf8_string(&mut self) -> Result<String> {
+    pub fn read_utf8_string(&mut self) -> Result<String, Asn1DecoderError> {
         self.advance_with_tag(UniversalTag::Utf8String.primitive(), |s| {
             let bytes = s.read_bytes(s.remaining_length())?;
-            String::from_utf8(bytes).map_err(|_| DecoderError::MalformedUtf8String)
+            String::from_utf8(bytes).map_err(|_| Asn1DecoderError::MalformedUtf8String)
         })
     }
 
     /// Read [Asn1Type.VISIBLE_STRING].
-    pub fn read_visible_string(&mut self) -> Result<String> {
+    pub fn read_visible_string(&mut self) -> Result<String, Asn1DecoderError> {
         self.advance_with_tag(UniversalTag::VisibleString.primitive(), |s| {
             let bytes = s.read_bytes(s.remaining_length())?;
-            String::from_utf8(bytes).map_err(|_| DecoderError::MalformedUtf8String)
+            String::from_utf8(bytes).map_err(|_| Asn1DecoderError::MalformedUtf8String)
         })
     }
 
     /// Read [Asn1Type.OCTET_STRING].
-    pub fn read_octet_string(&mut self) -> Result<Vec<u8>> {
+    pub fn read_octet_string(&mut self) -> Result<Vec<u8>, Asn1DecoderError> {
         self.advance_with_tag(UniversalTag::OctetString.primitive(), |s| s.read_bytes(s.remaining_length()))
     }
 
     /// Read [Asn1Type.OBJECT_IDENTIFIER].
-    pub fn read_object_identifier(&mut self) -> Result<String> {
+    pub fn read_object_identifier(&mut self) -> Result<String, Asn1DecoderError> {
         self.advance_with_tag(UniversalTag::ObjectIdentifier.primitive(), |s| {
             let bytes = s.read_bytes(s.remaining_length())?;
             if bytes.is_empty() {
-                return Err(DecoderError::EmptyObjectIdentifier);
+                return Err(Asn1DecoderError::EmptyObjectIdentifier);
             }
 
             let first_byte = (bytes[0] as i32) & 0xFF;
@@ -278,7 +281,7 @@ impl<'a> ParserScope<'a> {
                 }
             }
             if value != 0 {
-                return Err(DecoderError::UnfinishedObjectIdentifierEncoding);
+                return Err(Asn1DecoderError::UnfinishedObjectIdentifierEncoding);
             }
 
             Ok(parts.iter().map(|v| v.to_string()).collect::<Vec<_>>().join("."))
@@ -293,7 +296,10 @@ impl<'a> Asn1Decoder<'a> {
     }
 
     /// Reads the data using the provided `block` and returns the result.
-    pub fn read<T>(&self, mut block: impl FnMut(&mut ParserScope<'a>) -> Result<T>) -> Result<T> {
+    pub fn read<T, E>(&self, mut block: impl FnMut(&mut ParserScope<'a>) -> Result<T, E>) -> Result<T, E>
+    where
+        E: From<Asn1DecoderError>,
+    {
         let mut scope = ParserScope { data: self.data, offset: 0, end_offset: self.data.len() };
         block(&mut scope)
     }
@@ -317,12 +323,12 @@ mod tests {
             .read(|s| {
                 s.advance_with_tag(UniversalTag::Sequence.constructed(), |s| {
                     let mut out = Vec::new();
-                    s.advance_with_tag(UniversalTag::OctetString.primitive(), |s| {
+                    s.advance_with_tag(UniversalTag::OctetString.primitive(), |s| -> Result<(), Asn1DecoderError> {
                         let v = String::from_utf8(s.read_bytes(3)?).unwrap();
                         out.push(v);
                         Ok(())
                     })?;
-                    s.advance_with_tag(UniversalTag::OctetString.primitive(), |s| {
+                    s.advance_with_tag(UniversalTag::OctetString.primitive(), |s| -> Result<(), Asn1DecoderError> {
                         let v = String::from_utf8(s.read_bytes(3)?).unwrap();
                         out.push(v);
                         Ok(())
@@ -342,12 +348,12 @@ mod tests {
             .read(|s| {
                 s.advance_with_tag(UniversalTag::Sequence.constructed(), |s| {
                     let mut out = Vec::new();
-                    s.advance_with_tag(UniversalTag::OctetString.primitive(), |s| {
+                    s.advance_with_tag(UniversalTag::OctetString.primitive(), |s| -> Result<(), Asn1DecoderError> {
                         let v = String::from_utf8(s.read_bytes(3)?).unwrap();
                         out.push(v);
                         Ok(())
                     })?;
-                    s.advance_with_tag(UniversalTag::OctetString.primitive(), |s| {
+                    s.advance_with_tag(UniversalTag::OctetString.primitive(), |s| -> Result<(), Asn1DecoderError> {
                         let v = String::from_utf8(s.read_bytes(3)?).unwrap();
                         out.push(v);
                         Ok(())
@@ -365,7 +371,7 @@ mod tests {
         let parser = Asn1Decoder::new(&data);
         let res = parser.read(|s| {
             s.advance_with_tag(UniversalTag::Sequence.constructed(), |s| {
-                s.advance_with_tag(UniversalTag::OctetString.primitive(), |s| {
+                s.advance_with_tag(UniversalTag::OctetString.primitive(), |s| -> Result<(), Asn1DecoderError> {
                     let _ = s.read_bytes(3)?;
                     Ok(())
                 })?;
@@ -382,7 +388,7 @@ mod tests {
         let parser = Asn1Decoder::new(&data);
         let res = parser.read(|s| {
             s.advance_with_tag(UniversalTag::Sequence.constructed(), |s| {
-                s.advance_with_tag(UniversalTag::OctetString.primitive(), |s| {
+                s.advance_with_tag(UniversalTag::OctetString.primitive(), |s| -> Result<(), Asn1DecoderError> {
                     let _ = s.read_bytes(3)?;
                     Ok(())
                 })?;

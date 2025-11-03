@@ -22,3 +22,7 @@
 mod card;
 pub mod command;
 pub mod identifier;
+
+pub use asn1;
+pub use crypto;
+pub mod exchange;

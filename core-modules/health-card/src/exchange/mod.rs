@@ -19,20 +19,21 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-pub mod apdu;
-pub mod change_reference_data_command;
-pub mod general_authenticate_command;
-pub mod get_pin_status_command;
-pub mod get_random_command;
-pub mod health_card_command;
-pub mod health_card_status;
-pub mod manage_security_environment_command;
-pub mod pso_compute_digital_signature_command;
-pub mod read_command;
-pub mod reset_retry_counter_command;
-pub mod reset_retry_counter_with_new_secret_command;
-pub mod select_command;
-pub mod verify_pin_command;
+pub mod certificate;
+pub mod error;
+mod ids;
+pub mod pace_info;
+pub mod pin;
+pub mod random;
+pub mod read_vsd;
+pub mod session;
+pub mod sign_challenge;
+pub mod trusted_channel;
 
-pub use read_command::ReadCommand;
-pub use select_command::SelectCommand;
+pub use certificate::retrieve_certificate;
+pub use error::ExchangeError;
+pub use pin::{unlock_egk, verify_pin, HealthCardVerifyPinResult, UnlockMethod};
+pub use random::get_random;
+pub use read_vsd::read_vsd;
+pub use sign_challenge::sign_challenge;
+pub use trusted_channel::{establish_trusted_channel, establish_trusted_channel_with, TrustedChannelScope};

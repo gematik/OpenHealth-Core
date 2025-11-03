@@ -19,10 +19,12 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use crate::error::{EncoderError, EncoderResult};
+use crate::error::Asn1EncoderResult;
+
+pub use crate::error::Asn1EncoderError;
 use crate::tag::{Asn1Class, Asn1Form, Asn1Id, UniversalTag};
 
-pub type Result<T> = EncoderResult<T>;
+pub type Result<T> = Asn1EncoderResult<T>;
 
 /// ASN.1 encoder for encoding data in ASN.1 format.
 pub struct Asn1Encoder;
@@ -161,7 +163,7 @@ impl WriterScope {
     /// Write an ASN.1 bit string.
     pub fn write_asn1_bit_string(&mut self, value: &[u8], unused_bits: u8) -> Result<()> {
         if !(0..=7).contains(&unused_bits) {
-            return Err(EncoderError::new(format!("Invalid unused bit count: {}", unused_bits)));
+            return Err(Asn1EncoderError::invalid_unused_bit_count(unused_bits));
         }
         self.write_tagged_object(UniversalTag::BitString.primitive(), |s| {
             s.write_byte(unused_bits);
@@ -191,21 +193,21 @@ impl WriterScope {
         self.write_tagged_object(UniversalTag::ObjectIdentifier.primitive(), |s| {
             let parts: Vec<i32> = oid
                 .split('.')
-                .map(|p| p.parse::<i32>().map_err(|_| EncoderError::new(format!("Invalid OID part: {}", p))))
+                .map(|p| p.parse::<i32>().map_err(|_| Asn1EncoderError::invalid_object_identifier_part(p)))
                 .collect::<std::result::Result<_, _>>()?;
 
             if parts.len() < 2 {
-                return Err(EncoderError::new("OID must have at least two components"));
+                return Err(Asn1EncoderError::object_identifier_missing_components());
             }
 
             let first = parts[0];
             let second = parts[1];
 
             if !(0..=2).contains(&first) {
-                return Err(EncoderError::new("OID first part must be 0, 1, or 2"));
+                return Err(Asn1EncoderError::invalid_object_identifier_first_component(first));
             }
             if first < 2 && !(0..=39).contains(&second) {
-                return Err(EncoderError::new("OID second part must be 0-39 for first part 0 or 1"));
+                return Err(Asn1EncoderError::invalid_object_identifier_second_component(second));
             }
 
             let first_byte = first * 40 + second;

@@ -23,11 +23,11 @@ use std::borrow::Cow;
 
 use thiserror::Error;
 
-pub type DecoderResult<T> = Result<T, DecoderError>;
-pub type EncoderResult<T> = Result<T, EncoderError>;
+pub type Asn1DecoderResult<T> = Result<T, Asn1DecoderError>;
+pub type Asn1EncoderResult<T> = Result<T, Asn1EncoderError>;
 
 #[derive(Debug, Error, Clone)]
-pub enum DecoderError {
+pub enum Asn1DecoderError {
     #[error("Expected tag `{expected}` but got `{actual}`")]
     UnexpectedTag { expected: String, actual: String },
     #[error("Unparsed bytes remaining")]
@@ -64,7 +64,7 @@ pub enum DecoderError {
     Custom { message: Cow<'static, str> },
 }
 
-impl DecoderError {
+impl Asn1DecoderError {
     pub fn custom(message: impl Into<Cow<'static, str>>) -> Self {
         Self::Custom { message: message.into() }
     }
@@ -82,42 +82,68 @@ impl DecoderError {
     }
 }
 
-impl From<&'static str> for DecoderError {
+impl From<&'static str> for Asn1DecoderError {
     fn from(value: &'static str) -> Self {
         Self::Custom { message: Cow::from(value) }
     }
 }
 
-impl From<String> for DecoderError {
+impl From<String> for Asn1DecoderError {
     fn from(value: String) -> Self {
         Self::Custom { message: Cow::from(value) }
     }
 }
 
 #[derive(Debug, Error, Clone)]
-#[error("{message}")]
-pub struct EncoderError {
-    message: Cow<'static, str>,
+pub enum Asn1EncoderError {
+    #[error("Invalid unused bit count: {count}")]
+    InvalidUnusedBitCount { count: u8 },
+    #[error("Invalid OID part: {value}")]
+    InvalidObjectIdentifierPart { value: String },
+    #[error("OID must have at least two components")]
+    ObjectIdentifierMissingComponents,
+    #[error("OID first part must be 0, 1, or 2 (got {value})")]
+    InvalidObjectIdentifierFirstComponent { value: i32 },
+    #[error("OID second part must be 0-39 for first part 0 or 1 (got {value})")]
+    InvalidObjectIdentifierSecondComponent { value: i32 },
+    #[error("{message}")]
+    Custom { message: Cow<'static, str> },
 }
 
-impl EncoderError {
-    pub fn new(message: impl Into<Cow<'static, str>>) -> Self {
-        Self { message: message.into() }
+impl Asn1EncoderError {
+    pub fn custom(message: impl Into<Cow<'static, str>>) -> Self {
+        Self::Custom { message: message.into() }
     }
 
-    pub fn message(&self) -> &str {
-        &self.message
+    pub fn invalid_unused_bit_count(count: u8) -> Self {
+        Self::InvalidUnusedBitCount { count }
+    }
+
+    pub fn invalid_object_identifier_part(value: impl Into<String>) -> Self {
+        Self::InvalidObjectIdentifierPart { value: value.into() }
+    }
+
+    pub fn object_identifier_missing_components() -> Self {
+        Self::ObjectIdentifierMissingComponents
+    }
+
+    pub fn invalid_object_identifier_first_component(value: i32) -> Self {
+        Self::InvalidObjectIdentifierFirstComponent { value }
+    }
+
+    pub fn invalid_object_identifier_second_component(value: i32) -> Self {
+        Self::InvalidObjectIdentifierSecondComponent { value }
     }
 }
 
-impl From<&'static str> for EncoderError {
+impl From<&'static str> for Asn1EncoderError {
     fn from(value: &'static str) -> Self {
-        Self::new(value)
+        Self::custom(value)
     }
 }
 
-impl From<String> for EncoderError {
+impl From<String> for Asn1EncoderError {
     fn from(value: String) -> Self {
-        Self::new(value)
+        Self::custom(value)
     }
 }
