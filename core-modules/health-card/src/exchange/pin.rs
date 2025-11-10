@@ -66,7 +66,7 @@ where
         return Ok(HealthCardVerifyPinResult::Success(status_response));
     }
 
-    let encrypted_pin = EncryptedPinFormat2::new(pin);
+    let encrypted_pin = EncryptedPinFormat2::new(pin)?;
     let response =
         session.execute_command(&HealthCardCommand::verify_pin(&password_reference, false, &encrypted_pin))?;
     map_verify_response(response)
@@ -126,8 +126,8 @@ where
     let response = match method {
         UnlockMethod::ChangeReferenceData => {
             let new_secret = new_secret.ok_or(ExchangeError::InvalidArgument("new secret required"))?;
-            let old_pin = EncryptedPinFormat2::new(old_secret);
-            let new_pin = EncryptedPinFormat2::new(new_secret);
+            let old_pin = EncryptedPinFormat2::new(old_secret)?;
+            let new_pin = EncryptedPinFormat2::new(new_secret)?;
             session.execute_command_success(&HealthCardCommand::change_reference_data(
                 &password_reference,
                 false,
@@ -137,7 +137,7 @@ where
         }
         UnlockMethod::ResetRetryCounter => {
             let puk = puk.ok_or(ExchangeError::InvalidArgument("PUK must be provided"))?;
-            let puk_enc = EncryptedPinFormat2::new(puk);
+            let puk_enc = EncryptedPinFormat2::new(puk)?;
             session.execute_command_success(&HealthCardCommand::reset_retry_counter(
                 &password_reference,
                 false,
@@ -147,8 +147,8 @@ where
         UnlockMethod::ResetRetryCounterWithNewSecret => {
             let puk = puk.ok_or(ExchangeError::InvalidArgument("PUK must be provided"))?;
             let new_secret = new_secret.ok_or(ExchangeError::InvalidArgument("new secret required"))?;
-            let puk_enc = EncryptedPinFormat2::new(puk);
-            let new_pin = EncryptedPinFormat2::new(new_secret);
+            let puk_enc = EncryptedPinFormat2::new(puk)?;
+            let new_pin = EncryptedPinFormat2::new(new_secret)?;
             session.execute_command_success(&HealthCardCommand::reset_retry_counter_with_new_secret(
                 &password_reference,
                 false,

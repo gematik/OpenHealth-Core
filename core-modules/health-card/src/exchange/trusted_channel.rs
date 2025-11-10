@@ -186,16 +186,14 @@ impl<'a, S: CardSession> TrustedChannelScope<'a, S> {
 }
 
 impl<'a, S: CardSession> CardSession for TrustedChannelScope<'a, S> {
-    type Error = ExchangeError;
-
     fn supports_extended_length(&self) -> bool {
         self.session.supports_extended_length()
     }
 
-    fn transmit(&mut self, command: &CardCommandApdu) -> Result<CardResponseApdu, Self::Error> {
-        let encrypted = self.encrypt(command)?;
-        let response = self.session.transmit(&encrypted).map_err(|err| ExchangeError::Transport(Box::new(err)))?;
-        self.decrypt(response)
+    fn transmit(&mut self, command: &CardCommandApdu) -> Result<CardResponseApdu, CardSessionError> {
+        let encrypted = self.encrypt(command).map_err(CardSessionError::from)?;
+        let response = self.session.transmit(&encrypted)?;
+        self.decrypt(response).map_err(CardSessionError::from)
     }
 }
 
@@ -222,8 +220,8 @@ where
 {
     // Ensure the basic operational environment is as required (eGK v2.1 with DF.CardAccess present)
     session.execute_command_success(&HealthCardCommand::select(false, true))?;
-    let version_response =
-        session.execute_command_success(&HealthCardCommand::read_sfi_with_offset(ids::ef_version2_sfid(), 0))?;
+    let read_version = HealthCardCommand::read_sfi_with_offset(ids::ef_version2_sfid(), 0)?;
+    let version_response = session.execute_command_success(&read_version)?;
     let version =
         parse_health_card_version2(version_response.apdu.data_ref()).map_err(|_| ExchangeError::InvalidCardVersion)?;
     if !version.is_health_card_version_21() {
@@ -231,7 +229,8 @@ where
     }
 
     session.execute_command_success(&HealthCardCommand::select_fid(&ids::ef_card_access_fid(), false))?;
-    let pace_info_response = session.execute_command_success(&HealthCardCommand::read())?;
+    let read_card_access = HealthCardCommand::read()?;
+    let pace_info_response = session.execute_command_success(&read_card_access)?;
     let pace_info = parse_pace_info(pace_info_response.apdu.data_ref())?;
 
     session.execute_command_success(&HealthCardCommand::manage_sec_env_without_curves(
@@ -512,6 +511,7 @@ fn parse_tlv(input: &[u8]) -> Result<(u8, &[u8], &[u8]), ExchangeError> {
 mod tests {
     use super::*;
     use crate::command::apdu::{CardCommandApdu, CardResponseApdu};
+    use crate::exchange::session::CardSession;
     use hex::encode;
 
     #[test]

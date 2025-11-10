@@ -22,8 +22,6 @@
 use crate::command::apdu::{CardCommandApdu, CardResponseApdu};
 use crate::command::health_card_command::{HealthCardCommand, HealthCardResponse};
 use crate::command::health_card_status::HealthCardResponseStatus;
-use std::error::Error;
-
 use super::error::ExchangeError;
 
 /// Trait implemented by a low-level card transport.
@@ -32,9 +30,10 @@ use super::error::ExchangeError;
 /// [CardResponseApdu]. Higher-level logic (secure messaging, status mapping)
 /// lives in the exchange layer.
 pub trait CardSession {
-    /// Error type reported by the transport implementation.
-    type Error: Error + Send + Sync + 'static;
-
+    /// Concrete error type returned by the transport.
+    /// It must be convertible into `ExchangeError` so higher layers
+    /// can normalize error handling without exposing backend details.
+    type Error: Into<ExchangeError>;
     /// Return true if the underlying channel supports extended length APDUs.
     fn supports_extended_length(&self) -> bool;
 
@@ -48,7 +47,7 @@ pub trait CardSessionExt: CardSession {
     fn execute_command(&mut self, command: &HealthCardCommand) -> Result<HealthCardResponse, ExchangeError> {
         let apdu = command.command_apdu(self.supports_extended_length()).map_err(ExchangeError::apdu)?;
 
-        let response = self.transmit(&apdu).map_err(|err| ExchangeError::Transport(Box::new(err)))?;
+        let response = self.transmit(&apdu).map_err(Into::into)?;
 
         let status =
             command.expected_status.get(&response.sw()).copied().unwrap_or(HealthCardResponseStatus::UnknownStatus);

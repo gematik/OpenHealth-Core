@@ -21,9 +21,11 @@
 
 use super::pace_info::PaceInfoError;
 use crate::asn1::error::Asn1DecoderError;
+use crate::card::encrypted_pin_format2::PinBlockError;
 use crate::command::general_authenticate_command::GeneralAuthenticateCommandError;
 use crate::command::health_card_status::HealthCardResponseStatus;
 use crate::command::manage_security_environment_command::ManageSecurityEnvironmentCommandError;
+use crate::command::CommandError;
 use asn1::error::Asn1EncoderError;
 use crypto::error::CryptoError;
 use std::error::Error;
@@ -34,7 +36,7 @@ use thiserror::Error;
 pub enum ExchangeError {
     /// Transport layer failure while transmitting an APDU.
     #[error("transport error: {0}")]
-    Transport(#[source] Box<dyn Error + Send + Sync>),
+    Transport(String),
     /// Failed to encode an APDU before transmission.
     #[error("apdu encoding error: {0}")]
     Apdu(String),
@@ -62,6 +64,12 @@ pub enum ExchangeError {
     /// Error originating from MANAGE SECURITY ENVIRONMENT command construction.
     #[error("MANAGE SECURITY ENVIRONMENT command error: {0}")]
     ManageSecurityEnvironmentCommand(#[from] ManageSecurityEnvironmentCommandError),
+    /// Error while composing a command prior to transmission.
+    #[error("command composition error: {0}")]
+    Command(#[from] CommandError),
+    /// Failed to construct a PIN block from caller input.
+    #[error("pin block error: {0}")]
+    PinBlock(#[from] PinBlockError),
     /// Card version did not meet the required baseline (e.g. not eGK v2.1).
     #[error("unsupported health-card version")]
     InvalidCardVersion,

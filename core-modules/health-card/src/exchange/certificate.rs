@@ -49,7 +49,8 @@ where
     let mut offset = 0;
 
     loop {
-        let response = session.execute_command(&HealthCardCommand::read_with_offset(offset))?;
+        let read_command = HealthCardCommand::read_with_offset(offset)?;
+        let response = session.execute_command(&read_command)?;
         let data = response.apdu.data();
         if !data.is_empty() {
             offset = offset.saturating_add(data.len() as i32);
