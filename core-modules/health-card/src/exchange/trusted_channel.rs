@@ -19,6 +19,10 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
+use super::error::ExchangeError;
+use super::ids;
+use super::pace_info::parse_pace_info;
+use super::session::{CardSession, CardSessionExt};
 use crate::asn1::error::Asn1DecoderError;
 use crate::card::health_card_version2::parse_health_card_version2;
 use crate::card::pace_key::{get_aes128_key, Mode, PaceKey};
@@ -30,7 +34,9 @@ use crate::command::health_card_command::HealthCardCommand;
 use crate::command::manage_security_environment_command::ManageSecurityEnvironmentCommand;
 use crate::command::read_command::ReadCommand;
 use crate::command::select_command::SelectCommand;
-use crypto::cipher::aes::{AesCipherSpec, AesDecipherSpec, Iv, Padding};
+use asn1::encoder::Asn1Encoder;
+use asn1::error::Asn1EncoderError;
+use crypto::cipher::aes::{AesCipherSpec, AesDecipherSpec, Cipher, Iv, Padding};
 use crypto::ec::ec_key::{EcCurve, EcKeyPairSpec, EcPrivateKey, EcPublicKey};
 use crypto::ec::ec_point::EcPoint;
 use crypto::error::CryptoError;
@@ -39,19 +45,14 @@ use crypto::mac::{CmacAlgorithm, MacSpec};
 use num_bigint::{BigInt, Sign};
 use std::convert::TryFrom;
 
-use super::error::ExchangeError;
-use super::ids;
-use super::pace_info::parse_pace_info;
-use super::session::{CardSession, CardSessionExt};
-
 /// Trusted channel scope holding the negotiated PACE keys.
-pub struct TrustedChannelScope<'a, S: CardSession + ?Sized> {
+pub struct TrustedChannelScope<'a, S: CardSession> {
     session: &'a mut S,
     pace_key: PaceKey,
     ssc: [u8; 16],
 }
 
-impl<'a, S: CardSession + ?Sized> TrustedChannelScope<'a, S> {
+impl<'a, S: CardSession> TrustedChannelScope<'a, S> {
     /// Access the established PACE keys.
     pub fn pace_key(&self) -> &PaceKey {
         &self.pace_key
@@ -184,7 +185,7 @@ impl<'a, S: CardSession + ?Sized> TrustedChannelScope<'a, S> {
     }
 }
 
-impl<'a, S: CardSession + ?Sized> CardSession for TrustedChannelScope<'a, S> {
+impl<'a, S: CardSession> CardSession for TrustedChannelScope<'a, S> {
     type Error = ExchangeError;
 
     fn supports_extended_length(&self) -> bool {
@@ -199,10 +200,10 @@ impl<'a, S: CardSession + ?Sized> CardSession for TrustedChannelScope<'a, S> {
 }
 
 /// Establish a PACE channel using random key material generated via `EcKeyPairSpec`.
-pub fn establish_trusted_channel<S>(
-    session: &mut S,
+pub fn establish_trusted_channel<'a, S>(
+    session: &'a mut S,
     card_access_number: &str,
-) -> Result<TrustedChannelScope<'_, S>, ExchangeError>
+) -> Result<TrustedChannelScope<'a, S>, ExchangeError>
 where
     S: CardSessionExt,
 {
@@ -210,11 +211,11 @@ where
 }
 
 /// Establish a PACE channel with a custom key-pair generator (useful for testing).
-pub fn establish_trusted_channel_with<S, F>(
-    session: &mut S,
+pub fn establish_trusted_channel_with<'a, S, F>(
+    session: &'a mut S,
     card_access_number: &str,
     mut key_generator: F,
-) -> Result<TrustedChannelScope<'_, S>, ExchangeError>
+) -> Result<TrustedChannelScope<'a, S>, ExchangeError>
 where
     S: CardSessionExt,
     F: FnMut(EcCurve) -> Result<(EcPublicKey, EcPrivateKey), CryptoError>,
@@ -326,40 +327,39 @@ fn decrypt_nonce(key: &SecretKey, ciphertext: &[u8]) -> Result<Vec<u8>, Exchange
 
 fn decode_general_authenticate(data: &[u8]) -> Result<Vec<u8>, ExchangeError> {
     if data.len() < 4 || data[0] != 0x7C {
-        return Err(ExchangeError::Asn1(Asn1DecoderError::custom(
+        return Err(ExchangeError::Asn1DecoderError(Asn1DecoderError::custom(
             "GENERAL AUTHENTICATE response missing application tag",
         )));
     }
     let total_len = data[1] as usize;
     if data.len() < 2 + total_len {
-        return Err(ExchangeError::Asn1(Asn1DecoderError::InvalidLength { length: total_len }));
+        return Err(ExchangeError::Asn1DecoderError(Asn1DecoderError::InvalidLength { length: total_len }));
     }
     let inner = &data[2..2 + total_len];
     if inner.len() < 2 {
-        return Err(ExchangeError::Asn1(Asn1DecoderError::InvalidLength { length: inner.len() }));
+        return Err(ExchangeError::Asn1DecoderError(Asn1DecoderError::InvalidLength { length: inner.len() }));
     }
     let value_len = inner[1] as usize;
     if inner.len() < 2 + value_len {
-        return Err(ExchangeError::Asn1(Asn1DecoderError::InvalidLength { length: value_len }));
+        return Err(ExchangeError::Asn1DecoderError(Asn1DecoderError::InvalidLength { length: value_len }));
     }
     Ok(inner[2..2 + value_len].to_vec())
 }
 
 fn create_asn1_auth_token(public_key: &EcPublicKey, protocol_id: &str) -> Result<Vec<u8>, ExchangeError> {
-    use crate::asn1::asn1_encoder::encode;
+    use crate::asn1::encoder::Asn1Encoder;
     use crate::asn1::tag::Asn1Id;
 
-    let encoded = encode(|writer| {
+    Asn1Encoder::write(|writer| {
         writer.write_tagged_object(Asn1Id::app(0x49).constructed(), |outer| {
             outer.write_object_identifier(protocol_id)?;
-            outer.write_tagged_object(Asn1Id::ctx(0x06).primitive(), |inner| {
+            outer.write_tagged_object(Asn1Id::ctx(0x06).primitive(), |inner| -> Result<(), Asn1EncoderError> {
                 inner.write_bytes(public_key.as_ref());
                 Ok(())
             })?;
             Ok(())
-        })?
-    })?;
-    Ok(encoded)
+        })
+    })
 }
 
 fn derive_mac(mac_key: &SecretKey, public_key: &EcPublicKey, protocol_id: &str) -> Result<Vec<u8>, ExchangeError> {
@@ -559,7 +559,7 @@ mod tests {
         let command = CardCommandApdu::of_options_without_data(0x01, 0x02, 0x03, 0x04, None).unwrap();
         let mut scope = make_scope();
         let secured = scope.encrypt(&command).unwrap();
-        assert_eq!(to_hex(&secured), "0D0203040A8E08D92B4FDDC2BBED8C000");
+        assert_eq!(to_hex(&secured), "0D0203040A8E08D92B4FDDC2BBED8C00");
         // Double encryption should be rejected
         assert!(scope.encrypt(&secured).is_err());
     }

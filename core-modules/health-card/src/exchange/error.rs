@@ -19,13 +19,15 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
+use super::pace_info::PaceInfoError;
 use crate::asn1::error::Asn1DecoderError;
+use crate::command::general_authenticate_command::GeneralAuthenticateCommandError;
 use crate::command::health_card_status::HealthCardResponseStatus;
+use crate::command::manage_security_environment_command::ManageSecurityEnvironmentCommandError;
+use asn1::error::Asn1EncoderError;
 use crypto::error::CryptoError;
 use std::error::Error;
 use thiserror::Error;
-
-use super::pace_info::PaceInfoError;
 
 /// Error type for higher-level health-card exchanges.
 #[derive(Debug, Error)]
@@ -48,9 +50,18 @@ pub enum ExchangeError {
     /// Error originating from the cryptography module.
     #[error("crypto error: {0}")]
     Crypto(#[from] CryptoError),
-    /// Error originating from ASN.1 parsing/encoding.
+    /// Error originating from ASN.1 parsing.
     #[error("ASN.1 error: {0}")]
-    Asn1(#[from] Asn1DecoderError),
+    Asn1DecoderError(#[from] Asn1DecoderError),
+    /// Error originating from ASN.1 encoding.
+    #[error("ASN.1 error: {0}")]
+    Asn1EncoderError(#[from] Asn1EncoderError),
+    /// Error originating from GENERAL AUTHENTICATE command construction.
+    #[error("GENERAL AUTHENTICATE command error: {0}")]
+    GeneralAuthenticateCommand(#[from] GeneralAuthenticateCommandError),
+    /// Error originating from MANAGE SECURITY ENVIRONMENT command construction.
+    #[error("MANAGE SECURITY ENVIRONMENT command error: {0}")]
+    ManageSecurityEnvironmentCommand(#[from] ManageSecurityEnvironmentCommandError),
     /// Card version did not meet the required baseline (e.g. not eGK v2.1).
     #[error("unsupported health-card version")]
     InvalidCardVersion,

@@ -111,8 +111,7 @@ mod tests {
     #[test]
     fn sha1_abc() {
         // NIST FIPS 180-4
-        let expected =
-            "A9 99 3E 36 47 06 81 6A BA 3E 25 71 78 50 C2 6C 9C D0 D8 9D";
+        let expected = "A9 99 3E 36 47 06 81 6A BA 3E 25 71 78 50 C2 6C 9C D0 D8 9D";
         let got = digest_hex(DigestSpec::Sha1, b"abc");
         assert_eq!(got, expected);
     }

@@ -24,8 +24,9 @@ use crate::card::pso_algorithm::PsoAlgorithm;
 use crate::command::health_card_command::HealthCardCommand;
 use crate::command::health_card_status::MANAGE_SECURITY_ENVIRONMENT_STATUS;
 use asn1::encoder::Asn1Encoder;
-use asn1::encoder::Result;
+use asn1::error::Asn1EncoderError;
 use asn1::tag::{TagNumberExt, UniversalTag};
+use thiserror::Error;
 
 /// CLA byte for the MANAGE SECURITY ENVIRONMENT command
 const CLA: u8 = 0x00;
@@ -45,6 +46,14 @@ const MODE_SET_PRIVATE_KEY_P1: u8 = 0x41;
 /// Mode where the affected list element is signature creation (P2)
 const MODE_AFFECTED_LIST_ELEMENT_IS_SIGNATURE_CREATION: u8 = 0xB6;
 
+#[derive(Debug, Error)]
+pub enum ManageSecurityEnvironmentCommandError {
+    #[error("Failed to encode MANAGE SECURITY ENVIRONMENT command: {0}")]
+    Encoding(#[from] Asn1EncoderError),
+}
+
+type ManageSecurityEnvironmentResult<T> = std::result::Result<T, ManageSecurityEnvironmentCommandError>;
+
 /// Extension trait for HealthCardCommand to provide MANAGE SECURITY ENVIRONMENT commands
 pub trait ManageSecurityEnvironmentCommand {
     /// Creates a HealthCardCommand for the MANAGE SECURITY ENVIRONMENT command
@@ -61,7 +70,7 @@ pub trait ManageSecurityEnvironmentCommand {
         card_key: &K,
         df_specific: bool,
         oid: &[u8],
-    ) -> Result<HealthCardCommand>;
+    ) -> ManageSecurityEnvironmentResult<HealthCardCommand>;
 
     /// Creates a HealthCardCommand for the MANAGE SECURITY ENVIRONMENT command
     /// for signing. (gemSpec_COS_3.14.0#14.9.9.9)
@@ -76,7 +85,7 @@ pub trait ManageSecurityEnvironmentCommand {
         pso_algorithm: PsoAlgorithm,
         key: &K,
         df_specific: bool,
-    ) -> Result<HealthCardCommand>;
+    ) -> ManageSecurityEnvironmentResult<HealthCardCommand>;
 }
 
 impl ManageSecurityEnvironmentCommand for HealthCardCommand {
@@ -84,20 +93,19 @@ impl ManageSecurityEnvironmentCommand for HealthCardCommand {
         card_key: &K,
         df_specific: bool,
         oid: &[u8],
-    ) -> Result<HealthCardCommand> {
+    ) -> ManageSecurityEnvironmentResult<HealthCardCommand> {
         let data = Asn1Encoder::write(|w| {
             // '80 I2OS(OctetLength(OID), 1) || OID
-            w.write_tagged_object(0u8.context_tag(), |inner| {
+            w.write_tagged_object(0u8.context_tag(), |inner| -> Result<(), Asn1EncoderError> {
                 inner.write_bytes(oid);
                 Ok(())
             })?;
 
             // '83 01 || keyRef'
-            w.write_tagged_object(3u8.context_tag(), |inner| {
+            w.write_tagged_object(3u8.context_tag(), |inner| -> Result<(), Asn1EncoderError> {
                 inner.write_byte(card_key.calculate_key_reference(df_specific));
                 Ok(())
-            })?;
-            Ok(())
+            })
         })?;
 
         Ok(HealthCardCommand {
@@ -115,20 +123,25 @@ impl ManageSecurityEnvironmentCommand for HealthCardCommand {
         pso_algorithm: PsoAlgorithm,
         key: &K,
         df_specific: bool,
-    ) -> Result<HealthCardCommand> {
+    ) -> ManageSecurityEnvironmentResult<HealthCardCommand> {
         let data = Asn1Encoder::write(|w| {
             // '8401 || keyRef'
-            w.write_tagged_object(UniversalTag::OctetString.number().context_tag(), |inner| {
-                inner.write_byte(key.calculate_key_reference(df_specific));
-                Ok(())
-            })?;
+            w.write_tagged_object(
+                UniversalTag::OctetString.number().context_tag(),
+                |inner| -> Result<(), Asn1EncoderError> {
+                    inner.write_byte(key.calculate_key_reference(df_specific));
+                    Ok(())
+                },
+            )?;
 
             // '8001 || algId'
-            w.write_tagged_object(UniversalTag::External.number().context_tag(), |inner| {
-                inner.write_byte(pso_algorithm.identifier());
-                Ok(())
-            })?;
-            Ok(())
+            w.write_tagged_object(
+                UniversalTag::External.number().context_tag(),
+                |inner| -> Result<(), Asn1EncoderError> {
+                    inner.write_byte(pso_algorithm.identifier());
+                    Ok(())
+                },
+            )
         })?;
 
         Ok(HealthCardCommand {

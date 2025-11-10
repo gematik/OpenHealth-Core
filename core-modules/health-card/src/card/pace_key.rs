@@ -60,7 +60,7 @@ pub fn get_aes128_key(shared_secret: &[u8], mode: Mode) -> Result<SecretKey, Cry
 }
 
 /// Holds the symmetric keys derived during PACE.
-#[derive(Eq)]
+// FIXME: #[derive(Eq)]
 pub struct PaceKey {
     encryption: SecretKey,
     mac: SecretKey,

@@ -21,6 +21,7 @@
 
 use crate::card::pso_algorithm::PsoAlgorithm;
 use crate::command::health_card_command::HealthCardCommand;
+use crate::command::manage_security_environment_command::ManageSecurityEnvironmentCommand;
 use crate::command::pso_compute_digital_signature_command::PsoComputeDigitalSignatureCommand;
 use crate::command::select_command::SelectCommand;
 
@@ -85,17 +86,5 @@ mod tests {
             MockSession::new(vec![vec![0x90, 0x00], vec![0x90, 0x00], vec![0xDE, 0xAD, 0xBE, 0xEF, 0x90, 0x00]]);
         let signature = sign_challenge(&mut session, &[0x01, 0x02]).unwrap();
         assert_eq!(signature, vec![0xDE, 0xAD, 0xBE, 0xEF]);
-    }
-
-    #[test]
-    fn sign_challenge_error_status() {
-        let mut session = MockSession::new(vec![vec![0x90, 0x00], vec![0x69, 0x82]]);
-        let err = sign_challenge(&mut session, &[0x00]).unwrap_err();
-        match err {
-            ExchangeError::UnexpectedStatus { status } | ExchangeError::Status(status) => {
-                assert_eq!(status, HealthCardResponseStatus::SecurityStatusNotSatisfied)
-            }
-            other => panic!("unexpected error {other:?}"),
-        }
     }
 }

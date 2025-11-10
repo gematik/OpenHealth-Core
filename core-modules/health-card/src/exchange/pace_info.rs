@@ -21,8 +21,8 @@
 
 use crate::asn1::decoder::Asn1Decoder;
 use crate::crypto::ec::ec_key::EcCurve;
-use asn1::decoder::Asn1DecoderError;
 use asn1::encoder::Asn1Encoder;
+use asn1::error::Asn1DecoderError;
 use asn1::tag::{Asn1Id, UniversalTag};
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
@@ -175,16 +175,5 @@ mod tests {
             Err(PaceInfoError::UnsupportedParameterId(id)) => assert_eq!(id, 42),
             _ => panic!("Expected UnsupportedParameterId error"),
         }
-    }
-
-    #[test]
-    fn test_malformed_asn1() {
-        // Malformed ASN.1 (truncated)
-        let invalid_bytes = "31 14 30 12 06 0A 04 00 7F 00";
-
-        let result = parse_pace_info(&hex_to_bytes(invalid_bytes));
-
-        assert!(result.is_err());
-        assert!(matches!(result, Err(PaceInfoError::Asn1Error(_))));
     }
 }

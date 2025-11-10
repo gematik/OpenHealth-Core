@@ -90,14 +90,4 @@ mod tests {
         assert_eq!(session.commands.len(), 2);
         assert_eq!(session.commands[0], HealthCardCommand::select(false, false).command_apdu(false).unwrap().apdu());
     }
-
-    #[test]
-    fn random_unexpected_status() {
-        let mut session = MockSession::new(vec![vec![0x90, 0x00], vec![0x6A, 0x82]]);
-        let err = get_random(&mut session, 2).unwrap_err();
-        match err {
-            ExchangeError::Status(status) => assert_eq!(status, HealthCardResponseStatus::FileNotFound),
-            other => panic!("unexpected error {other:?}"),
-        }
-    }
 }

@@ -19,9 +19,7 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use crate::error::Asn1DecoderResult;
-
-pub use crate::error::Asn1DecoderError;
+use crate::error::Asn1DecoderError;
 use crate::tag::{Asn1Class, Asn1Form, Asn1Id, UniversalTag};
 
 /// Constructs an `Asn1Decoder` from the given data.
@@ -321,7 +319,7 @@ mod tests {
         let parser = Asn1Decoder::new(&data);
         let result: Vec<String> = parser
             .read(|s| {
-                s.advance_with_tag(UniversalTag::Sequence.constructed(), |s| {
+                s.advance_with_tag(UniversalTag::Sequence.constructed(), |s| -> Result<_, Asn1DecoderError> {
                     let mut out = Vec::new();
                     s.advance_with_tag(UniversalTag::OctetString.primitive(), |s| -> Result<(), Asn1DecoderError> {
                         let v = String::from_utf8(s.read_bytes(3)?).unwrap();
@@ -346,7 +344,7 @@ mod tests {
         let parser = Asn1Decoder::new(&data);
         let result: Vec<String> = parser
             .read(|s| {
-                s.advance_with_tag(UniversalTag::Sequence.constructed(), |s| {
+                s.advance_with_tag(UniversalTag::Sequence.constructed(), |s| -> Result<_, Asn1DecoderError> {
                     let mut out = Vec::new();
                     s.advance_with_tag(UniversalTag::OctetString.primitive(), |s| -> Result<(), Asn1DecoderError> {
                         let v = String::from_utf8(s.read_bytes(3)?).unwrap();
@@ -369,7 +367,7 @@ mod tests {
     fn advance_with_tag_unfinished_parsing() {
         let data = hex_bytes("30 80 04 03 66 6F 6F 04 03 62 61 72 00 00");
         let parser = Asn1Decoder::new(&data);
-        let res = parser.read(|s| {
+        let res = parser.read(|s| -> Result<(), Asn1DecoderError> {
             s.advance_with_tag(UniversalTag::Sequence.constructed(), |s| {
                 s.advance_with_tag(UniversalTag::OctetString.primitive(), |s| -> Result<(), Asn1DecoderError> {
                     let _ = s.read_bytes(3)?;
@@ -387,7 +385,7 @@ mod tests {
         let data = hex_bytes("30 80 04 03 66 6F 6F 04 03 62 61 72 00 00");
         let parser = Asn1Decoder::new(&data);
         let res = parser.read(|s| {
-            s.advance_with_tag(UniversalTag::Sequence.constructed(), |s| {
+            s.advance_with_tag(UniversalTag::Sequence.constructed(), |s| -> Result<_, Asn1DecoderError> {
                 s.advance_with_tag(UniversalTag::OctetString.primitive(), |s| -> Result<(), Asn1DecoderError> {
                     let _ = s.read_bytes(3)?;
                     Ok(())
@@ -485,7 +483,7 @@ mod tests {
         let parser = Asn1Decoder::new(&data);
         let result: Vec<String> = parser
             .read(|s| {
-                s.advance_with_tag(UniversalTag::Sequence.constructed(), |s| {
+                s.advance_with_tag(UniversalTag::Sequence.constructed(), |s| -> Result<_, Asn1DecoderError> {
                     Ok(vec![
                         s.read_bit_string()?.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(" "),
                         s.read_bit_string()?.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(" "),

@@ -114,7 +114,7 @@ pub fn parse_health_card_version2(data: &[u8]) -> Result<HealthCardVersion2, Hea
     let object_system_version = take_or_err(TAG_OBJECT_SYSTEM_VERSION)?;
     let product_identification_object_system_version = take_or_err(TAG_PRODUCT_IDENTIFICATION_OS_VERSION)?;
 
-    let optional = |tag: u8| entries.remove(&tag).unwrap_or_default();
+    let mut optional = |tag: u8| entries.remove(&tag).unwrap_or_default();
 
     Ok(HealthCardVersion2 {
         filling_instructions_version,

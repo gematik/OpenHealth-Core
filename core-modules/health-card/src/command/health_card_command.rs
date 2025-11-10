@@ -20,10 +20,11 @@
 // find details in the "Readme" file.
 
 use std::collections::HashMap;
-use std::error::Error;
 use std::fmt;
 
-use crate::command::apdu::{CardCommandApdu, CardResponseApdu};
+use thiserror::Error;
+
+use crate::command::apdu::{ApduError, CardCommandApdu, CardResponseApdu};
 use crate::command::apdu::{EXPECTED_LENGTH_WILDCARD_EXTENDED, EXPECTED_LENGTH_WILDCARD_SHORT};
 use crate::command::health_card_status::HealthCardResponseStatus;
 
@@ -78,7 +79,7 @@ impl HealthCardCommand {
     ///
     /// # Arguments
     /// * `scope_supports_extended_length` - Indicates if the scope supports extended length
-    pub fn command_apdu(&self, scope_supports_extended_length: bool) -> Result<CardCommandApdu, Box<dyn Error>> {
+    pub fn command_apdu(&self, scope_supports_extended_length: bool) -> Result<CardCommandApdu, ApduError> {
         let expected_length = match self.ne {
             Some(ne) if ne == EXPECT_ALL_WILDCARD as usize => {
                 if scope_supports_extended_length {
@@ -91,7 +92,6 @@ impl HealthCardCommand {
         };
 
         CardCommandApdu::of_options(self.cla, self.ins, self.p1, self.p2, self.data.clone(), expected_length)
-            .map_err(|e| Box::new(e) as Box<dyn Error>)
     }
 }
 
@@ -139,7 +139,8 @@ impl HealthCardResponse {
 }
 
 /// Exception thrown when a command execution was not successful.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Error)]
+#[error("{health_card_response_status}")]
 pub struct ResponseException {
     /// The status indicating the reason for the failure
     pub health_card_response_status: HealthCardResponseStatus,
@@ -154,14 +155,6 @@ impl ResponseException {
         ResponseException { health_card_response_status }
     }
 }
-
-impl fmt::Display for ResponseException {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.health_card_response_status)
-    }
-}
-
-impl Error for ResponseException {}
 
 #[cfg(test)]
 mod tests {

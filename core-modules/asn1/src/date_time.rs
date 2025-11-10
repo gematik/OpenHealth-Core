@@ -20,9 +20,8 @@
 // find details in the "Readme" file.
 
 use crate::decoder::ParserScope;
-use crate::encoder::Result as EncoderResult;
 use crate::encoder::WriterScope;
-use crate::error::{Asn1DecoderError, Asn1DecoderResult};
+use crate::error::{Asn1DecoderError, Asn1DecoderResult, Asn1EncoderError};
 use crate::tag::UniversalTag;
 use regex::Regex;
 use std::sync::OnceLock;
@@ -86,7 +85,8 @@ fn parse_time_zone_or_offset(offset: &str) -> Asn1DecoderResult<Option<Asn1Offse
         Ok(None)
     } else {
         let sign = if offset.as_bytes()[0] == b'-' { -1 } else { 1 };
-        let hours: i32 = offset[1..3].parse().map_err(|_| Asn1DecoderError::invalid_time_value("offset hour", offset))?;
+        let hours: i32 =
+            offset[1..3].parse().map_err(|_| Asn1DecoderError::invalid_time_value("offset hour", offset))?;
         let minutes: i32 =
             offset[3..5].parse().map_err(|_| Asn1DecoderError::invalid_time_value("offset minute", offset))?;
         Ok(Some(Asn1Offset::UtcOffset { hours: hours * sign, minutes }))
@@ -153,8 +153,10 @@ impl<'a> ParserScope<'a> {
         let fff = caps.get(7).map(|m| m.as_str()).unwrap_or("");
         let offset = caps.get(8).map(|m| m.as_str()).unwrap_or("");
 
-        let year = yyyy.parse::<i32>().map_err(|_| Asn1DecoderError::invalid_time_value("GENERALIZED_TIME year", yyyy))?;
-        let month = mm.parse::<i32>().map_err(|_| Asn1DecoderError::invalid_time_value("GENERALIZED_TIME month", mm))?;
+        let year =
+            yyyy.parse::<i32>().map_err(|_| Asn1DecoderError::invalid_time_value("GENERALIZED_TIME year", yyyy))?;
+        let month =
+            mm.parse::<i32>().map_err(|_| Asn1DecoderError::invalid_time_value("GENERALIZED_TIME month", mm))?;
         let day = dd.parse::<i32>().map_err(|_| Asn1DecoderError::invalid_time_value("GENERALIZED_TIME day", dd))?;
         let hour = hh.parse::<i32>().map_err(|_| Asn1DecoderError::invalid_time_value("GENERALIZED_TIME hour", hh))?;
         let minute = if min.is_empty() {
@@ -213,8 +215,8 @@ impl<'a> ParserScope<'a> {
 
 impl WriterScope {
     /// Write ASN.1 `UTC_TIME`.
-    pub fn write_utc_time(&mut self, value: &Asn1UtcTime) -> EncoderResult<()> {
-        self.write_tagged_object(UniversalTag::UtcTime.primitive(), |w| {
+    pub fn write_utc_time(&mut self, value: &Asn1UtcTime) -> Result<(), Asn1EncoderError> {
+        self.write_tagged_object(UniversalTag::UtcTime.primitive(), |w| -> Result<(), Asn1EncoderError> {
             let mut s = String::new();
             // year % 100, zero-padded to 2
             use core::fmt::Write as _;
@@ -230,8 +232,8 @@ impl WriterScope {
     }
 
     /// Write ASN.1 `GENERALIZED_TIME`.
-    pub fn write_generalized_time(&mut self, value: &Asn1GeneralizedTime) -> EncoderResult<()> {
-        self.write_tagged_object(UniversalTag::GeneralizedTime.primitive(), |w| {
+    pub fn write_generalized_time(&mut self, value: &Asn1GeneralizedTime) -> Result<(), Asn1EncoderError> {
+        self.write_tagged_object(UniversalTag::GeneralizedTime.primitive(), |w| -> Result<(), Asn1EncoderError> {
             use core::fmt::Write as _;
             let mut s = String::new();
             let _ = write!(s, "{:04}{:02}{:02}{:02}", value.year, value.month, value.day, value.hour);
@@ -272,7 +274,7 @@ mod tests {
             second: None,
             offset: None, // Z
         };
-        let out = crate::encoder::Asn1Encoder::write(|w| {
+        let out = crate::encoder::Asn1Encoder::write(|w| -> Result<(), Asn1EncoderError> {
             w.write_utc_time(&value)?;
             Ok(())
         })
@@ -296,7 +298,7 @@ mod tests {
             second: Some(58),
             offset: Some(Asn1Offset::UtcOffset { hours: 2, minutes: 30 }),
         };
-        let out = crate::encoder::Asn1Encoder::write(|w| {
+        let out = crate::encoder::Asn1Encoder::write(|w| -> Result<(), Asn1EncoderError> {
             w.write_utc_time(&value)?;
             Ok(())
         })
@@ -355,7 +357,7 @@ mod tests {
             fraction_of_second: Some(123),
             offset: Some(Asn1Offset::GeneralizedOffset { hours: -1, minutes: 30 }),
         };
-        let out = crate::encoder::Asn1Encoder::write(|w| {
+        let out = crate::encoder::Asn1Encoder::write(|w| -> Result<(), Asn1EncoderError> {
             w.write_generalized_time(&value)?;
             Ok(())
         })
