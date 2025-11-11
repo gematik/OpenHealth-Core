@@ -75,20 +75,17 @@ mod tests {
 
     #[test]
     fn certificate_read_until_eof() {
-        let mut session = MockSession::with_extended_support(vec![
-            vec![0x90, 0x00],
-            vec![0x90, 0x00],
-            vec![0xDE, 0xAD, 0x90, 0x00],
-            vec![0xBE, 0xEF, 0x62, 0x82],
-        ], true);
+        let mut session = MockSession::with_extended_support(
+            vec![vec![0x90, 0x00], vec![0x90, 0x00], vec![0xDE, 0xAD, 0x90, 0x00], vec![0xBE, 0xEF, 0x62, 0x82]],
+            true,
+        );
         let cert = retrieve_certificate(&mut session).unwrap();
         assert_eq!(cert, vec![0xDE, 0xAD, 0xBE, 0xEF]);
     }
 
     #[test]
     fn certificate_status_error() {
-        let mut session =
-            MockSession::with_extended_support(vec![vec![0x90, 0x00], vec![0x6A, 0x82]], true);
+        let mut session = MockSession::with_extended_support(vec![vec![0x90, 0x00], vec![0x6A, 0x82]], true);
 
         let err = retrieve_certificate(&mut session).unwrap_err();
         match err {

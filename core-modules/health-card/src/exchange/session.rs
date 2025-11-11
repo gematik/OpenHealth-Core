@@ -19,10 +19,10 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
+use super::error::ExchangeError;
 use crate::command::apdu::{CardCommandApdu, CardResponseApdu};
 use crate::command::health_card_command::{HealthCardCommand, HealthCardResponse};
 use crate::command::health_card_status::HealthCardResponseStatus;
-use super::error::ExchangeError;
 
 /// Trait implemented by a low-level card transport.
 ///

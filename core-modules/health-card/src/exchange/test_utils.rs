@@ -40,10 +40,8 @@ impl MockSession {
 
     /// Create a mock session with an explicit extended-length capability flag.
     pub(crate) fn with_extended_support(responses: Vec<Vec<u8>>, supports_extended_length: bool) -> Self {
-        let responses = responses
-            .into_iter()
-            .map(|raw| CardResponseApdu::new(&raw).expect("valid response APDU"))
-            .collect();
+        let responses =
+            responses.into_iter().map(|raw| CardResponseApdu::new(&raw).expect("valid response APDU")).collect();
         Self { responses, recorded: Vec::new(), supports_extended_length }
     }
 }
