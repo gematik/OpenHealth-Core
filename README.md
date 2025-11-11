@@ -23,7 +23,7 @@ find details in the "Readme" file.
 
 # gematik openHealth - Core Modules
 
-
+Getting things started.
 
 ## License
 <!--REUSE-IgnoreStart-->
