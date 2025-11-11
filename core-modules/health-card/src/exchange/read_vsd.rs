@@ -65,36 +65,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::command::apdu::CardResponseApdu;
-    use crate::exchange::session::CardSession;
-
-    struct MockSession {
-        responses: Vec<CardResponseApdu>,
-        recorded: Vec<Vec<u8>>,
-    }
-
-    impl MockSession {
-        fn new(responses: Vec<Vec<u8>>) -> Self {
-            let responses = responses.into_iter().map(|raw| CardResponseApdu::new(&raw).unwrap()).collect();
-            Self { responses, recorded: Vec::new() }
-        }
-    }
-
-    impl CardSession for MockSession {
-        type Error = std::convert::Infallible;
-
-        fn supports_extended_length(&self) -> bool {
-            false
-        }
-
-        fn transmit(
-            &mut self,
-            command: &crate::command::apdu::CardCommandApdu,
-        ) -> Result<CardResponseApdu, Self::Error> {
-            self.recorded.push(command.apdu());
-            Ok(self.responses.remove(0))
-        }
-    }
+    use crate::exchange::test_utils::MockSession;
 
     #[test]
     fn read_vsd_collects_data_until_eof() {

@@ -29,6 +29,8 @@ pub mod read_vsd;
 pub mod session;
 pub mod sign_challenge;
 pub mod trusted_channel;
+#[cfg(test)]
+pub(crate) mod test_utils;
 
 pub use certificate::retrieve_certificate;
 pub use error::ExchangeError;

@@ -70,51 +70,25 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::command::apdu::CardResponseApdu;
     use crate::command::health_card_status::HealthCardResponseStatus;
-    use crate::exchange::session::CardSession;
-
-    struct MockSession {
-        responses: Vec<CardResponseApdu>,
-    }
-
-    impl MockSession {
-        fn new(responses: Vec<Vec<u8>>) -> Self {
-            let responses = responses.into_iter().map(|raw| CardResponseApdu::new(&raw).unwrap()).collect();
-            Self { responses }
-        }
-    }
-
-    impl CardSession for MockSession {
-        type Error = std::convert::Infallible;
-
-        fn supports_extended_length(&self) -> bool {
-            true
-        }
-
-        fn transmit(
-            &mut self,
-            _command: &crate::command::apdu::CardCommandApdu,
-        ) -> Result<CardResponseApdu, Self::Error> {
-            Ok(self.responses.remove(0))
-        }
-    }
+    use crate::exchange::test_utils::MockSession;
 
     #[test]
     fn certificate_read_until_eof() {
-        let mut session = MockSession::new(vec![
+        let mut session = MockSession::with_extended_support(vec![
             vec![0x90, 0x00],
             vec![0x90, 0x00],
             vec![0xDE, 0xAD, 0x90, 0x00],
             vec![0xBE, 0xEF, 0x62, 0x82],
-        ]);
+        ], true);
         let cert = retrieve_certificate(&mut session).unwrap();
         assert_eq!(cert, vec![0xDE, 0xAD, 0xBE, 0xEF]);
     }
 
     #[test]
     fn certificate_status_error() {
-        let mut session = MockSession::new(vec![vec![0x90, 0x00], vec![0x6A, 0x82]]);
+        let mut session =
+            MockSession::with_extended_support(vec![vec![0x90, 0x00], vec![0x6A, 0x82]], true);
 
         let err = retrieve_certificate(&mut session).unwrap_err();
         match err {

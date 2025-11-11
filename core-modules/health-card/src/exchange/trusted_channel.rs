@@ -44,12 +44,38 @@ use crypto::key::SecretKey;
 use crypto::mac::{CmacAlgorithm, MacSpec};
 use num_bigint::{BigInt, Sign};
 use std::convert::TryFrom;
+use thiserror::Error;
 
 /// Trusted channel scope holding the negotiated PACE keys.
 pub struct TrustedChannelScope<'a, S: CardSession> {
     session: &'a mut S,
     pace_key: PaceKey,
     ssc: [u8; 16],
+}
+
+/// Error type returned by the trusted-channel session wrapper.
+#[derive(Debug, Error)]
+pub enum CardSessionError {
+    /// Errors originating from the secure messaging layer.
+    #[error(transparent)]
+    Secure(#[from] ExchangeError),
+    /// Errors bubbled up from the underlying transport session.
+    #[error("transport session error: {0}")]
+    Transport(ExchangeError),
+}
+
+impl CardSessionError {
+    fn transport<E: Into<ExchangeError>>(err: E) -> Self {
+        Self::Transport(err.into())
+    }
+}
+
+impl From<CardSessionError> for ExchangeError {
+    fn from(err: CardSessionError) -> Self {
+        match err {
+            CardSessionError::Secure(inner) | CardSessionError::Transport(inner) => inner,
+        }
+    }
 }
 
 impl<'a, S: CardSession> TrustedChannelScope<'a, S> {
@@ -186,14 +212,16 @@ impl<'a, S: CardSession> TrustedChannelScope<'a, S> {
 }
 
 impl<'a, S: CardSession> CardSession for TrustedChannelScope<'a, S> {
+    type Error = CardSessionError;
+
     fn supports_extended_length(&self) -> bool {
         self.session.supports_extended_length()
     }
 
     fn transmit(&mut self, command: &CardCommandApdu) -> Result<CardResponseApdu, CardSessionError> {
-        let encrypted = self.encrypt(command).map_err(CardSessionError::from)?;
-        let response = self.session.transmit(&encrypted)?;
-        self.decrypt(response).map_err(CardSessionError::from)
+        let encrypted = self.encrypt(command).map_err(CardSessionError::Secure)?;
+        let response = self.session.transmit(&encrypted).map_err(CardSessionError::transport)?;
+        self.decrypt(response).map_err(CardSessionError::Secure)
     }
 }
 

@@ -49,45 +49,15 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::command::apdu::CardResponseApdu;
-    use crate::command::health_card_status::HealthCardResponseStatus;
     use crate::command::select_command::SelectCommand;
-    use crate::exchange::session::CardSession;
-
-    struct MockSession {
-        pub commands: Vec<Vec<u8>>,
-        pub responses: Vec<CardResponseApdu>,
-    }
-
-    impl MockSession {
-        fn new(responses: Vec<Vec<u8>>) -> Self {
-            let responses = responses.into_iter().map(|raw| CardResponseApdu::new(&raw).unwrap()).collect();
-            Self { commands: Vec::new(), responses }
-        }
-    }
-
-    impl CardSession for MockSession {
-        type Error = std::convert::Infallible;
-
-        fn supports_extended_length(&self) -> bool {
-            false
-        }
-
-        fn transmit(
-            &mut self,
-            command: &crate::command::apdu::CardCommandApdu,
-        ) -> Result<CardResponseApdu, Self::Error> {
-            self.commands.push(command.apdu());
-            Ok(self.responses.remove(0))
-        }
-    }
+    use crate::exchange::test_utils::MockSession;
 
     #[test]
     fn random_success() {
         let mut session = MockSession::new(vec![vec![0x90, 0x00], vec![0xDE, 0xAD, 0x90, 0x00]]);
         let values = get_random(&mut session, 2).unwrap();
         assert_eq!(values, vec![0xDE, 0xAD]);
-        assert_eq!(session.commands.len(), 2);
-        assert_eq!(session.commands[0], HealthCardCommand::select(false, false).command_apdu(false).unwrap().apdu());
+        assert_eq!(session.recorded.len(), 2);
+        assert_eq!(session.recorded[0], HealthCardCommand::select(false, false).command_apdu(false).unwrap().apdu());
     }
 }
