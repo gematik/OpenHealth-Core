@@ -50,20 +50,20 @@ pub enum HealthCardVersion2Error {
 /// Parsed content of EF.Version2 holding the version matrix of the card operating system.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct HealthCardVersion2 {
-    pub filling_instructions_version: Vec<u8>,
-    pub object_system_version: Vec<u8>,
-    pub product_identification_object_system_version: Vec<u8>,
-    pub filling_instructions_ef_environment_settings_version: Vec<u8>,
-    pub filling_instructions_ef_gdo_version: Vec<u8>,
-    pub filling_instructions_ef_atr_version: Vec<u8>,
-    pub filling_instructions_ef_key_info_version: Vec<u8>,
-    pub filling_instructions_ef_logging_version: Vec<u8>,
+    fi_version: Vec<u8>,
+    object_system_version: Vec<u8>,
+    product_identification_object_system_version: Vec<u8>,
+    fi_ef_environment_settings_version: Vec<u8>,
+    fi_ef_gdo_version: Vec<u8>,
+    fi_ef_atr_version: Vec<u8>,
+    fi_ef_key_info_version: Vec<u8>,
+    fi_ef_logging_version: Vec<u8>,
 }
 
 impl HealthCardVersion2 {
     /// Returns true if the version matrix indicates an eGK version 2.1 card.
     pub fn is_health_card_version_21(&self) -> bool {
-        self.filling_instructions_version.first() == Some(&0x02)
+        self.fi_version.first() == Some(&0x02)
             && self.object_system_version.as_slice() == [0x04, 0x03, 0x02]
     }
 }
@@ -110,23 +110,23 @@ pub fn parse_health_card_version2(data: &[u8]) -> Result<HealthCardVersion2, Hea
         entries.remove(&tag).ok_or(HealthCardVersion2Error::MissingTag(tag))
     };
 
-    let filling_instructions_version = take_or_err(TAG_FILLING_INSTRUCTIONS_VERSION)?;
+    let fi_version = take_or_err(TAG_FILLING_INSTRUCTIONS_VERSION)?;
     let object_system_version = take_or_err(TAG_OBJECT_SYSTEM_VERSION)?;
     let product_identification_object_system_version = take_or_err(TAG_PRODUCT_IDENTIFICATION_OS_VERSION)?;
 
     let mut optional = |tag: u8| entries.remove(&tag).unwrap_or_default();
 
     Ok(HealthCardVersion2 {
-        filling_instructions_version,
+        fi_version: fi_version,
         object_system_version,
         product_identification_object_system_version,
-        filling_instructions_ef_environment_settings_version: optional(
+        fi_ef_environment_settings_version: optional(
             TAG_FILLING_INSTRUCTIONS_EF_ENVIRONMENT_SETTINGS_VERSION,
         ),
-        filling_instructions_ef_gdo_version: optional(TAG_FILLING_INSTRUCTIONS_EF_GDO_VERSION),
-        filling_instructions_ef_atr_version: optional(TAG_FILLING_INSTRUCTIONS_EF_ATR_VERSION),
-        filling_instructions_ef_key_info_version: optional(TAG_FILLING_INSTRUCTIONS_EF_KEY_INFO_VERSION),
-        filling_instructions_ef_logging_version: optional(TAG_FILLING_INSTRUCTIONS_EF_LOGGING_VERSION),
+        fi_ef_gdo_version: optional(TAG_FILLING_INSTRUCTIONS_EF_GDO_VERSION),
+        fi_ef_atr_version: optional(TAG_FILLING_INSTRUCTIONS_EF_ATR_VERSION),
+        fi_ef_key_info_version: optional(TAG_FILLING_INSTRUCTIONS_EF_KEY_INFO_VERSION),
+        fi_ef_logging_version: optional(TAG_FILLING_INSTRUCTIONS_EF_LOGGING_VERSION),
     })
 }
 
@@ -154,11 +154,11 @@ mod tests {
 
         let version = parse_health_card_version2(&bytes).expect("version parsed");
 
-        assert_eq!(bytes_to_hex(&version.filling_instructions_ef_atr_version), "02 00 00");
-        assert_eq!(bytes_to_hex(&version.filling_instructions_ef_environment_settings_version), "");
-        assert_eq!(bytes_to_hex(&version.filling_instructions_ef_gdo_version), "01 00 00");
-        assert_eq!(bytes_to_hex(&version.filling_instructions_ef_key_info_version), "");
-        assert_eq!(bytes_to_hex(&version.filling_instructions_ef_logging_version), "01 00 00");
+        assert_eq!(bytes_to_hex(&version.fi_ef_atr_version), "02 00 00");
+        assert_eq!(bytes_to_hex(&version.fi_ef_environment_settings_version), "");
+        assert_eq!(bytes_to_hex(&version.fi_ef_gdo_version), "01 00 00");
+        assert_eq!(bytes_to_hex(&version.fi_ef_key_info_version), "");
+        assert_eq!(bytes_to_hex(&version.fi_ef_logging_version), "01 00 00");
         assert!(version.is_health_card_version_21());
     }
 
