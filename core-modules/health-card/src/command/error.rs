@@ -19,22 +19,20 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-pub mod apdu;
-pub mod change_reference_data_command;
-pub mod error;
-pub mod general_authenticate_command;
-pub mod get_pin_status_command;
-pub mod get_random_command;
-pub mod health_card_command;
-pub mod health_card_status;
-pub mod manage_security_environment_command;
-pub mod pso_compute_digital_signature_command;
-pub mod read_command;
-pub mod reset_retry_counter_command;
-pub mod reset_retry_counter_with_new_secret_command;
-pub mod select_command;
-pub mod verify_pin_command;
+use thiserror::Error;
 
-pub use error::CommandError;
-pub use read_command::ReadCommand;
-pub use select_command::SelectCommand;
+/// Errors raised while composing health-card commands prior to transmission.
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
+pub enum CommandError {
+    /// The supplied offset exceeds the allowed range for READ BINARY operations.
+    #[error("offset {offset} outside allowed range 0..={max}")]
+    OffsetOutOfRange { offset: i32, max: i32 },
+
+    /// The supplied offset with SFI exceeds the allowed range.
+    #[error("offset {offset} outside allowed SFI range 0..={max}")]
+    SfiOffsetOutOfRange { offset: i32, max: i32 },
+
+    /// Expected length was negative (other than the wildcard -1).
+    #[error("expected length must be >= 0 or the wildcard -1, got {length}")]
+    InvalidExpectedLength { length: i32 },
+}

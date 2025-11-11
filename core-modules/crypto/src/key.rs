@@ -62,3 +62,9 @@ impl std::fmt::Debug for SecretKey {
         f.debug_struct("SecretKey").field("size", &self.size()).finish_non_exhaustive()
     }
 }
+
+impl PartialEq<Self> for SecretKey {
+    fn eq(&self, other: &Self) -> bool {
+        todo!()
+    }
+}

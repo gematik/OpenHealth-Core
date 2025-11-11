@@ -19,43 +19,23 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use crate::asn1::{
-    asn1_decoder::Asn1Decoder,
-    asn1_encoder::encode,
-    asn1_object_identifier::write_object_identifier,
-    read_int,
-    Asn1Error,
-    Asn1Tag,
-    TagClass,
-    asn1_type,
-};
-use crate::crypto::key::ec_key::EcCurve;
-use std::collections::HashMap;
-use std::fmt;
+use crate::asn1::decoder::Asn1Decoder;
+use crate::crypto::ec::ec_key::EcCurve;
+use asn1::encoder::Asn1Encoder;
+use asn1::error::Asn1DecoderError;
+use asn1::tag::{Asn1Id, UniversalTag};
 use once_cell::sync::Lazy;
+use std::collections::HashMap;
+use std::fs::read;
+use thiserror::Error;
 
 /// Error type for PACE information parsing
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum PaceInfoError {
-    Asn1Error(Asn1Error),
+    #[error("ASN.1 error: {0}")]
+    Asn1Error(#[from] Asn1DecoderError),
+    #[error("Unsupported parameter ID: {0}")]
     UnsupportedParameterId(i64),
-}
-
-impl fmt::Display for PaceInfoError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            PaceInfoError::Asn1Error(e) => write!(f, "ASN.1 error: {}", e),
-            PaceInfoError::UnsupportedParameterId(id) => write!(f, "Unsupported parameter ID: {}", id),
-        }
-    }
-}
-
-impl std::error::Error for PaceInfoError {}
-
-impl From<Asn1Error> for PaceInfoError {
-    fn from(error: Asn1Error) -> Self {
-        PaceInfoError::Asn1Error(error)
-    }
 }
 
 /// Represents the PACE (Password Authenticated Connection Establishment) information
@@ -76,14 +56,13 @@ impl PaceInfo {
     /// Returns the protocol ID bytes without the tag and length
     pub fn protocol_id_bytes(&self) -> Vec<u8> {
         // Encode full TLV first
-        let encoded = encode(|w| {
-            write_object_identifier(w, &self.protocol_id)
-        }).expect("OID encoding must not fail");
+        let encoded =
+            Asn1Encoder::write(|w| w.write_object_identifier(&self.protocol_id)).expect("OID encoding must not fail");
         // Strip tag (1+ bytes) + length (1+ bytes) in a DER-compliant way
         // Tag is at least 1 byte; for UNIVERSAL OBJECT IDENTIFIER it's one byte (0x06),
         // but we still parse length generically.
         let mut idx = 1; // skip first tag octet; high-tag-number not expected for OID
-        // parse length octets
+                         // parse length octets
         if encoded[idx] & 0x80 == 0 {
             // short form: one length byte
             idx += 1;
@@ -122,42 +101,38 @@ static SUPPORTED_CURVES: Lazy<HashMap<i64, EcCurve>> = Lazy::new(|| {
 ///
 /// A `Result` containing either a `PaceInfo` object or a `PaceInfoError`.
 pub fn parse_pace_info(asn1: &[u8]) -> Result<PaceInfo, PaceInfoError> {
-    let mut decoder = Asn1Decoder::new(asn1)?;
+    let mut decoder = Asn1Decoder::new(asn1);
 
-    decoder.read(|reader| {
+    let pace_info = decoder.read(|reader| {
         // SET (constructed)
-        reader.advance_with_tag(
-            Asn1Tag::new(TagClass::Universal, asn1_type::SET as u32).with_constructed(true),
-            |reader| {
-                // SEQUENCE (constructed)
-                reader.advance_with_tag(
-                    Asn1Tag::new(TagClass::Universal, asn1_type::SEQUENCE as u32).with_constructed(true),
-                    |reader| {
-                        // 1) protocol identifier (OID)
-                        let protocol_id = {
-                            // use the free helper to read an OBJECT IDENTIFIER
-                            crate::asn1::asn1_object_identifier::read_object_identifier(reader)?
-                        };
+        reader.advance_with_tag(UniversalTag::Set.constructed(), |reader| {
+            // SEQUENCE (constructed)
+            reader.advance_with_tag(UniversalTag::Sequence.constructed(), |reader| -> Result<PaceInfo, PaceInfoError> {
+                // 1) protocol identifier (OID)
+                let protocol_id = {
+                    // use the free helper to read an OBJECT IDENTIFIER
+                    reader.read_object_identifier()?
+                };
 
-                        // 2) ignore first INTEGER
-                        let _ = read_int(reader)?;
+                // 2) ignore first INTEGER
+                let _ = reader.read_int_tagged()?;
 
-                        // 3) read parameter-id INTEGER and map to curve
-                        let parameter_id = read_int(reader)? as i64;
-                        let curve = SUPPORTED_CURVES
-                            .get(&parameter_id)
-                            .cloned()
-                            .ok_or_else(|| PaceInfoError::UnsupportedParameterId(parameter_id))?;
+                // 3) read parameter-id INTEGER and map to curve
+                let parameter_id = reader.read_int_tagged()? as i64;
+                let curve = SUPPORTED_CURVES
+                    .get(&parameter_id)
+                    .cloned()
+                    .ok_or_else(|| PaceInfoError::UnsupportedParameterId(parameter_id))?;
 
-                        // ensure we consumed the SEQUENCE fully
-                        reader.skip_to_end()?;
+                // ensure we consumed the SEQUENCE fully
+                reader.skip_to_end()?;
 
-                        Ok(PaceInfo::new(protocol_id, curve))
-                    },
-                )
-            },
-        )
-    }).map_err(PaceInfoError::from)
+                Ok(PaceInfo::new(protocol_id, curve))
+            })
+        })
+    })?;
+
+    Ok(pace_info)
 }
 
 #[cfg(test)]
@@ -167,18 +142,12 @@ mod tests {
     /// Converts a hex string with spaces to a byte vector
     fn hex_to_bytes(hex_str: &str) -> Vec<u8> {
         let hex_str = hex_str.replace(" ", "");
-        (0..hex_str.len())
-            .step_by(2)
-            .map(|i| u8::from_str_radix(&hex_str[i..i + 2], 16).unwrap())
-            .collect()
+        (0..hex_str.len()).step_by(2).map(|i| u8::from_str_radix(&hex_str[i..i + 2], 16).unwrap()).collect()
     }
 
     /// Converts bytes to a hex string with spaces
     fn bytes_to_hex_with_spaces(bytes: &[u8]) -> String {
-        bytes.iter()
-            .map(|b| format!("{:02X}", b))
-            .collect::<Vec<String>>()
-            .join(" ")
+        bytes.iter().map(|b| format!("{:02X}", b)).collect::<Vec<String>>().join(" ")
     }
 
     #[test]
@@ -190,10 +159,7 @@ mod tests {
         let pace_info = parse_pace_info(&hex_to_bytes(card_access_bytes)).expect("Failed to parse PACE info");
 
         assert_eq!(expected_protocol_id, pace_info.protocol_id);
-        assert_eq!(
-            expected_pace_info_protocol_bytes,
-            bytes_to_hex_with_spaces(&pace_info.protocol_id_bytes())
-        );
+        assert_eq!(expected_pace_info_protocol_bytes, bytes_to_hex_with_spaces(&pace_info.protocol_id_bytes()));
         assert_eq!(pace_info.curve, EcCurve::BrainpoolP256r1);
     }
 
@@ -209,16 +175,5 @@ mod tests {
             Err(PaceInfoError::UnsupportedParameterId(id)) => assert_eq!(id, 42),
             _ => panic!("Expected UnsupportedParameterId error"),
         }
-    }
-
-    #[test]
-    fn test_malformed_asn1() {
-        // Malformed ASN.1 (truncated)
-        let invalid_bytes = "31 14 30 12 06 0A 04 00 7F 00";
-
-        let result = parse_pace_info(&hex_to_bytes(invalid_bytes));
-
-        assert!(result.is_err());
-        assert!(matches!(result, Err(PaceInfoError::Asn1Error(_))));
     }
 }

@@ -19,6 +19,8 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
+use thiserror::Error;
+
 /// The format 2 PIN block has been specified for use with IC cards. The format 2 PIN block shall only be used in
 /// an offline environment and shall not be used for online PIN verification. This PIN block is constructed by
 /// concatenation of two fields: the plain text PIN field and the filler field.
@@ -44,37 +46,41 @@ pub struct EncryptedPinFormat2 {
     pub bytes: Vec<u8>,
 }
 
+/// Errors that can occur while encoding a PIN into format 2.
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
+pub enum PinBlockError {
+    /// A non-digit character was supplied.
+    #[error("PIN digit value is out of range of a decimal digit: {0}")]
+    NonDigit(char),
+    /// The PIN was shorter than the minimum allowed length.
+    #[error("PIN length is too short, min length is {min}, but was {length}")]
+    TooShort { length: usize, min: usize },
+    /// The PIN was longer than the maximum allowed length.
+    #[error("PIN length is too long, max length is {max}, but was {length}")]
+    TooLong { length: usize, max: usize },
+}
+
 impl EncryptedPinFormat2 {
     /// Creates a new EncryptedPinFormat2 from a PIN string.
     ///
     /// # Arguments
     /// * `pin` - The PIN string to be encrypted. The PIN must be between 4 and 12 digits long.
-    pub fn new(pin: &str) -> Self {
-        let int_pin: Vec<u8> = pin
-            .chars()
-            .map(|c| {
-                let digit = c as u8 - STRING_INT_OFFSET;
-                assert!(
-                    (MIN_DIGIT..=MAX_DIGIT).contains(&digit),
-                    "PIN digit value is out of range of a decimal digit: {}",
-                    c
-                );
-                digit
-            })
-            .collect();
+    pub fn new(pin: &str) -> Result<Self, PinBlockError> {
+        if pin.len() < MIN_PIN_LEN {
+            return Err(PinBlockError::TooShort { length: pin.len(), min: MIN_PIN_LEN });
+        }
+        if pin.len() > MAX_PIN_LEN {
+            return Err(PinBlockError::TooLong { length: pin.len(), max: MAX_PIN_LEN });
+        }
 
-        assert!(
-            int_pin.len() >= MIN_PIN_LEN,
-            "PIN length is too short, min length is {}, but was {}",
-            MIN_PIN_LEN,
-            int_pin.len()
-        );
-        assert!(
-            int_pin.len() <= MAX_PIN_LEN,
-            "PIN length is too long, max length is {}, but was {}",
-            MAX_PIN_LEN,
-            int_pin.len()
-        );
+        let mut int_pin = Vec::with_capacity(pin.len());
+        for c in pin.chars() {
+            let digit = c as u8 - STRING_INT_OFFSET;
+            if !(MIN_DIGIT..=MAX_DIGIT).contains(&digit) {
+                return Err(PinBlockError::NonDigit(c));
+            }
+            int_pin.push(digit);
+        }
 
         let mut format2 = [0u8; FORMAT2_PIN_SIZE]; // specSpec_COS#N008.100
         format2[0] = FORMAT_PIN_2_ID + int_pin.len() as u8;
@@ -95,7 +101,7 @@ impl EncryptedPinFormat2 {
             }
         }
 
-        Self { bytes: format2.to_vec() }
+        Ok(Self { bytes: format2.to_vec() })
     }
 }
 
@@ -106,7 +112,7 @@ mod tests {
     #[test]
     fn test_encrypted_pin_format2_creation() {
         let pin = "1234";
-        let encrypted = EncryptedPinFormat2::new(pin);
+        let encrypted = EncryptedPinFormat2::new(pin).unwrap();
 
         // First byte should be 0x24 (FORMAT_PIN_2_ID + pin length)
         assert_eq!(encrypted.bytes[0], 0x24);
@@ -116,33 +122,33 @@ mod tests {
     #[test]
     fn test_encrypted_pin_format2_with_longer_pin() {
         let pin = "123456";
-        let encrypted = EncryptedPinFormat2::new(pin);
+        let encrypted = EncryptedPinFormat2::new(pin).unwrap();
 
         assert_eq!(encrypted.bytes[0], 0x26);
     }
 
     #[test]
-    #[should_panic(expected = "PIN length is too short")]
     fn test_encrypted_pin_format2_too_short() {
-        EncryptedPinFormat2::new("123");
+        let err = EncryptedPinFormat2::new("123").unwrap_err();
+        assert!(matches!(err, PinBlockError::TooShort { .. }));
     }
 
     #[test]
-    #[should_panic(expected = "PIN length is too long")]
     fn test_encrypted_pin_format2_too_long() {
-        EncryptedPinFormat2::new("1234567890123");
+        let err = EncryptedPinFormat2::new("1234567890123").unwrap_err();
+        assert!(matches!(err, PinBlockError::TooLong { .. }));
     }
 
     #[test]
-    #[should_panic(expected = "PIN digit value is out of range")]
     fn test_encrypted_pin_format2_invalid_digit() {
-        EncryptedPinFormat2::new("123a");
+        let err = EncryptedPinFormat2::new("123a").unwrap_err();
+        assert!(matches!(err, PinBlockError::NonDigit('a')));
     }
 
     #[test]
     fn test_specific_pin_value() {
         let pin = "1234";
-        let encrypted = EncryptedPinFormat2::new(pin);
+        let encrypted = EncryptedPinFormat2::new(pin).unwrap();
 
         assert_eq!(encrypted.bytes[0], 0x24);
         assert_eq!(encrypted.bytes[1], 0x12);

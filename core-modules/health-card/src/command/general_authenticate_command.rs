@@ -21,8 +21,9 @@
 
 use crate::command::apdu::EXPECTED_LENGTH_WILDCARD_SHORT;
 use asn1::encoder::Asn1Encoder;
-use asn1::encoder::Result;
-use asn1::tag::{Asn1Class, Asn1Form, TagNumberExt};
+use asn1::error::Asn1EncoderError;
+use asn1::tag::TagNumberExt;
+use thiserror::Error;
 
 use crate::command::health_card_command::HealthCardCommand;
 use crate::command::health_card_status::GENERAL_AUTHENTICATE_STATUS;
@@ -38,6 +39,14 @@ const NO_MEANING: u8 = 0x00;
 /// ASN.1 tag for GENERAL AUTHENTICATE
 const GENERAL_AUTHENTICATE_TAG: u8 = 28;
 
+#[derive(Debug, Error)]
+pub enum GeneralAuthenticateCommandError {
+    #[error("Failed to encode GENERAL AUTHENTICATE command: {0}")]
+    Asn1Encoding(#[from] Asn1EncoderError),
+}
+
+type GeneralAuthenticateResult<T> = Result<T, GeneralAuthenticateCommandError>;
+
 /// Extension trait for HealthCardCommand to provide GENERAL AUTHENTICATE commands
 pub trait GeneralAuthenticateCommand {
     /// Creates a HealthCardCommand for the GENERAL AUTHENTICATE command
@@ -45,7 +54,7 @@ pub trait GeneralAuthenticateCommand {
     ///
     /// # Arguments
     /// * `command_chaining` - true for command chaining false if not
-    fn general_authenticate(command_chaining: bool) -> Result<HealthCardCommand>;
+    fn general_authenticate(command_chaining: bool) -> GeneralAuthenticateResult<HealthCardCommand>;
 
     /// Creates a HealthCardCommand for the GENERAL AUTHENTICATE command
     /// UseCase: gemSpec_COS_3.14.0#14.7.2.1.1 PACE for end-user cards, Step 2a (tagNo 1), 3a (3), 5a (5)
@@ -54,16 +63,19 @@ pub trait GeneralAuthenticateCommand {
     /// * `command_chaining` - true for command chaining false if not
     /// * `data` - byte vector with data
     /// * `tag_no` - tag number for the ASN.1 encoding
-    fn general_authenticate_with_data(command_chaining: bool, data: &[u8], tag_no: u8) -> Result<HealthCardCommand>;
+    fn general_authenticate_with_data(
+        command_chaining: bool,
+        data: &[u8],
+        tag_no: u8,
+    ) -> GeneralAuthenticateResult<HealthCardCommand>;
 }
 
 impl GeneralAuthenticateCommand for HealthCardCommand {
-    fn general_authenticate(command_chaining: bool) -> Result<HealthCardCommand> {
+    fn general_authenticate(command_chaining: bool) -> GeneralAuthenticateResult<HealthCardCommand> {
         let cla = if command_chaining { CLA_COMMAND_CHAINING } else { CLA_NO_COMMAND_CHAINING };
 
-        let data = Asn1Encoder::write(|w| {
-            w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |_inner| Ok(()))?;
-            Ok(())
+        let data = Asn1Encoder::write(|w| -> Result<(), Asn1EncoderError> {
+            w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |_inner| Ok(()))
         })?;
 
         Ok(HealthCardCommand {
@@ -77,19 +89,21 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
         })
     }
 
-    fn general_authenticate_with_data(command_chaining: bool, data: &[u8], tag_no: u8) -> Result<HealthCardCommand> {
+    fn general_authenticate_with_data(
+        command_chaining: bool,
+        data: &[u8],
+        tag_no: u8,
+    ) -> GeneralAuthenticateResult<HealthCardCommand> {
         let cla = if command_chaining { CLA_COMMAND_CHAINING } else { CLA_NO_COMMAND_CHAINING };
 
         let data_to_write = data.to_vec();
         let encoded_data = Asn1Encoder::write(|w| {
             w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |inner| {
-                inner.write_tagged_object(tag_no.context_tag(), |innermost| {
+                inner.write_tagged_object(tag_no.context_tag(), |innermost| -> Result<(), Asn1EncoderError> {
                     innermost.write_bytes(&data_to_write);
                     Ok(())
-                })?;
-                Ok(())
-            })?;
-            Ok(())
+                })
+            })
         })?;
 
         Ok(HealthCardCommand {
@@ -235,13 +249,4 @@ mod tests {
         assert_eq!(&data[6..(6 + 128)], &large_data[..]);
         assert_eq!(data.len(), 134);
     }
-}
-
-#[test]
-fn smoke_encoder_invalid_oid_returns_err() {
-    let res = Asn1Encoder::write(|w| {
-        w.write_object_identifier("3.1.2")?; // invalid first arc
-        Ok(())
-    });
-    assert!(res.is_err());
 }

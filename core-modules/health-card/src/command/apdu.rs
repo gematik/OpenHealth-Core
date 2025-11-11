@@ -19,31 +19,22 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use std::error::Error;
 use std::fmt;
+use thiserror::Error;
 
 pub const EXPECTED_LENGTH_WILDCARD_EXTENDED: usize = 65536;
 
 pub const EXPECTED_LENGTH_WILDCARD_SHORT: usize = 256;
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum ApduError {
+    #[error("Invalid APDU header: {0}")]
     InvalidHeader(String),
+    #[error("Invalid APDU length: {0}")]
     InvalidLength(String),
+    #[error("Invalid APDU: {0}")]
     InvalidApdu(String),
 }
-
-impl fmt::Display for ApduError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            ApduError::InvalidHeader(msg) => write!(f, "Invalid APDU header: {}", msg),
-            ApduError::InvalidLength(msg) => write!(f, "Invalid APDU length: {}", msg),
-            ApduError::InvalidApdu(msg) => write!(f, "Invalid APDU: {}", msg),
-        }
-    }
-}
-
-impl Error for ApduError {}
 
 /// Common trait for all APDU types
 pub trait Apdu {

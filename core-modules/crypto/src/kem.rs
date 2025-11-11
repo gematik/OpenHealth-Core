@@ -33,7 +33,6 @@ pub type MlkemEncapsulationKey = Vec<u8>;
 
 /// ML-KEM parameter sets.
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 pub enum MlkemSpec {
     MlKem512,
     MlKem768,

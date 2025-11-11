@@ -21,6 +21,7 @@
 
 use crate::command::health_card_command::{HealthCardCommand, EXPECT_ALL_WILDCARD};
 use crate::command::health_card_status::READ_STATUS;
+use crate::command::CommandError;
 use crate::identifier::ShortFileIdentifier;
 
 /// CLA byte for the READ BINARY command
@@ -48,14 +49,14 @@ const MAX_OFFSET_WITH_SFI_RANGE: i32 = 255;
 pub trait ReadCommand {
     /// Creates a HealthCardCommand for the READ BINARY command without offset.
     /// (gemSpec_COS_3.14.0#14.3.2)
-    fn read() -> HealthCardCommand;
+    fn read() -> Result<HealthCardCommand, CommandError>;
 
     /// Creates a HealthCardCommand for the READ BINARY command.
     /// (gemSpec_COS_3.14.0#14.3.2)
     ///
     /// # Arguments
     /// * `offset` - The offset from which to read
-    fn read_with_offset(offset: i32) -> HealthCardCommand;
+    fn read_with_offset(offset: i32) -> Result<HealthCardCommand, CommandError>;
 
     /// Creates a HealthCardCommand for the READ BINARY command without ShortFileIdentifier.
     /// (gemSpec_COS_3.14.0#14.3.2.1)
@@ -63,14 +64,14 @@ pub trait ReadCommand {
     /// # Arguments
     /// * `offset` - The offset from which to read
     /// * `ne` - The maximum number of bytes to read
-    fn read_with_offset_and_length(offset: i32, ne: i32) -> HealthCardCommand;
+    fn read_with_offset_and_length(offset: i32, ne: i32) -> Result<HealthCardCommand, CommandError>;
 
     /// Creates a HealthCardCommand for the READ BINARY command with ShortFileIdentifier.
     /// (gemSpec_COS_3.14.0#14.3.2.2)
     ///
     /// # Arguments
     /// * `sfi` - The ShortFileIdentifier
-    fn read_sfi(sfi: ShortFileIdentifier) -> HealthCardCommand;
+    fn read_sfi(sfi: ShortFileIdentifier) -> Result<HealthCardCommand, CommandError>;
 
     /// Creates a HealthCardCommand for the READ BINARY command with ShortFileIdentifier.
     /// (gemSpec_COS_3.14.0#14.3.2.2)
@@ -78,7 +79,7 @@ pub trait ReadCommand {
     /// # Arguments
     /// * `sfi` - The ShortFileIdentifier
     /// * `offset` - The offset from which to read
-    fn read_sfi_with_offset(sfi: ShortFileIdentifier, offset: i32) -> HealthCardCommand;
+    fn read_sfi_with_offset(sfi: ShortFileIdentifier, offset: i32) -> Result<HealthCardCommand, CommandError>;
 
     /// Creates a HealthCardCommand for the READ BINARY command with ShortFileIdentifier.
     /// (gemSpec_COS_3.14.0#14.3.2.2)
@@ -87,58 +88,77 @@ pub trait ReadCommand {
     /// * `sfi` - The ShortFileIdentifier
     /// * `offset` - The offset from which to read
     /// * `ne` - The maximum number of bytes to read
-    fn read_sfi_with_offset_and_length(sfi: ShortFileIdentifier, offset: i32, ne: i32) -> HealthCardCommand;
+    fn read_sfi_with_offset_and_length(
+        sfi: ShortFileIdentifier,
+        offset: i32,
+        ne: i32,
+    ) -> Result<HealthCardCommand, CommandError>;
 }
 
 impl ReadCommand for HealthCardCommand {
-    fn read() -> HealthCardCommand {
+    fn read() -> Result<HealthCardCommand, CommandError> {
         Self::read_with_offset_and_length(0, EXPECT_ALL_WILDCARD)
     }
 
-    fn read_with_offset(offset: i32) -> HealthCardCommand {
+    fn read_with_offset(offset: i32) -> Result<HealthCardCommand, CommandError> {
         Self::read_with_offset_and_length(offset, EXPECT_ALL_WILDCARD)
     }
 
-    fn read_with_offset_and_length(offset: i32, ne: i32) -> HealthCardCommand {
-        assert!(
-            (MIN_OFFSET_RANGE..=MAX_OFFSET_WITHOUT_SFI_RANGE).contains(&offset),
-            "Offset must be in range [0, 32767]"
-        );
+    fn read_with_offset_and_length(offset: i32, ne: i32) -> Result<HealthCardCommand, CommandError> {
+        if !(MIN_OFFSET_RANGE..=MAX_OFFSET_WITHOUT_SFI_RANGE).contains(&offset) {
+            return Err(CommandError::OffsetOutOfRange { offset, max: MAX_OFFSET_WITHOUT_SFI_RANGE });
+        }
 
         let p2 = (offset % BYTE_MODULO as i32) as u8;
         let p1 = ((offset - p2 as i32) / BYTE_MODULO as i32) as u8;
 
-        HealthCardCommand {
+        Ok(HealthCardCommand {
             expected_status: READ_STATUS.clone(), // Verwende das importierte READ_STATUS
             cla: CLA,
             ins: INS,
             p1,
             p2,
             data: None,
-            ne: Some(ne as usize),
-        }
+            ne: Some(normalize_expected_length(ne)?),
+        })
     }
 
-    fn read_sfi(sfi: ShortFileIdentifier) -> HealthCardCommand {
+    fn read_sfi(sfi: ShortFileIdentifier) -> Result<HealthCardCommand, CommandError> {
         Self::read_sfi_with_offset_and_length(sfi, 0, EXPECT_ALL_WILDCARD)
     }
 
-    fn read_sfi_with_offset(sfi: ShortFileIdentifier, offset: i32) -> HealthCardCommand {
+    fn read_sfi_with_offset(sfi: ShortFileIdentifier, offset: i32) -> Result<HealthCardCommand, CommandError> {
         Self::read_sfi_with_offset_and_length(sfi, offset, EXPECT_ALL_WILDCARD)
     }
 
-    fn read_sfi_with_offset_and_length(sfi: ShortFileIdentifier, offset: i32, ne: i32) -> HealthCardCommand {
-        assert!((MIN_OFFSET_RANGE..=MAX_OFFSET_WITH_SFI_RANGE).contains(&offset), "Offset must be in range [0, 255]");
+    fn read_sfi_with_offset_and_length(
+        sfi: ShortFileIdentifier,
+        offset: i32,
+        ne: i32,
+    ) -> Result<HealthCardCommand, CommandError> {
+        if !(MIN_OFFSET_RANGE..=MAX_OFFSET_WITH_SFI_RANGE).contains(&offset) {
+            return Err(CommandError::SfiOffsetOutOfRange { offset, max: MAX_OFFSET_WITH_SFI_RANGE });
+        }
 
-        HealthCardCommand {
+        Ok(HealthCardCommand {
             expected_status: READ_STATUS.clone(), // Verwende das importierte READ_STATUS
             cla: CLA,
             ins: INS,
             p1: SFI_MARKER + sfi.sf_id,
             p2: offset as u8,
             data: None,
-            ne: Some(ne as usize),
-        }
+            ne: Some(normalize_expected_length(ne)?),
+        })
+    }
+}
+
+fn normalize_expected_length(ne: i32) -> Result<usize, CommandError> {
+    if ne == EXPECT_ALL_WILDCARD {
+        Ok(EXPECT_ALL_WILDCARD as usize)
+    } else if ne < 0 {
+        Err(CommandError::InvalidExpectedLength { length: ne })
+    } else {
+        Ok(ne as usize)
     }
 }
 
@@ -149,7 +169,7 @@ mod tests {
 
     #[test]
     fn test_read_command_without_parameters() {
-        let cmd = HealthCardCommand::read();
+        let cmd = HealthCardCommand::read().unwrap();
         assert_eq!(cmd.cla, CLA);
         assert_eq!(cmd.ins, INS);
         assert_eq!(cmd.p1, 0x00);
@@ -160,7 +180,7 @@ mod tests {
 
     #[test]
     fn test_read_command_with_offset() {
-        let cmd = HealthCardCommand::read_with_offset(512);
+        let cmd = HealthCardCommand::read_with_offset(512).unwrap();
         assert_eq!(cmd.cla, CLA);
         assert_eq!(cmd.ins, INS);
         assert_eq!(cmd.p1, 0x02); // 512 / 256 = 2
@@ -171,7 +191,7 @@ mod tests {
 
     #[test]
     fn test_read_command_with_offset_and_length() {
-        let cmd = HealthCardCommand::read_with_offset_and_length(258, 100);
+        let cmd = HealthCardCommand::read_with_offset_and_length(258, 100).unwrap();
         assert_eq!(cmd.cla, CLA);
         assert_eq!(cmd.ins, INS);
         assert_eq!(cmd.p1, 0x01); // 258 / 256 = 1
@@ -183,7 +203,7 @@ mod tests {
     #[test]
     fn test_read_command_with_sfi() {
         let sfi = ShortFileIdentifier::new(5).unwrap();
-        let cmd = HealthCardCommand::read_sfi(sfi);
+        let cmd = HealthCardCommand::read_sfi(sfi).unwrap();
         assert_eq!(cmd.cla, CLA);
         assert_eq!(cmd.ins, INS);
         assert_eq!(cmd.p1, 0x85); // 0x80 + 0x05
@@ -195,7 +215,7 @@ mod tests {
     #[test]
     fn test_read_command_with_sfi_and_offset() {
         let sfi = ShortFileIdentifier::new(10).unwrap();
-        let cmd = HealthCardCommand::read_sfi_with_offset(sfi, 128);
+        let cmd = HealthCardCommand::read_sfi_with_offset(sfi, 128).unwrap();
         assert_eq!(cmd.cla, CLA);
         assert_eq!(cmd.ins, INS);
         assert_eq!(cmd.p1, 0x8A); // 0x80 + 0x0A
@@ -207,7 +227,7 @@ mod tests {
     #[test]
     fn test_read_command_with_sfi_offset_and_length() {
         let sfi = ShortFileIdentifier::new(30).unwrap(); // Maximum valid SFI
-        let cmd = HealthCardCommand::read_sfi_with_offset_and_length(sfi, 255, 50);
+        let cmd = HealthCardCommand::read_sfi_with_offset_and_length(sfi, 255, 50).unwrap();
         assert_eq!(cmd.cla, CLA);
         assert_eq!(cmd.ins, INS);
         assert_eq!(cmd.p1, 0x9E); // 0x80 + 0x1E (30)
@@ -217,21 +237,27 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Offset must be in range [0, 32767]")]
     fn test_read_command_with_invalid_offset() {
-        HealthCardCommand::read_with_offset_and_length(-1, 100);
+        let err = HealthCardCommand::read_with_offset_and_length(-1, 100).unwrap_err();
+        assert!(matches!(err, CommandError::OffsetOutOfRange { .. }));
     }
 
     #[test]
-    #[should_panic(expected = "Offset must be in range [0, 32767]")]
     fn test_read_command_with_too_large_offset() {
-        HealthCardCommand::read_with_offset_and_length(0x8000, 100);
+        let err = HealthCardCommand::read_with_offset_and_length(0x8000, 100).unwrap_err();
+        assert!(matches!(err, CommandError::OffsetOutOfRange { .. }));
     }
 
     #[test]
-    #[should_panic(expected = "Offset must be in range [0, 255]")]
     fn test_read_command_with_sfi_and_invalid_offset() {
         let sfi = ShortFileIdentifier::new(10).unwrap();
-        HealthCardCommand::read_sfi_with_offset_and_length(sfi, 256, 100);
+        let err = HealthCardCommand::read_sfi_with_offset_and_length(sfi, 256, 100).unwrap_err();
+        assert!(matches!(err, CommandError::SfiOffsetOutOfRange { .. }));
+    }
+
+    #[test]
+    fn test_read_command_with_invalid_length() {
+        let err = HealthCardCommand::read_with_offset_and_length(0, -2).unwrap_err();
+        assert!(matches!(err, CommandError::InvalidExpectedLength { .. }));
     }
 }

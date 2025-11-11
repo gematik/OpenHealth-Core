@@ -20,10 +20,12 @@
 // find details in the "Readme" file.
 
 use crate::ossl::api::OsslError;
+use asn1::error::Asn1DecoderError;
+use asn1::error::Asn1EncoderError;
 
 /// Errors returned by high-level cryptographic operations.
 #[derive(Debug, thiserror::Error)]
-#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
+// #[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 pub enum CryptoError {
     /// The caller attempted to finalize a cipher twice.
     #[error("cipher finalized twice")]
@@ -37,12 +39,12 @@ pub enum CryptoError {
     /// Underlying native cryptographic failure with original message.
     #[error("native error: {0}")]
     Native(String),
-    /// ASN.1 encoding failed in dependent module.
-    #[error("asn1 encoding error: {0}")]
-    Asn1Encoding(String),
-    /// ASN.1 decoding failed in dependent module.
-    #[error("asn1 decoding error: {0}")]
-    Asn1Decoding(String),
+    /// Error originating from ASN.1 parsing.
+    #[error("ASN.1 error: {0}")]
+    Asn1Decoding(#[from] Asn1DecoderError),
+    /// Error originating from ASN.1 encoding.
+    #[error("ASN.1 error: {0}")]
+    Asn1Encoding(#[from] Asn1EncoderError),
 }
 
 impl From<OsslError> for CryptoError {
