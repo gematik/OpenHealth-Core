@@ -38,8 +38,8 @@
 //! - When the `uniffi` feature is enabled, `ffi` exports a UniFFI-compatible
 //!   interface for use from other languages.
 
-mod digest;
-mod kem;
+pub mod digest;
+pub mod kem;
 mod ossl;
 
 pub mod exchange;
@@ -51,9 +51,4 @@ pub mod mac;
 pub mod utils;
 // mod exchange;
 
-mod ec;
-#[cfg(feature = "uniffi")]
-pub mod ffi;
-
-#[cfg(feature = "uniffi")]
-uniffi::setup_scaffolding!();
+pub mod ec;

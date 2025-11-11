@@ -20,8 +20,8 @@
 // find details in the "Readme" file.
 
 use std::convert::TryFrom;
-use std::fmt;
 use std::num::ParseIntError;
+use thiserror::Error;
 
 /// Minimum valid value for ShortFileIdentifier
 const MIN_VALUE: u8 = 1;
@@ -40,29 +40,18 @@ pub struct ShortFileIdentifier {
     pub sf_id: u8,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
 pub enum ShortFileIdentifierError {
     /// The value is outside the valid range
+    #[error("Short File Identifier out of valid range [{MIN_VALUE},{MAX_VALUE}]: {0}")]
     OutOfRange(u8),
     /// The hex string could not be parsed
-    ParseError(ParseIntError),
+    #[error("Failed to parse hex string: {0}")]
+    ParseError(#[from] ParseIntError),
     /// The hex string has an invalid length
+    #[error("Invalid hex string length: {0}. Expected 2 characters.")]
     InvalidLength(usize),
 }
-
-impl fmt::Display for ShortFileIdentifierError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::OutOfRange(val) => {
-                write!(f, "Short File Identifier out of valid range [{},{}]: {}", MIN_VALUE, MAX_VALUE, val)
-            }
-            Self::ParseError(e) => write!(f, "Failed to parse hex string: {}", e),
-            Self::InvalidLength(len) => write!(f, "Invalid hex string length: {}. Expected 2 characters.", len),
-        }
-    }
-}
-
-impl std::error::Error for ShortFileIdentifierError {}
 
 impl ShortFileIdentifier {
     /// Creates a new ShortFileIdentifier.

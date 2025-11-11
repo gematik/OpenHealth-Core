@@ -25,9 +25,9 @@ use crate::key::SecretKey;
 use crate::ossl;
 use asn1::decoder::Asn1Decoder;
 use asn1::encoder::Asn1Encoder;
+use asn1::error::{Asn1DecoderError, Asn1EncoderError};
 use asn1::tag::UniversalTag;
 use num_bigint::BigInt;
-use zeroize::Zeroize;
 
 /// Supported elliptic curves.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -207,7 +207,7 @@ impl EcPublicKey {
             // SEQUENCE (SubjectPublicKeyInfo)
             scope.write_tagged_object(UniversalTag::Sequence.constructed(), |scope| {
                 // SEQUENCE (AlgorithmIdentifier)
-                scope.write_tagged_object(UniversalTag::Sequence.constructed(), |scope| {
+                scope.write_tagged_object::<Asn1EncoderError>(UniversalTag::Sequence.constructed(), |scope| {
                     // OID for id-ecPublicKey
                     scope.write_object_identifier(Self::OID)?;
                     // OID for the curve
@@ -219,7 +219,6 @@ impl EcPublicKey {
                 Ok(())
             })
         })
-        .map_err(|e| CryptoError::Asn1Encoding(e.to_string()))
     }
 
     /// Parses a ASN.1 DER encoded subject public key info and returns an [EcPublicKey].
@@ -231,21 +230,18 @@ impl EcPublicKey {
     ///   subjectPublicKey  BIT STRING
     /// }
     pub fn decode_from_asn1(data: &[u8]) -> CryptoResult<Self> {
-        Asn1Decoder::new(data)
-            .read(|scope| {
-                // SEQUENCE (SubjectPublicKeyInfo)
-                scope.advance_with_tag(UniversalTag::Sequence.constructed(), |scope| {
-                    // Parse AlgorithmIdentifier to get the curve
-                    let curve = read_ec_curve_from_algorithm_identifier(scope)?;
-                    // Read the public key point as BIT STRING
-                    let point = scope.read_bit_string()?;
-                    scope.skip_to_end()?;
+        Asn1Decoder::new(data).read(|scope| {
+            // SEQUENCE (SubjectPublicKeyInfo)
+            scope.advance_with_tag(UniversalTag::Sequence.constructed(), |scope| {
+                // Parse AlgorithmIdentifier to get the curve
+                let curve = read_ec_curve_from_algorithm_identifier(scope)?;
+                // Read the public key point as BIT STRING
+                let point = scope.read_bit_string()?;
+                scope.skip_to_end()?;
 
-                    EcPublicKey::from_uncompressed(curve, point)
-                        .map_err(|e| asn1::decoder::Asn1DecoderError::custom(e.to_string()))
-                })
+                EcPublicKey::from_uncompressed(curve, point)
             })
-            .map_err(|e| CryptoError::Asn1Decoding(e.to_string()))
+        })
     }
 }
 
@@ -288,7 +284,7 @@ impl EcPrivateKey {
                 scope.write_asn1_int(0)?;
 
                 // SEQUENCE (AlgorithmIdentifier)
-                scope.write_tagged_object(UniversalTag::Sequence.constructed(), |scope| {
+                scope.write_tagged_object::<CryptoError>(UniversalTag::Sequence.constructed(), |scope| {
                     // OID for id-ecPublicKey
                     scope.write_object_identifier(EcPublicKey::OID)?;
                     // OID for the curve
@@ -297,7 +293,7 @@ impl EcPrivateKey {
                 })?;
 
                 // privateKey (OCTET STRING containing ECPrivateKey)
-                scope.write_tagged_object(UniversalTag::OctetString.primitive(), |scope| {
+                scope.write_tagged_object::<CryptoError>(UniversalTag::OctetString.primitive(), |scope| {
                     // SEQUENCE (ECPrivateKey)
                     scope.write_tagged_object(UniversalTag::Sequence.constructed(), |scope| {
                         // version (INTEGER 1)
@@ -311,7 +307,6 @@ impl EcPrivateKey {
                 Ok(())
             })
         })
-        .map_err(|e| CryptoError::Asn1Encoding(e.to_string()))
     }
 
     /// Parses a ASN.1 DER encoded private key and returns an [EcPrivateKey].
@@ -336,38 +331,36 @@ impl EcPrivateKey {
     ///   publicKey  [1] BIT STRING OPTIONAL
     /// }
     pub fn decode_from_asn1(data: &[u8]) -> CryptoResult<Self> {
-        Asn1Decoder::new(data)
-            .read(|scope| {
-                // SEQUENCE (PrivateKeyInfo)
-                scope.advance_with_tag(UniversalTag::Sequence.constructed(), |scope| {
-                    // version
-                    scope.read_int_tagged()?;
+        Asn1Decoder::new(data).read(|scope| {
+            // SEQUENCE (PrivateKeyInfo)
+            scope.advance_with_tag(UniversalTag::Sequence.constructed(), |scope| {
+                // version
+                scope.read_int_tagged()?;
 
-                    // Parse AlgorithmIdentifier to get the curve
-                    let curve = read_ec_curve_from_algorithm_identifier(scope)?;
+                // Parse AlgorithmIdentifier to get the curve
+                let curve = read_ec_curve_from_algorithm_identifier(scope)?;
 
-                    // privateKey (OCTET STRING containing ECPrivateKey)
-                    scope.advance_with_tag(UniversalTag::OctetString.primitive(), |scope| {
-                        // SEQUENCE (ECPrivateKey)
-                        scope.advance_with_tag(UniversalTag::Sequence.constructed(), |scope| {
-                            // version (must be 1)
-                            let version = scope.read_int_tagged()?;
-                            if version != 1 {
-                                return Err(asn1::decoder::Asn1DecoderError::custom(
-                                    "Unsupported EC private key version".to_string(),
-                                ));
-                            }
+                // privateKey (OCTET STRING containing ECPrivateKey)
+                scope.advance_with_tag(UniversalTag::OctetString.primitive(), |scope| {
+                    // SEQUENCE (ECPrivateKey)
+                    scope.advance_with_tag(UniversalTag::Sequence.constructed(), |scope| {
+                        // version (must be 1)
+                        let version = scope.read_int_tagged()?;
+                        if version != 1 {
+                            return Err(
+                                Asn1DecoderError::custom("Unsupported EC private key version".to_string()).into()
+                            );
+                        }
 
-                            // privateKey (OCTET STRING)
-                            let private_key = scope.read_octet_string()?;
-                            scope.skip_to_end()?;
+                        // privateKey (OCTET STRING)
+                        let private_key = scope.read_octet_string()?;
+                        scope.skip_to_end()?;
 
-                            Ok(EcPrivateKey::from_bytes(curve.clone(), private_key))
-                        })
+                        Ok(EcPrivateKey::from_bytes(curve.clone(), private_key))
                     })
                 })
             })
-            .map_err(|e| CryptoError::Asn1Decoding(e.to_string()))
+        })
     }
 }
 
@@ -379,16 +372,12 @@ impl EcPrivateKey {
 /// }
 fn read_ec_curve_from_algorithm_identifier(
     scope: &mut asn1::decoder::ParserScope,
-) -> Result<EcCurve, asn1::decoder::Asn1DecoderError> {
+) -> Result<EcCurve, Asn1DecoderError> {
     scope.advance_with_tag(UniversalTag::Sequence.constructed(), |scope| {
         // Read algorithm OID (should be id-ecPublicKey)
         let oid = scope.read_object_identifier()?;
         if oid != EcPublicKey::OID {
-            return Err(asn1::decoder::Asn1DecoderError::custom(format!(
-                "Unexpected OID `{}`. Expected `{}`",
-                oid,
-                EcPublicKey::OID
-            )));
+            return Err(Asn1DecoderError::custom(format!("Unexpected OID `{}`. Expected `{}`", oid, EcPublicKey::OID)));
         }
 
         // Read curve OID
@@ -400,7 +389,7 @@ fn read_ec_curve_from_algorithm_identifier(
             "1.3.36.3.3.2.8.1.1.7" => Ok(EcCurve::BrainpoolP256r1),
             "1.3.36.3.3.2.8.1.1.11" => Ok(EcCurve::BrainpoolP384r1),
             "1.3.36.3.3.2.8.1.1.13" => Ok(EcCurve::BrainpoolP512r1),
-            _ => Err(asn1::decoder::Asn1DecoderError::custom(format!("Unknown curve with OID `{}`", curve_oid))),
+            _ => Err(Asn1DecoderError::custom(format!("Unknown curve with OID `{}`", curve_oid))),
         }
     })
 }

@@ -29,8 +29,8 @@ use crate::key::SecretKey;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Iv(pub Vec<u8>);
 
-#[cfg(feature = "uniffi")]
-uniffi::custom_newtype!(Iv, Vec<u8>);
+// #[cfg(feature = "uniffi")]
+// uniffi::custom_newtype!(Iv, Vec<u8>);
 
 impl Iv {
     pub fn new(iv: impl Into<Vec<u8>>) -> Self {
@@ -48,8 +48,8 @@ impl AsRef<[u8]> for Iv {
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Aad(pub Vec<u8>);
 
-#[cfg(feature = "uniffi")]
-uniffi::custom_newtype!(Aad, Vec<u8>);
+// #[cfg(feature = "uniffi")]
+// uniffi::custom_newtype!(Aad, Vec<u8>);
 
 impl Aad {
     pub fn new(aad: impl Into<Vec<u8>>) -> Self {
@@ -79,12 +79,12 @@ impl AsRef<[u8]> for Tag {
     }
 }
 
-#[cfg(feature = "uniffi")]
-uniffi::custom_newtype!(Tag, Vec<u8>);
+// #[cfg(feature = "uniffi")]
+// uniffi::custom_newtype!(Tag, Vec<u8>);
 
 /// Padding switch for block modes (PKCS#7 on/off).
 #[derive(Copy, Clone, Eq, PartialEq)]
-#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
+// #[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 pub enum Padding {
     Pkcs7,
     None,
@@ -94,7 +94,7 @@ pub enum Padding {
 ///
 /// - `Ecb`/`Cbc` support optional PKCS#7 padding.
 /// - `Gcm` is an AEAD mode requiring an IV (nonce), optional AAD and a tag length.
-#[derive(Clone, uniffi::Enum)]
+#[derive(Clone)]
 pub enum AesCipherSpec {
     Ecb { padding: Padding },
     Cbc { iv: Iv, padding: Padding },

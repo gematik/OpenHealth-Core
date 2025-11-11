@@ -19,10 +19,8 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use crate::error::{EncoderError, EncoderResult};
+use crate::error::Asn1EncoderError;
 use crate::tag::{Asn1Class, Asn1Form, Asn1Id, UniversalTag};
-
-pub type Result<T> = EncoderResult<T>;
 
 /// ASN.1 encoder for encoding data in ASN.1 format.
 pub struct Asn1Encoder;
@@ -127,11 +125,14 @@ impl WriterScope {
     }
 
     /// Write an ASN.1 tagged object.
-    pub fn write_tagged_object(
+    pub fn write_tagged_object<E>(
         &mut self,
         id: Asn1Id,
-        block: impl FnOnce(&mut WriterScope) -> Result<()>,
-    ) -> Result<()> {
+        block: impl FnOnce(&mut WriterScope) -> Result<(), E>,
+    ) -> Result<(), E>
+    where
+        E: From<Asn1EncoderError>,
+    {
         // tag
         self.write_tag(id.number, id.class, id.form);
         // scope
@@ -143,7 +144,7 @@ impl WriterScope {
     }
 
     /// Write an ASN.1 integer.
-    pub fn write_asn1_int(&mut self, value: i32) -> Result<()> {
+    pub fn write_asn1_int(&mut self, value: i32) -> Result<(), Asn1EncoderError> {
         self.write_tagged_object(UniversalTag::Integer.primitive(), |s| {
             s.write_int(value);
             Ok(())
@@ -151,7 +152,7 @@ impl WriterScope {
     }
 
     /// Write an ASN.1 boolean.
-    pub fn write_asn1_boolean(&mut self, value: bool) -> Result<()> {
+    pub fn write_asn1_boolean(&mut self, value: bool) -> Result<(), Asn1EncoderError> {
         self.write_tagged_object(UniversalTag::Boolean.primitive(), |s| {
             s.write_byte(if value { 0xFF } else { 0x00 });
             Ok(())
@@ -159,9 +160,9 @@ impl WriterScope {
     }
 
     /// Write an ASN.1 bit string.
-    pub fn write_asn1_bit_string(&mut self, value: &[u8], unused_bits: u8) -> Result<()> {
+    pub fn write_asn1_bit_string(&mut self, value: &[u8], unused_bits: u8) -> Result<(), Asn1EncoderError> {
         if !(0..=7).contains(&unused_bits) {
-            return Err(EncoderError::new(format!("Invalid unused bit count: {}", unused_bits)));
+            return Err(Asn1EncoderError::invalid_unused_bit_count(unused_bits).into());
         }
         self.write_tagged_object(UniversalTag::BitString.primitive(), |s| {
             s.write_byte(unused_bits);
@@ -171,7 +172,7 @@ impl WriterScope {
     }
 
     /// Write an ASN.1 octet string.
-    pub fn write_asn1_octet_string(&mut self, value: &[u8]) -> Result<()> {
+    pub fn write_asn1_octet_string(&mut self, value: &[u8]) -> Result<(), Asn1EncoderError> {
         self.write_tagged_object(UniversalTag::OctetString.primitive(), |s| {
             s.write_bytes(value);
             Ok(())
@@ -179,7 +180,7 @@ impl WriterScope {
     }
 
     /// Write an ASN.1 utf8 string.
-    pub fn write_asn1_utf8_string(&mut self, value: &str) -> Result<()> {
+    pub fn write_asn1_utf8_string(&mut self, value: &str) -> Result<(), Asn1EncoderError> {
         self.write_tagged_object(UniversalTag::Utf8String.primitive(), |s| {
             s.write_bytes(value.as_bytes());
             Ok(())
@@ -187,25 +188,25 @@ impl WriterScope {
     }
 
     /// Write [Asn1Type.OBJECT_IDENTIFIER].
-    pub fn write_object_identifier(&mut self, oid: &str) -> Result<()> {
+    pub fn write_object_identifier(&mut self, oid: &str) -> Result<(), Asn1EncoderError> {
         self.write_tagged_object(UniversalTag::ObjectIdentifier.primitive(), |s| {
             let parts: Vec<i32> = oid
                 .split('.')
-                .map(|p| p.parse::<i32>().map_err(|_| EncoderError::new(format!("Invalid OID part: {}", p))))
-                .collect::<std::result::Result<_, _>>()?;
+                .map(|p| p.parse::<i32>().map_err(|_| Asn1EncoderError::invalid_object_identifier_part(p)))
+                .collect::<Result<_, _>>()?;
 
             if parts.len() < 2 {
-                return Err(EncoderError::new("OID must have at least two components"));
+                return Err(Asn1EncoderError::object_identifier_missing_components().into());
             }
 
             let first = parts[0];
             let second = parts[1];
 
             if !(0..=2).contains(&first) {
-                return Err(EncoderError::new("OID first part must be 0, 1, or 2"));
+                return Err(Asn1EncoderError::invalid_object_identifier_first_component(first).into());
             }
             if first < 2 && !(0..=39).contains(&second) {
-                return Err(EncoderError::new("OID second part must be 0-39 for first part 0 or 1"));
+                return Err(Asn1EncoderError::invalid_object_identifier_second_component(second).into());
             }
 
             let first_byte = first * 40 + second;
@@ -258,7 +259,10 @@ impl WriterScope {
 
 impl Asn1Encoder {
     /// Encodes the given block of code and returns the resulting byte array.
-    pub fn write(block: impl FnOnce(&mut WriterScope) -> Result<()>) -> Result<Vec<u8>> {
+    pub fn write<E>(block: impl FnOnce(&mut WriterScope) -> Result<(), E>) -> Result<Vec<u8>, E>
+    where
+        E: From<Asn1EncoderError>,
+    {
         let mut scope = WriterScope::new();
         block(&mut scope)?;
         Ok(scope.buffer)
@@ -284,7 +288,7 @@ mod tests {
     #[test]
     fn write_multi_byte_tag_small_value() {
         let result = Asn1Encoder::write(|w| {
-            w.write_tagged_object(33u8.application_tag(), |inner| {
+            w.write_tagged_object(33u8.application_tag(), |inner| -> Result<(), Asn1EncoderError> {
                 inner.write_byte(0x05);
                 Ok(())
             })
@@ -296,7 +300,7 @@ mod tests {
     #[test]
     fn write_multi_byte_tag_larger_value() {
         let result = Asn1Encoder::write(|w| {
-            w.write_tagged_object(128u32.application_tag(), |inner| {
+            w.write_tagged_object(128u32.application_tag(), |inner| -> Result<(), Asn1EncoderError> {
                 inner.write_byte(0x05);
                 Ok(())
             })
@@ -307,7 +311,7 @@ mod tests {
 
     #[test]
     fn write_multi_byte_tag_max_single_byte() {
-        let result = Asn1Encoder::write(|w| {
+        let result = Asn1Encoder::write::<Asn1EncoderError>(|w| {
             w.write_tagged_object(30u8.application_tag(), |inner| {
                 inner.write_byte(0x05);
                 Ok(())
@@ -319,7 +323,7 @@ mod tests {
 
     #[test]
     fn write_multi_byte_length() {
-        let result = Asn1Encoder::write(|w| {
+        let result = Asn1Encoder::write::<Asn1EncoderError>(|w| {
             w.write_length(123_456_789u64);
             Ok(())
         })
@@ -329,71 +333,43 @@ mod tests {
 
     #[test]
     fn write_int_expected() {
-        let result = Asn1Encoder::write(|w| {
-            w.write_asn1_int(123_456)?;
-            Ok(())
-        })
-        .unwrap();
+        let result = Asn1Encoder::write(|w| w.write_asn1_int(123_456)).unwrap();
         assert_eq!(hex(&result), "02 03 01 E2 40");
     }
 
     #[test]
     fn write_int_zero() {
-        let result = Asn1Encoder::write(|w| {
-            w.write_asn1_int(0)?;
-            Ok(())
-        })
-        .unwrap();
+        let result = Asn1Encoder::write(|w| w.write_asn1_int(0)).unwrap();
         assert_eq!(hex(&result), "02 01 00");
     }
 
     #[test]
     fn write_int_negative() {
-        let result = Asn1Encoder::write(|w| {
-            w.write_asn1_int(-123)?;
-            Ok(())
-        })
-        .unwrap();
+        let result = Asn1Encoder::write(|w| w.write_asn1_int(-123)).unwrap();
         assert_eq!(hex(&result), "02 01 85");
     }
 
     #[test]
     fn write_utf8_string_expected() {
-        let result = Asn1Encoder::write(|w| {
-            w.write_asn1_utf8_string("hello")?;
-            Ok(())
-        })
-        .unwrap();
+        let result = Asn1Encoder::write(|w| w.write_asn1_utf8_string("hello")).unwrap();
         assert_eq!(hex(&result), "0C 05 68 65 6C 6C 6F");
     }
 
     #[test]
     fn write_utf8_string_empty() {
-        let result = Asn1Encoder::write(|w| {
-            w.write_asn1_utf8_string("")?;
-            Ok(())
-        })
-        .unwrap();
+        let result = Asn1Encoder::write(|w| w.write_asn1_utf8_string("")).unwrap();
         assert_eq!(hex(&result), "0C 00");
     }
 
     #[test]
     fn write_boolean_true() {
-        let result = Asn1Encoder::write(|w| {
-            w.write_asn1_boolean(true)?;
-            Ok(())
-        })
-        .unwrap();
+        let result = Asn1Encoder::write(|w| w.write_asn1_boolean(true)).unwrap();
         assert_eq!(hex(&result), "01 01 FF");
     }
 
     #[test]
     fn write_boolean_false() {
-        let result = Asn1Encoder::write(|w| {
-            w.write_asn1_boolean(false)?;
-            Ok(())
-        })
-        .unwrap();
+        let result = Asn1Encoder::write(|w| w.write_asn1_boolean(false)).unwrap();
         assert_eq!(hex(&result), "01 01 00");
     }
 
@@ -403,10 +379,8 @@ mod tests {
             // Universal constructed SEQUENCE (0x10 with constructed bit)
             w.write_tagged_object(0x10u8.universal_tag().constructed(), |inner| {
                 inner.write_asn1_int(42)?;
-                inner.write_asn1_utf8_string("test")?;
-                Ok(())
-            })?;
-            Ok(())
+                inner.write_asn1_utf8_string("test")
+            })
         })
         .unwrap();
         assert_eq!(hex(&result), "30 09 02 01 2A 0C 04 74 65 73 74");
@@ -414,59 +388,37 @@ mod tests {
 
     #[test]
     fn write_oid_simple() {
-        let result = Asn1Encoder::write(|w| {
-            w.write_object_identifier("1.2.840.113549")?;
-            Ok(())
-        })
-        .unwrap();
+        let result = Asn1Encoder::write(|w| w.write_object_identifier("1.2.840.113549")).unwrap();
         assert_eq!(hex(&result), "06 06 2A 86 48 86 F7 0D");
     }
 
     #[test]
     fn write_oid_single_part_beyond_40() {
-        let result = Asn1Encoder::write(|w| {
-            w.write_object_identifier("2.100.3")?;
-            Ok(())
-        })
-        .unwrap();
+        let result = Asn1Encoder::write(|w| w.write_object_identifier("2.100.3")).unwrap();
         assert_eq!(hex(&result), "06 03 81 34 03");
     }
 
     #[test]
     fn write_oid_long_identifier() {
-        let result = Asn1Encoder::write(|w| {
-            w.write_object_identifier("1.2.3.4.5.265566")?;
-            Ok(())
-        })
-        .unwrap();
+        let result = Asn1Encoder::write(|w| w.write_object_identifier("1.2.3.4.5.265566")).unwrap();
         assert_eq!(hex(&result), "06 07 2A 03 04 05 90 9A 5E");
     }
 
     #[test]
     fn write_oid_large_first_component() {
-        let result = Asn1Encoder::write(|w| {
-            w.write_object_identifier("2.999.1")?;
-            Ok(())
-        })
-        .unwrap();
+        let result = Asn1Encoder::write(|w| w.write_object_identifier("2.999.1")).unwrap();
         assert_eq!(hex(&result), "06 03 88 37 01");
     }
 
     #[test]
     fn write_oid_invalid_first_part_panics() {
-        let res = Asn1Encoder::write(|w| {
-            w.write_object_identifier("3.1.2")?;
-            Ok(())
-        });
+        let res = Asn1Encoder::write(|w| w.write_object_identifier("3.1.2"));
         assert!(res.is_err());
     }
 
     #[test]
     fn write_oid_invalid_encoding_panics() {
-        let res = Asn1Encoder::write(|w| {
-            w.write_object_identifier("1.40.1")?;
-            Ok(())
-        });
+        let res = Asn1Encoder::write(|w| w.write_object_identifier("1.40.1"));
         assert!(res.is_err());
     }
 }

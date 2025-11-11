@@ -23,8 +23,8 @@
 /// Strongly typed representation of lengths measured in bytes.
 pub struct ByteUnit(u64);
 
-#[cfg(feature = "uniffi")]
-uniffi::custom_newtype!(ByteUnit, u64);
+// #[cfg(feature = "uniffi")]
+// uniffi::custom_newtype!(ByteUnit, u64);
 
 impl ByteUnit {
     /// Returns the number of bits in this byte unit.
