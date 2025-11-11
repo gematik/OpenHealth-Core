@@ -63,8 +63,7 @@ pub struct HealthCardVersion2 {
 impl HealthCardVersion2 {
     /// Returns true if the version matrix indicates an eGK version 2.1 card.
     pub fn is_health_card_version_21(&self) -> bool {
-        self.fi_version.first() == Some(&0x02)
-            && self.object_system_version.as_slice() == [0x04, 0x03, 0x02]
+        self.fi_version.first() == Some(&0x02) && self.object_system_version.as_slice() == [0x04, 0x03, 0x02]
     }
 }
 
@@ -120,9 +119,7 @@ pub fn parse_health_card_version2(data: &[u8]) -> Result<HealthCardVersion2, Hea
         fi_version: fi_version,
         object_system_version,
         product_identification_object_system_version,
-        fi_ef_environment_settings_version: optional(
-            TAG_FILLING_INSTRUCTIONS_EF_ENVIRONMENT_SETTINGS_VERSION,
-        ),
+        fi_ef_environment_settings_version: optional(TAG_FILLING_INSTRUCTIONS_EF_ENVIRONMENT_SETTINGS_VERSION),
         fi_ef_gdo_version: optional(TAG_FILLING_INSTRUCTIONS_EF_GDO_VERSION),
         fi_ef_atr_version: optional(TAG_FILLING_INSTRUCTIONS_EF_ATR_VERSION),
         fi_ef_key_info_version: optional(TAG_FILLING_INSTRUCTIONS_EF_KEY_INFO_VERSION),
