@@ -19,16 +19,17 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
+use chrono::Datelike;
 use std::{
     env, fs,
     path::{Path, PathBuf},
     process::Command,
 };
-use chrono::Datelike;
 
 fn get_license_header() -> String {
     let year = chrono::Utc::now().year();
-    format!(r#"
+    format!(
+        r#"
 // SPDX-FileCopyrightText: Copyright {year} gematik GmbH
 //
 // SPDX-License-Identifier: Apache-2.0
@@ -48,9 +49,11 @@ fn get_license_header() -> String {
 // *******
 //
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
-// find details in the "Readme" file."#).trim().to_string()
+// find details in the "Readme" file."#
+    )
+    .trim()
+    .to_string()
 }
-
 
 fn current_dir() -> PathBuf {
     env::current_dir().unwrap()
