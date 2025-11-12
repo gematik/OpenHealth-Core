@@ -24,6 +24,33 @@ use std::{
     path::{Path, PathBuf},
     process::Command,
 };
+use chrono::Datelike;
+
+fn get_license_header() -> String {
+    let year = chrono::Utc::now().year();
+    format!(r#"
+// SPDX-FileCopyrightText: Copyright {year} gematik GmbH
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// *******
+//
+// For additional notes and disclaimer from gematik and in case of changes by gematik,
+// find details in the "Readme" file."#).trim().to_string()
+}
+
 
 fn current_dir() -> PathBuf {
     env::current_dir().unwrap()
@@ -147,6 +174,7 @@ fn build_openssl_bindings() {
         .size_t_is_usize(true)
         .layout_tests(true)
         .prepend_enum_name(true)
+        .raw_line(get_license_header())
         .formatter(bindgen::Formatter::Rustfmt)
         .header(wrapper_header.display().to_string())
         .clang_args(clang_args)
