@@ -223,10 +223,7 @@ impl<S: CardChannel> CardChannel for TrustedChannel<S> {
 }
 
 /// Establish a PACE channel using random key material generated via `EcKeyPairSpec`.
-pub fn establish_trusted_channel<S>(
-    session: S,
-    card_access_number: &str,
-) -> Result<TrustedChannel<S>, ExchangeError>
+pub fn establish_trusted_channel<S>(session: S, card_access_number: &str) -> Result<TrustedChannel<S>, ExchangeError>
 where
     S: CardChannelExt,
 {

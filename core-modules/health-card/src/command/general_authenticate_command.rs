@@ -209,14 +209,8 @@ mod tests {
     #[test]
     fn test_command_apdu_generation() {
         let command = HealthCardCommand::general_authenticate(false).unwrap();
-        let apdu_result = CardCommandApdu::new(
-            command.cla,
-            command.ins,
-            command.p1,
-            command.p2,
-            command.data.clone(),
-            command.ne,
-        );
+        let apdu_result =
+            CardCommandApdu::new(command.cla, command.ins, command.p1, command.p2, command.data.clone(), command.ne);
 
         assert!(apdu_result.is_ok());
 

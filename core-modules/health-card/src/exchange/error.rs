@@ -22,6 +22,7 @@
 use super::pace_info::PaceInfoError;
 use crate::asn1::error::Asn1DecoderError;
 use crate::card::encrypted_pin_format2::PinBlockError;
+use crate::command::apdu::ApduError;
 use crate::command::general_authenticate_command::GeneralAuthenticateCommandError;
 use crate::command::health_card_status::HealthCardResponseStatus;
 use crate::command::manage_security_environment_command::ManageSecurityEnvironmentCommandError;
@@ -29,7 +30,6 @@ use crate::command::CommandError;
 use asn1::error::Asn1EncoderError;
 use crypto::error::CryptoError;
 use thiserror::Error;
-use crate::command::apdu::ApduError;
 
 /// Error type for higher-level health-card exchanges.
 #[derive(Debug, Error)]
