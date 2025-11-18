@@ -26,7 +26,7 @@ use crate::command::select_command::SelectCommand;
 
 use super::error::ExchangeError;
 use super::ids;
-use super::session::CardSessionExt;
+use super::session::CardChannelExt;
 
 /// Read the insurance data (`EF.VD`) from the health card.
 ///
@@ -34,7 +34,7 @@ use super::session::CardSessionExt;
 /// iteratively reads the file content until an end-of-file status is returned.
 pub fn read_vsd<S>(session: &mut S) -> Result<Vec<u8>, ExchangeError>
 where
-    S: CardSessionExt,
+    S: CardChannelExt,
 {
     session.execute_command_success(&HealthCardCommand::select(false, false))?;
     session.execute_command_success(&HealthCardCommand::select_aid(&ids::df_hca_aid()))?;

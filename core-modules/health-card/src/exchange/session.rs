@@ -29,7 +29,7 @@ use crate::command::health_card_status::HealthCardResponseStatus;
 /// The transport is responsible for converting a [CardCommandApdu] into a
 /// [CardResponseApdu]. Higher-level logic (secure messaging, status mapping)
 /// lives in the exchange layer.
-pub trait CardSession {
+pub trait CardChannel {
     /// Concrete error type returned by the transport.
     /// It must be convertible into `ExchangeError` so higher layers
     /// can normalize error handling without exposing backend details.
@@ -41,11 +41,11 @@ pub trait CardSession {
     fn transmit(&mut self, command: &CardCommandApdu) -> Result<CardResponseApdu, Self::Error>;
 }
 
-/// Extension trait providing convenience helpers on top of [CardSession].
-pub trait CardSessionExt: CardSession {
+/// Extension trait providing convenience helpers on top of [CardChannel].
+pub trait CardChannelExt: CardChannel {
     /// Encode and transmit a [HealthCardCommand], returning the mapped response.
     fn execute_command(&mut self, command: &HealthCardCommand) -> Result<HealthCardResponse, ExchangeError> {
-        let apdu = command.command_apdu(self.supports_extended_length()).map_err(ExchangeError::apdu)?;
+        let apdu = command.command_apdu(self.supports_extended_length()).map_err(ExchangeError::Apdu)?;
 
         let response = self.transmit(&apdu).map_err(Into::into)?;
 
@@ -66,4 +66,4 @@ pub trait CardSessionExt: CardSession {
     }
 }
 
-impl<T: CardSession + ?Sized> CardSessionExt for T {}
+impl<T: CardChannel + ?Sized> CardChannelExt for T {}

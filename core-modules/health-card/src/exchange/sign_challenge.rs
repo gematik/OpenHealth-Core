@@ -27,14 +27,14 @@ use crate::command::select_command::SelectCommand;
 
 use super::error::ExchangeError;
 use super::ids;
-use super::session::CardSessionExt;
+use super::session::CardChannelExt;
 
 /// Sign a challenge using the card holder authentication key from `DF.ESIGN`.
 ///
 /// This configuration uses ECDSA over the brainpool curve chosen by DF.ESIGN.
 pub fn sign_challenge<S>(session: &mut S, challenge: &[u8]) -> Result<Vec<u8>, ExchangeError>
 where
-    S: CardSessionExt,
+    S: CardChannelExt,
 {
     session.execute_command_success(&HealthCardCommand::select_aid(&ids::df_esign_aid()))?;
     session.execute_command_success(&HealthCardCommand::manage_sec_env_for_signing(

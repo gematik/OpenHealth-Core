@@ -91,7 +91,7 @@ impl HealthCardCommand {
             other => other,
         };
 
-        CardCommandApdu::of_options(self.cla, self.ins, self.p1, self.p2, self.data.clone(), expected_length)
+        CardCommandApdu::new(self.cla, self.ins, self.p1, self.p2, self.data.clone(), expected_length)
     }
 }
 

@@ -26,3 +26,8 @@ pub mod identifier;
 pub use asn1;
 pub use crypto;
 pub mod exchange;
+#[cfg(feature = "uniffi")]
+pub mod ffi;
+
+#[cfg(feature = "uniffi")]
+uniffi::setup_scaffolding!();

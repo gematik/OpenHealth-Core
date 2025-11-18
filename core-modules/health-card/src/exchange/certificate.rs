@@ -27,7 +27,7 @@ use crate::command::select_command::SelectCommand;
 
 use super::error::ExchangeError;
 use super::ids;
-use super::session::CardSessionExt;
+use super::session::CardChannelExt;
 
 /// Retrieve the X.509 certificate stored in `DF.ESIGN/EF.C.CH.AUT.E256`.
 ///
@@ -35,7 +35,7 @@ use super::session::CardSessionExt;
 /// card indicates the end of the file.
 pub fn retrieve_certificate<S>(session: &mut S) -> Result<Vec<u8>, ExchangeError>
 where
-    S: CardSessionExt,
+    S: CardChannelExt,
 {
     session.execute_command_success(&HealthCardCommand::select_aid(&ids::df_esign_aid()))?;
     session.execute_command_success(&HealthCardCommand::select_fid_with_options(

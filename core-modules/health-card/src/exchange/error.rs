@@ -28,18 +28,17 @@ use crate::command::manage_security_environment_command::ManageSecurityEnvironme
 use crate::command::CommandError;
 use asn1::error::Asn1EncoderError;
 use crypto::error::CryptoError;
-use std::error::Error;
 use thiserror::Error;
+use crate::command::apdu::ApduError;
 
 /// Error type for higher-level health-card exchanges.
 #[derive(Debug, Error)]
 pub enum ExchangeError {
     /// Transport layer failure while transmitting an APDU.
-    #[error("transport error: {0}")]
-    Transport(String),
-    /// Failed to encode an APDU before transmission.
-    #[error("apdu encoding error: {0}")]
-    Apdu(String),
+    #[error("{message} (code {code})")]
+    Transport { code: u32, message: String },
+    #[error("APDU error: {0}")]
+    Apdu(#[from] ApduError),
     /// Card returned a status that does not satisfy the requested operation.
     #[error("unexpected card status: {status}")]
     UnexpectedStatus { status: HealthCardResponseStatus },
@@ -88,9 +87,5 @@ impl ExchangeError {
 
     pub fn status(status: HealthCardResponseStatus) -> Self {
         ExchangeError::Status(status)
-    }
-
-    pub fn apdu<E: Error>(err: E) -> Self {
-        ExchangeError::Apdu(err.to_string())
     }
 }

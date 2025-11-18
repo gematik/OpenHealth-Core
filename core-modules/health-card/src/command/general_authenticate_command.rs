@@ -209,7 +209,7 @@ mod tests {
     #[test]
     fn test_command_apdu_generation() {
         let command = HealthCardCommand::general_authenticate(false).unwrap();
-        let apdu_result = CardCommandApdu::of_options(
+        let apdu_result = CardCommandApdu::new(
             command.cla,
             command.ins,
             command.p1,

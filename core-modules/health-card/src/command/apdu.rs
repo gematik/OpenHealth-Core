@@ -182,8 +182,8 @@ impl CardCommandApdu {
     /// * `p1` - The parameter 1 byte (P1).
     /// * `p2` - The parameter 2 byte (P2).
     /// * `ne` - The expected response length (Ne), or None for case 1.
-    pub fn of_options_without_data(cla: u8, ins: u8, p1: u8, p2: u8, ne: Option<usize>) -> Result<Self, ApduError> {
-        Self::of_options(cla, ins, p1, p2, None::<Vec<u8>>, ne)
+    pub fn new_without_data(cla: u8, ins: u8, p1: u8, p2: u8, ne: Option<usize>) -> Result<Self, ApduError> {
+        Self::new(cla, ins, p1, p2, None::<Vec<u8>>, ne)
     }
 
     /// Creates a CardCommandApdu for cases 1, 2s, 2e, 3s, 3e, 4s, or 4e.
@@ -195,7 +195,7 @@ impl CardCommandApdu {
     /// * `p2` - The parameter 2 byte (P2).
     /// * `data` - The command data (body), or None for cases 1, 2s, or 2e.
     /// * `ne` - The expected response length (Ne), or None for cases 3s or 3e.
-    pub fn of_options<D: Into<Vec<u8>>>(
+    pub fn new<D: Into<Vec<u8>>>(
         cla: u8,
         ins: u8,
         p1: u8,
@@ -425,9 +425,9 @@ impl CardCommandApdu {
     /// This is an additional function that allows passing the APDU as a byte array.
     ///
     /// # Arguments
-    /// * `byte_array` - The raw APDU byte array.
-    pub fn from_byte_array(byte_array: &[u8]) -> Result<Self, ApduError> {
-        Self::of_apdu(byte_array)
+    /// * `bytes` - The raw APDU byte array.
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self, ApduError> {
+        Self::of_apdu(bytes)
     }
 }
 
@@ -509,7 +509,7 @@ impl CardCommandApduBuilder {
 
     /// Builds the CardCommandApdu.
     pub fn build(self) -> Result<CardCommandApdu, ApduError> {
-        CardCommandApdu::of_options(self.cla, self.ins, self.p1, self.p2, self.data, self.ne)
+        CardCommandApdu::new(self.cla, self.ins, self.p1, self.p2, self.data, self.ne)
     }
 }
 
@@ -619,7 +619,7 @@ mod tests {
     #[test]
     fn test_card_command_apdu_case1() {
         // Case 1: Header only
-        let apdu = CardCommandApdu::of_options(0x00, 0xA4, 0x04, 0x00, None::<Vec<u8>>, None).unwrap();
+        let apdu = CardCommandApdu::new(0x00, 0xA4, 0x04, 0x00, None::<Vec<u8>>, None).unwrap();
         assert_eq!(apdu.apdu(), vec![0x00, 0xA4, 0x04, 0x00]);
         assert_eq!(apdu.data, None);
         assert_eq!(apdu.ne, None);
@@ -628,7 +628,7 @@ mod tests {
     #[test]
     fn test_card_command_apdu_case2s() {
         // Case 2s: Header + Le (short)
-        let apdu = CardCommandApdu::of_options(0x00, 0xA4, 0x04, 0x00, None::<Vec<u8>>, Some(256)).unwrap();
+        let apdu = CardCommandApdu::new(0x00, 0xA4, 0x04, 0x00, None::<Vec<u8>>, Some(256)).unwrap();
         assert_eq!(apdu.apdu(), vec![0x00, 0xA4, 0x04, 0x00, 0x00]);
         assert_eq!(apdu.data, None);
         assert_eq!(apdu.ne, Some(256));
@@ -667,7 +667,7 @@ mod tests {
     #[test]
     fn test_from_byte_array() {
         let bytes = [0x00, 0xA4, 0x04, 0x00, 0x02, 0x3F, 0x00, 0x00];
-        let command = CardCommandApdu::from_byte_array(&bytes).unwrap();
+        let command = CardCommandApdu::from_bytes(&bytes).unwrap();
         assert_eq!(command.cla(), 0x00);
         assert_eq!(command.ins(), 0xA4);
         assert_eq!(command.p1(), 0x04);

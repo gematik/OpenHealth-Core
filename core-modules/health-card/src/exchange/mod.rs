@@ -38,4 +38,4 @@ pub use pin::{unlock_egk, verify_pin, HealthCardVerifyPinResult, UnlockMethod};
 pub use random::get_random;
 pub use read_vsd::read_vsd;
 pub use sign_challenge::sign_challenge;
-pub use trusted_channel::{establish_trusted_channel, establish_trusted_channel_with, TrustedChannelScope};
+pub use trusted_channel::{establish_trusted_channel, establish_trusted_channel_with, TrustedChannel};

@@ -25,7 +25,7 @@ use crate::command::health_card_status::HealthCardResponseStatus;
 use crate::command::select_command::SelectCommand;
 
 use super::error::ExchangeError;
-use super::session::CardSessionExt;
+use super::session::CardChannelExt;
 
 /// Request cryptographically strong random bytes from the card RNG.
 ///
@@ -33,7 +33,7 @@ use super::session::CardSessionExt;
 /// to ensure a clean context before invoking `GET RANDOM VALUES`.
 pub fn get_random<S>(session: &mut S, length: usize) -> Result<Vec<u8>, ExchangeError>
 where
-    S: CardSessionExt,
+    S: CardChannelExt,
 {
     session.execute_command_success(&HealthCardCommand::select(false, false))?;
 

@@ -32,7 +32,7 @@ use crate::command::verify_pin_command::VerifyCommand;
 
 use super::error::ExchangeError;
 use super::ids;
-use super::session::CardSessionExt;
+use super::session::CardChannelExt;
 
 /// Result of a PIN verification attempt.
 #[derive(Debug, Clone)]
@@ -56,7 +56,7 @@ pub enum UnlockMethod {
 /// Verify the home PIN (`MRPIN.H`).
 pub fn verify_pin<S>(session: &mut S, pin: &str) -> Result<HealthCardVerifyPinResult, ExchangeError>
 where
-    S: CardSessionExt,
+    S: CardChannelExt,
 {
     session.execute_command_success(&HealthCardCommand::select(false, false))?;
     let password_reference = ids::mr_pin_home_reference();
@@ -105,7 +105,7 @@ pub fn unlock_egk<S>(
     new_secret: Option<&str>,
 ) -> Result<HealthCardResponseStatus, ExchangeError>
 where
-    S: CardSessionExt,
+    S: CardChannelExt,
 {
     session.execute_command_success(&HealthCardCommand::select(false, false))?;
     let password_reference = ids::mr_pin_home_reference();

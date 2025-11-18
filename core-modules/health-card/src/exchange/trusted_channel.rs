@@ -22,7 +22,7 @@
 use super::error::ExchangeError;
 use super::ids;
 use super::pace_info::parse_pace_info;
-use super::session::{CardSession, CardSessionExt};
+use super::session::{CardChannel, CardChannelExt};
 use crate::asn1::error::Asn1DecoderError;
 use crate::card::health_card_version2::parse_health_card_version2;
 use crate::card::pace_key::{get_aes128_key, Mode, PaceKey};
@@ -34,11 +34,9 @@ use crate::command::health_card_command::HealthCardCommand;
 use crate::command::manage_security_environment_command::ManageSecurityEnvironmentCommand;
 use crate::command::read_command::ReadCommand;
 use crate::command::select_command::SelectCommand;
-use asn1::encoder::Asn1Encoder;
 use asn1::error::Asn1EncoderError;
 use crypto::cipher::aes::{AesCipherSpec, AesDecipherSpec, Cipher, Iv, Padding};
 use crypto::ec::ec_key::{EcCurve, EcKeyPairSpec, EcPrivateKey, EcPublicKey};
-use crypto::ec::ec_point::EcPoint;
 use crypto::error::CryptoError;
 use crypto::key::SecretKey;
 use crypto::mac::{CmacAlgorithm, MacSpec};
@@ -47,15 +45,15 @@ use std::convert::TryFrom;
 use thiserror::Error;
 
 /// Trusted channel scope holding the negotiated PACE keys.
-pub struct TrustedChannelScope<'a, S: CardSession> {
-    session: &'a mut S,
+pub struct TrustedChannel<S: CardChannel> {
+    channel: S,
     pace_key: PaceKey,
     ssc: [u8; 16],
 }
 
 /// Error type returned by the trusted-channel session wrapper.
 #[derive(Debug, Error)]
-pub enum CardSessionError {
+pub enum TrustedChannelError {
     /// Errors originating from the secure messaging layer.
     #[error(transparent)]
     Secure(#[from] ExchangeError),
@@ -64,29 +62,28 @@ pub enum CardSessionError {
     Transport(ExchangeError),
 }
 
-impl CardSessionError {
+impl TrustedChannelError {
     fn transport<E: Into<ExchangeError>>(err: E) -> Self {
         Self::Transport(err.into())
     }
 }
 
-impl From<CardSessionError> for ExchangeError {
-    fn from(err: CardSessionError) -> Self {
+impl From<TrustedChannelError> for ExchangeError {
+    fn from(err: TrustedChannelError) -> Self {
         match err {
-            CardSessionError::Secure(inner) | CardSessionError::Transport(inner) => inner,
+            TrustedChannelError::Secure(inner) | TrustedChannelError::Transport(inner) => inner,
         }
     }
 }
 
-impl<'a, S: CardSession> TrustedChannelScope<'a, S> {
+impl<S: CardChannel> TrustedChannel<S> {
     /// Access the established PACE keys.
     pub fn pace_key(&self) -> &PaceKey {
         &self.pace_key
     }
 
-    /// Borrow the underlying transport mutably.
-    pub fn session(&mut self) -> &mut S {
-        self.session
+    pub fn channel(&mut self) -> &S {
+        &self.channel
     }
 
     /// Encrypt a plain APDU command using secure messaging.
@@ -121,7 +118,7 @@ impl<'a, S: CardSession> TrustedChannelScope<'a, S> {
             if expected_length.is_some() { EXPECTED_LENGTH_WILDCARD_EXTENDED } else { EXPECTED_LENGTH_WILDCARD_SHORT };
 
         builder = builder.expected_length(ne);
-        builder.build().map_err(ExchangeError::apdu)
+        builder.build().map_err(ExchangeError::Apdu)
     }
 
     /// Decrypt and verify a secure messaging response.
@@ -196,7 +193,7 @@ impl<'a, S: CardSession> TrustedChannelScope<'a, S> {
         }
 
         plaintext.extend_from_slice(sw_bytes);
-        CardResponseApdu::new(&plaintext).map_err(ExchangeError::apdu)
+        CardResponseApdu::new(&plaintext).map_err(ExchangeError::Apdu)
     }
 
     fn increment_ssc(&mut self) -> [u8; 16] {
@@ -211,64 +208,64 @@ impl<'a, S: CardSession> TrustedChannelScope<'a, S> {
     }
 }
 
-impl<'a, S: CardSession> CardSession for TrustedChannelScope<'a, S> {
-    type Error = CardSessionError;
+impl<S: CardChannel> CardChannel for TrustedChannel<S> {
+    type Error = TrustedChannelError;
 
     fn supports_extended_length(&self) -> bool {
-        self.session.supports_extended_length()
+        self.channel.supports_extended_length()
     }
 
-    fn transmit(&mut self, command: &CardCommandApdu) -> Result<CardResponseApdu, CardSessionError> {
-        let encrypted = self.encrypt(command).map_err(CardSessionError::Secure)?;
-        let response = self.session.transmit(&encrypted).map_err(CardSessionError::transport)?;
-        self.decrypt(response).map_err(CardSessionError::Secure)
+    fn transmit(&mut self, command: &CardCommandApdu) -> Result<CardResponseApdu, TrustedChannelError> {
+        let encrypted = self.encrypt(command).map_err(TrustedChannelError::Secure)?;
+        let response = self.channel.transmit(&encrypted).map_err(TrustedChannelError::transport)?;
+        self.decrypt(response).map_err(TrustedChannelError::Secure)
     }
 }
 
 /// Establish a PACE channel using random key material generated via `EcKeyPairSpec`.
-pub fn establish_trusted_channel<'a, S>(
-    session: &'a mut S,
+pub fn establish_trusted_channel<S>(
+    session: S,
     card_access_number: &str,
-) -> Result<TrustedChannelScope<'a, S>, ExchangeError>
+) -> Result<TrustedChannel<S>, ExchangeError>
 where
-    S: CardSessionExt,
+    S: CardChannelExt,
 {
     establish_trusted_channel_with(session, card_access_number, |curve| EcKeyPairSpec { curve }.generate_keypair())
 }
 
 /// Establish a PACE channel with a custom key-pair generator (useful for testing).
-pub fn establish_trusted_channel_with<'a, S, F>(
-    session: &'a mut S,
+pub fn establish_trusted_channel_with<S, F>(
+    mut channel: S,
     card_access_number: &str,
     mut key_generator: F,
-) -> Result<TrustedChannelScope<'a, S>, ExchangeError>
+) -> Result<TrustedChannel<S>, ExchangeError>
 where
-    S: CardSessionExt,
+    S: CardChannelExt,
     F: FnMut(EcCurve) -> Result<(EcPublicKey, EcPrivateKey), CryptoError>,
 {
     // Ensure the basic operational environment is as required (eGK v2.1 with DF.CardAccess present)
-    session.execute_command_success(&HealthCardCommand::select(false, true))?;
+    channel.execute_command_success(&HealthCardCommand::select(false, true))?;
     let read_version = HealthCardCommand::read_sfi_with_offset(ids::ef_version2_sfid(), 0)?;
-    let version_response = session.execute_command_success(&read_version)?;
+    let version_response = channel.execute_command_success(&read_version)?;
     let version =
         parse_health_card_version2(version_response.apdu.data_ref()).map_err(|_| ExchangeError::InvalidCardVersion)?;
     if !version.is_health_card_version_21() {
         return Err(ExchangeError::InvalidCardVersion);
     }
 
-    session.execute_command_success(&HealthCardCommand::select_fid(&ids::ef_card_access_fid(), false))?;
+    channel.execute_command_success(&HealthCardCommand::select_fid(&ids::ef_card_access_fid(), false))?;
     let read_card_access = HealthCardCommand::read()?;
-    let pace_info_response = session.execute_command_success(&read_card_access)?;
+    let pace_info_response = channel.execute_command_success(&read_card_access)?;
     let pace_info = parse_pace_info(pace_info_response.apdu.data_ref())?;
 
-    session.execute_command_success(&HealthCardCommand::manage_sec_env_without_curves(
+    channel.execute_command_success(&HealthCardCommand::manage_sec_env_without_curves(
         &crate::card::card_key::CardKey::new(ids::SECRET_KEY_REFERENCE),
         false,
         &pace_info.protocol_id_bytes(),
     )?)?;
 
     // Step 1: obtain nonce Z from the card and compute S
-    let nonce_z_response = session.execute_command_success(&HealthCardCommand::general_authenticate(true)?)?;
+    let nonce_z_response = channel.execute_command_success(&HealthCardCommand::general_authenticate(true)?)?;
     let nonce_z = decode_general_authenticate(nonce_z_response.apdu.data_ref())?;
     let can_key = get_aes128_key(card_access_number.as_bytes(), Mode::Password)?;
     let nonce_s_bytes = decrypt_nonce(&can_key, &nonce_z)?;
@@ -279,7 +276,7 @@ where
     let pcd_scalar = big_int_from_secret(&pcd_private);
     let pcd_shared_secret = pace_info.curve.g().mul(&pcd_scalar)?;
     let pcd_shared_bytes = pcd_shared_secret.uncompressed()?;
-    let picc_pk_response = session.execute_command_success(&HealthCardCommand::general_authenticate_with_data(
+    let picc_pk_response = channel.execute_command_success(&HealthCardCommand::general_authenticate_with_data(
         true,
         &pcd_shared_bytes,
         1,
@@ -298,7 +295,7 @@ where
     let ep_gs_bytes = ep_gs_shared_secret.uncompressed()?;
 
     let picc_pk_response =
-        session.execute_command_success(&HealthCardCommand::general_authenticate_with_data(true, &ep_gs_bytes, 3)?)?;
+        channel.execute_command_success(&HealthCardCommand::general_authenticate_with_data(true, &ep_gs_bytes, 3)?)?;
     picc_public_key = EcPublicKey::from_uncompressed(
         pace_info.curve.clone(),
         decode_general_authenticate(picc_pk_response.apdu.data_ref())?,
@@ -322,13 +319,13 @@ where
     let derived_mac = derive_mac(pace_key.mac(), &ep_gs_shared_secret.to_ec_public_key()?, &pace_info.protocol_id)?;
 
     let picc_mac_response =
-        session.execute_command_success(&HealthCardCommand::general_authenticate_with_data(false, &mac, 5)?)?;
+        channel.execute_command_success(&HealthCardCommand::general_authenticate_with_data(false, &mac, 5)?)?;
     let picc_mac = decode_general_authenticate(picc_mac_response.apdu.data_ref())?;
     if picc_mac != derived_mac {
         return Err(ExchangeError::MutualAuthenticationFailed);
     }
 
-    Ok(TrustedChannelScope { session, pace_key, ssc: [0u8; 16] })
+    Ok(TrustedChannel { channel, pace_key, ssc: [0u8; 16] })
 }
 
 fn big_int_from_secret(key: &EcPrivateKey) -> BigInt {
@@ -539,7 +536,7 @@ fn parse_tlv(input: &[u8]) -> Result<(u8, &[u8], &[u8]), ExchangeError> {
 mod tests {
     use super::*;
     use crate::command::apdu::{CardCommandApdu, CardResponseApdu};
-    use crate::exchange::session::CardSession;
+    use crate::exchange::session::CardChannel;
     use hex::encode;
 
     #[test]
@@ -561,7 +558,7 @@ mod tests {
 
     struct DummySession;
 
-    impl CardSession for DummySession {
+    impl CardChannel for DummySession {
         type Error = ExchangeError;
 
         fn supports_extended_length(&self) -> bool {
@@ -573,9 +570,9 @@ mod tests {
         }
     }
 
-    fn make_scope() -> TrustedChannelScope<'static, DummySession> {
-        let session = Box::leak(Box::new(DummySession));
-        TrustedChannelScope { session, pace_key: pace_key_fixture(), ssc: [0u8; 16] }
+    fn make_channel() -> TrustedChannel<DummySession> {
+        let channel = DummySession;
+        TrustedChannel { channel, pace_key: pace_key_fixture(), ssc: [0u8; 16] }
     }
 
     fn to_hex(apdu: &CardCommandApdu) -> String {
@@ -584,8 +581,8 @@ mod tests {
 
     #[test]
     fn encrypt_case1_header_only() {
-        let command = CardCommandApdu::of_options_without_data(0x01, 0x02, 0x03, 0x04, None).unwrap();
-        let mut scope = make_scope();
+        let command = CardCommandApdu::new_without_data(0x01, 0x02, 0x03, 0x04, None).unwrap();
+        let mut scope = make_channel();
         let secured = scope.encrypt(&command).unwrap();
         assert_eq!(to_hex(&secured), "0D0203040A8E08D92B4FDDC2BBED8C00");
         // Double encryption should be rejected
@@ -594,16 +591,16 @@ mod tests {
 
     #[test]
     fn encrypt_case2_short_le() {
-        let command = CardCommandApdu::of_options_without_data(0x01, 0x02, 0x03, 0x04, Some(127)).unwrap();
-        let mut scope = make_scope();
+        let command = CardCommandApdu::new_without_data(0x01, 0x02, 0x03, 0x04, Some(127)).unwrap();
+        let mut scope = make_channel();
         let secured = scope.encrypt(&command).unwrap();
         assert_eq!(to_hex(&secured), "0D02030400000D97017F8E0871D8E0418DAE20F30000");
     }
 
     #[test]
     fn encrypt_case2_extended_le() {
-        let command = CardCommandApdu::of_options_without_data(0x01, 0x02, 0x03, 0x04, Some(257)).unwrap();
-        let mut scope = make_scope();
+        let command = CardCommandApdu::new_without_data(0x01, 0x02, 0x03, 0x04, Some(257)).unwrap();
+        let mut scope = make_channel();
         let secured = scope.encrypt(&command).unwrap();
         assert_eq!(to_hex(&secured), "0D02030400000E970201018E089F3EDDFBB1D3971D0000");
     }
@@ -611,8 +608,8 @@ mod tests {
     #[test]
     fn encrypt_case3_short_data() {
         let data = vec![0x05, 0x06, 0x07, 0x08, 0x09, 0x0A];
-        let command = CardCommandApdu::of_options(0x01, 0x02, 0x03, 0x04, Some(data), None).unwrap();
-        let mut scope = make_scope();
+        let command = CardCommandApdu::new(0x01, 0x02, 0x03, 0x04, Some(data), None).unwrap();
+        let mut scope = make_channel();
         let secured = scope.encrypt(&command).unwrap();
         assert_eq!(to_hex(&secured), "0D0203041D871101496C26D36306679609665A385C54DB378E08E7AAD918F260D8EF00");
     }
@@ -620,8 +617,8 @@ mod tests {
     #[test]
     fn encrypt_case4_short_data_with_le() {
         let data = vec![0x05, 0x06, 0x07, 0x08, 0x09, 0x0A];
-        let command = CardCommandApdu::of_options(0x01, 0x02, 0x03, 0x04, Some(data), Some(127)).unwrap();
-        let mut scope = make_scope();
+        let command = CardCommandApdu::new(0x01, 0x02, 0x03, 0x04, Some(data), Some(127)).unwrap();
+        let mut scope = make_channel();
         let secured = scope.encrypt(&command).unwrap();
         assert_eq!(
             to_hex(&secured),
@@ -632,8 +629,8 @@ mod tests {
     #[test]
     fn encrypt_case4_extended_data_with_le() {
         let data = vec![0u8; 256];
-        let command = CardCommandApdu::of_options(0x01, 0x02, 0x03, 0x04, Some(data), Some(127)).unwrap();
-        let mut scope = make_scope();
+        let command = CardCommandApdu::new(0x01, 0x02, 0x03, 0x04, Some(data), Some(127)).unwrap();
+        let mut scope = make_channel();
         let secured = scope.encrypt(&command).unwrap();
         assert_eq!(
             to_hex(&secured),
@@ -641,8 +638,8 @@ mod tests {
         );
     }
 
-    fn scope_with_ssc(value: u8) -> TrustedChannelScope<'static, DummySession> {
-        let mut scope = make_scope();
+    fn scope_with_ssc(value: u8) -> TrustedChannel<DummySession> {
+        let mut scope = make_channel();
         scope.ssc[15] = value;
         scope
     }
