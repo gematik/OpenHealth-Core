@@ -141,7 +141,7 @@ impl ReadCommand for HealthCardCommand {
         }
 
         Ok(HealthCardCommand {
-            expected_status: READ_STATUS.clone(), // Verwende das importierte READ_STATUS
+            expected_status: READ_STATUS.clone(),
             cla: CLA,
             ins: INS,
             p1: SFI_MARKER + sfi.sf_id,

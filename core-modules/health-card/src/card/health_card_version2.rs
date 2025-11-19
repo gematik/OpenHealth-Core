@@ -19,11 +19,14 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
+use crate::asn1::decoder::Asn1Decoder;
+use asn1::error::Asn1DecoderError;
+use asn1::tag::Asn1Id;
 use std::collections::HashMap;
 use thiserror::Error;
 
 /// Tags used within EF.Version2 (gemSpec_COS 14.2.3)
-const TAG_WRAPPER: u8 = 0xEF;
+const TAG_WRAPPER: Asn1Id = Asn1Id::prv(0x0F).constructed();
 const TAG_FILLING_INSTRUCTIONS_VERSION: u8 = 0xC0;
 const TAG_OBJECT_SYSTEM_VERSION: u8 = 0xC1;
 const TAG_PRODUCT_IDENTIFICATION_OS_VERSION: u8 = 0xC2;
@@ -32,6 +35,7 @@ const TAG_FILLING_INSTRUCTIONS_EF_GDO_VERSION: u8 = 0xC4;
 const TAG_FILLING_INSTRUCTIONS_EF_ATR_VERSION: u8 = 0xC5;
 const TAG_FILLING_INSTRUCTIONS_EF_KEY_INFO_VERSION: u8 = 0xC6;
 const TAG_FILLING_INSTRUCTIONS_EF_LOGGING_VERSION: u8 = 0xC7;
+const MIN_OBJECT_SYSTEM_VERSION_FOR_EGK21: u32 = (4u32 << 16) | (4u32 << 8);
 
 /// Errors that can occur while parsing EF.Version2 content.
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
@@ -63,7 +67,15 @@ pub struct HealthCardVersion2 {
 impl HealthCardVersion2 {
     /// Returns true if the version matrix indicates an eGK version 2.1 card.
     pub fn is_health_card_version_21(&self) -> bool {
-        self.fi_version.first() == Some(&0x02) && self.object_system_version.as_slice() == [0x04, 0x03, 0x02]
+        if self.object_system_version.len() < 2 {
+            return false;
+        }
+
+        let major = u32::from(self.object_system_version[0]);
+        let minor = u32::from(self.object_system_version[1]);
+        let version = (major << 16) | (minor << 8) | minor;
+
+        version >= MIN_OBJECT_SYSTEM_VERSION_FOR_EGK21
     }
 }
 
@@ -73,58 +85,56 @@ pub fn parse_health_card_version2(data: &[u8]) -> Result<HealthCardVersion2, Hea
         return Err(HealthCardVersion2Error::MalformedTlv);
     }
 
-    let content = if data[0] == TAG_WRAPPER {
-        if data.len() < 2 {
-            return Err(HealthCardVersion2Error::MalformedTlv);
-        }
-        let len = data[1] as usize;
-        if data.len() < 2 + len {
-            return Err(HealthCardVersion2Error::LengthMismatch);
-        }
-        &data[2..2 + len]
-    } else {
-        data
-    };
+    let decoder = Asn1Decoder::new(data);
+    decoder.read(|reader| {
+        reader.advance_with_tag(TAG_WRAPPER, |reader| {
+            let mut entries: HashMap<u8, Vec<u8>> = HashMap::new();
 
-    let mut offset = 0usize;
-    let mut entries: HashMap<u8, Vec<u8>> = HashMap::new();
+            while reader.remaining_length() > 0 {
+                let tag = reader.read_tag()?;
+                if tag.number >= 0x1F {
+                    return Err(Asn1DecoderError::custom("high-tag-number form not supported for EF.Version2").into());
+                }
 
-    while offset < content.len() {
-        let tag = content[offset];
-        offset += 1;
-        if offset >= content.len() {
-            return Err(HealthCardVersion2Error::MalformedTlv);
-        }
-        let len = content[offset] as usize;
-        offset += 1;
-        if offset + len > content.len() {
-            return Err(HealthCardVersion2Error::MalformedTlv);
-        }
-        let value = content[offset..offset + len].to_vec();
-        offset += len;
-        entries.insert(tag, value);
-    }
+                let length = reader.read_length()?;
+                if length < 0 {
+                    return Err(Asn1DecoderError::custom("indefinite lengths are not supported in EF.Version2").into());
+                }
 
-    let mut take_or_err = |tag: u8| -> Result<Vec<u8>, HealthCardVersion2Error> {
-        entries.remove(&tag).ok_or(HealthCardVersion2Error::MissingTag(tag))
-    };
+                let value = reader.read_bytes(length as usize)?;
+                let tag_byte = u8::from(tag.class) | u8::from(tag.form) | (tag.number as u8);
+                entries.insert(tag_byte, value);
+            }
 
-    let fi_version = take_or_err(TAG_FILLING_INSTRUCTIONS_VERSION)?;
-    let object_system_version = take_or_err(TAG_OBJECT_SYSTEM_VERSION)?;
-    let product_identification_object_system_version = take_or_err(TAG_PRODUCT_IDENTIFICATION_OS_VERSION)?;
+            let mut take_or_err = |tag: u8| -> Result<Vec<u8>, HealthCardVersion2Error> {
+                entries.remove(&tag).ok_or(HealthCardVersion2Error::MissingTag(tag))
+            };
 
-    let mut optional = |tag: u8| entries.remove(&tag).unwrap_or_default();
+            let fi_version = take_or_err(TAG_FILLING_INSTRUCTIONS_VERSION)?;
+            let object_system_version = take_or_err(TAG_OBJECT_SYSTEM_VERSION)?;
+            let product_identification_object_system_version =
+                take_or_err(TAG_PRODUCT_IDENTIFICATION_OS_VERSION)?;
 
-    Ok(HealthCardVersion2 {
-        fi_version: fi_version,
-        object_system_version,
-        product_identification_object_system_version,
-        fi_ef_environment_settings_version: optional(TAG_FILLING_INSTRUCTIONS_EF_ENVIRONMENT_SETTINGS_VERSION),
-        fi_ef_gdo_version: optional(TAG_FILLING_INSTRUCTIONS_EF_GDO_VERSION),
-        fi_ef_atr_version: optional(TAG_FILLING_INSTRUCTIONS_EF_ATR_VERSION),
-        fi_ef_key_info_version: optional(TAG_FILLING_INSTRUCTIONS_EF_KEY_INFO_VERSION),
-        fi_ef_logging_version: optional(TAG_FILLING_INSTRUCTIONS_EF_LOGGING_VERSION),
+            let mut optional = |tag: u8| entries.remove(&tag).unwrap_or_default();
+
+            Ok(HealthCardVersion2 {
+                fi_version,
+                object_system_version,
+                product_identification_object_system_version,
+                fi_ef_environment_settings_version: optional(TAG_FILLING_INSTRUCTIONS_EF_ENVIRONMENT_SETTINGS_VERSION),
+                fi_ef_gdo_version: optional(TAG_FILLING_INSTRUCTIONS_EF_GDO_VERSION),
+                fi_ef_atr_version: optional(TAG_FILLING_INSTRUCTIONS_EF_ATR_VERSION),
+                fi_ef_key_info_version: optional(TAG_FILLING_INSTRUCTIONS_EF_KEY_INFO_VERSION),
+                fi_ef_logging_version: optional(TAG_FILLING_INSTRUCTIONS_EF_LOGGING_VERSION),
+            })
+        })
     })
+}
+
+impl From<Asn1DecoderError> for HealthCardVersion2Error {
+    fn from(_: Asn1DecoderError) -> Self {
+        HealthCardVersion2Error::MalformedTlv
+    }
 }
 
 #[cfg(test)]
@@ -145,7 +155,7 @@ mod tests {
 
     #[test]
     fn parse_health_card_version_success() {
-        let payload = "EF 2B C0 03 02 00 00 C1 03 04 03 02 C2 10 45 47 4B 47 32 20 20 20 20 20 20 20 ".to_owned()
+        let payload = "EF 2B C0 03 02 00 00 C1 03 04 04 00 C2 10 45 47 4B 47 32 20 20 20 20 20 20 20 ".to_owned()
             + "20 01 03 04 C4 03 01 00 00 C5 03 02 00 00 C7 03 01 00 00";
         let bytes = hex_to_bytes(&payload);
 
@@ -161,7 +171,7 @@ mod tests {
 
     #[test]
     fn parse_health_card_version_missing_tag() {
-        let bytes = hex_to_bytes("C1 03 04 03 02");
+        let bytes = hex_to_bytes("EF 05 C1 03 04 03 02");
         let err = parse_health_card_version2(&bytes).unwrap_err();
         assert!(matches!(err, HealthCardVersion2Error::MissingTag(TAG_FILLING_INSTRUCTIONS_VERSION)));
     }

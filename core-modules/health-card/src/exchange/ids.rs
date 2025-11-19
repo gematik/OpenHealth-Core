@@ -47,34 +47,69 @@ pub fn df_esign_aid() -> ApplicationIdentifier {
     application_identifier(&[0xA0, 0x00, 0x00, 0x01, 0x67, 0x45, 0x53, 0x49, 0x47, 0x4E])
 }
 
-/// File identifier of `EF.CardAccess` in the master file.
+/// File identifier of `MF/EF.CardAccess` (gemSpec_ObjSys Section 5.3.2).
 pub fn ef_card_access_fid() -> FileIdentifier {
-    file_identifier(0x2F01)
+    file_identifier(0x011C)
 }
 
-/// Short file identifier for `EF.Version2`.
+/// Short file identifier of `MF/EF.CardAccess` (gemSpec_ObjSys Section 5.3.2).
+pub fn ef_card_access_sfid() -> ShortFileIdentifier {
+    short_file_identifier(0x1C)
+}
+
+/// File identifier of `MF/EF.Version2` (gemSpec_ObjSys Section 5.3.8).
+pub fn ef_version2_fid() -> FileIdentifier {
+    file_identifier(0x2F11)
+}
+
+/// Short file identifier for `MF/EF.Version2` (gemSpec_ObjSys Section 5.3.8).
 pub fn ef_version2_sfid() -> ShortFileIdentifier {
-    short_file_identifier(0x1D)
+    short_file_identifier(0x11)
 }
 
-/// File identifier for `DF.HCA/EF.VD` containing the insurance data.
+/// File identifier for `DF.HCA/EF.PD` (gemSpec_ObjSys Section 5.4.4).
+pub fn ef_pd_fid() -> FileIdentifier {
+    file_identifier(0xD001)
+}
+
+/// Short file identifier for `DF.HCA/EF.PD` (gemSpec_ObjSys Section 5.4.4).
+pub fn ef_pd_sfid() -> ShortFileIdentifier {
+    short_file_identifier(0x01)
+}
+
+/// File identifier for `DF.HCA/EF.VD` (gemSpec_ObjSys Section 5.4.9).
 pub fn ef_vd_fid() -> FileIdentifier {
-    file_identifier(0xE001)
+    file_identifier(0xD002)
 }
 
-/// File identifier for `DF.ESIGN/EF.C.CH.AUT.E256` (certificate of the card holder).
+/// File identifier for `DF.HCA/EF.StatusVD` (gemSpec_ObjSys Section 5.4.7).
+pub fn ef_status_vd_fid() -> FileIdentifier {
+    file_identifier(0xD00C)
+}
+
+/// Short file identifier for `DF.HCA/EF.StatusVD` (gemSpec_ObjSys Section 5.4.7).
+pub fn ef_status_vd_sfid() -> ShortFileIdentifier {
+    short_file_identifier(0x0C)
+}
+
+/// File identifier for `DF.ESIGN/EF.C.CH.AUT.E256` (gemSpec_ObjSys Section 5.5.9).
 pub fn ef_cch_aut_e256_fid() -> FileIdentifier {
-    file_identifier(0xE256)
+    file_identifier(0xC504)
 }
 
-/// Key identifier for the `PrK.ChAutE256` private key in `DF.ESIGN`.
+/// Short file identifier for `DF.ESIGN/EF.C.CH.AUT.E256` (gemSpec_ObjSys Section 5.5.9).
+pub fn ef_cch_aut_e256_sfid() -> ShortFileIdentifier {
+    short_file_identifier(0x04)
+}
+
+/// Key identifier for the `PrK.CH.AUT.E256` private key in `DF.ESIGN`.
 pub fn prk_ch_aut_e256() -> CardKey {
-    CardKey::new(0x09)
+    CardKey::new(0x04)
 }
 
-/// Password reference for "MRPIN.H" (home PIN) stored in the master file.
+/// Password reference for "MRPIN.home" stored in the master file (gemSpec_ObjSys Section 5.3.10).
 pub fn mr_pin_home_reference() -> PasswordReference {
-    PasswordReference::new(0x01)
+    PasswordReference::new(0x02)
 }
 
 /// Secret key reference used during PACE (CAN key).

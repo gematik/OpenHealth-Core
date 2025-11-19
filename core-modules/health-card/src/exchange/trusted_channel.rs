@@ -23,7 +23,10 @@ use super::error::ExchangeError;
 use super::ids;
 use super::pace_info::parse_pace_info;
 use super::session::{CardChannel, CardChannelExt};
+use crate::asn1::decoder::Asn1Decoder;
+use crate::asn1::encoder::Asn1Encoder;
 use crate::asn1::error::Asn1DecoderError;
+use crate::asn1::tag::{Asn1Class, Asn1Id};
 use crate::card::health_card_version2::parse_health_card_version2;
 use crate::card::pace_key::{get_aes128_key, Mode, PaceKey};
 use crate::command::apdu::{
@@ -41,7 +44,7 @@ use crypto::error::CryptoError;
 use crypto::key::SecretKey;
 use crypto::mac::{CmacAlgorithm, MacSpec};
 use num_bigint::{BigInt, Sign};
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
 use thiserror::Error;
 
 /// Trusted channel scope holding the negotiated PACE keys.
@@ -99,17 +102,20 @@ impl<S: CardChannel> TrustedChannel<S> {
             let mut value = Vec::with_capacity(ciphertext.len() + 1);
             value.push(0x01);
             value.extend_from_slice(&ciphertext);
-            command_body.extend_from_slice(&encode_tlv(0x87, &value));
+            let do87 = encode_context_specific(0x07, &value)?;
+            command_body.extend_from_slice(&do87);
         }
 
         let expected_length = command.expected_length();
         if let Some(ne) = expected_length {
             let length_value = encode_length_object(ne);
-            command_body.extend_from_slice(&encode_tlv(0x97, &length_value));
+            let do97 = encode_context_specific(0x17, &length_value)?;
+            command_body.extend_from_slice(&do97);
         }
 
         let mac = compute_mac(self.pace_key.mac(), &ssc, &header, &command_body)?;
-        command_body.extend_from_slice(&encode_tlv(0x8E, &mac));
+        let do8e = encode_context_specific(0x0E, &mac)?;
+        command_body.extend_from_slice(&do8e);
 
         let mut builder =
             CardCommandApdu::builder().cla(header[0]).ins(header[1]).p1(header[2]).p2(header[3]).data(command_body);
@@ -129,70 +135,47 @@ impl<S: CardChannel> TrustedChannel<S> {
         }
 
         let (body, sw_bytes) = bytes.split_at(bytes.len() - 2);
-        let mut cursor = body;
-
-        let mut do87_raw: Option<&[u8]> = None;
-        let mut do87_value: Option<&[u8]> = None;
-        let mut do99_raw: Option<&[u8]> = None;
-        let mut status: Option<[u8; 2]> = None;
-        let mut mac_value: Option<[u8; 8]> = None;
-
-        while !cursor.is_empty() {
-            let (tag, value, rest) = parse_tlv(cursor)?;
-            match tag {
-                0x87 => {
-                    do87_raw = Some(&cursor[..cursor.len() - rest.len()]);
-                    do87_value = Some(value);
-                }
-                0x99 => {
-                    if value.len() != 2 {
-                        return Err(ExchangeError::InvalidArgument("DO99 must contain SW1 SW2"));
-                    }
-                    do99_raw = Some(&cursor[..cursor.len() - rest.len()]);
-                    status = Some([value[0], value[1]]);
-                }
-                0x8E => {
-                    if value.len() != 8 {
-                        return Err(ExchangeError::InvalidArgument("DO8E must contain 8 bytes"));
-                    }
-                    mac_value = Some(<[u8; 8]>::try_from(value).unwrap());
-                }
-                _ => return Err(ExchangeError::InvalidArgument("unexpected tag in secure response")),
-            }
-            cursor = rest;
+        if body.is_empty() {
+            return Err(ExchangeError::InvalidArgument("response apdu missing secure messaging data objects"));
         }
 
-        let status = status.ok_or(ExchangeError::InvalidArgument("missing DO99 in response"))?;
-        if status != [sw_bytes[0], sw_bytes[1]] {
+        let ssc = self.increment_ssc();
+        let response_objects = parse_response_objects(body)?;
+        if response_objects.status_bytes != [sw_bytes[0], sw_bytes[1]] {
             return Err(ExchangeError::InvalidArgument("status mismatch between DO99 and response"));
         }
 
-        let mac_expected = mac_value.ok_or(ExchangeError::InvalidArgument("missing DO8E in response"))?;
+        let ResponseObjects { data_object, status_bytes, mac_bytes } = response_objects;
 
         let mut mac_payload = Vec::new();
-        if let Some(raw) = do87_raw {
-            mac_payload.extend_from_slice(raw);
+        if let Some(data_object) = data_object.as_ref() {
+            mac_payload.extend_from_slice(&data_object.encoded()?);
         }
-        let do99_raw = do99_raw.ok_or(ExchangeError::InvalidArgument("missing DO99 raw bytes"))?;
-        mac_payload.extend_from_slice(do99_raw);
+        let do99 = encode_context_specific(0x19, &status_bytes)?;
+        mac_payload.extend_from_slice(&do99);
 
-        let mac = compute_mac(self.pace_key.mac(), &self.ssc, &[], &mac_payload)?;
-        if mac.as_slice() != mac_expected {
+        let mac = compute_mac(self.pace_key.mac(), &ssc, &[], &mac_payload)?;
+        if mac != mac_bytes {
             return Err(ExchangeError::MutualAuthenticationFailed);
         }
 
         let mut plaintext = Vec::new();
-        if let Some(value) = do87_value {
-            if value.is_empty() || value[0] != 0x01 {
-                return Err(ExchangeError::InvalidArgument("invalid DO87 value"));
+        if let Some(data_object) = data_object {
+            if data_object.is_encrypted() {
+                let data = data_object.data();
+                if data.is_empty() || data[0] != 0x01 {
+                    return Err(ExchangeError::InvalidArgument("invalid DO87 value"));
+                }
+                let ciphertext = &data[1..];
+                let decrypted = decrypt_data(self.pace_key.encryption(), &ssc, ciphertext)?;
+                let unpadded = unpad_iso9797_1(&decrypted)?;
+                plaintext.extend_from_slice(&unpadded);
+            } else {
+                plaintext.extend_from_slice(data_object.data());
             }
-            let ciphertext = &value[1..];
-            let decrypted = decrypt_data(self.pace_key.encryption(), &self.ssc, ciphertext)?;
-            let unpadded = unpad_iso9797_1(&decrypted)?;
-            plaintext.extend_from_slice(&unpadded);
         }
 
-        plaintext.extend_from_slice(sw_bytes);
+        plaintext.extend_from_slice(&status_bytes);
         CardResponseApdu::new(&plaintext).map_err(ExchangeError::Apdu)
     }
 
@@ -368,10 +351,7 @@ fn decode_general_authenticate(data: &[u8]) -> Result<Vec<u8>, ExchangeError> {
 }
 
 fn create_asn1_auth_token(public_key: &EcPublicKey, protocol_id: &str) -> Result<Vec<u8>, ExchangeError> {
-    use crate::asn1::encoder::Asn1Encoder;
-    use crate::asn1::tag::Asn1Id;
-
-    Asn1Encoder::write(|writer| {
+    Asn1Encoder::write::<Asn1EncoderError>(|writer| {
         writer.write_tagged_object(Asn1Id::app(0x49).constructed(), |outer| {
             outer.write_object_identifier(protocol_id)?;
             outer.write_tagged_object(Asn1Id::ctx(0x06).primitive(), |inner| -> Result<(), Asn1EncoderError> {
@@ -381,6 +361,7 @@ fn create_asn1_auth_token(public_key: &EcPublicKey, protocol_id: &str) -> Result
             Ok(())
         })
     })
+    .map_err(ExchangeError::from)
 }
 
 fn derive_mac(mac_key: &SecretKey, public_key: &EcPublicKey, protocol_id: &str) -> Result<Vec<u8>, ExchangeError> {
@@ -453,27 +434,6 @@ fn unpad_iso9797_1(data: &[u8]) -> Result<Vec<u8>, ExchangeError> {
     Err(ExchangeError::InvalidArgument("invalid iso9797 padding"))
 }
 
-fn encode_tlv(tag: u8, value: &[u8]) -> Vec<u8> {
-    let mut out = Vec::with_capacity(1 + 3 + value.len());
-    out.push(tag);
-    encode_length(value.len(), &mut out);
-    out.extend_from_slice(value);
-    out
-}
-
-fn encode_length(len: usize, out: &mut Vec<u8>) {
-    if len < 0x80 {
-        out.push(len as u8);
-    } else if len <= 0xFF {
-        out.push(0x81);
-        out.push(len as u8);
-    } else {
-        out.push(0x82);
-        out.push(((len >> 8) & 0xFF) as u8);
-        out.push((len & 0xFF) as u8);
-    }
-}
-
 fn encode_length_object(le: usize) -> Vec<u8> {
     if le == EXPECTED_LENGTH_WILDCARD_SHORT {
         vec![0x00]
@@ -482,6 +442,16 @@ fn encode_length_object(le: usize) -> Vec<u8> {
     } else {
         vec![le as u8]
     }
+}
+
+fn encode_context_specific(tag_number: u32, value: &[u8]) -> Result<Vec<u8>, ExchangeError> {
+    Asn1Encoder::write::<Asn1EncoderError>(|writer| {
+        writer.write_tagged_object(Asn1Id::ctx(tag_number).primitive(), |scope| {
+            scope.write_bytes(value);
+            Ok(())
+        })
+    })
+    .map_err(ExchangeError::from)
 }
 
 fn compute_mac(
@@ -503,30 +473,82 @@ fn compute_mac(
     Ok(<[u8; 8]>::try_from(&tag[..8]).unwrap())
 }
 
-fn parse_tlv(input: &[u8]) -> Result<(u8, &[u8], &[u8]), ExchangeError> {
-    if input.len() < 2 {
-        return Err(ExchangeError::InvalidArgument("tlv too short"));
-    }
-    let tag = input[0];
-    let first_len = input[1];
-    let (length, offset) = if first_len & 0x80 == 0 {
-        (first_len as usize, 2)
-    } else {
-        let count = (first_len & 0x7F) as usize;
-        if input.len() < 2 + count {
-            return Err(ExchangeError::InvalidArgument("invalid tlv length"));
-        }
-        let mut len = 0usize;
-        for &b in &input[2..2 + count] {
-            len = (len << 8) | (b as usize);
-        }
-        (len, 2 + count)
-    };
+fn parse_response_objects(data: &[u8]) -> Result<ResponseObjects, ExchangeError> {
+    let decoder = Asn1Decoder::new(data);
+    let objects = decoder.read(|reader| -> Result<ResponseObjects, Asn1DecoderError> {
+        let mut data_object: Option<SecureDataObject> = None;
+        let mut status_bytes: Option<[u8; 2]> = None;
+        let mut mac_bytes: Option<[u8; 8]> = None;
 
-    if input.len() < offset + length {
-        return Err(ExchangeError::InvalidArgument("truncated tlv value"));
+        while reader.remaining_length() > 0 {
+            let tag = reader.read_tag()?;
+            if tag.class != Asn1Class::ContextSpecific {
+                return Err(Asn1DecoderError::custom("unexpected tag class in secure response"));
+            }
+            let length = reader.read_length()?;
+            if length < 0 {
+                return Err(Asn1DecoderError::custom("indefinite length not supported in secure response"));
+            }
+            let value = reader.read_bytes(length as usize)?;
+
+            match tag.number {
+                0x01 | 0x07 => {
+                    if data_object.is_some() {
+                        return Err(Asn1DecoderError::custom("multiple data objects in secure response"));
+                    }
+                    data_object = Some(SecureDataObject { tag_number: tag.number, value });
+                }
+                0x19 => {
+                    let length = value.len();
+                    let array: [u8; 2] =
+                        value.try_into().map_err(|_| Asn1DecoderError::InvalidLength { length })?;
+                    status_bytes = Some(array);
+                }
+                0x0E => {
+                    let length = value.len();
+                    let array: [u8; 8] =
+                        value.try_into().map_err(|_| Asn1DecoderError::InvalidLength { length })?;
+                    mac_bytes = Some(array);
+                }
+                other => {
+                    return Err(Asn1DecoderError::custom(format!(
+                        "unexpected secure messaging tag 0x{other:02X}"
+                    )))
+                }
+            }
+        }
+
+        let status_bytes = status_bytes.ok_or_else(|| Asn1DecoderError::custom("missing DO99 in secure response"))?;
+        let mac_bytes = mac_bytes.ok_or_else(|| Asn1DecoderError::custom("missing DO8E in secure response"))?;
+        Ok(ResponseObjects { data_object, status_bytes, mac_bytes })
+    })?;
+
+    Ok(objects)
+}
+
+struct SecureDataObject {
+    tag_number: u32,
+    value: Vec<u8>,
+}
+
+impl SecureDataObject {
+    fn encoded(&self) -> Result<Vec<u8>, ExchangeError> {
+        encode_context_specific(self.tag_number, &self.value)
     }
-    Ok((tag, &input[offset..offset + length], &input[offset + length..]))
+
+    fn data(&self) -> &[u8] {
+        &self.value
+    }
+
+    fn is_encrypted(&self) -> bool {
+        self.tag_number == 0x07
+    }
+}
+
+struct ResponseObjects {
+    data_object: Option<SecureDataObject>,
+    status_bytes: [u8; 2],
+    mac_bytes: [u8; 8],
 }
 
 #[cfg(test)]

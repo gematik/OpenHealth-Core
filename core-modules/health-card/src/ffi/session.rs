@@ -21,7 +21,7 @@ impl From<CardChannelError> for ExchangeError {
     fn from(err: CardChannelError) -> Self {
         match err {
             CardChannelError::Transport(inner) => match inner {
-                TrustedChannelError::Transport { code, message } => ExchangeError::Transport { code, message },
+                TrustedChannelError::Transport { code, reason } => ExchangeError::Transport { code, message: reason },
                 other => ExchangeError::Transport { code: 0, message: other.to_string() },
             },
         }

@@ -31,66 +31,66 @@ pub struct TrustedChannel {
 #[derive(Debug, Clone, Error)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Error))]
 pub enum TrustedChannelError {
-    #[error("{message} (code {code})")]
-    Transport { code: u32, message: String },
+    #[error("{reason} (code {code})")]
+    Transport { code: u32, reason: String },
     #[error("unexpected card status: {status}")]
     UnexpectedStatus { status: String },
     #[error("card reported status: {status}")]
     Status { status: String },
-    #[error("PACE info error: {message}")]
-    PaceInfo { message: String },
-    #[error("crypto error: {message}")]
-    Crypto { message: String },
-    #[error("ASN.1 decode error: {message}")]
-    Asn1Decode { message: String },
-    #[error("ASN.1 encode error: {message}")]
-    Asn1Encode { message: String },
-    #[error("GENERAL AUTHENTICATE command error: {message}")]
-    GeneralAuthenticateCommand { message: String },
-    #[error("MANAGE SECURITY ENVIRONMENT command error: {message}")]
-    ManageSecurityEnvironmentCommand { message: String },
-    #[error("command composition error: {message}")]
-    Command { message: String },
-    #[error("pin block error: {message}")]
-    PinBlock { message: String },
+    #[error("PACE info error: {reason}")]
+    PaceInfo { reason: String },
+    #[error("crypto error: {reason}")]
+    Crypto { reason: String },
+    #[error("ASN.1 decode error: {reason}")]
+    Asn1Decode { reason: String },
+    #[error("ASN.1 encode error: {reason}")]
+    Asn1Encode { reason: String },
+    #[error("GENERAL AUTHENTICATE command error: {reason}")]
+    GeneralAuthenticateCommand { reason: String },
+    #[error("MANAGE SECURITY ENVIRONMENT command error: {reason}")]
+    ManageSecurityEnvironmentCommand { reason: String },
+    #[error("command composition error: {reason}")]
+    Command { reason: String },
+    #[error("pin block error: {reason}")]
+    PinBlock { reason: String },
     #[error("unsupported health-card version")]
     InvalidCardVersion,
-    #[error("invalid argument: {message}")]
-    InvalidArgument { message: String },
+    #[error("invalid argument: {reason}")]
+    InvalidArgument { reason: String },
     #[error("mutual authentication failed")]
     MutualAuthenticationFailed,
-    #[error("apdu error: {message}")]
-    Apdu { message: String },
+    #[error("apdu error: {reason}")]
+    Apdu { reason: String },
 }
 
 impl TrustedChannelError {
     fn apdu(err: ApduError) -> Self {
-        TrustedChannelError::Apdu { message: err.to_string() }
+        TrustedChannelError::Apdu { reason: err.to_string() }
     }
 }
 
 impl From<ExchangeError> for TrustedChannelError {
     fn from(err: ExchangeError) -> Self {
         match err {
-            ExchangeError::Transport { code, message } => Self::Transport { code, message },
+            ExchangeError::Transport { code, message } => Self::Transport { code, reason: message },
             ExchangeError::UnexpectedStatus { status } => Self::UnexpectedStatus { status: status.to_string() },
             ExchangeError::Status(status) => Self::Status { status: status.to_string() },
-            ExchangeError::PaceInfo(inner) => Self::PaceInfo { message: inner.to_string() },
-            ExchangeError::Crypto(inner) => Self::Crypto { message: inner.to_string() },
-            ExchangeError::Asn1DecoderError(inner) => Self::Asn1Decode { message: inner.to_string() },
-            ExchangeError::Asn1EncoderError(inner) => Self::Asn1Encode { message: inner.to_string() },
+            ExchangeError::PaceInfo(inner) => Self::PaceInfo { reason: inner.to_string() },
+            ExchangeError::Crypto(inner) => Self::Crypto { reason: inner.to_string() },
+            ExchangeError::Asn1DecoderError(inner) => Self::Asn1Decode { reason: inner.to_string() },
+            ExchangeError::Asn1EncoderError(inner) => Self::Asn1Encode { reason: inner.to_string() },
             ExchangeError::GeneralAuthenticateCommand(inner) => {
-                Self::GeneralAuthenticateCommand { message: inner.to_string() }
+                Self::GeneralAuthenticateCommand { reason: inner.to_string() }
             }
             ExchangeError::ManageSecurityEnvironmentCommand(inner) => {
-                Self::ManageSecurityEnvironmentCommand { message: inner.to_string() }
+                Self::ManageSecurityEnvironmentCommand { reason: inner.to_string() }
             }
-            ExchangeError::Command(inner) => Self::Command { message: inner.to_string() },
-            ExchangeError::PinBlock(inner) => Self::PinBlock { message: inner.to_string() },
+            ExchangeError::Command(inner) => Self::Command { reason: inner.to_string() },
+            ExchangeError::PinBlock(inner) => Self::PinBlock { reason: inner.to_string() },
             ExchangeError::InvalidCardVersion => Self::InvalidCardVersion,
-            ExchangeError::InvalidArgument(message) => Self::InvalidArgument { message: message.to_string() },
+            ExchangeError::InvalidArgument(reason) => Self::InvalidArgument { reason: reason.to_string() },
             ExchangeError::MutualAuthenticationFailed => Self::MutualAuthenticationFailed,
-            ExchangeError::Apdu(inner) => Self::Apdu { message: inner.to_string() },
+            ExchangeError::Apdu(inner) => Self::Apdu { reason: inner.to_string() },
         }
     }
 }
@@ -111,7 +111,7 @@ impl TrustedChannel {
         let mut guard = self
             .inner
             .lock()
-            .map_err(|_| TrustedChannelError::Transport { code: 0, message: "Failed to acquire lock".to_string() })?;
+            .map_err(|_| TrustedChannelError::Transport { code: 0, reason: "Failed to acquire lock".to_string() })?;
         Ok(guard.channel().supports_extended_length())
     }
 
@@ -119,7 +119,7 @@ impl TrustedChannel {
         let mut guard = self
             .inner
             .lock()
-            .map_err(|_| TrustedChannelError::Transport { code: 0, message: "Failed to acquire lock".to_string() })?;
+            .map_err(|_| TrustedChannelError::Transport { code: 0, reason: "Failed to acquire lock".to_string() })?;
         let command = CardCommandApdu::from_bytes(command.as_ref()).map_err(TrustedChannelError::apdu)?;
         let response = guard.transmit(&command).map_err(TrustedChannelError::from)?;
         Ok(response.bytes().to_vec())
