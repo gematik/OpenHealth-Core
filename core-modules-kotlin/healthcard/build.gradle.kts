@@ -73,7 +73,7 @@ val cargoTargetDir = layout.buildDirectory.dir("cargo")
 val rustLibrary = cargoTargetDir.map { it.dir("release").file(nativeLibraryFileName) }
 val generatedKotlinDir = layout.buildDirectory.dir("generated/uniffi/kotlin")
 val generatedResourcesDir = layout.buildDirectory.dir("generated/uniffi/resources")
-val nativeResourceDir = layout.buildDirectory.dir("generated/uniffi/resources/native/$nativePlatformId")
+val nativeResourceDir = layout.buildDirectory.dir("generated/uniffi/resources/$nativePlatformId")
 
 val uniffiVersion = "0.30.0"
 
