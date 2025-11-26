@@ -20,7 +20,7 @@
 # find details in the "Readme" file.
 
 [package]
-name = "health-card"
+name = "healthcard"
 version = "0.1.0"
 edition = "2021"
 license = "Apache-2.0"

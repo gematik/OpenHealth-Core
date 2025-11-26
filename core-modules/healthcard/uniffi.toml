@@ -1,0 +1,3 @@
+[bindings.kotlin]
+package_name = "de.gematik.openhealth.healthcard"
+cdylib_name = "healthcard"

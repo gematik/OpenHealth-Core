@@ -21,7 +21,7 @@
 
 use thiserror::Error;
 
-/// Errors raised while composing health-card commands prior to transmission.
+/// Errors raised while composing healthcard commands prior to transmission.
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
 pub enum CommandError {
     /// The supplied offset exceeds the allowed range for READ BINARY operations.

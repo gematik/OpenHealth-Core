@@ -53,7 +53,7 @@ pub enum TrustedChannelError {
     Command { reason: String },
     #[error("pin block error: {reason}")]
     PinBlock { reason: String },
-    #[error("unsupported health-card version")]
+    #[error("unsupported healthcard version")]
     InvalidCardVersion,
     #[error("invalid argument: {reason}")]
     InvalidArgument { reason: String },

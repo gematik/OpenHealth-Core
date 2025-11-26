@@ -31,7 +31,7 @@ use asn1::error::Asn1EncoderError;
 use crypto::error::CryptoError;
 use thiserror::Error;
 
-/// Error type for higher-level health-card exchanges.
+/// Error type for higher-level healthcard exchanges.
 #[derive(Debug, Error)]
 pub enum ExchangeError {
     /// Transport layer failure while transmitting an APDU.
@@ -70,7 +70,7 @@ pub enum ExchangeError {
     #[error("pin block error: {0}")]
     PinBlock(#[from] PinBlockError),
     /// Card version did not meet the required baseline (e.g. not eGK v2.1).
-    #[error("unsupported health-card version")]
+    #[error("unsupported healthcard version")]
     InvalidCardVersion,
     /// Caller supplied invalid arguments (e.g. missing new PIN for a change operation).
     #[error("invalid argument: {0}")]

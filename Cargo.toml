@@ -24,7 +24,7 @@ members = [
     "core-modules/asn1",
     "core-modules/crypto",
     "core-modules/crypto-openssl-sys",
-    "core-modules/health-card",
+    "core-modules/healthcard",
 ]
 resolver = "2"
 [workspace.package]

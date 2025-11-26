@@ -1,8 +1,8 @@
 package de.gematik.openhealth.sample
 
-import uniffi.health_card.CardChannel
-import uniffi.health_card.CardChannelException
-import uniffi.health_card.TrustedChannelException
+import de.gematik.openhealth.healthcard.CardChannel
+import de.gematik.openhealth.healthcard.CardChannelException
+import de.gematik.openhealth.healthcard.TrustedChannelException
 import javax.smartcardio.CardChannel as PcscChannel
 import javax.smartcardio.CardException
 import javax.smartcardio.CommandAPDU

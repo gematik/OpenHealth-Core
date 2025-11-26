@@ -9,6 +9,7 @@ import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.internal.os.OperatingSystem
+import org.gradle.kotlin.dsl.support.serviceOf
 import org.gradle.process.ExecOperations
 import java.io.File
 import javax.inject.Inject
@@ -33,6 +34,7 @@ tasks.test {
 }
 
 val rustCrateDir = rootProject.layout.projectDirectory.dir("../core-modules/health-card")
+val uniffiConfigFile = rustCrateDir.file("uniffi.toml")
 val crateName = "health-card"
 val crateLibName = crateName.replace("-", "_")
 val os = OperatingSystem.current()
@@ -134,7 +136,8 @@ val generateUniFfiBindings = tasks.register("generateHealthCardUniFfiBindings") 
             deleteRecursively()
             mkdirs()
         }
-        exec {
+        val execOperations = project.serviceOf<ExecOperations>()
+        execOperations.exec {
             environment(cargoEnvironment)
             commandLine(
                 cargoExecutableProvider.get(),
@@ -148,6 +151,8 @@ val generateUniFfiBindings = tasks.register("generateHealthCardUniFfiBindings") 
                 "uniffi-bindgen",
                 "--",
                 "generate",
+                "--config",
+                uniffiConfigFile.asFile.absolutePath,
                 "--library",
                 libFile.absolutePath,
                 "--language",

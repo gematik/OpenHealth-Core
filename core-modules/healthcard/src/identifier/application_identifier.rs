@@ -28,7 +28,7 @@ const AID_MIN_LENGTH: usize = 5;
 /// Maximum valid length for ApplicationIdentifier
 const AID_MAX_LENGTH: usize = 16;
 
-/// An application identifier (AID) is used to address an application on the health-card
+/// An application identifier (AID) is used to address an application on the healthcard
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ApplicationIdentifier {
     /// The Application Identifier value

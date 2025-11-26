@@ -519,7 +519,7 @@ impl Default for CardCommandApduBuilder {
     }
 }
 
-/// Represents a response APDU (Application Protocol Data Unit) received from a smart health-card,
+/// Represents a response APDU (Application Protocol Data Unit) received from a smart healthcard,
 /// as defined by ISO/IEC 7816-4.
 #[derive(Clone, Eq, PartialEq)]
 pub struct CardResponseApdu {

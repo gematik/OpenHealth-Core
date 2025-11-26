@@ -1,6 +1,6 @@
 package de.gematik.openhealth.sample
 
-import uniffi.health_card.establishTrustedChannel
+import de.gematik.openhealth.healthcard.establishTrustedChannel
 import javax.smartcardio.Card
 import javax.smartcardio.CardTerminals
 import javax.smartcardio.TerminalFactory
