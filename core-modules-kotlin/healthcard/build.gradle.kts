@@ -21,7 +21,7 @@ plugins {
 group = "de.gematik.openhealth.healthcard"
 
 kotlin {
-    jvmToolchain(23)
+    jvmToolchain(21)
 }
 
 dependencies {
@@ -33,13 +33,20 @@ tasks.test {
     useJUnitPlatform()
 }
 
-val rustCrateDir = rootProject.layout.projectDirectory.dir("../core-modules/health-card")
+val rustCrateDir = rootProject.layout.projectDirectory.dir("../core-modules/healthcard")
 val uniffiConfigFile = rustCrateDir.file("uniffi.toml")
-val crateName = "health-card"
+val crateName = "healthcard"
 val crateLibName = crateName.replace("-", "_")
 val os = OperatingSystem.current()
 val cargoExecutableProvider = providers.systemProperty("healthcard.cargoPath")
     .orElse(providers.environmentVariable("CARGO"))
+    .orElse(
+        providers.provider {
+            val cargoHome = System.getenv("CARGO_HOME")?.let(::File)
+            val defaultHome = cargoHome ?: File(System.getProperty("user.home")).resolve(".cargo")
+            defaultHome.resolve("bin/cargo").absolutePath
+        }
+    )
     .orElse("cargo")
 
 fun determineResourceId(os: OperatingSystem): String {
@@ -72,7 +79,8 @@ val nativeLibPrefix = if (os.isWindows) "" else "lib"
 val nativeLibraryFileName = "${nativeLibPrefix}${crateLibName}.${nativeLibExtension}"
 
 val cargoTargetDir = layout.buildDirectory.dir("cargo")
-val rustLibrary = cargoTargetDir.map { it.dir("release").file(nativeLibraryFileName) }
+// Use debug profile so we can step through Rust code more easily
+val rustLibrary = cargoTargetDir.map { it.dir("debug").file(nativeLibraryFileName) }
 val generatedKotlinDir = layout.buildDirectory.dir("generated/uniffi/kotlin")
 val generatedResourcesDir = layout.buildDirectory.dir("generated/uniffi/resources")
 val nativeResourceDir = layout.buildDirectory.dir("generated/uniffi/resources/$nativePlatformId")
@@ -104,7 +112,22 @@ val uniffiCliManifest = objects.fileProperty().also { property ->
     property.set(manifest)
 }
 
-val cargoEnvironment = mapOf("CARGO_TARGET_DIR" to cargoTargetDir.get().asFile.absolutePath)
+val cargoEnvironment = run {
+    val cargoHome = System.getenv("CARGO_HOME")?.let(::File)
+    val defaultHome = cargoHome ?: File(System.getProperty("user.home")).resolve(".cargo")
+    val cargoBinDir = defaultHome.resolve("bin")
+    val currentPath = System.getenv("PATH") ?: ""
+    val pathWithCargo = if (cargoBinDir.isDirectory) {
+        cargoBinDir.absolutePath + File.pathSeparator + currentPath
+    } else {
+        currentPath
+    }
+
+    mapOf(
+        "CARGO_TARGET_DIR" to cargoTargetDir.get().asFile.absolutePath,
+        "PATH" to pathWithCargo
+    )
+}
 
 val buildHealthCardRust = tasks.register<Exec>("buildHealthCardRust") {
     workingDir = rustCrateDir.asFile
@@ -113,8 +136,7 @@ val buildHealthCardRust = tasks.register<Exec>("buildHealthCardRust") {
         cargoExecutableProvider.get(),
         "build",
         "--manifest-path",
-        rustCrateDir.file("Cargo.toml").asFile.absolutePath,
-        "--release"
+        rustCrateDir.file("Cargo.toml").asFile.absolutePath
     )
     inputs.dir(rustCrateDir)
     outputs.file(rustLibrary)

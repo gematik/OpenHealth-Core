@@ -6,7 +6,7 @@ plugins {
 group = "de.gematik.openhealth.sample"
 
 kotlin {
-    jvmToolchain(23)
+    jvmToolchain(21)
     compilerOptions {
         freeCompilerArgs.add("-Xadd-modules=java.smartcardio")
     }
