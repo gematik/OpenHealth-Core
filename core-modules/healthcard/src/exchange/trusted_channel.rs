@@ -653,16 +653,10 @@ mod tests {
         );
     }
 
-    fn scope_with_ssc(value: u8) -> TrustedChannel<DummySession> {
-        let mut scope = make_channel();
-        scope.ssc[15] = value;
-        scope
-    }
-
     #[test]
     fn decrypt_do99_only() {
         let response = CardResponseApdu::new(&hex::decode("990290008E08087631D746F872729000").unwrap()).unwrap();
-        let mut scope = scope_with_ssc(1);
+        let mut scope = make_channel();
         let plain = scope.decrypt(response).unwrap();
         assert_eq!(hex::encode_upper(plain.bytes()), "9000");
     }
@@ -673,7 +667,7 @@ mod tests {
             &hex::decode("871101496C26D36306679609665A385C54DB37990290008E08B7E9ED2A0C89FB3A9000").unwrap(),
         )
         .unwrap();
-        let mut scope = scope_with_ssc(1);
+        let mut scope = make_channel();
         let plain = scope.decrypt(response).unwrap();
         assert_eq!(hex::encode_upper(plain.bytes()), "05060708090A9000");
     }
