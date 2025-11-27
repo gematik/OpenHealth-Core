@@ -21,12 +21,14 @@ For additional notes and disclaimer from gematik and in case of changes by gemat
 find details in the "Readme" file.
 -->
 
-# Release Notes
+# Documentation Overview
 
-This document summarizes the publicly released versions of OpenHealth Core.
+This directory contains documentation for OpenHealth-Core, including interoperability notes and other project-specific guides.
 
-## Change Log
+## Interoperability
 
-### LATEST
+Interoperability-related notes live under `interop/`:
 
-- Initial release.
+- [`JVM interoperability and debugging`](interop/jvm.md) – Debugging and interoperability notes for JVM targets (Java, Kotlin).
+
+As additional documentation areas (e.g. architecture, APIs, deployment) are added under `docs/`, they should be organized into subdirectories and referenced from this overview.

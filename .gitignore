@@ -20,7 +20,7 @@
 # find details in the "Readme" file.
 
 # Rust specific ignores
-/target/
+target/
 **/*.rs.bk
 Cargo.lock
 .cargo/

@@ -25,6 +25,10 @@ find details in the "Readme" file.
 
 Getting things started.
 
+## Documentation
+
+See [docs/README.md](docs/README.md).
+
 ## License
 <!--REUSE-IgnoreStart-->
 Copyright 2025 gematik GmbH
