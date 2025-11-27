@@ -25,3 +25,8 @@ version = 1
 path = ["*"]
 SPDX-FileCopyrightText = "2025 gematik GmbH"
 SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = ["core-modules-kotlin/gradle/wrapper/*"]
+SPDX-FileCopyrightText = "NONE"
+SPDX-License-Identifier = "CC0-1.0"
