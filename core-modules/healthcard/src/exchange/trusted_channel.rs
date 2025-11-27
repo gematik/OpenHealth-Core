@@ -500,20 +500,16 @@ fn parse_response_objects(data: &[u8]) -> Result<ResponseObjects, ExchangeError>
                 }
                 0x19 => {
                     let length = value.len();
-                    let array: [u8; 2] =
-                        value.try_into().map_err(|_| Asn1DecoderError::InvalidLength { length })?;
+                    let array: [u8; 2] = value.try_into().map_err(|_| Asn1DecoderError::InvalidLength { length })?;
                     status_bytes = Some(array);
                 }
                 0x0E => {
                     let length = value.len();
-                    let array: [u8; 8] =
-                        value.try_into().map_err(|_| Asn1DecoderError::InvalidLength { length })?;
+                    let array: [u8; 8] = value.try_into().map_err(|_| Asn1DecoderError::InvalidLength { length })?;
                     mac_bytes = Some(array);
                 }
                 other => {
-                    return Err(Asn1DecoderError::custom(format!(
-                        "unexpected secure messaging tag 0x{other:02X}"
-                    )))
+                    return Err(Asn1DecoderError::custom(format!("unexpected secure messaging tag 0x{other:02X}")))
                 }
             }
         }
