@@ -20,13 +20,13 @@
 // find details in the "Readme" file.
 
 use super::pace_info::PaceInfoError;
-use crate::asn1::error::Asn1DecoderError;
 use crate::card::encrypted_pin_format2::PinBlockError;
 use crate::command::apdu::ApduError;
 use crate::command::general_authenticate_command::GeneralAuthenticateCommandError;
 use crate::command::health_card_status::HealthCardResponseStatus;
 use crate::command::manage_security_environment_command::ManageSecurityEnvironmentCommandError;
 use crate::command::CommandError;
+use asn1::error::Asn1DecoderError;
 use asn1::error::Asn1EncoderError;
 use crypto::error::CryptoError;
 use thiserror::Error;
@@ -74,7 +74,7 @@ pub enum ExchangeError {
     InvalidCardVersion,
     /// Caller supplied invalid arguments (e.g. missing new PIN for a change operation).
     #[error("invalid argument: {0}")]
-    InvalidArgument(&'static str),
+    InvalidArgument(String),
     /// Mutual authentication during PACE failed (MAC mismatch).
     #[error("mutual authentication failed")]
     MutualAuthenticationFailed,
@@ -87,5 +87,9 @@ impl ExchangeError {
 
     pub fn status(status: HealthCardResponseStatus) -> Self {
         ExchangeError::Status(status)
+    }
+
+    pub fn invalid_argument(message: impl Into<String>) -> Self {
+        ExchangeError::InvalidArgument(message.into())
     }
 }

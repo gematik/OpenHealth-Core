@@ -19,7 +19,7 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use crate::command::health_card_command::HealthCardCommand;
+use crate::command::health_card_command::{ExpectedLength, HealthCardCommand};
 use crate::command::health_card_status::GET_RANDOM_VALUES_STATUS;
 
 /// CLA byte for the GET RANDOM VALUES command
@@ -51,15 +51,15 @@ pub trait GetRandomValuesCommand {
 
 impl GetRandomValuesCommand for HealthCardCommand {
     fn get_random_values(length: usize) -> HealthCardCommand {
-        HealthCardCommand {
-            expected_status: GET_RANDOM_VALUES_STATUS.clone(),
-            cla: CLA,
-            ins: INS,
-            p1: NO_MEANING,
-            p2: NO_MEANING,
-            data: None,
-            ne: Some(length),
-        }
+        HealthCardCommand::new(
+            GET_RANDOM_VALUES_STATUS.clone(),
+            CLA,
+            INS,
+            NO_MEANING,
+            NO_MEANING,
+            None,
+            Some(ExpectedLength::Exact(length)),
+        )
     }
 }
 
@@ -76,7 +76,7 @@ mod tests {
         assert_eq!(cmd.p1, NO_MEANING);
         assert_eq!(cmd.p2, NO_MEANING);
         assert_eq!(cmd.data, None);
-        assert_eq!(cmd.ne, Some(8));
+        assert_eq!(cmd.ne, Some(ExpectedLength::Exact(8)));
 
         let cmd = HealthCardCommand::get_random_values(16);
         assert_eq!(cmd.cla, CLA);
@@ -84,6 +84,6 @@ mod tests {
         assert_eq!(cmd.p1, NO_MEANING);
         assert_eq!(cmd.p2, NO_MEANING);
         assert_eq!(cmd.data, None);
-        assert_eq!(cmd.ne, Some(16));
+        assert_eq!(cmd.ne, Some(ExpectedLength::Exact(16)));
     }
 }

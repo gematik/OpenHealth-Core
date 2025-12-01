@@ -19,17 +19,85 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use crate::error::CryptoResult;
+use crate::error::{CryptoError, CryptoResult};
 use crate::key::SecretKey;
 use crate::ossl;
-use crate::utils::byte_unit::{ByteUnit, BytesExt};
-use zeroize::Zeroizing;
+use core::fmt;
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 struct MlkemSecret;
 
 pub type MlkemSharedSecret = SecretKey;
-pub type MlkemWrappedKey = Vec<u8>;
-pub type MlkemEncapsulationKey = Vec<u8>;
+
+/// Wrapped KEM key produced by encapsulation.
+#[derive(Zeroize, ZeroizeOnDrop, PartialEq, Eq)]
+pub struct MlkemWrappedKey {
+    bytes: Vec<u8>,
+}
+
+impl fmt::Debug for MlkemWrappedKey {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("MlkemWrappedKey").field("len", &self.bytes.len()).finish()
+    }
+}
+
+impl MlkemWrappedKey {
+    pub fn new(bytes: impl Into<Vec<u8>>) -> CryptoResult<Self> {
+        let bytes = bytes.into();
+        if bytes.is_empty() {
+            return Err(CryptoError::InvalidKeyMaterial { context: "wrapped key must not be empty" });
+        }
+        Ok(Self { bytes })
+    }
+
+    pub fn into_inner(self) -> Vec<u8> {
+        self.bytes.clone()
+    }
+}
+
+impl AsRef<[u8]> for MlkemWrappedKey {
+    fn as_ref(&self) -> &[u8] {
+        &self.bytes
+    }
+}
+
+impl TryFrom<Vec<u8>> for MlkemWrappedKey {
+    type Error = CryptoError;
+    fn try_from(value: Vec<u8>) -> Result<Self, Self::Error> {
+        MlkemWrappedKey::new(value)
+    }
+}
+
+/// Public encapsulation key.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MlkemEncapsulationKey(Vec<u8>);
+
+impl MlkemEncapsulationKey {
+    pub fn new(bytes: impl Into<Vec<u8>>) -> CryptoResult<Self> {
+        let bytes = bytes.into();
+        if bytes.is_empty() {
+            return Err(CryptoError::InvalidKeyMaterial { context: "encapsulation key must not be empty" });
+        }
+        Ok(Self(bytes))
+    }
+
+    pub fn into_inner(self) -> Vec<u8> {
+        self.0
+    }
+}
+
+impl AsRef<[u8]> for MlkemEncapsulationKey {
+    fn as_ref(&self) -> &[u8] {
+        &self.0
+    }
+}
+
+impl TryFrom<Vec<u8>> for MlkemEncapsulationKey {
+    type Error = CryptoError;
+    fn try_from(value: Vec<u8>) -> Result<Self, Self::Error> {
+        MlkemEncapsulationKey::new(value)
+    }
+}
 
 /// ML-KEM parameter sets.
 #[derive(Debug, Clone)]
@@ -71,7 +139,7 @@ impl MlkemEncapsulator {
     /// Perform KEM encapsulation, returning `(wrapped_key, shared_secret)`.
     pub fn encapsulate(&self) -> CryptoResult<(MlkemWrappedKey, MlkemSharedSecret)> {
         let (wrapped, secret) = self.enc.encapsulate()?;
-        Ok((MlkemWrappedKey::from(wrapped), MlkemSharedSecret::new_secret(secret)))
+        Ok((MlkemWrappedKey::new(wrapped)?, MlkemSharedSecret::new_secret(secret)))
     }
 }
 
@@ -90,7 +158,7 @@ impl MlkemDecapsulator {
 
     /// Export the public (encapsulation) key corresponding to this decapsulator.
     pub fn public_key(&self) -> CryptoResult<MlkemEncapsulationKey> {
-        Ok(self.dec.get_encapsulation_key()?)
+        MlkemEncapsulationKey::new(self.dec.get_encapsulation_key()?)
     }
 }
 

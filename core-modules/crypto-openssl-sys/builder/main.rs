@@ -74,8 +74,13 @@ fn build_openssl() {
     let src = manifest.join("openssl-src");
     let install = manifest.join(format!("openssl-{}", openssl_target));
 
+    let has_git = src.join(".git").exists();
+    let git_matches = has_git && current_git_head(&src).map(|rev| rev == OPENSSL_VERSION).unwrap_or(false);
+    // Allow reuse of a pre-fetched source tree (with or without .git) to avoid network access.
+    let have_local_checkout = git_matches || (src.exists() && !has_git);
+
     // Clean & prepare
-    if src.exists() {
+    if !have_local_checkout && src.exists() {
         fs::remove_dir_all(&src).unwrap_or_else(|e| eprintln!("Warning: Failed to remove src dir: {}", e));
     }
     if install.exists() {
@@ -83,9 +88,11 @@ fn build_openssl() {
     }
     fs::create_dir_all(&install).unwrap();
 
-    // Clone & checkout
-    run_command("git", &["clone", "https://github.com/openssl/openssl.git", src.to_str().unwrap()], None);
-    run_command("git", &["checkout", OPENSSL_VERSION], Some(&src));
+    // Clone & checkout (skip if local checkout already matches target rev)
+    if !have_local_checkout {
+        run_command("git", &["clone", "https://github.com/openssl/openssl.git", src.to_str().unwrap()], None);
+        run_command("git", &["checkout", OPENSSL_VERSION], Some(&src));
+    }
 
     // Configure
     let configure_args = [
@@ -203,4 +210,13 @@ fn locate_openssl_lib_dir(install_root: &Path) -> PathBuf {
     }
 
     panic!("OpenSSL install directory at '{}' has no lib or lib64 directory", install_root.display());
+}
+
+fn current_git_head(repo: &Path) -> Option<String> {
+    let output = Command::new("git").arg("rev-parse").arg("HEAD").current_dir(repo).output().ok()?;
+    if !output.status.success() {
+        return None;
+    }
+    let head = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    Some(head)
 }

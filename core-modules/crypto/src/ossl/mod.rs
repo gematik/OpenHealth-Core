@@ -27,3 +27,4 @@ pub(crate) mod ec;
 mod key;
 pub(crate) mod mac;
 pub(crate) mod mlkem;
+pub(crate) mod constant_time;

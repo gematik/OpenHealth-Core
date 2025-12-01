@@ -31,8 +31,4 @@ pub enum CommandError {
     /// The supplied offset with SFI exceeds the allowed range.
     #[error("offset {offset} outside allowed SFI range 0..={max}")]
     SfiOffsetOutOfRange { offset: i32, max: i32 },
-
-    /// Expected length was negative (other than the wildcard -1).
-    #[error("expected length must be >= 0 or the wildcard -1, got {length}")]
-    InvalidExpectedLength { length: i32 },
 }

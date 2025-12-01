@@ -19,16 +19,12 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
+use super::channel::{CardChannel, CardChannelExt};
 use super::error::ExchangeError;
 use super::ids;
 use super::pace_info::parse_pace_info;
-use super::session::{CardChannel, CardChannelExt};
-use crate::asn1::decoder::Asn1Decoder;
-use crate::asn1::encoder::Asn1Encoder;
-use crate::asn1::error::Asn1DecoderError;
-use crate::asn1::tag::{Asn1Class, Asn1Id};
 use crate::card::health_card_version2::parse_health_card_version2;
-use crate::card::pace_key::{get_aes128_key, Mode, PaceKey};
+use crate::card::pace_key::{get_aes128_key, Mode};
 use crate::command::apdu::{
     CardCommandApdu, CardResponseApdu, EXPECTED_LENGTH_WILDCARD_EXTENDED, EXPECTED_LENGTH_WILDCARD_SHORT,
 };
@@ -37,21 +33,59 @@ use crate::command::health_card_command::HealthCardCommand;
 use crate::command::manage_security_environment_command::ManageSecurityEnvironmentCommand;
 use crate::command::read_command::ReadCommand;
 use crate::command::select_command::SelectCommand;
+use asn1::decoder::{Asn1Decoder, Asn1Length};
+use asn1::encoder::Asn1Encoder;
+use asn1::error::Asn1DecoderError;
 use asn1::error::Asn1EncoderError;
+use asn1::oid::ObjectIdentifier;
+use asn1::tag::{Asn1Class, Asn1Id};
 use crypto::cipher::aes::{AesCipherSpec, AesDecipherSpec, Cipher, Iv, Padding};
 use crypto::ec::ec_key::{EcCurve, EcKeyPairSpec, EcPrivateKey, EcPublicKey};
 use crypto::error::CryptoError;
 use crypto::key::SecretKey;
 use crypto::mac::{CmacAlgorithm, MacSpec};
+use crypto::utils::constant_time::content_constant_time_equals;
 use num_bigint::{BigInt, Sign};
 use std::convert::{TryFrom, TryInto};
 use thiserror::Error;
+use zeroize::{Zeroize, ZeroizeOnDrop};
+
+#[derive(Debug, Zeroize, ZeroizeOnDrop)]
+pub struct CardAccessNumber([u8; 6]);
+
+impl CardAccessNumber {
+    pub fn new(value: &str) -> Result<Self, ExchangeError> {
+        if value.len() != 6 || !value.as_bytes().iter().all(|b| b.is_ascii_digit()) {
+            return Err(ExchangeError::invalid_argument("CAN must be 6 decimal digits"));
+        }
+        let mut digits = [0u8; 6];
+        digits.copy_from_slice(value.as_bytes());
+        Ok(Self(digits))
+    }
+
+    pub fn from_digits(digits: [u8; 6]) -> Result<Self, ExchangeError> {
+        let can = Self(digits);
+        can.validate()?;
+        Ok(can)
+    }
+
+    pub fn validate(&self) -> Result<(), ExchangeError> {
+        if !self.0.iter().all(|b| b.is_ascii_digit()) {
+            return Err(ExchangeError::invalid_argument("CAN must be ASCII digits"));
+        }
+        Ok(())
+    }
+
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.0
+    }
+}
 
 /// Trusted channel scope holding the negotiated PACE keys.
 pub struct TrustedChannel<S: CardChannel> {
     channel: S,
-    pace_key: PaceKey,
-    ssc: [u8; 16],
+    pace_key: PaceChannelKeys,
+    ssc: SendSequenceCounter,
 }
 
 /// Error type returned by the trusted-channel session wrapper.
@@ -79,12 +113,61 @@ impl From<TrustedChannelError> for ExchangeError {
     }
 }
 
-impl<S: CardChannel> TrustedChannel<S> {
-    /// Access the established PACE keys.
-    pub fn pace_key(&self) -> &PaceKey {
-        &self.pace_key
+#[derive(Debug, Zeroize, ZeroizeOnDrop)]
+struct PaceEncryptionKey(SecretKey);
+
+#[derive(Debug, Zeroize, ZeroizeOnDrop)]
+struct PaceMacKey(SecretKey);
+
+#[derive(Debug, Zeroize, ZeroizeOnDrop)]
+struct PaceChannelKeys {
+    encryption: PaceEncryptionKey,
+    mac: PaceMacKey,
+}
+
+impl PaceChannelKeys {
+    fn new(encryption: SecretKey, mac: SecretKey) -> Self {
+        Self { encryption: PaceEncryptionKey(encryption), mac: PaceMacKey(mac) }
     }
 
+    fn encryption(&self) -> &SecretKey {
+        &self.encryption.0
+    }
+
+    fn mac(&self) -> &SecretKey {
+        &self.mac.0
+    }
+}
+
+#[derive(Clone, Debug, Zeroize, ZeroizeOnDrop)]
+struct SendSequenceCounter([u8; 16]);
+
+impl SendSequenceCounter {
+    fn new(value: [u8; 16]) -> Self {
+        Self(value)
+    }
+
+    fn as_bytes(&self) -> &[u8] {
+        &self.0
+    }
+
+    fn to_vec(&self) -> Vec<u8> {
+        self.0.to_vec()
+    }
+
+    fn increment(&mut self) -> [u8; 16] {
+        for byte in self.0.iter_mut().rev() {
+            let (new, carry) = byte.overflowing_add(1);
+            *byte = new;
+            if !carry {
+                break;
+            }
+        }
+        self.0
+    }
+}
+
+impl<S: CardChannel> TrustedChannel<S> {
     pub fn channel(&mut self) -> &S {
         &self.channel
     }
@@ -97,7 +180,7 @@ impl<S: CardChannel> TrustedChannel<S> {
         let header = secure_header(command);
 
         let mut command_body = Vec::new();
-        if let Some(data) = command.data_ref() {
+        if let Some(data) = command.as_data() {
             let ciphertext = encrypt_data(self.pace_key.encryption(), &ssc, data)?;
             let mut value = Vec::with_capacity(ciphertext.len() + 1);
             value.push(0x01);
@@ -117,32 +200,29 @@ impl<S: CardChannel> TrustedChannel<S> {
         let do8e = encode_context_specific(0x0E, &mac)?;
         command_body.extend_from_slice(&do8e);
 
-        let mut builder =
-            CardCommandApdu::builder().cla(header[0]).ins(header[1]).p1(header[2]).p2(header[3]).data(command_body);
-
         let ne =
             if expected_length.is_some() { EXPECTED_LENGTH_WILDCARD_EXTENDED } else { EXPECTED_LENGTH_WILDCARD_SHORT };
 
-        builder = builder.expected_length(ne);
-        builder.build().map_err(ExchangeError::Apdu)
+        CardCommandApdu::new(header[0], header[1], header[2], header[3], Some(command_body), Some(ne))
+            .map_err(ExchangeError::Apdu)
     }
 
     /// Decrypt and verify a secure messaging response.
     pub fn decrypt(&mut self, response: CardResponseApdu) -> Result<CardResponseApdu, ExchangeError> {
-        let bytes = response.bytes();
+        let bytes = response.into_bytes();
         if bytes.len() < 4 {
-            return Err(ExchangeError::InvalidArgument("response apdu too short"));
+            return Err(ExchangeError::invalid_argument("response apdu too short"));
         }
 
         let (body, sw_bytes) = bytes.split_at(bytes.len() - 2);
         if body.is_empty() {
-            return Err(ExchangeError::InvalidArgument("response apdu missing secure messaging data objects"));
+            return Err(ExchangeError::invalid_argument("response apdu missing secure messaging data objects"));
         }
 
         let ssc = self.increment_ssc();
         let response_objects = parse_response_objects(body)?;
         if response_objects.status_bytes != [sw_bytes[0], sw_bytes[1]] {
-            return Err(ExchangeError::InvalidArgument("status mismatch between DO99 and response"));
+            return Err(ExchangeError::invalid_argument("status mismatch between DO99 and response"));
         }
 
         let ResponseObjects { data_object, status_bytes, mac_bytes } = response_objects;
@@ -155,7 +235,7 @@ impl<S: CardChannel> TrustedChannel<S> {
         mac_payload.extend_from_slice(&do99);
 
         let mac = compute_mac(self.pace_key.mac(), &ssc, &[], &mac_payload)?;
-        if mac != mac_bytes {
+        if !content_constant_time_equals(&mac, &mac_bytes) {
             return Err(ExchangeError::MutualAuthenticationFailed);
         }
 
@@ -164,7 +244,7 @@ impl<S: CardChannel> TrustedChannel<S> {
             if data_object.is_encrypted() {
                 let data = data_object.data();
                 if data.is_empty() || data[0] != 0x01 {
-                    return Err(ExchangeError::InvalidArgument("invalid DO87 value"));
+                    return Err(ExchangeError::invalid_argument("invalid DO87 value"));
                 }
                 let ciphertext = &data[1..];
                 let decrypted = decrypt_data(self.pace_key.encryption(), &ssc, ciphertext)?;
@@ -180,14 +260,7 @@ impl<S: CardChannel> TrustedChannel<S> {
     }
 
     fn increment_ssc(&mut self) -> [u8; 16] {
-        for byte in self.ssc.iter_mut().rev() {
-            let (new, carry) = byte.overflowing_add(1);
-            *byte = new;
-            if !carry {
-                break;
-            }
-        }
-        self.ssc
+        self.ssc.increment()
     }
 }
 
@@ -206,7 +279,10 @@ impl<S: CardChannel> CardChannel for TrustedChannel<S> {
 }
 
 /// Establish a PACE channel using random key material generated via `EcKeyPairSpec`.
-pub fn establish_trusted_channel<S>(session: S, card_access_number: &str) -> Result<TrustedChannel<S>, ExchangeError>
+pub fn establish_trusted_channel<S>(
+    session: S,
+    card_access_number: &CardAccessNumber,
+) -> Result<TrustedChannel<S>, ExchangeError>
 where
     S: CardChannelExt,
 {
@@ -216,19 +292,20 @@ where
 /// Establish a PACE channel with a custom key-pair generator (useful for testing).
 pub fn establish_trusted_channel_with<S, F>(
     mut channel: S,
-    card_access_number: &str,
+    card_access_number: &CardAccessNumber,
     mut key_generator: F,
 ) -> Result<TrustedChannel<S>, ExchangeError>
 where
     S: CardChannelExt,
     F: FnMut(EcCurve) -> Result<(EcPublicKey, EcPrivateKey), CryptoError>,
 {
+    card_access_number.validate()?;
     // Ensure the basic operational environment is as required (eGK v2.1 with DF.CardAccess present)
     channel.execute_command_success(&HealthCardCommand::select(false, true))?;
     let read_version = HealthCardCommand::read_sfi_with_offset(ids::ef_version2_sfid(), 0)?;
     let version_response = channel.execute_command_success(&read_version)?;
     let version =
-        parse_health_card_version2(version_response.apdu.data_ref()).map_err(|_| ExchangeError::InvalidCardVersion)?;
+        parse_health_card_version2(version_response.apdu.as_data()).map_err(|_| ExchangeError::InvalidCardVersion)?;
     if !version.is_health_card_version_21() {
         return Err(ExchangeError::InvalidCardVersion);
     }
@@ -236,17 +313,19 @@ where
     channel.execute_command_success(&HealthCardCommand::select_fid(&ids::ef_card_access_fid(), false))?;
     let read_card_access = HealthCardCommand::read()?;
     let pace_info_response = channel.execute_command_success(&read_card_access)?;
-    let pace_info = parse_pace_info(pace_info_response.apdu.data_ref())?;
+    let pace_info = parse_pace_info(pace_info_response.apdu.as_data())?;
 
+    let secret_key = crate::card::card_key::CardKey::new(ids::SECRET_KEY_REFERENCE)
+        .expect("SECRET_KEY_REFERENCE must be within allowed range");
     channel.execute_command_success(&HealthCardCommand::manage_sec_env_without_curves(
-        &crate::card::card_key::CardKey::new(ids::SECRET_KEY_REFERENCE),
+        &secret_key,
         false,
         &pace_info.protocol_id_bytes(),
     )?)?;
 
     // Step 1: obtain nonce Z from the card and compute S
     let nonce_z_response = channel.execute_command_success(&HealthCardCommand::general_authenticate(true)?)?;
-    let nonce_z = decode_general_authenticate(nonce_z_response.apdu.data_ref())?;
+    let nonce_z = decode_general_authenticate(nonce_z_response.apdu.as_data())?;
     let can_key = get_aes128_key(card_access_number.as_bytes(), Mode::Password)?;
     let nonce_s_bytes = decrypt_nonce(&can_key, &nonce_z)?;
     let nonce_s = BigInt::from_bytes_be(Sign::Plus, &nonce_s_bytes);
@@ -263,7 +342,7 @@ where
     )?)?;
     let mut picc_public_key = EcPublicKey::from_uncompressed(
         pace_info.curve.clone(),
-        decode_general_authenticate(picc_pk_response.apdu.data_ref())?,
+        decode_general_authenticate(picc_pk_response.apdu.as_data())?,
     )?;
 
     let (_, ep_private) = key_generator(pace_info.curve.clone())?;
@@ -278,7 +357,7 @@ where
         channel.execute_command_success(&HealthCardCommand::general_authenticate_with_data(true, &ep_gs_bytes, 3)?)?;
     picc_public_key = EcPublicKey::from_uncompressed(
         pace_info.curve.clone(),
-        decode_general_authenticate(picc_pk_response.apdu.data_ref())?,
+        decode_general_authenticate(picc_pk_response.apdu.as_data())?,
     )?;
 
     let shared_secret_point = picc_public_key.to_ec_point().mul(&ep_scalar)?;
@@ -293,19 +372,20 @@ where
 
     let encryption_key = get_aes128_key(shared_secret_x, Mode::Enc)?;
     let mac_key = get_aes128_key(shared_secret_x, Mode::Mac)?;
-    let pace_key = PaceKey::new(encryption_key, mac_key);
+    let pace_key = PaceChannelKeys::new(encryption_key, mac_key);
+    let ssc = derive_ssc(shared_secret_x);
 
     let mac = derive_mac(pace_key.mac(), &picc_public_key, &pace_info.protocol_id)?;
     let derived_mac = derive_mac(pace_key.mac(), &ep_gs_shared_secret.to_ec_public_key()?, &pace_info.protocol_id)?;
 
     let picc_mac_response =
         channel.execute_command_success(&HealthCardCommand::general_authenticate_with_data(false, &mac, 5)?)?;
-    let picc_mac = decode_general_authenticate(picc_mac_response.apdu.data_ref())?;
+    let picc_mac = decode_general_authenticate(picc_mac_response.apdu.as_data())?;
     if picc_mac != derived_mac {
         return Err(ExchangeError::MutualAuthenticationFailed);
     }
 
-    Ok(TrustedChannel { channel, pace_key, ssc: [0u8; 16] })
+    Ok(TrustedChannel { channel, pace_key, ssc })
 }
 
 fn big_int_from_secret(key: &EcPrivateKey) -> BigInt {
@@ -321,7 +401,7 @@ fn coordinate_size(curve: &EcCurve) -> usize {
 }
 
 fn decrypt_nonce(key: &SecretKey, ciphertext: &[u8]) -> Result<Vec<u8>, ExchangeError> {
-    let mut decipher = AesDecipherSpec::Cbc { iv: Iv::new(vec![0u8; 16]), padding: Padding::None }
+    let mut decipher = AesDecipherSpec::Cbc { iv: Iv::from_slice([0u8; 16])?, padding: Padding::None }
         .cipher(SecretKey::new_secret(key.as_ref().to_vec()))?;
     let mut out = Vec::with_capacity(ciphertext.len());
     decipher.update(ciphertext, &mut out)?;
@@ -330,27 +410,32 @@ fn decrypt_nonce(key: &SecretKey, ciphertext: &[u8]) -> Result<Vec<u8>, Exchange
 }
 
 fn decode_general_authenticate(data: &[u8]) -> Result<Vec<u8>, ExchangeError> {
-    if data.len() < 4 || data[0] != 0x7C {
-        return Err(ExchangeError::Asn1DecoderError(Asn1DecoderError::custom(
-            "GENERAL AUTHENTICATE response missing application tag",
-        )));
-    }
-    let total_len = data[1] as usize;
-    if data.len() < 2 + total_len {
-        return Err(ExchangeError::Asn1DecoderError(Asn1DecoderError::InvalidLength { length: total_len }));
-    }
-    let inner = &data[2..2 + total_len];
-    if inner.len() < 2 {
-        return Err(ExchangeError::Asn1DecoderError(Asn1DecoderError::InvalidLength { length: inner.len() }));
-    }
-    let value_len = inner[1] as usize;
-    if inner.len() < 2 + value_len {
-        return Err(ExchangeError::Asn1DecoderError(Asn1DecoderError::InvalidLength { length: value_len }));
-    }
-    Ok(inner[2..2 + value_len].to_vec())
+    let decoder = Asn1Decoder::new(data);
+    decoder
+        .read(|reader| {
+            reader.advance_with_tag(Asn1Id::app(0x1C).constructed(), |reader| {
+                if reader.remaining_length() == 0 {
+                    return Err(Asn1DecoderError::custom("GENERAL AUTHENTICATE response empty"));
+                }
+
+                let tag = reader.read_tag()?;
+                if tag.class != Asn1Class::ContextSpecific {
+                    return Err(Asn1DecoderError::custom("GENERAL AUTHENTICATE inner tag not context-specific"));
+                }
+                let length = match reader.read_length()? {
+                    Asn1Length::Indefinite => {
+                        return Err(Asn1DecoderError::custom("indefinite length not allowed in GENERAL AUTHENTICATE"))
+                    }
+                    Asn1Length::Definite(len) => len,
+                };
+                let value = reader.read_bytes(length)?;
+                Ok(value)
+            })
+        })
+        .map_err(ExchangeError::from)
 }
 
-fn create_asn1_auth_token(public_key: &EcPublicKey, protocol_id: &str) -> Result<Vec<u8>, ExchangeError> {
+fn create_asn1_auth_token(public_key: &EcPublicKey, protocol_id: &ObjectIdentifier) -> Result<Vec<u8>, ExchangeError> {
     Asn1Encoder::write::<Asn1EncoderError>(|writer| {
         writer.write_tagged_object(Asn1Id::app(0x49).constructed(), |outer| {
             outer.write_object_identifier(protocol_id)?;
@@ -364,7 +449,11 @@ fn create_asn1_auth_token(public_key: &EcPublicKey, protocol_id: &str) -> Result
     .map_err(ExchangeError::from)
 }
 
-fn derive_mac(mac_key: &SecretKey, public_key: &EcPublicKey, protocol_id: &str) -> Result<Vec<u8>, ExchangeError> {
+fn derive_mac(
+    mac_key: &SecretKey,
+    public_key: &EcPublicKey,
+    protocol_id: &ObjectIdentifier,
+) -> Result<Vec<u8>, ExchangeError> {
     let auth_token = create_asn1_auth_token(public_key, protocol_id)?;
     let mut mac =
         MacSpec::Cmac { algorithm: CmacAlgorithm::Aes }.create(SecretKey::new_secret(mac_key.as_ref().to_vec()))?;
@@ -375,7 +464,7 @@ fn derive_mac(mac_key: &SecretKey, public_key: &EcPublicKey, protocol_id: &str) 
 
 fn ensure_not_secure(command: &CardCommandApdu) -> Result<(), ExchangeError> {
     if command.cla() & 0x0C == 0x0C {
-        return Err(ExchangeError::InvalidArgument("command already secured"));
+        return Err(ExchangeError::invalid_argument("command already secured"));
     }
     Ok(())
 }
@@ -386,7 +475,7 @@ fn secure_header(command: &CardCommandApdu) -> [u8; 4] {
 
 fn encrypt_data(key: &SecretKey, ssc: &[u8; 16], data: &[u8]) -> Result<Vec<u8>, ExchangeError> {
     let iv = derive_iv(key, ssc)?;
-    let mut cipher = AesCipherSpec::Cbc { iv: Iv::new(iv), padding: Padding::None }
+    let mut cipher = AesCipherSpec::Cbc { iv: Iv::from_slice(iv)?, padding: Padding::None }
         .cipher(SecretKey::new_secret(key.as_ref().to_vec()))?;
     let padded = iso9797_1_pad(data);
     let mut out = Vec::with_capacity(padded.len());
@@ -397,7 +486,7 @@ fn encrypt_data(key: &SecretKey, ssc: &[u8; 16], data: &[u8]) -> Result<Vec<u8>,
 
 fn decrypt_data(key: &SecretKey, ssc: &[u8; 16], data: &[u8]) -> Result<Vec<u8>, ExchangeError> {
     let iv = derive_iv(key, ssc)?;
-    let mut cipher = AesDecipherSpec::Cbc { iv: Iv::new(iv), padding: Padding::None }
+    let mut cipher = AesDecipherSpec::Cbc { iv: Iv::from_slice(iv)?, padding: Padding::None }
         .cipher(SecretKey::new_secret(key.as_ref().to_vec()))?;
     let mut out = Vec::with_capacity(data.len());
     cipher.update(data, &mut out)?;
@@ -412,6 +501,13 @@ fn derive_iv(key: &SecretKey, ssc: &[u8; 16]) -> Result<Vec<u8>, ExchangeError> 
     cipher.update(ssc, &mut out)?;
     cipher.finalize(&mut out)?;
     Ok(out)
+}
+
+fn derive_ssc(shared_secret_x: &[u8]) -> SendSequenceCounter {
+    let mut ssc = [0u8; 16];
+    let tail = &shared_secret_x[shared_secret_x.len().saturating_sub(16)..];
+    ssc[(16 - tail.len())..].copy_from_slice(tail);
+    SendSequenceCounter::new(ssc)
 }
 
 fn iso9797_1_pad(data: &[u8]) -> Vec<u8> {
@@ -431,7 +527,7 @@ fn unpad_iso9797_1(data: &[u8]) -> Result<Vec<u8>, ExchangeError> {
             _ => break,
         }
     }
-    Err(ExchangeError::InvalidArgument("invalid iso9797 padding"))
+    Err(ExchangeError::invalid_argument("invalid iso9797 padding"))
 }
 
 fn encode_length_object(le: usize) -> Vec<u8> {
@@ -485,11 +581,13 @@ fn parse_response_objects(data: &[u8]) -> Result<ResponseObjects, ExchangeError>
             if tag.class != Asn1Class::ContextSpecific {
                 return Err(Asn1DecoderError::custom("unexpected tag class in secure response"));
             }
-            let length = reader.read_length()?;
-            if length < 0 {
-                return Err(Asn1DecoderError::custom("indefinite length not supported in secure response"));
-            }
-            let value = reader.read_bytes(length as usize)?;
+            let length = match reader.read_length()? {
+                Asn1Length::Indefinite => {
+                    return Err(Asn1DecoderError::custom("indefinite length not supported in secure response"));
+                }
+                Asn1Length::Definite(len) => len,
+            };
+            let value = reader.read_bytes(length)?;
 
             match tag.number {
                 0x01 | 0x07 => {
@@ -551,24 +649,24 @@ struct ResponseObjects {
 mod tests {
     use super::*;
     use crate::command::apdu::{CardCommandApdu, CardResponseApdu};
-    use crate::exchange::session::CardChannel;
+    use crate::exchange::channel::CardChannel;
     use hex::encode;
 
     #[test]
     fn create_auth_token_matches_reference() {
         let curve = EcCurve::BrainpoolP256r1;
         let public_key = curve.g().to_ec_public_key().unwrap();
-        let token = create_asn1_auth_token(&public_key, "1.2.3.4.5").unwrap();
+        let token = create_asn1_auth_token(&public_key, &ObjectIdentifier::parse("1.2.3.4.5").unwrap()).unwrap();
         assert_eq!(
             encode(token).to_uppercase(),
             "7F494906042A0304058641048BD2AEB9CB7E57CB2C4B482FFC81B7AFB9DE27E1E3BD23C23A4453BD9ACE3262547EF835C3DAC4FD97F8461A14611DC9C27745132DED8E545C1D54C72F046997"
         );
     }
 
-    fn pace_key_fixture() -> PaceKey {
+    fn pace_key_fixture() -> PaceChannelKeys {
         let enc = SecretKey::new_secret(hex::decode("68406B4162100563D9C901A6154D2901").unwrap());
         let mac = SecretKey::new_secret(hex::decode("73FF268784F72AF833FDC9464049AFC9").unwrap());
-        PaceKey::new(enc, mac)
+        PaceChannelKeys::new(enc, mac)
     }
 
     struct DummySession;
@@ -581,17 +679,17 @@ mod tests {
         }
 
         fn transmit(&mut self, _command: &CardCommandApdu) -> Result<CardResponseApdu, Self::Error> {
-            Err(ExchangeError::InvalidArgument("dummy session cannot transmit"))
+            Err(ExchangeError::invalid_argument("dummy session cannot transmit"))
         }
     }
 
     fn make_channel() -> TrustedChannel<DummySession> {
         let channel = DummySession;
-        TrustedChannel { channel, pace_key: pace_key_fixture(), ssc: [0u8; 16] }
+        TrustedChannel { channel, pace_key: pace_key_fixture(), ssc: SendSequenceCounter::new([0u8; 16]) }
     }
 
     fn to_hex(apdu: &CardCommandApdu) -> String {
-        hex::encode_upper(apdu.apdu())
+        hex::encode_upper(apdu.to_bytes())
     }
 
     #[test]
@@ -658,7 +756,7 @@ mod tests {
         let response = CardResponseApdu::new(&hex::decode("990290008E08087631D746F872729000").unwrap()).unwrap();
         let mut scope = make_channel();
         let plain = scope.decrypt(response).unwrap();
-        assert_eq!(hex::encode_upper(plain.bytes()), "9000");
+        assert_eq!(hex::encode_upper(plain.to_bytes()), "9000");
     }
 
     #[test]
@@ -669,6 +767,40 @@ mod tests {
         .unwrap();
         let mut scope = make_channel();
         let plain = scope.decrypt(response).unwrap();
-        assert_eq!(hex::encode_upper(plain.bytes()), "05060708090A9000");
+        assert_eq!(hex::encode_upper(plain.to_bytes()), "05060708090A9000");
+    }
+
+    #[test]
+    fn card_access_number_validation() {
+        let ok = CardAccessNumber::new("123456").unwrap();
+        assert_eq!(ok.as_bytes(), b"123456");
+        let err = CardAccessNumber::new("12AB56").unwrap_err();
+        assert!(matches!(err, ExchangeError::InvalidArgument(_)));
+    }
+
+    #[test]
+    fn decode_general_authenticate_accepts_long_lengths() {
+        let value = vec![0xAB; 130];
+        let inner_len = value.len();
+        let outer_len = 1 /* tag */ + 2 /* inner length header */ + inner_len;
+
+        let mut data = Vec::new();
+        data.push(0x7C);
+        data.push(0x81);
+        data.push(outer_len as u8);
+        data.push(0x80);
+        data.push(0x81);
+        data.push(inner_len as u8);
+        data.extend_from_slice(&value);
+
+        let decoded = decode_general_authenticate(&data).expect("decode succeeds");
+        assert_eq!(decoded, value);
+    }
+
+    #[test]
+    fn ssc_derives_from_tail_bytes() {
+        let secret: Vec<u8> = (0u8..32).collect();
+        let ssc = super::derive_ssc(&secret);
+        assert_eq!(ssc.to_vec(), secret[secret.len() - 16..].to_vec());
     }
 }

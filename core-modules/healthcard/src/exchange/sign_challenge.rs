@@ -25,9 +25,9 @@ use crate::command::manage_security_environment_command::ManageSecurityEnvironme
 use crate::command::pso_compute_digital_signature_command::PsoComputeDigitalSignatureCommand;
 use crate::command::select_command::SelectCommand;
 
+use super::channel::CardChannelExt;
 use super::error::ExchangeError;
 use super::ids;
-use super::session::CardChannelExt;
 
 /// Sign a challenge using the card holder authentication key from `DF.ESIGN`.
 ///
@@ -44,7 +44,7 @@ where
     )?)?;
 
     let response = session.execute_command_success(&HealthCardCommand::pso_compute_digital_signature(challenge))?;
-    Ok(response.apdu.data())
+    Ok(response.apdu.to_data())
 }
 
 #[cfg(test)]

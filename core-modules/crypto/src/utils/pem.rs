@@ -23,6 +23,7 @@ use std::sync::OnceLock;
 
 use base64::Engine;
 use regex::Regex;
+use thiserror::Error;
 
 const PEM_DATA_MAX_LENGTH_PER_LINE: usize = 64;
 
@@ -32,6 +33,16 @@ static PEM_REGEX: OnceLock<Regex> = OnceLock::new();
 pub struct Pem {
     pub r#type: String,
     pub data: Vec<u8>,
+}
+
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
+pub enum PemError {
+    #[error("invalid PEM format")]
+    InvalidFormat,
+    #[error("PEM header/footer mismatch: {header} vs {footer}")]
+    TypeMismatch { header: String, footer: String },
+    #[error("Base64 decoding failed")]
+    Base64,
 }
 
 /// Encodes the PEM object into its string representation
@@ -50,25 +61,26 @@ impl Pem {
 }
 
 /// Decodes a PEM-formatted string into a `Pem` object.
-/// Panics if the string is not in valid PEM format.
 pub trait DecodeToPem {
-    fn decode_to_pem(&self) -> Pem;
+    fn decode_to_pem(&self) -> Result<Pem, PemError>;
 }
 
 impl DecodeToPem for str {
-    fn decode_to_pem(&self) -> Pem {
+    fn decode_to_pem(&self) -> Result<Pem, PemError> {
         let s = self.replace('\n', "").trim().to_owned();
         let re = PEM_REGEX
             .get_or_init(|| Regex::new(r"^-----BEGIN (.*)-----(.*)-----END (.*)-----$").expect("compile PEM regex"));
-        let captures = re.captures(&s).expect("Invalid PEM format");
-        let header_type = captures.get(1).unwrap().as_str();
-        let data = captures.get(2).unwrap().as_str();
-        let footer_type = captures.get(3).unwrap().as_str();
-        assert_eq!(header_type, footer_type, "Invalid PEM type format");
-        Pem {
-            r#type: header_type.to_string(),
-            data: base64::engine::general_purpose::STANDARD.decode(data).expect("Base64 decoding failed"),
+        let Some(captures) = re.captures(&s) else {
+            return Err(PemError::InvalidFormat);
+        };
+        let header_type = captures.get(1).map(|m| m.as_str()).ok_or(PemError::InvalidFormat)?;
+        let data = captures.get(2).map(|m| m.as_str()).ok_or(PemError::InvalidFormat)?;
+        let footer_type = captures.get(3).map(|m| m.as_str()).ok_or(PemError::InvalidFormat)?;
+        if header_type != footer_type {
+            return Err(PemError::TypeMismatch { header: header_type.to_string(), footer: footer_type.to_string() });
         }
+        let decoded = base64::engine::general_purpose::STANDARD.decode(data).map_err(|_| PemError::Base64)?;
+        Ok(Pem { r#type: header_type.to_string(), data: decoded })
     }
 }
 
@@ -83,7 +95,7 @@ mod tests {
         let pem = Pem { r#type: typ.to_string(), data: data.clone() };
 
         let encoded = pem.encode_to_string();
-        let decoded = encoded.decode_to_pem();
+        let decoded = encoded.decode_to_pem().unwrap();
 
         assert_eq!(typ, decoded.r#type);
         assert_eq!(data, decoded.data);
@@ -96,7 +108,7 @@ mod tests {
         let pem = Pem { r#type: typ.to_string(), data: data.clone() };
 
         let encoded = pem.encode_to_string();
-        let decoded = encoded.decode_to_pem();
+        let decoded = encoded.decode_to_pem().unwrap();
 
         assert_eq!(typ, decoded.r#type);
         assert_eq!(data, decoded.data);
@@ -118,19 +130,16 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Invalid PEM format")]
-    fn decode_invalid_pem_format_throws_error() {
+    fn decode_invalid_pem_format_returns_error() {
         let invalid_pem = "Not a PEM format";
-        // will panic
-        invalid_pem.decode_to_pem();
+        assert!(matches!(invalid_pem.decode_to_pem(), Err(PemError::InvalidFormat)));
     }
 
     #[test]
-    #[should_panic(expected = "Invalid PEM type format")]
-    fn decode_pem_with_mismatched_types_throws_error() {
+    fn decode_pem_with_mismatched_types_returns_error() {
         let invalid_pem = "-----BEGIN CERT-----SGVsbG8gV29ybGQ=-----END DIFFERENT-----";
-        // will panic
-        invalid_pem.decode_to_pem();
+        let err = invalid_pem.decode_to_pem();
+        assert!(matches!(err, Err(PemError::TypeMismatch { .. })));
     }
 
     #[test]
@@ -140,7 +149,7 @@ mod tests {
         let encoded_content = base64::engine::general_purpose::STANDARD.encode(content.as_bytes());
         let pem_string = format!("-----BEGIN {typ}-----\n{encoded_content}\n-----END {typ}-----\n");
 
-        let decoded = pem_string.decode_to_pem();
+        let decoded = pem_string.decode_to_pem().unwrap();
         assert_eq!(typ, decoded.r#type);
         assert_eq!(content, String::from_utf8(decoded.data).unwrap());
     }

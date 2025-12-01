@@ -32,7 +32,7 @@ const AID_MAX_LENGTH: usize = 16;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ApplicationIdentifier {
     /// The Application Identifier value
-    pub aid: Vec<u8>,
+    aid: Vec<u8>,
 }
 
 #[derive(Debug, Error, Clone, PartialEq)]
@@ -73,6 +73,26 @@ impl ApplicationIdentifier {
         let aid = hex::decode(hex_aid)?;
         Self::new(aid)
     }
+
+    /// Returns the AID bytes.
+    pub fn aid(&self) -> &[u8] {
+        &self.aid
+    }
+
+    /// Returns the AID bytes (alias for `aid` to align with other identifiers).
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.aid
+    }
+
+    /// Consumes the identifier and returns owned bytes.
+    pub fn into_bytes(self) -> Vec<u8> {
+        self.aid
+    }
+
+    /// Returns a mutable reference to the AID bytes.
+    pub fn aid_mut(&mut self) -> &mut Vec<u8> {
+        &mut self.aid
+    }
 }
 
 impl TryFrom<&str> for ApplicationIdentifier {
@@ -106,12 +126,12 @@ mod tests {
         // Valid AID with minimum length
         let aid = vec![0x01, 0x02, 0x03, 0x04, 0x05];
         let app_id = ApplicationIdentifier::new(aid.clone()).unwrap();
-        assert_eq!(app_id.aid, aid);
+        assert_eq!(app_id.aid(), aid.as_slice());
 
         // Valid AID with maximum length
         let aid = vec![0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10];
         let app_id = ApplicationIdentifier::new(aid.clone()).unwrap();
-        assert_eq!(app_id.aid, aid);
+        assert_eq!(app_id.aid(), aid.as_slice());
     }
 
     #[test]
@@ -144,7 +164,7 @@ mod tests {
     fn test_from_hex() {
         let hex_aid = "0102030405";
         let app_id = ApplicationIdentifier::from_hex(hex_aid).unwrap();
-        assert_eq!(app_id.aid, vec![0x01, 0x02, 0x03, 0x04, 0x05]);
+        assert_eq!(app_id.aid(), vec![0x01, 0x02, 0x03, 0x04, 0x05].as_slice());
 
         // Invalid hex string
         let hex_aid = "0102030Z05";
@@ -162,12 +182,12 @@ mod tests {
         // From string
         let hex_aid = "0102030405";
         let app_id: ApplicationIdentifier = hex_aid.try_into().unwrap();
-        assert_eq!(app_id.aid, vec![0x01, 0x02, 0x03, 0x04, 0x05]);
+        assert_eq!(app_id.aid(), vec![0x01, 0x02, 0x03, 0x04, 0x05].as_slice());
 
         // From Vec<u8>
         let bytes = vec![0x01, 0x02, 0x03, 0x04, 0x05];
         let app_id: ApplicationIdentifier = bytes.try_into().unwrap();
-        assert_eq!(app_id.aid, vec![0x01, 0x02, 0x03, 0x04, 0x05]);
+        assert_eq!(app_id.aid(), vec![0x01, 0x02, 0x03, 0x04, 0x05].as_slice());
     }
 
     #[test]
@@ -175,5 +195,7 @@ mod tests {
         let aid = vec![0x01, 0x02, 0x03, 0x04, 0x05];
         let app_id = ApplicationIdentifier::new(aid).unwrap();
         assert_eq!(format!("{}", app_id), "0102030405");
+        assert_eq!(app_id.as_bytes(), &[0x01, 0x02, 0x03, 0x04, 0x05]);
+        assert_eq!(app_id.clone().into_bytes(), vec![0x01, 0x02, 0x03, 0x04, 0x05]);
     }
 }

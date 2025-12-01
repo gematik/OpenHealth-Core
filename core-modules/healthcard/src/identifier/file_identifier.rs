@@ -67,6 +67,11 @@ impl FileIdentifier {
         vec![(self.fid >> 8) as u8, (self.fid & 0xFF) as u8]
     }
 
+    /// Consumes the identifier and returns the raw bytes.
+    pub fn into_bytes(self) -> [u8; 2] {
+        self.to_bytes()
+    }
+
     /// Creates a new FileIdentifier from a byte array.
     ///
     /// # Arguments
@@ -175,6 +180,7 @@ mod tests {
         let fid = 0x1234;
         let file_id = FileIdentifier::new(fid).unwrap();
         assert_eq!(file_id.to_bytes(), [0x12, 0x34]);
+        assert_eq!(file_id.into_bytes(), [0x12, 0x34]);
     }
 
     #[test]

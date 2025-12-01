@@ -25,9 +25,9 @@ use crate::command::health_card_status::HealthCardResponseStatus;
 use crate::command::read_command::ReadCommand;
 use crate::command::select_command::SelectCommand;
 
+use super::channel::CardChannelExt;
 use super::error::ExchangeError;
 use super::ids;
-use super::session::CardChannelExt;
 
 /// Retrieve the X.509 certificate stored in `DF.ESIGN/EF.C.CH.AUT.E256`.
 ///
@@ -46,12 +46,12 @@ where
     ))?;
 
     let mut certificate = Vec::new();
-    let mut offset = 0;
+    let mut offset: i32 = 0;
 
     loop {
         let read_command = HealthCardCommand::read_with_offset(offset)?;
         let response = session.execute_command(&read_command)?;
-        let data = response.apdu.data();
+        let data = response.apdu.to_data();
         if !data.is_empty() {
             offset = offset.saturating_add(data.len() as i32);
             certificate.extend_from_slice(&data);

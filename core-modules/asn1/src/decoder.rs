@@ -20,7 +20,22 @@
 // find details in the "Readme" file.
 
 use crate::error::Asn1DecoderError;
+use crate::oid::ObjectIdentifier;
 use crate::tag::{Asn1Class, Asn1Form, Asn1Id, UniversalTag};
+
+/// Length returned by [`ParserScope::read_length`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Asn1Length {
+    Definite(usize),
+    Indefinite,
+}
+
+/// Decoded BIT STRING with preserved unused-bit count.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BitString {
+    pub bytes: Vec<u8>,
+    pub unused_bits: u8,
+}
 
 /// Constructs an `Asn1Decoder` from the given data.
 /// The data slice will not be copied!
@@ -61,34 +76,39 @@ impl<'a> ParserScope<'a> {
                 let form: u8 = id.form.into();
                 format!("Asn1Id(class=0x{class:02X}, form=0x{form:02X}, number=0x{:X})", id.number)
             };
-            return Err(
-                Asn1DecoderError::UnexpectedTag { expected: describe(&expected), actual: describe(&tag) }.into()
-            );
+            return Err(Asn1DecoderError::UnexpectedTag { expected: describe(&expected), actual: describe(&tag) }.into());
         }
         let length = self.read_length()?;
-        let is_infinite = length == -1;
-
         let original_end = self.end_offset;
 
-        if !is_infinite {
-            let len = length as usize;
-            self.end_offset = self.offset + len;
-        } else {
-            self.end_offset = usize::MAX;
-        }
+        match length {
+            Asn1Length::Indefinite => {
+                self.end_offset = usize::MAX;
+            }
+            Asn1Length::Definite(len) => {
+                let new_end = self.offset.checked_add(len).ok_or_else(|| Asn1DecoderError::integer_overflow("scope end"))?;
+                if new_end > original_end {
+                    return Err(Asn1DecoderError::unexpected_end_of_data("length exceeds available data").into());
+                }
+                self.end_offset = new_end;
+            }
+        };
 
         let result = block(self);
 
-        if !is_infinite {
-            if self.end_offset != self.offset {
-                self.end_offset = original_end;
-                return Err(Asn1DecoderError::UnparsedBytesRemaining.into());
+        match length {
+            Asn1Length::Indefinite => {
+                let end = self.read_bytes(2)?;
+                if end != [0x00, 0x00] {
+                    self.end_offset = original_end;
+                    return Err(Asn1DecoderError::MissingEndOfContentMarker.into());
+                }
             }
-        } else {
-            let end = self.read_bytes(2)?;
-            if end != [0x00, 0x00] {
-                self.end_offset = original_end;
-                return Err(Asn1DecoderError::MissingEndOfContentMarker.into());
+            Asn1Length::Definite(_) => {
+                if self.end_offset != self.offset {
+                    self.end_offset = original_end;
+                    return Err(Asn1DecoderError::UnparsedBytesRemaining.into());
+                }
             }
         }
 
@@ -146,19 +166,28 @@ impl<'a> ParserScope<'a> {
         Ok(Asn1Id::new(class, form, number))
     }
 
-    /// Read the length. Returns `-1` for infinite length.
-    pub fn read_length(&mut self) -> Result<i32, Asn1DecoderError> {
-        let length_byte = (self.read_byte()? as i32) & 0xFF;
+    /// Read the length octets, returning definite or indefinite length.
+    pub fn read_length(&mut self) -> Result<Asn1Length, Asn1DecoderError> {
+        let length_byte = self.read_byte()?;
         if length_byte == 0x80 {
-            Ok(-1)
-        } else if (length_byte & 0x80) == 0 {
-            // short form
-            Ok(length_byte)
-        } else {
-            // long form
-            let length_size = (length_byte & 0x7F) as usize;
-            self.read_int(length_size, false)
+            return Ok(Asn1Length::Indefinite);
         }
+
+        if (length_byte & 0x80) == 0 {
+            return Ok(Asn1Length::Definite(length_byte as usize));
+        }
+
+        // long form
+        let length_size = (length_byte & 0x7F) as usize;
+        if length_size == 0 || length_size > 4 {
+            return Err(Asn1DecoderError::InvalidLength { length: length_size });
+        }
+        let bytes = self.read_bytes(length_size)?;
+        let mut result: usize = 0;
+        for b in bytes {
+            result = (result << 8) | (b as usize);
+        }
+        Ok(Asn1Length::Definite(result))
     }
 
     /// Read `length` bytes as an integer.
@@ -209,25 +238,23 @@ impl<'a> ParserScope<'a> {
     }
 
     /// Read [Asn1Type.BIT_STRING].
-    pub fn read_bit_string(&mut self) -> Result<Vec<u8>, Asn1DecoderError> {
+    pub fn read_bit_string(&mut self) -> Result<BitString, Asn1DecoderError> {
         self.advance_with_tag(UniversalTag::BitString.primitive(), |s| {
             let unused_bits = s.read_byte()? as i32;
             if !(0..=7).contains(&unused_bits) {
                 return Err(Asn1DecoderError::InvalidUnusedBitCount { count: unused_bits });
             }
             let mut bit_string = s.read_bytes(s.remaining_length())?;
-            if unused_bits == 0 {
-                Ok(bit_string)
-            } else {
-                if bit_string.is_empty() {
-                    return Err(Asn1DecoderError::BitStringIndicatesUnusedBits);
-                }
+            if unused_bits != 0 && bit_string.is_empty() {
+                return Err(Asn1DecoderError::BitStringIndicatesUnusedBits);
+            }
+            if unused_bits != 0 {
                 let last = bit_string[bit_string.len() - 1];
                 let mask = (((0xFFu16 << unused_bits) & 0xFF) as u8) & 0xFF;
                 bit_string.pop();
                 bit_string.push(last & mask);
-                Ok(bit_string)
             }
+            Ok(BitString { bytes: bit_string, unused_bits: unused_bits as u8 })
         })
     }
 
@@ -253,7 +280,7 @@ impl<'a> ParserScope<'a> {
     }
 
     /// Read [Asn1Type.OBJECT_IDENTIFIER].
-    pub fn read_object_identifier(&mut self) -> Result<String, Asn1DecoderError> {
+    pub fn read_object_identifier(&mut self) -> Result<ObjectIdentifier, Asn1DecoderError> {
         self.advance_with_tag(UniversalTag::ObjectIdentifier.primitive(), |s| {
             let bytes = s.read_bytes(s.remaining_length())?;
             if bytes.is_empty() {
@@ -264,9 +291,9 @@ impl<'a> ParserScope<'a> {
             let first = first_byte / 40;
             let second = first_byte % 40;
 
-            let mut parts: Vec<i32> = Vec::new();
-            parts.push(first);
-            parts.push(second);
+            let mut parts: Vec<u32> = Vec::new();
+            parts.push(first as u32);
+            parts.push(second as u32);
 
             // Decode the remaining bytes (base-128)
             let mut value: i32 = 0;
@@ -274,7 +301,7 @@ impl<'a> ParserScope<'a> {
                 let byte = (*b as i32) & 0xFF;
                 value = (value << 7) | (byte & 0x7F);
                 if (byte & 0x80) == 0 {
-                    parts.push(value);
+                    parts.push(value as u32);
                     value = 0;
                 }
             }
@@ -282,14 +309,13 @@ impl<'a> ParserScope<'a> {
                 return Err(Asn1DecoderError::UnfinishedObjectIdentifierEncoding);
             }
 
-            Ok(parts.iter().map(|v| v.to_string()).collect::<Vec<_>>().join("."))
+            ObjectIdentifier::from_components_for_decoding(parts)
         })
     }
 }
 
 impl<'a> Asn1Decoder<'a> {
     pub fn new(data: &'a [u8]) -> Self {
-        assert!(!data.is_empty(), "Data must not be empty");
         Self { data }
     }
 
@@ -306,7 +332,7 @@ impl<'a> Asn1Decoder<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::date_time::Asn1Offset;
+    use crate::date_time::{Asn1Offset, Asn1Time};
     use crate::tag::UniversalTag;
 
     fn hex_bytes(s: &str) -> Vec<u8> {
@@ -450,7 +476,8 @@ mod tests {
         let data = hex_bytes("03 05 00 FF AA BB CC");
         let parser = Asn1Decoder::new(&data);
         let result = parser.read(|s| s.read_bit_string()).unwrap();
-        assert_eq!(result, hex_bytes("FF AA BB CC"));
+        assert_eq!(result.bytes, hex_bytes("FF AA BB CC"));
+        assert_eq!(result.unused_bits, 0);
     }
 
     #[test]
@@ -458,7 +485,8 @@ mod tests {
         let data = hex_bytes("03 05 03 FF AA BB FF");
         let parser = Asn1Decoder::new(&data);
         let result = parser.read(|s| s.read_bit_string()).unwrap();
-        assert_eq!(result, hex_bytes("FF AA BB F8"));
+        assert_eq!(result.bytes, hex_bytes("FF AA BB F8"));
+        assert_eq!(result.unused_bits, 3);
     }
 
     #[test]
@@ -466,7 +494,8 @@ mod tests {
         let data = hex_bytes("03 01 00");
         let parser = Asn1Decoder::new(&data);
         let result = parser.read(|s| s.read_bit_string()).unwrap();
-        assert!(result.is_empty());
+        assert!(result.bytes.is_empty());
+        assert_eq!(result.unused_bits, 0);
     }
 
     #[test]
@@ -485,8 +514,8 @@ mod tests {
             .read(|s| {
                 s.advance_with_tag(UniversalTag::Sequence.constructed(), |s| -> Result<_, Asn1DecoderError> {
                     Ok(vec![
-                        s.read_bit_string()?.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(" "),
-                        s.read_bit_string()?.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(" "),
+                        s.read_bit_string()?.bytes.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(" "),
+                        s.read_bit_string()?.bytes.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(" "),
                     ])
                 })
             })
@@ -540,13 +569,16 @@ mod tests {
         let data = hex_bytes("17 0D 32 33 30 35 31 32 31 34 33 39 34 35 5A");
         let parser = Asn1Decoder::new(&data);
         let t = parser.read(|s| s.read_utc_time()).unwrap();
-        assert_eq!(t.year, 23);
-        assert_eq!(t.month, 5);
-        assert_eq!(t.day, 12);
-        assert_eq!(t.hour, 14);
-        assert_eq!(t.minute, 39);
-        assert_eq!(t.second, Some(45));
-        assert!(t.offset.is_none());
+        let Asn1Time::Utc(t) = t else {
+            panic!("expected UTC time");
+        };
+        assert_eq!(t.year(), 23);
+        assert_eq!(t.month(), 5);
+        assert_eq!(t.day(), 12);
+        assert_eq!(t.hour(), 14);
+        assert_eq!(t.minute(), 39);
+        assert_eq!(t.second(), Some(45));
+        assert!(t.offset().is_none());
     }
 
     #[test]
@@ -554,16 +586,19 @@ mod tests {
         let data = hex_bytes("17 11 32 33 30 35 31 32 31 34 33 39 34 35 2D 30 35 30 30");
         let parser = Asn1Decoder::new(&data);
         let t = parser.read(|s| s.read_utc_time()).unwrap();
-        assert_eq!(t.year, 23);
-        assert_eq!(t.month, 5);
-        assert_eq!(t.day, 12);
-        assert_eq!(t.hour, 14);
-        assert_eq!(t.minute, 39);
-        assert_eq!(t.second, Some(45));
-        match t.offset {
+        let Asn1Time::Utc(t) = t else {
+            panic!("expected UTC time");
+        };
+        assert_eq!(t.year(), 23);
+        assert_eq!(t.month(), 5);
+        assert_eq!(t.day(), 12);
+        assert_eq!(t.hour(), 14);
+        assert_eq!(t.minute(), 39);
+        assert_eq!(t.second(), Some(45));
+        match t.offset() {
             Some(Asn1Offset::UtcOffset { hours, minutes }) => {
-                assert_eq!(hours, -5);
-                assert_eq!(minutes, 0);
+                assert_eq!(*hours, -5);
+                assert_eq!(*minutes, 0);
             }
             _ => panic!("expected UtcOffset"),
         }
@@ -574,13 +609,16 @@ mod tests {
         let data = hex_bytes("17 0B 32 33 30 35 31 32 31 34 33 39 5A");
         let parser = Asn1Decoder::new(&data);
         let t = parser.read(|s| s.read_utc_time()).unwrap();
-        assert_eq!(t.year, 23);
-        assert_eq!(t.month, 5);
-        assert_eq!(t.day, 12);
-        assert_eq!(t.hour, 14);
-        assert_eq!(t.minute, 39);
-        assert_eq!(t.second, None);
-        assert!(t.offset.is_none());
+        let Asn1Time::Utc(t) = t else {
+            panic!("expected UTC time");
+        };
+        assert_eq!(t.year(), 23);
+        assert_eq!(t.month(), 5);
+        assert_eq!(t.day(), 12);
+        assert_eq!(t.hour(), 14);
+        assert_eq!(t.minute(), 39);
+        assert_eq!(t.second(), None);
+        assert!(t.offset().is_none());
     }
 
     #[test]
@@ -588,14 +626,17 @@ mod tests {
         let data = hex_bytes("18 12 32 30 32 33 30 35 31 32 31 34 33 39 34 35 2E 31 32 33 5A");
         let parser = Asn1Decoder::new(&data);
         let t = parser.read(|s| s.read_generalized_time()).unwrap();
-        assert_eq!(t.year, 2023);
-        assert_eq!(t.month, 5);
-        assert_eq!(t.day, 12);
-        assert_eq!(t.hour, 14);
-        assert_eq!(t.minute, Some(39));
-        assert_eq!(t.second, Some(45));
-        assert_eq!(t.fraction_of_second, Some(123));
-        assert!(t.offset.is_none());
+        let Asn1Time::Generalized(t) = t else {
+            panic!("expected GENERALIZED time");
+        };
+        assert_eq!(t.year(), 2023);
+        assert_eq!(t.month(), 5);
+        assert_eq!(t.day(), 12);
+        assert_eq!(t.hour(), 14);
+        assert_eq!(t.minute(), Some(39));
+        assert_eq!(t.second(), Some(45));
+        assert_eq!(t.fraction_of_second(), Some(123));
+        assert!(t.offset().is_none());
     }
 
     #[test]
@@ -603,14 +644,17 @@ mod tests {
         let data = hex_bytes("18 0D 32 30 32 33 30 35 31 32 31 34 33 39 5A");
         let parser = Asn1Decoder::new(&data);
         let t = parser.read(|s| s.read_generalized_time()).unwrap();
-        assert_eq!(t.year, 2023);
-        assert_eq!(t.month, 5);
-        assert_eq!(t.day, 12);
-        assert_eq!(t.hour, 14);
-        assert_eq!(t.minute, Some(39));
-        assert_eq!(t.second, None);
-        assert_eq!(t.fraction_of_second, None);
-        assert!(t.offset.is_none());
+        let Asn1Time::Generalized(t) = t else {
+            panic!("expected GENERALIZED time");
+        };
+        assert_eq!(t.year(), 2023);
+        assert_eq!(t.month(), 5);
+        assert_eq!(t.day(), 12);
+        assert_eq!(t.hour(), 14);
+        assert_eq!(t.minute(), Some(39));
+        assert_eq!(t.second(), None);
+        assert_eq!(t.fraction_of_second(), None);
+        assert!(t.offset().is_none());
     }
 
     #[test]
@@ -618,7 +662,7 @@ mod tests {
         let data = hex_bytes("06 03 2A 03 04");
         let parser = Asn1Decoder::new(&data);
         let result = parser.read(|s| s.read_object_identifier()).unwrap();
-        assert_eq!(result, "1.2.3.4");
+        assert_eq!(result.to_string(), "1.2.3.4");
     }
 
     #[test]
@@ -626,7 +670,7 @@ mod tests {
         let data = hex_bytes("06 05 55 04 06 82 03");
         let parser = Asn1Decoder::new(&data);
         let result = parser.read(|s| s.read_object_identifier()).unwrap();
-        assert_eq!(result, "2.5.4.6.259");
+        assert_eq!(result.to_string(), "2.5.4.6.259");
     }
 
     #[test]
@@ -642,7 +686,7 @@ mod tests {
         let data = hex_bytes("06 01 06");
         let parser = Asn1Decoder::new(&data);
         let result = parser.read(|s| s.read_object_identifier()).unwrap();
-        assert_eq!(result, "0.6");
+        assert_eq!(result.to_string(), "0.6");
     }
 
     #[test]
@@ -650,7 +694,7 @@ mod tests {
         let data = hex_bytes("06 03 82 86 05");
         let parser = Asn1Decoder::new(&data);
         let result = parser.read(|s| s.read_object_identifier()).unwrap();
-        assert_eq!(result, "3.10.773");
+        assert_eq!(result.to_string(), "3.10.773");
     }
 
     #[test]
@@ -658,7 +702,7 @@ mod tests {
         let data = hex_bytes("06 04 2B 81 80 02");
         let parser = Asn1Decoder::new(&data);
         let result = parser.read(|s| s.read_object_identifier()).unwrap();
-        assert_eq!(result, "1.3.16386");
+        assert_eq!(result.to_string(), "1.3.16386");
     }
 
     #[test]

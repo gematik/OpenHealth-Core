@@ -19,23 +19,9 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-/// Constant time equals for byte arrays.
+/// Constant time equals for byte arrays using OpenSSL `CRYPTO_memcmp`.
 pub fn content_constant_time_equals(a: &[u8], b: &[u8]) -> bool {
-    native_constant_time_equals(a, b)
-}
-
-/// Constant time equals for byte arrays.
-fn native_constant_time_equals(array_a: &[u8], array_b: &[u8]) -> bool {
-    if array_a.len() != array_b.len() {
-        return false;
-    }
-
-    let mut diff = 0u8;
-    for (&lhs, &rhs) in array_a.iter().zip(array_b) {
-        diff |= lhs ^ rhs;
-    }
-
-    diff == 0
+    crate::ossl::constant_time::memcmp(a, b)
 }
 
 #[cfg(test)]

@@ -19,7 +19,7 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use std::ffi::CString;
+use std::ffi::{CStr, CString};
 use std::os::raw::c_int;
 use std::ptr;
 
@@ -148,7 +148,7 @@ impl AesCipher {
         let mut params = [
             unsafe {
                 OSSL_PARAM_construct_octet_string(
-                    OSSL_CIPHER_PARAM_AEAD_TAG.as_ptr() as *const i8,
+                    OSSL_CIPHER_PARAM_AEAD_TAG.as_ptr() as *const _,
                     tag.as_mut_ptr() as *mut _,
                     tag_len,
                 )

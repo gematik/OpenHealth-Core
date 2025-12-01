@@ -24,6 +24,8 @@ use std::fmt;
 use crypto::digest::DigestSpec;
 use crypto::error::CryptoError;
 use crypto::key::SecretKey;
+use crypto::utils::constant_time::content_constant_time_equals;
+use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 /// PACE key derivation modes as defined in BSI TR-03110.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -54,19 +56,19 @@ pub fn get_aes128_key(shared_secret: &[u8], mode: Mode) -> Result<SecretKey, Cry
     let mut digest = DigestSpec::Sha1.create()?;
     digest.update(shared_secret)?;
     digest.update(&mode.counter().to_be_bytes())?;
-    let mut derived = digest.finalize()?;
+    let mut derived: Zeroizing<Vec<u8>> = Zeroizing::new(digest.finalize()?);
     derived.truncate(16);
-    Ok(SecretKey::new_secret(derived))
+    Ok(SecretKey::new_secret(derived.to_vec()))
 }
 
 /// Holds the symmetric keys derived during PACE.
-// FIXME: #[derive(Eq)]
-pub struct PaceKey {
+#[derive(Zeroize, ZeroizeOnDrop)]
+pub struct PaceSessionKeys {
     encryption: SecretKey,
     mac: SecretKey,
 }
 
-impl PaceKey {
+impl PaceSessionKeys {
     /// Construct a new PACE key set.
     pub fn new(encryption: SecretKey, mac: SecretKey) -> Self {
         Self { encryption, mac }
@@ -83,20 +85,27 @@ impl PaceKey {
     }
 }
 
-impl PartialEq for PaceKey {
+impl PartialEq for PaceSessionKeys {
     fn eq(&self, other: &Self) -> bool {
-        self.encryption.as_ref() == other.encryption.as_ref() && self.mac.as_ref() == other.mac.as_ref()
+        let enc_eq = content_constant_time_equals(self.encryption.as_ref(), other.encryption.as_ref());
+        let mac_eq = content_constant_time_equals(self.mac.as_ref(), other.mac.as_ref());
+        enc_eq && mac_eq
     }
 }
 
-impl fmt::Debug for PaceKey {
+impl Eq for PaceSessionKeys {}
+
+impl fmt::Debug for PaceSessionKeys {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("PaceKey")
+        f.debug_struct("PaceSessionKeys")
             .field("enc_len", &self.encryption.len())
             .field("mac_len", &self.mac.len())
             .finish_non_exhaustive()
     }
 }
+
+/// Backwards compatibility alias for the previous name.
+pub type PaceKey = PaceSessionKeys;
 
 #[cfg(test)]
 mod tests {

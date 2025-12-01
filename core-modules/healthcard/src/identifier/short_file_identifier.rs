@@ -37,7 +37,7 @@ const MAX_VALUE: u8 = 30;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct ShortFileIdentifier {
     /// The Short File Identifier value
-    pub sf_id: u8,
+    sf_id: u8,
 }
 
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
@@ -64,6 +64,11 @@ impl ShortFileIdentifier {
         } else {
             Ok(ShortFileIdentifier { sf_id })
         }
+    }
+
+    /// Returns the numeric value of the SFI.
+    pub fn value(&self) -> u8 {
+        self.sf_id
     }
 
     /// Creates a new ShortFileIdentifier from a hex string.
@@ -104,13 +109,13 @@ mod tests {
     #[test]
     fn test_valid_sfi() {
         let sfi = ShortFileIdentifier::new(1).unwrap();
-        assert_eq!(sfi.sf_id, 1);
+        assert_eq!(sfi.value(), 1);
 
         let sfi = ShortFileIdentifier::new(15).unwrap();
-        assert_eq!(sfi.sf_id, 15);
+        assert_eq!(sfi.value(), 15);
 
         let sfi = ShortFileIdentifier::new(30).unwrap();
-        assert_eq!(sfi.sf_id, 30);
+        assert_eq!(sfi.value(), 30);
     }
 
     #[test]
@@ -122,10 +127,10 @@ mod tests {
     #[test]
     fn test_from_hex() {
         let sfi = ShortFileIdentifier::from_hex("01").unwrap();
-        assert_eq!(sfi.sf_id, 1);
+        assert_eq!(sfi.value(), 1);
 
         let sfi = ShortFileIdentifier::from_hex("1E").unwrap();
-        assert_eq!(sfi.sf_id, 30);
+        assert_eq!(sfi.value(), 30);
     }
 
     #[test]
@@ -140,9 +145,9 @@ mod tests {
     #[test]
     fn test_try_from() {
         let sfi: ShortFileIdentifier = 5.try_into().unwrap();
-        assert_eq!(sfi.sf_id, 5);
+        assert_eq!(sfi.value(), 5);
 
         let sfi: ShortFileIdentifier = "0A".try_into().unwrap();
-        assert_eq!(sfi.sf_id, 10);
+        assert_eq!(sfi.value(), 10);
     }
 }

@@ -46,15 +46,15 @@ pub trait GetPinStatusCommand {
 
 impl GetPinStatusCommand for HealthCardCommand {
     fn get_pin_status(password: &PasswordReference, df_specific: bool) -> HealthCardCommand {
-        HealthCardCommand {
-            expected_status: PIN_STATUS.clone(),
-            cla: CLA,
-            ins: GET_PIN_STATUS_INS,
-            p1: NO_MEANING,
-            p2: password.calculate_key_reference(df_specific),
-            data: None,
-            ne: None,
-        }
+        HealthCardCommand::new(
+            PIN_STATUS.clone(),
+            CLA,
+            GET_PIN_STATUS_INS,
+            NO_MEANING,
+            password.calculate_key_reference(df_specific),
+            None,
+            None,
+        )
     }
 }
 
@@ -66,7 +66,7 @@ mod tests {
     #[test]
     fn test_get_pin_status_command() {
         // Create test object
-        let password_ref = PasswordReference::new(3);
+        let password_ref = PasswordReference::new(3).unwrap();
 
         // Test with df_specific = true
         let cmd = HealthCardCommand::get_pin_status(&password_ref, true);

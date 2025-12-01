@@ -104,12 +104,12 @@ pub fn ef_cch_aut_e256_sfid() -> ShortFileIdentifier {
 
 /// Key identifier for the `PrK.CH.AUT.E256` private key in `DF.ESIGN`.
 pub fn prk_ch_aut_e256() -> CardKey {
-    CardKey::new(0x04)
+    CardKey::new(0x04).expect("constant key id must be valid")
 }
 
 /// Password reference for "MRPIN.home" stored in the master file (gemSpec_ObjSys Section 5.3.10).
 pub fn mr_pin_home_reference() -> PasswordReference {
-    PasswordReference::new(0x02)
+    PasswordReference::new(0x02).expect("constant password id must be valid")
 }
 
 /// Secret key reference used during PACE (CAN key).

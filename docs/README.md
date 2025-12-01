@@ -23,7 +23,13 @@ find details in the "Readme" file.
 
 # Documentation Overview
 
-This directory contains documentation for OpenHealth-Core, including interoperability notes and other project-specific guides.
+This directory contains documentation for OpenHealth-Core, including interoperability notes, architecture documentation, and other project-specific guides.
+
+## Architecture
+
+Architecture-related documentation lives under `architecture/`:
+
+- [`Architecture overview`](architecture/README.md) – Core modules, layering, data flows, and extension points.
 
 ## Interoperability
 

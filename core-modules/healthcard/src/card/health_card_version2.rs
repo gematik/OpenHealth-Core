@@ -19,7 +19,7 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use crate::asn1::decoder::Asn1Decoder;
+use asn1::decoder::{Asn1Decoder, Asn1Length};
 use asn1::error::Asn1DecoderError;
 use asn1::tag::Asn1Id;
 use std::collections::HashMap;
@@ -77,6 +77,38 @@ impl HealthCardVersion2 {
 
         version >= MIN_OBJECT_SYSTEM_VERSION_FOR_EGK21
     }
+
+    pub fn filling_instructions_version(&self) -> &[u8] {
+        &self.fi_version
+    }
+
+    pub fn object_system_version(&self) -> &[u8] {
+        &self.object_system_version
+    }
+
+    pub fn product_identification_object_system_version(&self) -> &[u8] {
+        &self.product_identification_object_system_version
+    }
+
+    pub fn fi_ef_environment_settings_version(&self) -> &[u8] {
+        &self.fi_ef_environment_settings_version
+    }
+
+    pub fn fi_ef_gdo_version(&self) -> &[u8] {
+        &self.fi_ef_gdo_version
+    }
+
+    pub fn fi_ef_atr_version(&self) -> &[u8] {
+        &self.fi_ef_atr_version
+    }
+
+    pub fn fi_ef_key_info_version(&self) -> &[u8] {
+        &self.fi_ef_key_info_version
+    }
+
+    pub fn fi_ef_logging_version(&self) -> &[u8] {
+        &self.fi_ef_logging_version
+    }
 }
 
 /// Parses the binary content of EF.Version2 into a [HealthCardVersion2] structure.
@@ -96,12 +128,14 @@ pub fn parse_health_card_version2(data: &[u8]) -> Result<HealthCardVersion2, Hea
                     return Err(Asn1DecoderError::custom("high-tag-number form not supported for EF.Version2").into());
                 }
 
-                let length = reader.read_length()?;
-                if length < 0 {
-                    return Err(Asn1DecoderError::custom("indefinite lengths are not supported in EF.Version2").into());
-                }
+                let length = match reader.read_length()? {
+                    Asn1Length::Indefinite => {
+                        return Err(Asn1DecoderError::custom("indefinite lengths are not supported in EF.Version2").into())
+                    }
+                    Asn1Length::Definite(len) => len,
+                };
 
-                let value = reader.read_bytes(length as usize)?;
+                let value = reader.read_bytes(length)?;
                 let tag_byte = u8::from(tag.class) | u8::from(tag.form) | (tag.number as u8);
                 entries.insert(tag_byte, value);
             }

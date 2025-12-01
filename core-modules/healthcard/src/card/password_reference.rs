@@ -28,6 +28,7 @@
 ///   regular password (see (gemSpec_COS_3.14.0#N015.200)), but under conditions that deviate from those of the
 ///   regular password.
 use crate::card::card_key_reference::CardKeyReference;
+use thiserror::Error;
 
 const MIN_PWD_ID: u8 = 0;
 const MAX_PWD_ID: u8 = 31;
@@ -36,7 +37,15 @@ const MAX_PWD_ID: u8 = 31;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct PasswordReference {
     /// The ID of the password.
-    pub pwd_id: u8,
+    pwd_id: u8,
+}
+
+/// Errors that can occur when creating a PasswordReference.
+#[derive(Debug, Clone, PartialEq, Eq, Error)]
+pub enum PasswordReferenceError {
+    /// The provided ID is outside the allowed range.
+    #[error("Password ID out of range [{MIN_PWD_ID},{MAX_PWD_ID}]: {0}")]
+    OutOfRange(u8),
 }
 
 impl PasswordReference {
@@ -48,16 +57,19 @@ impl PasswordReference {
     /// # Returns
     /// A new PasswordReference instance.
     ///
-    /// # Panics
-    /// Panics if the password ID is not in the range [0, 31].
-    pub fn new(pwd_id: u8) -> Self {
-        assert!(
-            (MIN_PWD_ID..=MAX_PWD_ID).contains(&pwd_id),
-            "Password ID out of range [{},{}]",
-            MIN_PWD_ID,
-            MAX_PWD_ID
-        );
-        Self { pwd_id }
+    /// # Errors
+    /// Returns [PasswordReferenceError::OutOfRange] if the password ID is not in the range [0, 31].
+    pub fn new(pwd_id: u8) -> Result<Self, PasswordReferenceError> {
+        if (MIN_PWD_ID..=MAX_PWD_ID).contains(&pwd_id) {
+            Ok(Self { pwd_id })
+        } else {
+            Err(PasswordReferenceError::OutOfRange(pwd_id))
+        }
+    }
+
+    /// Returns the password id.
+    pub fn pwd_id(&self) -> u8 {
+        self.pwd_id
     }
 }
 
@@ -81,19 +93,19 @@ mod tests {
 
     #[test]
     fn test_password_reference_creation() {
-        let pwd_ref = PasswordReference::new(5);
-        assert_eq!(pwd_ref.pwd_id, 5);
+        let pwd_ref = PasswordReference::new(5).unwrap();
+        assert_eq!(pwd_ref.pwd_id(), 5);
     }
 
     #[test]
-    #[should_panic(expected = "Password ID out of range")]
     fn test_password_reference_out_of_range() {
-        PasswordReference::new(32);
+        let err = PasswordReference::new(32).unwrap_err();
+        assert!(matches!(err, PasswordReferenceError::OutOfRange(32)));
     }
 
     #[test]
     fn test_calculate_key_reference() {
-        let pwd_ref = PasswordReference::new(10);
+        let pwd_ref = PasswordReference::new(10).unwrap();
 
         assert_eq!(pwd_ref.calculate_key_reference(false), 10);
 

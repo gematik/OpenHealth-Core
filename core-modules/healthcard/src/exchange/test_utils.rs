@@ -22,7 +22,7 @@
 #![cfg(test)]
 
 use crate::command::apdu::{CardCommandApdu, CardResponseApdu};
-use crate::exchange::session::CardChannel;
+use crate::exchange::channel::CardChannel;
 use crate::exchange::ExchangeError;
 
 /// Test helper for simulating a card session with predetermined responses.
@@ -54,7 +54,7 @@ impl CardChannel for MockSession {
     }
 
     fn transmit(&mut self, command: &CardCommandApdu) -> Result<CardResponseApdu, Self::Error> {
-        self.recorded.push(command.apdu());
+        self.recorded.push(command.to_bytes());
         if self.responses.is_empty() {
             Err(ExchangeError::Transport { code: 0, message: "mock session ran out of responses".to_string() })
         } else {

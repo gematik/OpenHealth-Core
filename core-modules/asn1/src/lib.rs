@@ -22,4 +22,5 @@ pub mod date_time;
 pub mod decoder;
 pub mod encoder;
 pub mod error;
+pub mod oid;
 pub mod tag;

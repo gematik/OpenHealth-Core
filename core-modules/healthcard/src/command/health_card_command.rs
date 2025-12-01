@@ -28,26 +28,47 @@ use crate::command::apdu::{ApduError, CardCommandApdu, CardResponseApdu};
 use crate::command::apdu::{EXPECTED_LENGTH_WILDCARD_EXTENDED, EXPECTED_LENGTH_WILDCARD_SHORT};
 use crate::command::health_card_status::HealthCardResponseStatus;
 
-/// Special value to indicate that all available data should be expected.
-pub const EXPECT_ALL_WILDCARD: i32 = -1;
+/// Expected length for a command response.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ExpectedLength {
+    /// Expect a concrete number of bytes in the response.
+    Exact(usize),
+    /// Accept the maximum amount of data the card is willing to return.
+    Any,
+}
+
+impl ExpectedLength {
+    fn resolve(self, scope_supports_extended_length: bool) -> usize {
+        match self {
+            ExpectedLength::Exact(len) => len,
+            ExpectedLength::Any => {
+                if scope_supports_extended_length {
+                    EXPECTED_LENGTH_WILDCARD_EXTENDED
+                } else {
+                    EXPECTED_LENGTH_WILDCARD_SHORT
+                }
+            }
+        }
+    }
+}
 
 /// Superclass for all health healthcard commands.
 #[derive(Clone)]
 pub struct HealthCardCommand {
     /// Expected status codes mapped to their response status
-    pub expected_status: HashMap<u16, HealthCardResponseStatus>,
+    pub(crate) expected_status: HashMap<u16, HealthCardResponseStatus>,
     /// The class byte (CLA)
-    pub cla: u8,
+    pub(crate) cla: u8,
     /// The instruction byte (INS)
-    pub ins: u8,
+    pub(crate) ins: u8,
     /// The parameter 1 byte (P1)
-    pub p1: u8,
+    pub(crate) p1: u8,
     /// The parameter 2 byte (P2)
-    pub p2: u8,
+    pub(crate) p2: u8,
     /// The command data
-    pub data: Option<Vec<u8>>,
+    pub(crate) data: Option<Vec<u8>>,
     /// The expected response length
-    pub ne: Option<usize>,
+    pub(crate) ne: Option<ExpectedLength>,
 }
 
 impl HealthCardCommand {
@@ -60,7 +81,7 @@ impl HealthCardCommand {
     /// * `p1` - Parameter 1 byte
     /// * `p2` - Parameter 2 byte
     /// * `data` - Optional command data
-    /// * `ne` - Optional expected response length
+    /// * `ne` - Optional expected response length (use [ExpectedLength] to express either an exact size or a wildcard)
     pub fn new(
         expected_status: HashMap<u16, HealthCardResponseStatus>,
         cla: u8,
@@ -68,11 +89,9 @@ impl HealthCardCommand {
         p1: u8,
         p2: u8,
         data: Option<Vec<u8>>,
-        ne: Option<i32>,
+        ne: Option<ExpectedLength>,
     ) -> Self {
-        let ne_usize = ne.map(|n| if n >= 0 { n as usize } else { 0 });
-
-        HealthCardCommand { expected_status, cla, ins, p1, p2, data, ne: ne_usize }
+        HealthCardCommand { expected_status, cla, ins, p1, p2, data, ne }
     }
 
     /// Converts the HealthCardCommand to a CardCommandApdu.
@@ -80,16 +99,7 @@ impl HealthCardCommand {
     /// # Arguments
     /// * `scope_supports_extended_length` - Indicates if the scope supports extended length
     pub fn command_apdu(&self, scope_supports_extended_length: bool) -> Result<CardCommandApdu, ApduError> {
-        let expected_length = match self.ne {
-            Some(ne) if ne == EXPECT_ALL_WILDCARD as usize => {
-                if scope_supports_extended_length {
-                    Some(EXPECTED_LENGTH_WILDCARD_EXTENDED)
-                } else {
-                    Some(EXPECTED_LENGTH_WILDCARD_SHORT)
-                }
-            }
-            other => other,
-        };
+        let expected_length = self.ne.map(|ne| ne.resolve(scope_supports_extended_length));
 
         CardCommandApdu::new(self.cla, self.ins, self.p1, self.p2, self.data.clone(), expected_length)
     }
@@ -166,15 +176,22 @@ mod tests {
         let mut expected_status = HashMap::new();
         expected_status.insert(0x9000, HealthCardResponseStatus::Success);
 
-        let command =
-            HealthCardCommand::new(expected_status, 0x00, 0xA4, 0x04, 0x00, Some(vec![0x3F, 0x00]), Some(256));
+        let command = HealthCardCommand::new(
+            expected_status,
+            0x00,
+            0xA4,
+            0x04,
+            0x00,
+            Some(vec![0x3F, 0x00]),
+            Some(ExpectedLength::Exact(256)),
+        );
 
         assert_eq!(command.cla, 0x00);
         assert_eq!(command.ins, 0xA4);
         assert_eq!(command.p1, 0x04);
         assert_eq!(command.p2, 0x00);
         assert_eq!(command.data, Some(vec![0x3F, 0x00]));
-        assert_eq!(command.ne, Some(256));
+        assert_eq!(command.ne, Some(ExpectedLength::Exact(256)));
     }
 
     #[test]

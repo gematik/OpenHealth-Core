@@ -108,15 +108,15 @@ impl ManageSecurityEnvironmentCommand for HealthCardCommand {
             })
         })?;
 
-        Ok(HealthCardCommand {
-            expected_status: MANAGE_SECURITY_ENVIRONMENT_STATUS.clone(),
-            cla: CLA,
-            ins: INS,
-            p1: MODE_SET_SECRET_KEY_OBJECT_P1,
-            p2: MODE_AFFECTED_LIST_ELEMENT_IS_EXT_AUTH_P2,
-            data: Some(data),
-            ne: None,
-        })
+        Ok(HealthCardCommand::new(
+            MANAGE_SECURITY_ENVIRONMENT_STATUS.clone(),
+            CLA,
+            INS,
+            MODE_SET_SECRET_KEY_OBJECT_P1,
+            MODE_AFFECTED_LIST_ELEMENT_IS_EXT_AUTH_P2,
+            Some(data),
+            None,
+        ))
     }
 
     fn manage_sec_env_for_signing<K: CardKeyReference>(
@@ -144,15 +144,15 @@ impl ManageSecurityEnvironmentCommand for HealthCardCommand {
             )
         })?;
 
-        Ok(HealthCardCommand {
-            expected_status: MANAGE_SECURITY_ENVIRONMENT_STATUS.clone(),
-            cla: CLA,
-            ins: INS,
-            p1: MODE_SET_PRIVATE_KEY_P1,
-            p2: MODE_AFFECTED_LIST_ELEMENT_IS_SIGNATURE_CREATION,
-            data: Some(data),
-            ne: None,
-        })
+        Ok(HealthCardCommand::new(
+            MANAGE_SECURITY_ENVIRONMENT_STATUS.clone(),
+            CLA,
+            INS,
+            MODE_SET_PRIVATE_KEY_P1,
+            MODE_AFFECTED_LIST_ELEMENT_IS_SIGNATURE_CREATION,
+            Some(data),
+            None,
+        ))
     }
 }
 
@@ -164,7 +164,7 @@ mod tests {
     #[test]
     fn test_manage_sec_env_without_curves() {
         // Create test objects
-        let password_ref = PasswordReference::new(5);
+        let password_ref = PasswordReference::new(5).unwrap();
         let oid = [0x06, 0x07, 0x2A, 0x86, 0x48, 0xCE, 0x3D, 0x02, 0x01]; // Example OID
 
         // Test with df_specific = true
@@ -193,7 +193,7 @@ mod tests {
     #[test]
     fn test_manage_sec_env_for_signing() {
         // Create test objects
-        let password_ref = PasswordReference::new(3);
+        let password_ref = PasswordReference::new(3).unwrap();
         let pso_algorithm = PsoAlgorithm::SignVerifyEcdsa;
 
         // Test with df_specific = true
