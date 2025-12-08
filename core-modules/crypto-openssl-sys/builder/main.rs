@@ -64,11 +64,17 @@ fn main() {
     build_openssl_bindings();
 }
 
+struct AndroidEnv {
+    env: Vec<(String, String)>,
+    api_level: String,
+}
+
 fn build_openssl() {
     const OPENSSL_VERSION: &str = "8fabfd81094d1d9f8890df4bee083aa6f77d769d";
 
     let manifest = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
     let target = env::var("TARGET").unwrap_or_else(|_| "aarch64-apple-darwin".to_string());
+    let android_env = android_toolchain(&target);
 
     let openssl_target = get_openssl_target(&target);
     let src = manifest.join("openssl-src");
@@ -88,30 +94,41 @@ fn build_openssl() {
     run_command("git", &["checkout", OPENSSL_VERSION], Some(&src));
 
     // Configure
-    let configure_args = [
-        openssl_target,
-        &format!("--prefix={}", install.display()),
+    let mut configure_args = vec![
+        openssl_target.to_string(),
+        format!("--prefix={}", install.display()),
         // "no-asm",
         // "no-async",
-        "no-egd",
-        "no-ktls",
-        "no-module",
-        "no-posix-io",
-        "no-secure-memory",
-        "no-shared",
-        "no-sock",
-        "no-stdio",
+        "no-egd".to_string(),
+        "no-ktls".to_string(),
+        "no-module".to_string(),
+        "no-posix-io".to_string(),
+        "no-secure-memory".to_string(),
+        "no-shared".to_string(),
+        "no-sock".to_string(),
+        "no-stdio".to_string(),
         // "no-thread-pool",
         // "no-threads",
-        "no-ui-console",
-        "no-docs",
+        "no-ui-console".to_string(),
+        "no-docs".to_string(),
     ];
-    run_command(&src.join("Configure").to_str().unwrap(), &configure_args, Some(&src));
+
+    if let Some(env) = &android_env {
+        configure_args.push(format!("-D__ANDROID_API__={}", env.api_level));
+    }
+
+    let configure_args: Vec<&str> = configure_args.iter().map(String::as_str).collect();
+    run_command_env(
+        &src.join("Configure").to_str().unwrap(),
+        &configure_args,
+        Some(&src),
+        env_slice(&android_env),
+    );
 
     // Build & install
     let jobs = num_cpus::get().to_string();
-    run_command("make", &[&format!("-j{}", jobs)], Some(&src));
-    run_command("make", &["install"], Some(&src));
+    run_command_env("make", &[&format!("-j{}", jobs)], Some(&src), env_slice(&android_env));
+    run_command_env("make", &["install"], Some(&src), env_slice(&android_env));
 
     // Tell Cargo where to find the built libs
     let lib_dir = locate_openssl_lib_dir(&install);
@@ -125,17 +142,27 @@ fn get_openssl_target(target: &str) -> &'static str {
         "x86_64-apple-darwin" => "darwin64-x86_64-cc",
         "aarch64-unknown-linux-gnu" => "linux-aarch64",
         "x86_64-unknown-linux-gnu" => "linux-x86_64",
-        _ => "darwin64-arm64-cc", // fallback
+        "aarch64-linux-android" => "android-arm64",
+        "armv7-linux-androideabi" => "android-arm",
+        "x86_64-linux-android" => "android-x86_64",
+        "i686-linux-android" => "android-x86",
+        _ => panic!("Unsupported target triple: {target}"),
     }
 }
 
 fn run_command(prog: &str, args: &[&str], cwd: Option<&PathBuf>) {
+    run_command_env(prog, args, cwd, &[]);
+}
+
+fn run_command_env(prog: &str, args: &[&str], cwd: Option<&PathBuf>, envs: &[(String, String)]) {
     let mut command = Command::new(prog);
     command.args(args);
 
     if let Some(dir) = cwd {
         command.current_dir(dir);
     }
+
+    command.envs(envs.iter().map(|(k, v)| (k, v)));
 
     let status = command.status().unwrap_or_else(|e| panic!("Failed to execute command '{}': {}", prog, e));
 
@@ -203,4 +230,69 @@ fn locate_openssl_lib_dir(install_root: &Path) -> PathBuf {
     }
 
     panic!("OpenSSL install directory at '{}' has no lib or lib64 directory", install_root.display());
+}
+
+fn env_slice(env: &Option<AndroidEnv>) -> &[(String, String)] {
+    env.as_ref().map(|env| env.env.as_slice()).unwrap_or(&[])
+}
+
+fn android_toolchain(target: &str) -> Option<AndroidEnv> {
+    if !target.contains("android") {
+        return None;
+    }
+
+    let ndk_root = env::var("ANDROID_NDK_HOME")
+        .or_else(|_| env::var("ANDROID_NDK_ROOT"))
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| panic!("ANDROID_NDK_HOME or ANDROID_NDK_ROOT must be set when building for Android"));
+
+    let host_tag = find_ndk_host_tag(&ndk_root);
+    let api_level = env::var("ANDROID_API_LEVEL")
+        .or_else(|_| env::var("CARGO_NDK_ANDROID_PLATFORM"))
+        .unwrap_or_else(|_| "24".to_string());
+
+    let (clang_target, binutils_target) = match target {
+        "aarch64-linux-android" => ("aarch64-linux-android", "aarch64-linux-android"),
+        "armv7-linux-androideabi" => ("armv7a-linux-androideabi", "arm-linux-androideabi"),
+        "x86_64-linux-android" => ("x86_64-linux-android", "x86_64-linux-android"),
+        "i686-linux-android" => ("i686-linux-android", "i686-linux-android"),
+        _ => return None,
+    };
+
+    let bin_dir = ndk_root.join("toolchains/llvm/prebuilt").join(host_tag).join("bin");
+    let cc = bin_dir.join(format!("{clang_target}{api_level}-clang"));
+    let ar = bin_dir.join(format!("{binutils_target}-ar"));
+    let ranlib = bin_dir.join(format!("{binutils_target}-ranlib"));
+
+    let mut env = vec![
+        ("CC".to_string(), cc.display().to_string()),
+        ("AR".to_string(), ar.display().to_string()),
+        ("RANLIB".to_string(), ranlib.display().to_string()),
+        ("CFLAGS".to_string(), format!("-D__ANDROID_API__={api_level}")),
+    ];
+
+    if let Ok(path) = env::var("PATH") {
+        env.push(("PATH".to_string(), format!("{}:{}", bin_dir.display(), path)));
+    }
+
+    Some(AndroidEnv { env, api_level })
+}
+
+fn find_ndk_host_tag(ndk_root: &Path) -> String {
+    let prebuilt = ndk_root.join("toolchains/llvm/prebuilt");
+    let candidates: Vec<&str> = match env::consts::OS {
+        "macos" => vec!["darwin-arm64", "darwin-x86_64"],
+        "linux" => vec!["linux-x86_64"],
+        "windows" => vec!["windows-x86_64"],
+        _ => vec!["linux-x86_64"],
+    };
+
+    for candidate in candidates {
+        let tag = prebuilt.join(candidate);
+        if tag.is_dir() {
+            return candidate.to_string();
+        }
+    }
+
+    panic!("Could not locate a valid NDK toolchain under {}", prebuilt.display());
 }
