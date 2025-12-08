@@ -708,6 +708,7 @@ mod tests {
         assert_eq!(command.p1(), 0x04);
         assert_eq!(command.p2(), 0x00);
         assert_eq!(command.as_data(), Some(&[0x3F, 0x00][..]));
+        assert_eq!(command.to_bytes(), bytes);
         assert_eq!(command.expected_length(), Some(256));
 
         let response_bytes = [0x6F, 0x12, 0x90, 0x00];

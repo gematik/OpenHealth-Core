@@ -209,17 +209,23 @@ impl<S: CardChannel> TrustedChannel<S> {
 
     /// Decrypt and verify a secure messaging response.
     pub fn decrypt(&mut self, response: CardResponseApdu) -> Result<CardResponseApdu, ExchangeError> {
-        let bytes = response.into_bytes();
-        if bytes.len() < 4 {
+        let response_len = response.as_bytes().len();
+        let ssc = self.increment_ssc();
+
+        if response_len == 2 {
+            // Card replied with status only (e.g., rejected before secure messaging); pass it through unchanged.
+            return Ok(response);
+        }
+        if response_len < 4 {
             return Err(ExchangeError::invalid_argument("response apdu too short"));
         }
 
+        let bytes = response.into_bytes();
         let (body, sw_bytes) = bytes.split_at(bytes.len() - 2);
         if body.is_empty() {
             return Err(ExchangeError::invalid_argument("response apdu missing secure messaging data objects"));
         }
 
-        let ssc = self.increment_ssc();
         let response_objects = parse_response_objects(body)?;
         if response_objects.status_bytes != [sw_bytes[0], sw_bytes[1]] {
             return Err(ExchangeError::invalid_argument("status mismatch between DO99 and response"));
@@ -373,7 +379,7 @@ where
     let encryption_key = get_aes128_key(shared_secret_x, Mode::Enc)?;
     let mac_key = get_aes128_key(shared_secret_x, Mode::Mac)?;
     let pace_key = PaceChannelKeys::new(encryption_key, mac_key);
-    let ssc = derive_ssc(shared_secret_x);
+    let ssc = derive_ssc();
 
     let mac = derive_mac(pace_key.mac(), &picc_public_key, &pace_info.protocol_id)?;
     let derived_mac = derive_mac(pace_key.mac(), &ep_gs_shared_secret.to_ec_public_key()?, &pace_info.protocol_id)?;
@@ -503,11 +509,10 @@ fn derive_iv(key: &SecretKey, ssc: &[u8; 16]) -> Result<Vec<u8>, ExchangeError> 
     Ok(out)
 }
 
-fn derive_ssc(shared_secret_x: &[u8]) -> SendSequenceCounter {
-    let mut ssc = [0u8; 16];
-    let tail = &shared_secret_x[shared_secret_x.len().saturating_sub(16)..];
-    ssc[(16 - tail.len())..].copy_from_slice(tail);
-    SendSequenceCounter::new(ssc)
+fn derive_ssc() -> SendSequenceCounter {
+    // eGK secure messaging starts with an all-zero SSC that is incremented before use.
+    // The shared secret is used only for key derivation, not as an SSC seed.
+    SendSequenceCounter::new([0u8; 16])
 }
 
 fn iso9797_1_pad(data: &[u8]) -> Vec<u8> {
@@ -760,6 +765,15 @@ mod tests {
     }
 
     #[test]
+    fn decrypt_status_only_passthrough() {
+        let response = CardResponseApdu::new(&[0x63, 0xC0]).unwrap();
+        let mut scope = make_channel();
+        let plain = scope.decrypt(response).unwrap();
+        assert_eq!(plain.sw(), 0x63C0);
+        assert!(plain.as_data().is_empty());
+    }
+
+    #[test]
     fn decrypt_do87_and_do99() {
         let response = CardResponseApdu::new(
             &hex::decode("871101496C26D36306679609665A385C54DB37990290008E08B7E9ED2A0C89FB3A9000").unwrap(),
@@ -795,12 +809,5 @@ mod tests {
 
         let decoded = decode_general_authenticate(&data).expect("decode succeeds");
         assert_eq!(decoded, value);
-    }
-
-    #[test]
-    fn ssc_derives_from_tail_bytes() {
-        let secret: Vec<u8> = (0u8..32).collect();
-        let ssc = super::derive_ssc(&secret);
-        assert_eq!(ssc.to_vec(), secret[secret.len() - 16..].to_vec());
     }
 }
