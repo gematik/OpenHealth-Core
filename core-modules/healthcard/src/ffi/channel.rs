@@ -20,8 +20,8 @@
 // find details in the "Readme" file.
 
 use crate::command::apdu::{ApduError, CardCommandApdu, CardResponseApdu};
-use crate::exchange::ExchangeError;
 use crate::command::health_card_status::{HealthCardResponseStatus, StatusWordExt};
+use crate::exchange::ExchangeError;
 use std::sync::Arc;
 use thiserror::Error;
 
@@ -65,9 +65,7 @@ impl CommandApdu {
         length_class: crate::command::apdu::LengthClass,
         expected_length: u32,
     ) -> Result<Self, ApduError> {
-        Ok(Self {
-            inner: CardCommandApdu::with_expect(cla, ins, p1, p2, length_class, expected_length as usize)?,
-        })
+        Ok(Self { inner: CardCommandApdu::with_expect(cla, ins, p1, p2, length_class, expected_length as usize)? })
     }
 
     #[uniffi::constructor]

@@ -20,12 +20,12 @@
 // find details in the "Readme" file.
 
 use super::channel::{CardChannel, CardChannelError, CommandApdu, ResponseApdu};
+use crate::command::apdu::ApduError;
 use crate::command::apdu::{CardCommandApdu, CardResponseApdu};
 use crate::command::health_card_status::HealthCardResponseStatus;
 use crate::exchange::channel::CardChannel as CoreCardChannel;
 use crate::exchange::trusted_channel::{self, CardAccessNumber as ActualCardAccessNumber};
 use crate::exchange::ExchangeError;
-use crate::command::apdu::ApduError;
 use std::convert::TryInto;
 use std::sync::{Arc, Mutex};
 use thiserror::Error;

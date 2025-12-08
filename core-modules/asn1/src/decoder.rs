@@ -76,7 +76,9 @@ impl<'a> ParserScope<'a> {
                 let form: u8 = id.form.into();
                 format!("Asn1Id(class=0x{class:02X}, form=0x{form:02X}, number=0x{:X})", id.number)
             };
-            return Err(Asn1DecoderError::UnexpectedTag { expected: describe(&expected), actual: describe(&tag) }.into());
+            return Err(
+                Asn1DecoderError::UnexpectedTag { expected: describe(&expected), actual: describe(&tag) }.into()
+            );
         }
         let length = self.read_length()?;
         let original_end = self.end_offset;
@@ -86,7 +88,8 @@ impl<'a> ParserScope<'a> {
                 self.end_offset = usize::MAX;
             }
             Asn1Length::Definite(len) => {
-                let new_end = self.offset.checked_add(len).ok_or_else(|| Asn1DecoderError::integer_overflow("scope end"))?;
+                let new_end =
+                    self.offset.checked_add(len).ok_or_else(|| Asn1DecoderError::integer_overflow("scope end"))?;
                 if new_end > original_end {
                     return Err(Asn1DecoderError::unexpected_end_of_data("length exceeds available data").into());
                 }

@@ -130,7 +130,9 @@ pub fn parse_health_card_version2(data: &[u8]) -> Result<HealthCardVersion2, Hea
 
                 let length = match reader.read_length()? {
                     Asn1Length::Indefinite => {
-                        return Err(Asn1DecoderError::custom("indefinite lengths are not supported in EF.Version2").into())
+                        return Err(
+                            Asn1DecoderError::custom("indefinite lengths are not supported in EF.Version2").into()
+                        )
                     }
                     Asn1Length::Definite(len) => len,
                 };

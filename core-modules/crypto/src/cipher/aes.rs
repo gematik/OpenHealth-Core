@@ -479,10 +479,13 @@ mod tests {
         let msg = b"The quick brown fox";
 
         // Encrypt
-        let mut enc =
-            AesCipherSpec::Gcm { iv: GcmNonce::new(IV_16).unwrap(), aad: Aad::new(&b"AAD"[..]).unwrap(), tag_length: 16.bytes() }
-                .cipher(key())
-                .unwrap();
+        let mut enc = AesCipherSpec::Gcm {
+            iv: GcmNonce::new(IV_16).unwrap(),
+            aad: Aad::new(&b"AAD"[..]).unwrap(),
+            tag_length: 16.bytes(),
+        }
+        .cipher(key())
+        .unwrap();
 
         let mut ct = Vec::new();
         enc.update(msg, &mut ct).unwrap();
