@@ -136,16 +136,22 @@ fn build_openssl() {
     println!("cargo:rustc-link-lib=static=crypto");
     println!("cargo:rustc-link-lib=static=ssl");
 }
+
 fn get_openssl_target(target: &str) -> &'static str {
     match target {
         "aarch64-apple-darwin" => "darwin64-arm64-cc",
         "x86_64-apple-darwin" => "darwin64-x86_64-cc",
+        "aarch64-apple-ios" => "ios64-xcrun",
+        "aarch64-apple-ios-sim" => "iossimulator-arm64-xcrun",
+        "x86_64-apple-ios" => "iossimulator-x86_64-xcrun",
         "aarch64-unknown-linux-gnu" => "linux-aarch64",
         "x86_64-unknown-linux-gnu" => "linux-x86_64",
         "aarch64-linux-android" => "android-arm64",
         "armv7-linux-androideabi" => "android-arm",
         "x86_64-linux-android" => "android-x86_64",
         "i686-linux-android" => "android-x86",
+        t if t.ends_with("apple-ios-sim") => "iossimulator-arm64-xcrun",
+        t if t.ends_with("apple-ios") => "ios64-xcrun",
         _ => panic!("Unsupported target triple: {target}"),
     }
 }
