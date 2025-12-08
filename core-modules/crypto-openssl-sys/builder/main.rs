@@ -75,6 +75,15 @@ fn build_openssl() {
     let manifest = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
     let target = env::var("TARGET").unwrap_or_else(|_| "aarch64-apple-darwin".to_string());
     let android_env = android_toolchain(&target);
+    let ios_deployment_target = ios_deployment_target(&target);
+    let mut build_env = env_slice(&android_env).to_vec();
+    if let Some(version) = &ios_deployment_target {
+        println!("cargo:rustc-env=IPHONEOS_DEPLOYMENT_TARGET={}", version);
+        build_env.push(("IPHONEOS_DEPLOYMENT_TARGET".to_string(), version.clone()));
+        if is_ios_simulator(&target) {
+            build_env.push(("IOS_SIMULATOR_DEPLOYMENT_TARGET".to_string(), version.clone()));
+        }
+    }
 
     let openssl_target = get_openssl_target(&target);
     let src = manifest.join("openssl-src");
@@ -117,18 +126,28 @@ fn build_openssl() {
         configure_args.push(format!("-D__ANDROID_API__={}", env.api_level));
     }
 
+    if let Some(flag) = ios_deployment_target
+        .as_ref()
+        .map(|version| ios_version_min_flag(&target, version))
+    {
+        configure_args.push(flag);
+    }
+    if is_ios_target(&target) {
+        configure_args.push("-fno-stack-check".to_string());
+    }
+
     let configure_args: Vec<&str> = configure_args.iter().map(String::as_str).collect();
     run_command_env(
         &src.join("Configure").to_str().unwrap(),
         &configure_args,
         Some(&src),
-        env_slice(&android_env),
+        &build_env,
     );
 
     // Build & install
     let jobs = num_cpus::get().to_string();
-    run_command_env("make", &[&format!("-j{}", jobs)], Some(&src), env_slice(&android_env));
-    run_command_env("make", &["install"], Some(&src), env_slice(&android_env));
+    run_command_env("make", &[&format!("-j{}", jobs)], Some(&src), &build_env);
+    run_command_env("make", &["install"], Some(&src), &build_env);
 
     // Tell Cargo where to find the built libs
     let lib_dir = locate_openssl_lib_dir(&install);
@@ -153,6 +172,34 @@ fn get_openssl_target(target: &str) -> &'static str {
         t if t.ends_with("apple-ios-sim") => "iossimulator-arm64-xcrun",
         t if t.ends_with("apple-ios") => "ios64-xcrun",
         _ => panic!("Unsupported target triple: {target}"),
+    }
+}
+
+fn is_ios_target(target: &str) -> bool {
+    target.contains("apple-ios")
+}
+
+fn is_ios_simulator(target: &str) -> bool {
+    target.contains("apple-ios-sim") || target.starts_with("x86_64-apple-ios")
+}
+
+fn ios_deployment_target(target: &str) -> Option<String> {
+    if !is_ios_target(target) {
+        return None;
+    }
+
+    Some(
+        env::var("IPHONEOS_DEPLOYMENT_TARGET")
+            .or_else(|_| env::var("IOS_DEPLOYMENT_TARGET"))
+            .unwrap_or_else(|_| "10.0".to_string()),
+    )
+}
+
+fn ios_version_min_flag(target: &str, version: &str) -> String {
+    if is_ios_simulator(target) {
+        format!("-mios-simulator-version-min={version}")
+    } else {
+        format!("-miphoneos-version-min={version}")
     }
 }
 
@@ -184,6 +231,11 @@ fn build_openssl_bindings() {
     let openssl_dir = format!("openssl-{}", openssl_target);
     let install_dir = manifest_dir.join(&openssl_dir);
     let lib_dir = locate_openssl_lib_dir(&install_dir);
+    let ios_deployment_target = ios_deployment_target(&target);
+
+    if let Some(version) = &ios_deployment_target {
+        println!("cargo:rustc-env=IPHONEOS_DEPLOYMENT_TARGET={}", version);
+    }
 
     // Set up library linking
     println!("cargo:rustc-link-search=native={}", lib_dir.display());
@@ -192,7 +244,13 @@ fn build_openssl_bindings() {
 
     // Build clang args for bindgen
     let include_path = install_dir.join("include");
-    let clang_args = vec!["-I".to_string(), include_path.display().to_string()];
+    let mut clang_args = vec!["-I".to_string(), include_path.display().to_string()];
+    let ios_min_flag = ios_deployment_target
+        .as_ref()
+        .map(|version| ios_version_min_flag(&target, version));
+    if let Some(flag) = &ios_min_flag {
+        clang_args.push(flag.clone());
+    }
     let wrapper_header = manifest_dir.join("wrapper/rust_wrapper.h");
 
     // Generate ossl
@@ -222,7 +280,15 @@ fn build_openssl_bindings() {
 
     println!("cargo:rerun-if-changed=wrapper/rust_wrapper.h");
 
-    cc::Build::new().file(manifest_dir.join("wrapper/rust_wrapper.c")).include(&include_path).compile("rust_wrapper");
+    let mut wrapper_build = cc::Build::new();
+    wrapper_build.file(manifest_dir.join("wrapper/rust_wrapper.c")).include(&include_path);
+    if let Some(flag) = ios_min_flag {
+        wrapper_build.flag(&flag);
+    }
+    if is_ios_target(&target) {
+        wrapper_build.flag("-fno-stack-check");
+    }
+    wrapper_build.compile("rust_wrapper");
 
     println!("cargo:rerun-if-changed=wrapper/rust_wrapper.c");
 }
