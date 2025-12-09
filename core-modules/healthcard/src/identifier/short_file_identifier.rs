@@ -59,7 +59,7 @@ impl ShortFileIdentifier {
     /// # Arguments
     /// * `sf_id` - The Short File Identifier value
     pub fn new(sf_id: u8) -> Result<Self, ShortFileIdentifierError> {
-        if sf_id < MIN_VALUE || sf_id > MAX_VALUE {
+        if !(MIN_VALUE..=MAX_VALUE).contains(&sf_id) {
             Err(ShortFileIdentifierError::OutOfRange(sf_id))
         } else {
             Ok(ShortFileIdentifier { sf_id })

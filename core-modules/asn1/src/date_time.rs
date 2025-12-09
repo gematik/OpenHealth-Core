@@ -82,6 +82,7 @@ impl Asn1Time {
         Asn1UtcTime::new(year, month, day, hour, minute, second, offset).map(Asn1Time::Utc)
     }
 
+    #[allow(clippy::too_many_arguments)] // ASN.1 GENERALIZED TIME requires separate components for optional fields
     pub fn generalized(
         year: i32,
         month: i32,
@@ -206,6 +207,7 @@ impl Asn1UtcTime {
 }
 
 impl Asn1GeneralizedTime {
+    #[allow(clippy::too_many_arguments)] // ASN.1 GENERALIZED TIME requires separate components for optional fields
     pub fn new(
         year: i32,
         month: i32,
@@ -465,7 +467,7 @@ impl WriterScope {
             // year % 100, zero-padded to 2
             use core::fmt::Write as _;
             let (year, month, day, hour, minute, second) = utc.components();
-            let _ = write!(s, "{:02}", (year.rem_euclid(100)) as i32);
+            let _ = write!(s, "{:02}", year.rem_euclid(100));
             let _ = write!(s, "{:02}{:02}{:02}{:02}", month, day, hour, minute);
             if let Some(sec) = second {
                 let _ = write!(s, "{:02}", sec);

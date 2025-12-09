@@ -60,7 +60,7 @@ impl Digest {
     /// Feeds more data into the digest.
     pub fn update(&mut self, input: &[u8]) -> OsslResult<()> {
         ossl_check!(
-            unsafe { EVP_DigestUpdate(self.ctx, input.as_ptr() as *const _, input.len() as usize) },
+            unsafe { EVP_DigestUpdate(self.ctx, input.as_ptr() as *const _, input.len()) },
             "Failed to update digest"
         );
         Ok(())

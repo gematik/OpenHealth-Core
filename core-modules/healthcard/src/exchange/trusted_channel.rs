@@ -147,10 +147,12 @@ impl SendSequenceCounter {
         Self(value)
     }
 
+    #[cfg(test)]
     fn as_bytes(&self) -> &[u8] {
         &self.0
     }
 
+    #[cfg(test)]
     fn to_vec(&self) -> Vec<u8> {
         self.0.to_vec()
     }
@@ -520,7 +522,7 @@ fn iso9797_1_pad(data: &[u8]) -> Vec<u8> {
     let mut out = Vec::with_capacity(data.len() + pad_len);
     out.extend_from_slice(data);
     out.push(0x80);
-    out.extend(std::iter::repeat(0x00).take(pad_len - 1));
+    out.extend(std::iter::repeat_n(0x00, pad_len - 1));
     out
 }
 
@@ -691,6 +693,17 @@ mod tests {
     fn make_channel() -> TrustedChannel<DummySession> {
         let channel = DummySession;
         TrustedChannel { channel, pace_key: pace_key_fixture(), ssc: SendSequenceCounter::new([0u8; 16]) }
+    }
+
+    #[test]
+    fn send_sequence_counter_accessors() {
+        let mut ssc = SendSequenceCounter::new([0u8; 16]);
+        assert_eq!(ssc.as_bytes(), &[0u8; 16]);
+        let cloned = ssc.to_vec();
+        assert_eq!(cloned.len(), 16);
+
+        ssc.increment();
+        assert_ne!(ssc.as_bytes(), cloned.as_slice());
     }
 
     fn to_hex(apdu: &CardCommandApdu) -> String {

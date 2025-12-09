@@ -308,7 +308,7 @@ impl EcPrivateKey {
                         // version (INTEGER 1)
                         scope.write_asn1_int(1)?;
                         // privateKey (OCTET STRING)
-                        scope.write_asn1_octet_string(&self.scalar.as_ref())?;
+                        scope.write_asn1_octet_string(self.scalar.as_ref())?;
                         Ok(())
                     })
                 })?;

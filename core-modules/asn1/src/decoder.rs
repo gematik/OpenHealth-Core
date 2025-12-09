@@ -201,8 +201,8 @@ impl<'a> ParserScope<'a> {
         let bytes = self.read_bytes(length)?;
         let mut result = bytes[0] as i32;
         result = if signed && (result & 0x80) != 0 { result | -0x100 } else { result & 0xFF };
-        for i in 1..length {
-            result = (result << 8) | ((bytes[i] as i32) & 0xFF);
+        for byte in bytes.iter().skip(1).take(length.saturating_sub(1)) {
+            result = (result << 8) | ((*byte as i32) & 0xFF);
         }
         Ok(result)
     }
@@ -253,7 +253,7 @@ impl<'a> ParserScope<'a> {
             }
             if unused_bits != 0 {
                 let last = bit_string[bit_string.len() - 1];
-                let mask = (((0xFFu16 << unused_bits) & 0xFF) as u8) & 0xFF;
+                let mask = ((0xFFu16 << unused_bits) & 0xFF) as u8;
                 bit_string.pop();
                 bit_string.push(last & mask);
             }

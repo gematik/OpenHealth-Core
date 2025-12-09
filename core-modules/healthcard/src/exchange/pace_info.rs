@@ -23,7 +23,7 @@ use asn1::decoder::Asn1Decoder;
 use asn1::encoder::Asn1Encoder;
 use asn1::error::Asn1DecoderError;
 use asn1::oid::ObjectIdentifier;
-use asn1::tag::{Asn1Id, UniversalTag};
+use asn1::tag::UniversalTag;
 use crypto::ec::ec_key::EcCurve;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
@@ -101,7 +101,7 @@ static SUPPORTED_CURVES: Lazy<HashMap<i64, EcCurve>> = Lazy::new(|| {
 ///
 /// A `Result` containing either a `PaceInfo` object or a `PaceInfoError`.
 pub fn parse_pace_info(asn1: &[u8]) -> Result<PaceInfo, PaceInfoError> {
-    let mut decoder = Asn1Decoder::new(asn1);
+    let decoder = Asn1Decoder::new(asn1);
 
     let pace_info = decoder.read(|reader| {
         // SET (constructed)
@@ -122,7 +122,7 @@ pub fn parse_pace_info(asn1: &[u8]) -> Result<PaceInfo, PaceInfoError> {
                 let curve = SUPPORTED_CURVES
                     .get(&parameter_id)
                     .cloned()
-                    .ok_or_else(|| PaceInfoError::UnsupportedParameterId(parameter_id))?;
+                    .ok_or(PaceInfoError::UnsupportedParameterId(parameter_id))?;
 
                 // ensure we consumed the SEQUENCE fully
                 reader.skip_to_end()?;

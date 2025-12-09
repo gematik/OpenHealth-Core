@@ -113,7 +113,9 @@ fn build_openssl() {
         "no-ui-console",
         "no-docs",
     ];
-    run_command(&src.join("Configure").to_str().unwrap(), &configure_args, Some(&src));
+    let configure_path = src.join("Configure");
+    let configure = configure_path.to_str().expect("valid configure path");
+    run_command(configure, &configure_args, Some(&src));
 
     // Build & install
     let jobs = num_cpus::get().to_string();

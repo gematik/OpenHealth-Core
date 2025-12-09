@@ -56,9 +56,7 @@ impl EcPoint {
     pub fn from_public(name: &str, data: &[u8]) -> OsslResult<Self> {
         let ep = EcPoint::create_from_curve(name)?;
         ossl_check!(
-            unsafe {
-                EC_POINT_oct2point(ep.group, ep.point, data.as_ptr(), data.len() as usize, ptr::null_mut()) as c_int
-            },
+            unsafe { EC_POINT_oct2point(ep.group, ep.point, data.as_ptr(), data.len(), ptr::null_mut()) as c_int },
             "Failed to create ec point from uncompressed public key"
         );
         Ok(ep)
@@ -78,7 +76,7 @@ impl EcPoint {
     }
 
     pub fn add(&self, other: &EcPoint) -> OsslResult<Self> {
-        let mut r = self.clone()?;
+        let r = self.clone()?;
         ossl_check!(
             unsafe { EC_POINT_add(self.group, r.point, self.point, other.point, ptr::null_mut(),) },
             "EC_POINT_add failed"

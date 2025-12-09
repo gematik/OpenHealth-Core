@@ -56,7 +56,7 @@ impl FileIdentifier {
     /// * `Result<Self, FileIdentifierError>` - The new FileIdentifier or an error
     pub fn new(fid: u16) -> Result<Self, FileIdentifierError> {
         // Check if FID is in valid range according to gemSpec_COS_3.14.0#N006.700, N006.900
-        if (fid < 0x1000 || fid > 0xFEFF) && fid != 0x011C || fid == 0x3FFF {
+        if (!(0x1000..=0xFEFF).contains(&fid) && fid != 0x011C) || fid == 0x3FFF {
             return Err(FileIdentifierError::OutOfRange(fid));
         }
 

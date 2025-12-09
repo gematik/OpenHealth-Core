@@ -29,7 +29,6 @@ use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 /// concatenation of two fields: the plain text PIN field and the filler field.
 ///
 /// See "ISO 9564-1"
-
 const NIBBLE_SIZE: u8 = 4;
 const MIN_PIN_LEN: usize = 4; // specSpec_COS#N008.000
 const MAX_PIN_LEN: usize = 12; // specSpec_COS#N008.000

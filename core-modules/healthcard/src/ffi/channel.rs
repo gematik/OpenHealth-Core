@@ -39,6 +39,7 @@ impl CommandApdu {
         &self.inner
     }
 
+    #[cfg(test)]
     pub fn to_core(&self) -> CardCommandApdu {
         self.inner.clone()
     }

@@ -32,6 +32,12 @@ pub struct WriterScope {
     buffer: Vec<u8>,
 }
 
+impl Default for WriterScope {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl WriterScope {
     pub fn new() -> Self {
         Self { buffer: Vec::new() }
@@ -57,7 +63,7 @@ impl WriterScope {
     pub fn write_int(&mut self, integer: i32) {
         let mut bytes: Vec<u8> = Vec::new();
         let mut value = integer;
-        while value < -0x80 || value >= 0x80 {
+        while !(-0x80..0x80).contains(&value) {
             bytes.push((value & 0xFF) as u8);
             value /= 0x100;
         }
@@ -163,7 +169,7 @@ impl WriterScope {
     /// Write an ASN.1 bit string.
     pub fn write_asn1_bit_string(&mut self, value: &[u8], unused_bits: u8) -> Result<(), Asn1EncoderError> {
         if !(0..=7).contains(&unused_bits) {
-            return Err(Asn1EncoderError::invalid_unused_bit_count(unused_bits).into());
+            return Err(Asn1EncoderError::invalid_unused_bit_count(unused_bits));
         }
         self.write_tagged_object(UniversalTag::BitString.primitive(), |s| {
             s.write_byte(unused_bits);
@@ -200,10 +206,10 @@ impl WriterScope {
             let second = parts[1] as i32;
 
             if !(0..=2).contains(&first) {
-                return Err(Asn1EncoderError::invalid_object_identifier_first_component(first).into());
+                return Err(Asn1EncoderError::invalid_object_identifier_first_component(first));
             }
             if first < 2 && !(0..=39).contains(&second) {
-                return Err(Asn1EncoderError::invalid_object_identifier_second_component(second).into());
+                return Err(Asn1EncoderError::invalid_object_identifier_second_component(second));
             }
 
             let first_byte = first * 40 + second;
@@ -216,22 +222,8 @@ impl WriterScope {
         })
     }
 
-    fn write_multi_byte(&mut self, mut integer: i32) {
-        let mut bytes: Vec<u8> = Vec::new();
-        loop {
-            bytes.push((integer & 0x7F) as u8);
-            integer >>= 7;
-            if integer <= 0 {
-                break;
-            }
-        }
-        for (i, b) in bytes.iter().rev().enumerate() {
-            if i == bytes.len() - 1 {
-                self.write_byte(*b);
-            } else {
-                self.write_byte(*b | 0x80);
-            }
-        }
+    fn write_multi_byte(&mut self, integer: i32) {
+        self.write_base128(integer);
     }
 
     fn write_base128(&mut self, mut integer: i32) {
@@ -327,6 +319,17 @@ mod tests {
         })
         .unwrap();
         assert_eq!(hex(&result), "84 07 5B CD 15");
+    }
+
+    #[test]
+    fn write_base128_encodes_expected() {
+        let mut single = WriterScope::new();
+        single.write_base128(0x7F);
+        assert_eq!(single.buffer(), &[0x7F]);
+
+        let mut multi = WriterScope::new();
+        multi.write_base128(0x80);
+        assert_eq!(multi.buffer(), &[0x81, 0x00]);
     }
 
     #[test]

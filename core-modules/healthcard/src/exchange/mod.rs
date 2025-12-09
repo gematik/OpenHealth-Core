@@ -22,7 +22,7 @@
 pub mod certificate;
 pub mod channel;
 pub mod error;
-mod ids;
+pub mod ids;
 pub mod pace_info;
 pub mod pin;
 pub mod random;

@@ -19,7 +19,7 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use std::ffi::{CStr, CString};
+use std::ffi::CString;
 use std::os::raw::c_int;
 use std::ptr;
 
@@ -73,7 +73,7 @@ impl AesCipher {
         );
 
         let mode = unsafe { EVP_CIPHER_get_mode(EVP_CIPHER_CTX_get0_cipher(aes.ctx)) };
-        if mode == EVP_CIPH_GCM_MODE as i32 || mode == EVP_CIPH_CCM_MODE as i32 {
+        if mode == EVP_CIPH_GCM_MODE || mode == EVP_CIPH_CCM_MODE {
             let mut iv_len = iv.len();
             let mut params = [
                 unsafe { OSSL_PARAM_construct_size_t(OSSL_CIPHER_PARAM_IVLEN.as_ptr() as *const _, &mut iv_len) },

@@ -23,9 +23,8 @@ use crate::error::{CryptoError, CryptoResult};
 use crate::key::SecretKey;
 use crate::ossl;
 use core::fmt;
+use std::mem::ManuallyDrop;
 use zeroize::{Zeroize, ZeroizeOnDrop};
-
-struct MlkemSecret;
 
 pub type MlkemSharedSecret = SecretKey;
 
@@ -33,6 +32,29 @@ pub type MlkemSharedSecret = SecretKey;
 #[derive(Zeroize, ZeroizeOnDrop, PartialEq, Eq)]
 pub struct MlkemWrappedKey {
     bytes: Vec<u8>,
+}
+
+/// Private key bytes for ML-KEM. Zeroized on drop.
+#[derive(Zeroize, ZeroizeOnDrop, PartialEq, Eq)]
+pub struct MlkemPrivateKey(Vec<u8>);
+
+impl MlkemPrivateKey {
+    pub fn new(bytes: Vec<u8>) -> CryptoResult<Self> {
+        if bytes.is_empty() {
+            return Err(CryptoError::InvalidKeyMaterial { context: "private key must not be empty" });
+        }
+        Ok(Self(bytes))
+    }
+
+    pub fn into_inner(self) -> Vec<u8> {
+        // Prevent drop from zeroizing before we take ownership of the bytes.
+        let mut this = ManuallyDrop::new(self);
+        std::mem::take(&mut this.0)
+    }
+
+    pub fn as_ref(&self) -> &[u8] {
+        &self.0
+    }
 }
 
 impl fmt::Debug for MlkemWrappedKey {
@@ -100,7 +122,7 @@ impl TryFrom<Vec<u8>> for MlkemEncapsulationKey {
 }
 
 /// ML-KEM parameter sets.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum MlkemSpec {
     MlKem512,
     MlKem768,
@@ -119,6 +141,12 @@ impl MlkemSpec {
     /// Create a decapsulator holding a freshly generated ML-KEM private key.
     pub fn decapsulator(self) -> CryptoResult<MlkemDecapsulator> {
         let dec = ossl::mlkem::MlkemDecapsulation::create(self.algorithm())?;
+        Ok(MlkemDecapsulator { spec: self, dec })
+    }
+
+    /// Recreate a decapsulator from a serialized private key.
+    pub fn decapsulator_from_private_key(self, private_key: MlkemPrivateKey) -> CryptoResult<MlkemDecapsulator> {
+        let dec = ossl::mlkem::MlkemDecapsulation::create_from_private_key(self.algorithm(), private_key.as_ref())?;
         Ok(MlkemDecapsulator { spec: self, dec })
     }
 
@@ -141,6 +169,10 @@ impl MlkemEncapsulator {
         let (wrapped, secret) = self.enc.encapsulate()?;
         Ok((MlkemWrappedKey::new(wrapped)?, MlkemSharedSecret::new_secret(secret)))
     }
+
+    pub fn spec(&self) -> &MlkemSpec {
+        &self.spec
+    }
 }
 
 /// Decapsulation helper for ML-KEM.
@@ -160,6 +192,15 @@ impl MlkemDecapsulator {
     pub fn public_key(&self) -> CryptoResult<MlkemEncapsulationKey> {
         MlkemEncapsulationKey::new(self.dec.get_encapsulation_key()?)
     }
+
+    /// Export the private key as PKCS#8 DER.
+    pub fn export_private_key(&self) -> CryptoResult<MlkemPrivateKey> {
+        MlkemPrivateKey::new(self.dec.get_private_key()?)
+    }
+
+    pub fn spec(&self) -> &MlkemSpec {
+        &self.spec
+    }
 }
 
 #[cfg(test)]
@@ -171,12 +212,22 @@ mod tests {
 
         let pk = dec.public_key().unwrap();
         let enc = spec.clone().encapsulator(pk).expect("encapsulator");
+        assert_eq!(enc.spec(), &spec);
+        assert_eq!(dec.spec(), &spec);
         let (wrapped, ss_enc) = enc.encapsulate().expect("encapsulate");
 
         let ss_dec = dec.decapsulate(wrapped).expect("decapsulate");
 
         // Shared secret must match
         assert_eq!(ss_enc.as_ref(), ss_dec.as_ref(), "shared secret equality");
+
+        // Import decapsulator from exported private key
+        let exported = dec.export_private_key().expect("export pk");
+        let dec2 = spec.clone().decapsulator_from_private_key(exported).expect("decapsulator from pk");
+        assert_eq!(dec2.spec(), &spec);
+        let (wrapped2, ss_enc2) = enc.encapsulate().expect("encapsulate with imported decapsulator");
+        let ss_dec2 = dec2.decapsulate(wrapped2).expect("decapsulate imported");
+        assert_eq!(ss_enc2.as_ref(), ss_dec2.as_ref(), "imported decapsulator yields same secret");
     }
 
     #[test]

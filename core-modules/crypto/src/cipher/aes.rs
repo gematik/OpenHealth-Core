@@ -218,7 +218,7 @@ impl AesCipherSpec {
             cipher.set_aad(aad)?;
         }
 
-        Ok(AesCipher { cipher, spec: self, key })
+        Ok(AesCipher { cipher, spec: self })
     }
 }
 
@@ -229,7 +229,6 @@ impl AesCipherSpec {
 pub struct AesCipher {
     cipher: ossl::cipher::AesCipher,
     spec: AesCipherSpec,
-    key: SecretKey,
 }
 
 /// Specification for AES decryption.
@@ -317,7 +316,7 @@ impl AesDecipherSpec {
             cipher.set_auth_tag(tag.as_ref())?;
         }
 
-        Ok(AesDecipher { cipher, spec: self, key })
+        Ok(AesDecipher { cipher, spec: self })
     }
 }
 
@@ -327,7 +326,6 @@ impl AesDecipherSpec {
 pub struct AesDecipher {
     cipher: ossl::cipher::AesCipher,
     spec: AesDecipherSpec,
-    key: SecretKey,
 }
 
 /// Streaming cipher interface (encrypt/decrypt). Caller supplies output buffer.
@@ -398,7 +396,7 @@ mod tests {
         let mut cipher = AesCipherSpec::Ecb { padding: Padding::Pkcs7 }.cipher(key()).unwrap();
 
         let mut ct = Vec::new();
-        let l = cipher.update(b"Hello World", &mut ct).unwrap();
+        let _ = cipher.update(b"Hello World", &mut ct).unwrap();
         cipher.finalize(&mut ct).unwrap();
 
         assert_eq!(to_hex_string(&ct), ECB_HEX);

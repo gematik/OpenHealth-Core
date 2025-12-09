@@ -128,8 +128,6 @@ fn encode_expected_length_short(ne: usize) -> Result<[u8; 1], ApduError> {
 #[derive(Clone)]
 pub struct CardCommandApdu {
     apdu: Vec<u8>,
-    data_length: usize,
-    data_offset: usize,
     cla: u8,
     ins: u8,
     p1: u8,
@@ -328,7 +326,7 @@ impl CardCommandApdu {
         // Append header: |CLA|INS|P1|P2|
         apdu.extend_from_slice(&[cla, ins, p1, p2]);
 
-        let (data_length, data_offset, data_vec) = if let Some(data_into) = data {
+        let (_data_length, _data_offset, data_vec) = if let Some(data_into) = data {
             let data_vec = data_into.into();
             let data_length = data_vec.len();
 
@@ -390,7 +388,7 @@ impl CardCommandApdu {
             }
         };
 
-        Ok(CardCommandApdu { apdu, data_length, data_offset, cla, ins, p1, p2, data: data_vec, ne })
+        Ok(CardCommandApdu { apdu, cla, ins, p1, p2, data: data_vec, ne })
     }
 
     /// Creates a CardCommandApdu instance from a raw APDU byte array.
@@ -402,42 +400,25 @@ impl CardCommandApdu {
             return Err(ApduError::InvalidApdu("APDU must be at least 4 bytes long".to_string()));
         }
 
-        let mut data_length = 0;
-        let mut expected_length: Option<usize> = None;
-        let mut data_offset = 0;
-
-        if apdu.len() == 4 {
+        let (data_length, expected_length, data_offset) = if apdu.len() == 4 {
             // Case 1: Only the header is present.
-            data_length = 0;
-            expected_length = None;
-            data_offset = 0;
+            (0, None, 0)
         } else if apdu.len() == 5 {
             // Case 2s: Only expected length is present.
             let li = apdu[4] as usize;
             let ne = if li == 0 { EXPECTED_LENGTH_WILDCARD_SHORT } else { li };
-
-            data_length = 0;
-            expected_length = Some(ne);
-            data_offset = 0;
+            (0, Some(ne), 0)
         } else if (apdu[4] as usize) != 0 {
             // Short length cases: non-zero length indicator.
             let li = apdu[4] as usize;
             if apdu.len() == 4 + 1 + li {
                 // Case 3s: Data only.
-                data_length = li;
-                expected_length = None;
-                data_offset = 5;
+                (li, None, 5)
             } else if apdu.len() == 4 + 2 + li {
                 // Case 4s: Data and expected length.
-                let ne = if *apdu.last().unwrap() as usize == 0 {
-                    EXPECTED_LENGTH_WILDCARD_SHORT
-                } else {
-                    *apdu.last().unwrap() as usize
-                };
-
-                data_length = li;
-                expected_length = Some(ne);
-                data_offset = 5;
+                let last = *apdu.last().unwrap() as usize;
+                let ne = if last == 0 { EXPECTED_LENGTH_WILDCARD_SHORT } else { last };
+                (li, Some(ne), 5)
             } else {
                 return Err(ApduError::InvalidApdu(format!(
                     "Invalid APDU: length={}, lengthIndicator={}",
@@ -460,10 +441,7 @@ impl CardCommandApdu {
                 // Case 2e: Only expected length in extended format.
                 let ne =
                     if data_length_extended == 0 { EXPECTED_LENGTH_WILDCARD_EXTENDED } else { data_length_extended };
-
-                data_length = 0;
-                expected_length = Some(ne);
-                data_offset = 0;
+                (0, Some(ne), 0)
             } else {
                 if data_length_extended == 0 {
                     return Err(ApduError::InvalidApdu(format!(
@@ -476,9 +454,7 @@ impl CardCommandApdu {
 
                 if apdu.len() == 4 + 3 + data_length_extended {
                     // Case 3e: Data only (extended).
-                    data_length = data_length_extended;
-                    expected_length = None;
-                    data_offset = 7;
+                    (data_length_extended, None, 7)
                 } else if apdu.len() == 4 + 5 + data_length_extended {
                     // Case 4e: Data and expected length (extended).
                     let off = apdu.len() - 2;
@@ -489,9 +465,7 @@ impl CardCommandApdu {
                         expected_length_indicator
                     };
 
-                    data_length = data_length_extended;
-                    expected_length = Some(ne);
-                    data_offset = 7;
+                    (data_length_extended, Some(ne), 7)
                 } else {
                     return Err(ApduError::InvalidApdu(format!(
                         "Invalid APDU: length={}, lengthIndicator={}, extendedLength={}",
@@ -501,7 +475,7 @@ impl CardCommandApdu {
                     )));
                 }
             }
-        }
+        };
 
         // Extract header bytes.
         let cla = apdu[0];
@@ -518,17 +492,7 @@ impl CardCommandApdu {
             None
         };
 
-        Ok(CardCommandApdu {
-            apdu: apdu.to_vec(),
-            data_length,
-            data_offset,
-            cla,
-            ins,
-            p1,
-            p2,
-            data,
-            ne: expected_length,
-        })
+        Ok(CardCommandApdu { apdu: apdu.to_vec(), cla, ins, p1, p2, data, ne: expected_length })
     }
 }
 
