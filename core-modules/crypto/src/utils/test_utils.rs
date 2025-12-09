@@ -26,3 +26,16 @@ pub fn hex_to_bytes(s: &str) -> Vec<u8> {
 pub fn to_hex_string(bytes: &[u8]) -> String {
     bytes.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(" ")
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn hex_conversion_roundtrip() {
+        let hex = "0A 0B 0C";
+        let bytes = hex_to_bytes(hex);
+        assert_eq!(bytes, vec![0x0A, 0x0B, 0x0C]);
+        assert_eq!(to_hex_string(&bytes), hex);
+    }
+}

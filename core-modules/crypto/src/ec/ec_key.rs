@@ -26,6 +26,7 @@ use crate::ossl;
 use asn1::decoder::Asn1Decoder;
 use asn1::encoder::Asn1Encoder;
 use asn1::error::{Asn1DecoderError, Asn1EncoderError};
+use asn1::oid::ObjectIdentifier;
 use asn1::tag::UniversalTag;
 use num_bigint::BigInt;
 
@@ -48,12 +49,13 @@ impl EcCurve {
     }
 
     /// Object identifier (OID) for the curve.
-    pub fn oid(&self) -> &'static str {
-        match self {
+    pub fn oid(&self) -> ObjectIdentifier {
+        let value = match self {
             EcCurve::BrainpoolP256r1 => "1.3.36.3.3.2.8.1.1.7",
             EcCurve::BrainpoolP384r1 => "1.3.36.3.3.2.8.1.1.11",
             EcCurve::BrainpoolP512r1 => "1.3.36.3.3.2.8.1.1.13",
-        }
+        };
+        ObjectIdentifier::parse(value).expect("valid curve oid literals")
     }
 
     /// Prime modulus p.
@@ -148,6 +150,10 @@ impl EcPublicKey {
     /// OID for `id-ecPublicKey` (RFC 5480).
     pub const OID: &'static str = "1.2.840.10045.2.1";
 
+    fn algorithm_oid() -> ObjectIdentifier {
+        ObjectIdentifier::parse(Self::OID).expect("valid id-ecPublicKey OID")
+    }
+
     /// Create a public key from an uncompressed SEC1 encoding.
     pub fn from_uncompressed(curve: EcCurve, data: impl AsRef<[u8]>) -> CryptoResult<Self> {
         let bytes = data.as_ref();
@@ -209,9 +215,9 @@ impl EcPublicKey {
                 // SEQUENCE (AlgorithmIdentifier)
                 scope.write_tagged_object::<Asn1EncoderError>(UniversalTag::Sequence.constructed(), |scope| {
                     // OID for id-ecPublicKey
-                    scope.write_object_identifier(Self::OID)?;
+                    scope.write_object_identifier(&Self::algorithm_oid())?;
                     // OID for the curve
-                    scope.write_object_identifier(self.curve.oid())?;
+                    scope.write_object_identifier(&self.curve.oid())?;
                     Ok(())
                 })?;
                 // BIT STRING (public key data)
@@ -237,9 +243,12 @@ impl EcPublicKey {
                 let curve = read_ec_curve_from_algorithm_identifier(scope)?;
                 // Read the public key point as BIT STRING
                 let point = scope.read_bit_string()?;
+                if point.unused_bits != 0 {
+                    return Err(Asn1DecoderError::InvalidUnusedBitCount { count: point.unused_bits as i32 }.into());
+                }
                 scope.skip_to_end()?;
 
-                EcPublicKey::from_uncompressed(curve, point)
+                EcPublicKey::from_uncompressed(curve, point.bytes)
             })
         })
     }
@@ -286,9 +295,9 @@ impl EcPrivateKey {
                 // SEQUENCE (AlgorithmIdentifier)
                 scope.write_tagged_object::<CryptoError>(UniversalTag::Sequence.constructed(), |scope| {
                     // OID for id-ecPublicKey
-                    scope.write_object_identifier(EcPublicKey::OID)?;
+                    scope.write_object_identifier(&EcPublicKey::algorithm_oid())?;
                     // OID for the curve
-                    scope.write_object_identifier(self.curve.oid())?;
+                    scope.write_object_identifier(&self.curve.oid())?;
                     Ok(())
                 })?;
 
@@ -299,7 +308,7 @@ impl EcPrivateKey {
                         // version (INTEGER 1)
                         scope.write_asn1_int(1)?;
                         // privateKey (OCTET STRING)
-                        scope.write_asn1_octet_string(&self.scalar.as_ref())?;
+                        scope.write_asn1_octet_string(self.scalar.as_ref())?;
                         Ok(())
                     })
                 })?;
@@ -376,8 +385,9 @@ fn read_ec_curve_from_algorithm_identifier(
     scope.advance_with_tag(UniversalTag::Sequence.constructed(), |scope| {
         // Read algorithm OID (should be id-ecPublicKey)
         let oid = scope.read_object_identifier()?;
-        if oid != EcPublicKey::OID {
-            return Err(Asn1DecoderError::custom(format!("Unexpected OID `{}`. Expected `{}`", oid, EcPublicKey::OID)));
+        let expected_alg = EcPublicKey::algorithm_oid();
+        if oid != expected_alg {
+            return Err(Asn1DecoderError::custom(format!("Unexpected OID `{}`. Expected `{}`", oid, expected_alg)));
         }
 
         // Read curve OID
@@ -385,7 +395,8 @@ fn read_ec_curve_from_algorithm_identifier(
         scope.skip_to_end()?;
 
         // Match curve OID to EcCurve
-        match curve_oid.as_str() {
+        let curve_oid_str = curve_oid.to_string();
+        match curve_oid_str.as_str() {
             "1.3.36.3.3.2.8.1.1.7" => Ok(EcCurve::BrainpoolP256r1),
             "1.3.36.3.3.2.8.1.1.11" => Ok(EcCurve::BrainpoolP384r1),
             "1.3.36.3.3.2.8.1.1.13" => Ok(EcCurve::BrainpoolP512r1),

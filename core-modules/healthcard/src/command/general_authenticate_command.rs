@@ -19,13 +19,12 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use crate::command::apdu::EXPECTED_LENGTH_WILDCARD_SHORT;
 use asn1::encoder::Asn1Encoder;
 use asn1::error::Asn1EncoderError;
 use asn1::tag::TagNumberExt;
 use thiserror::Error;
 
-use crate::command::health_card_command::HealthCardCommand;
+use crate::command::health_card_command::{ExpectedLength, HealthCardCommand};
 use crate::command::health_card_status::GENERAL_AUTHENTICATE_STATUS;
 
 /// CLA byte for command chaining
@@ -78,15 +77,15 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
             w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |_inner| Ok(()))
         })?;
 
-        Ok(HealthCardCommand {
-            expected_status: GENERAL_AUTHENTICATE_STATUS.clone(),
+        Ok(HealthCardCommand::new(
+            GENERAL_AUTHENTICATE_STATUS.clone(),
             cla,
-            ins: INS,
-            p1: NO_MEANING,
-            p2: NO_MEANING,
-            data: Some(data),
-            ne: Some(EXPECTED_LENGTH_WILDCARD_SHORT),
-        })
+            INS,
+            NO_MEANING,
+            NO_MEANING,
+            Some(data),
+            Some(ExpectedLength::Any),
+        ))
     }
 
     fn general_authenticate_with_data(
@@ -106,22 +105,22 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
             })
         })?;
 
-        Ok(HealthCardCommand {
-            expected_status: GENERAL_AUTHENTICATE_STATUS.clone(),
+        Ok(HealthCardCommand::new(
+            GENERAL_AUTHENTICATE_STATUS.clone(),
             cla,
-            ins: INS,
-            p1: NO_MEANING,
-            p2: NO_MEANING,
-            data: Some(encoded_data),
-            ne: Some(EXPECTED_LENGTH_WILDCARD_SHORT),
-        })
+            INS,
+            NO_MEANING,
+            NO_MEANING,
+            Some(encoded_data),
+            Some(ExpectedLength::Any),
+        ))
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::command::apdu::CardCommandApdu;
+    use crate::command::apdu::{CardCommandApdu, EXPECTED_LENGTH_WILDCARD_SHORT};
     use asn1::tag::{Asn1Class, Asn1Form};
 
     #[test]
@@ -132,7 +131,7 @@ mod tests {
         assert_eq!(command.ins, INS);
         assert_eq!(command.p1, NO_MEANING);
         assert_eq!(command.p2, NO_MEANING);
-        assert_eq!(command.ne, Some(EXPECTED_LENGTH_WILDCARD_SHORT));
+        assert_eq!(command.ne, Some(ExpectedLength::Any));
 
         let data = command.data.unwrap();
 
@@ -150,7 +149,7 @@ mod tests {
         assert_eq!(command.ins, INS);
         assert_eq!(command.p1, NO_MEANING);
         assert_eq!(command.p2, NO_MEANING);
-        assert_eq!(command.ne, Some(EXPECTED_LENGTH_WILDCARD_SHORT));
+        assert_eq!(command.ne, Some(ExpectedLength::Any));
 
         let data = command.data.unwrap();
         assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | (Asn1Class::Application | Asn1Form::Constructed));
@@ -167,7 +166,7 @@ mod tests {
         assert_eq!(command.ins, INS);
         assert_eq!(command.p1, NO_MEANING);
         assert_eq!(command.p2, NO_MEANING);
-        assert_eq!(command.ne, Some(EXPECTED_LENGTH_WILDCARD_SHORT));
+        assert_eq!(command.ne, Some(ExpectedLength::Any));
 
         let data = command.data.unwrap();
 
@@ -209,19 +208,14 @@ mod tests {
     #[test]
     fn test_command_apdu_generation() {
         let command = HealthCardCommand::general_authenticate(false).unwrap();
-        let apdu_result =
-            CardCommandApdu::new(command.cla, command.ins, command.p1, command.p2, command.data.clone(), command.ne);
-
-        assert!(apdu_result.is_ok());
-
-        let apdu = apdu_result.unwrap();
+        let apdu = command.command_apdu(false).unwrap();
 
         assert_eq!(apdu.cla(), command.cla);
         assert_eq!(apdu.ins(), command.ins);
         assert_eq!(apdu.p1(), command.p1);
         assert_eq!(apdu.p2(), command.p2);
-        assert_eq!(apdu.data_ref().unwrap(), &command.data.as_ref().unwrap()[..]);
-        assert_eq!(apdu.expected_length(), command.ne);
+        assert_eq!(apdu.as_data().unwrap(), &command.data.as_ref().unwrap()[..]);
+        assert_eq!(apdu.expected_length(), Some(EXPECTED_LENGTH_WILDCARD_SHORT));
     }
 
     #[test]

@@ -73,7 +73,7 @@ impl AesCipher {
         );
 
         let mode = unsafe { EVP_CIPHER_get_mode(EVP_CIPHER_CTX_get0_cipher(aes.ctx)) };
-        if mode == EVP_CIPH_GCM_MODE as i32 || mode == EVP_CIPH_CCM_MODE as i32 {
+        if mode == EVP_CIPH_GCM_MODE || mode == EVP_CIPH_CCM_MODE {
             let mut iv_len = iv.len();
             let mut params = [
                 unsafe { OSSL_PARAM_construct_size_t(OSSL_CIPHER_PARAM_IVLEN.as_ptr() as *const _, &mut iv_len) },
@@ -148,7 +148,7 @@ impl AesCipher {
         let mut params = [
             unsafe {
                 OSSL_PARAM_construct_octet_string(
-                    OSSL_CIPHER_PARAM_AEAD_TAG.as_ptr() as *const i8,
+                    OSSL_CIPHER_PARAM_AEAD_TAG.as_ptr() as *const _,
                     tag.as_mut_ptr() as *mut _,
                     tag_len,
                 )

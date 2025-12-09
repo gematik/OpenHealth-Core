@@ -20,16 +20,17 @@
 // find details in the "Readme" file.
 
 use crate::utils::byte_unit::{ByteUnit, BytesExt};
-use core::marker::PhantomData;
-use zeroize::Zeroizing;
+use crate::utils::constant_time::content_constant_time_equals;
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
+#[derive(Zeroize, ZeroizeOnDrop)]
 pub struct SecretKey {
-    bytes: Zeroizing<Vec<u8>>,
+    bytes: Vec<u8>,
 }
 
 impl SecretKey {
     pub fn new_secret(bytes: impl Into<Vec<u8>>) -> Self {
-        SecretKey { bytes: Zeroizing::new(bytes.into()) }
+        SecretKey { bytes: bytes.into() }
     }
 
     pub fn len(&self) -> usize {
@@ -65,6 +66,9 @@ impl std::fmt::Debug for SecretKey {
 
 impl PartialEq<Self> for SecretKey {
     fn eq(&self, other: &Self) -> bool {
-        todo!()
+        // Compare in constant time to avoid leaking timing on secret material.
+        content_constant_time_equals(self.as_ref(), other.as_ref())
     }
 }
+
+impl Eq for SecretKey {}

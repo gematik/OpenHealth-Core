@@ -19,14 +19,14 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use crate::asn1::decoder::Asn1Decoder;
-use crate::crypto::ec::ec_key::EcCurve;
+use asn1::decoder::Asn1Decoder;
 use asn1::encoder::Asn1Encoder;
 use asn1::error::Asn1DecoderError;
-use asn1::tag::{Asn1Id, UniversalTag};
+use asn1::oid::ObjectIdentifier;
+use asn1::tag::UniversalTag;
+use crypto::ec::ec_key::EcCurve;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
-use std::fs::read;
 use thiserror::Error;
 
 /// Error type for PACE information parsing
@@ -42,14 +42,14 @@ pub enum PaceInfoError {
 #[derive(Debug)]
 pub struct PaceInfo {
     /// The protocol identifier (OID)
-    pub protocol_id: String,
+    pub protocol_id: ObjectIdentifier,
     /// The elliptic curve to use
     pub curve: EcCurve,
 }
 
 impl PaceInfo {
     /// Creates a new PaceInfo with the given protocol ID and curve
-    pub fn new(protocol_id: String, curve: EcCurve) -> Self {
+    pub fn new(protocol_id: ObjectIdentifier, curve: EcCurve) -> Self {
         Self { protocol_id, curve }
     }
 
@@ -101,7 +101,7 @@ static SUPPORTED_CURVES: Lazy<HashMap<i64, EcCurve>> = Lazy::new(|| {
 ///
 /// A `Result` containing either a `PaceInfo` object or a `PaceInfoError`.
 pub fn parse_pace_info(asn1: &[u8]) -> Result<PaceInfo, PaceInfoError> {
-    let mut decoder = Asn1Decoder::new(asn1);
+    let decoder = Asn1Decoder::new(asn1);
 
     let pace_info = decoder.read(|reader| {
         // SET (constructed)
@@ -122,7 +122,7 @@ pub fn parse_pace_info(asn1: &[u8]) -> Result<PaceInfo, PaceInfoError> {
                 let curve = SUPPORTED_CURVES
                     .get(&parameter_id)
                     .cloned()
-                    .ok_or_else(|| PaceInfoError::UnsupportedParameterId(parameter_id))?;
+                    .ok_or(PaceInfoError::UnsupportedParameterId(parameter_id))?;
 
                 // ensure we consumed the SEQUENCE fully
                 reader.skip_to_end()?;
@@ -158,7 +158,7 @@ mod tests {
 
         let pace_info = parse_pace_info(&hex_to_bytes(card_access_bytes)).expect("Failed to parse PACE info");
 
-        assert_eq!(expected_protocol_id, pace_info.protocol_id);
+        assert_eq!(expected_protocol_id, pace_info.protocol_id.to_string());
         assert_eq!(expected_pace_info_protocol_bytes, bytes_to_hex_with_spaces(&pace_info.protocol_id_bytes()));
         assert_eq!(pace_info.curve, EcCurve::BrainpoolP256r1);
     }

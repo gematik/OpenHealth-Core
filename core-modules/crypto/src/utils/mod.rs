@@ -22,4 +22,5 @@
 pub mod byte_unit;
 pub mod constant_time;
 pub mod pem;
+#[cfg(test)]
 pub(crate) mod test_utils;

@@ -54,15 +54,13 @@ impl MacSpec {
     /// Create a MAC instance with the given secret key.
     pub fn create(self, secret: SecretKey) -> CryptoResult<Mac> {
         let mac = ossl::mac::Mac::create(secret.as_ref(), "CMAC", Some(self.cipher(&secret.size()).as_str()), None)?;
-        Ok(Mac { mac, spec: self, secret })
+        Ok(Mac { mac })
     }
 }
 
 /// Message Authentication Code (MAC) context.
 pub struct Mac {
     mac: ossl::mac::Mac,
-    spec: MacSpec,
-    secret: SecretKey,
 }
 
 impl Mac {

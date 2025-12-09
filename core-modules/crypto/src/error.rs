@@ -30,9 +30,18 @@ pub enum CryptoError {
     /// The caller attempted to finalize a cipher twice.
     #[error("cipher finalized twice")]
     FinalizedTwice,
-    /// An input or parameter was invalid, with context.
-    #[error("invalid argument: {0}")]
-    InvalidArgument(String),
+    /// Invalid key length for an operation.
+    #[error("invalid key length: expected one of {expected:?}, got {actual}")]
+    InvalidKeyLength { expected: &'static [usize], actual: usize },
+    /// Invalid IV/nonce length for a specific mode.
+    #[error("invalid {mode} IV/nonce length: expected one of {expected:?}, got {actual}")]
+    InvalidIvLength { mode: &'static str, expected: &'static [usize], actual: usize },
+    /// Invalid AEAD tag length.
+    #[error("invalid AEAD tag length: expected between {expected_min} and {expected_max}, got {actual}")]
+    InvalidTagLength { expected_min: usize, expected_max: usize, actual: usize },
+    /// Supplied key material was invalid or empty.
+    #[error("invalid key material: {context}")]
+    InvalidKeyMaterial { context: &'static str },
     /// An elliptic curve point was invalid or malformed.
     #[error("invalid ec point: {0}")]
     InvalidEcPoint(String),

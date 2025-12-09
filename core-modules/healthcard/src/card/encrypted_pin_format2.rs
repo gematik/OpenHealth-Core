@@ -19,14 +19,16 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
+use std::fmt;
+
 use thiserror::Error;
+use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 /// The format 2 PIN block has been specified for use with IC cards. The format 2 PIN block shall only be used in
 /// an offline environment and shall not be used for online PIN verification. This PIN block is constructed by
 /// concatenation of two fields: the plain text PIN field and the filler field.
 ///
 /// See "ISO 9564-1"
-
 const NIBBLE_SIZE: u8 = 4;
 const MIN_PIN_LEN: usize = 4; // specSpec_COS#N008.000
 const MAX_PIN_LEN: usize = 12; // specSpec_COS#N008.000
@@ -41,9 +43,9 @@ const STRING_INT_OFFSET: u8 = 48;
 ///
 /// The format 2 PIN block is used with IC cards in an offline environment and is constructed by
 /// concatenating the plain text PIN field and a filler field.
-#[derive(Clone, Debug)]
+#[derive(Zeroize, ZeroizeOnDrop)]
 pub struct EncryptedPinFormat2 {
-    pub bytes: Vec<u8>,
+    bytes: Vec<u8>,
 }
 
 /// Errors that can occur while encoding a PIN into format 2.
@@ -58,6 +60,9 @@ pub enum PinBlockError {
     /// The PIN was longer than the maximum allowed length.
     #[error("PIN length is too long, max length is {max}, but was {length}")]
     TooLong { length: usize, max: usize },
+    /// A provided encrypted block has an unexpected length.
+    #[error("PIN block length is invalid, expected {expected} bytes but was {actual}")]
+    InvalidBlockLength { expected: usize, actual: usize },
 }
 
 impl EncryptedPinFormat2 {
@@ -103,6 +108,31 @@ impl EncryptedPinFormat2 {
 
         Ok(Self { bytes: format2.to_vec() })
     }
+
+    /// Constructs an already-encrypted PIN block without validating contents.
+    pub fn from_encrypted_bytes(bytes: Vec<u8>) -> Result<Self, PinBlockError> {
+        if bytes.len() != FORMAT2_PIN_SIZE {
+            return Err(PinBlockError::InvalidBlockLength { expected: FORMAT2_PIN_SIZE, actual: bytes.len() });
+        }
+
+        Ok(Self { bytes })
+    }
+
+    /// Returns a reference to the encrypted bytes.
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.bytes
+    }
+
+    /// Consumes the struct and returns the owned bytes inside a zeroizing guard.
+    pub fn into_zeroizing_bytes(mut self) -> Zeroizing<Vec<u8>> {
+        Zeroizing::new(std::mem::take(&mut self.bytes))
+    }
+}
+
+impl fmt::Debug for EncryptedPinFormat2 {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("EncryptedPinFormat2").field("len", &self.bytes.len()).finish_non_exhaustive()
+    }
 }
 
 #[cfg(test)]
@@ -115,8 +145,8 @@ mod tests {
         let encrypted = EncryptedPinFormat2::new(pin).unwrap();
 
         // First byte should be 0x24 (FORMAT_PIN_2_ID + pin length)
-        assert_eq!(encrypted.bytes[0], 0x24);
-        assert_eq!(encrypted.bytes.len(), FORMAT2_PIN_SIZE);
+        assert_eq!(encrypted.as_bytes()[0], 0x24);
+        assert_eq!(encrypted.as_bytes().len(), FORMAT2_PIN_SIZE);
     }
 
     #[test]
@@ -124,7 +154,7 @@ mod tests {
         let pin = "123456";
         let encrypted = EncryptedPinFormat2::new(pin).unwrap();
 
-        assert_eq!(encrypted.bytes[0], 0x26);
+        assert_eq!(encrypted.as_bytes()[0], 0x26);
     }
 
     #[test]
@@ -150,13 +180,13 @@ mod tests {
         let pin = "1234";
         let encrypted = EncryptedPinFormat2::new(pin).unwrap();
 
-        assert_eq!(encrypted.bytes[0], 0x24);
-        assert_eq!(encrypted.bytes[1], 0x12);
-        assert_eq!(encrypted.bytes[2], 0x34);
-        assert_eq!(encrypted.bytes[3], 0xFF);
-        assert_eq!(encrypted.bytes[4], 0xFF);
-        assert_eq!(encrypted.bytes[5], 0xFF);
-        assert_eq!(encrypted.bytes[6], 0xFF);
-        assert_eq!(encrypted.bytes[7], 0xFF);
+        assert_eq!(encrypted.as_bytes()[0], 0x24);
+        assert_eq!(encrypted.as_bytes()[1], 0x12);
+        assert_eq!(encrypted.as_bytes()[2], 0x34);
+        assert_eq!(encrypted.as_bytes()[3], 0xFF);
+        assert_eq!(encrypted.as_bytes()[4], 0xFF);
+        assert_eq!(encrypted.as_bytes()[5], 0xFF);
+        assert_eq!(encrypted.as_bytes()[6], 0xFF);
+        assert_eq!(encrypted.as_bytes()[7], 0xFF);
     }
 }

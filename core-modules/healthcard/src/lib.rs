@@ -19,12 +19,10 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-mod card;
+pub mod card;
 pub mod command;
 pub mod identifier;
 
-pub use asn1;
-pub use crypto;
 pub mod exchange;
 #[cfg(feature = "uniffi")]
 pub mod ffi;

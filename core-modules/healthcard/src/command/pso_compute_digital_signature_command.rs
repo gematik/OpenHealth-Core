@@ -19,7 +19,7 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use crate::command::health_card_command::{HealthCardCommand, EXPECT_ALL_WILDCARD};
+use crate::command::health_card_command::{ExpectedLength, HealthCardCommand};
 use crate::command::health_card_status::PSO_COMPUTE_DIGITAL_SIGNATURE_STATUS;
 
 /// CLA byte for the PSO COMPUTE DIGITAL SIGNATURE command
@@ -46,15 +46,15 @@ pub trait PsoComputeDigitalSignatureCommand {
 
 impl PsoComputeDigitalSignatureCommand for HealthCardCommand {
     fn pso_compute_digital_signature(data_to_be_signed: &[u8]) -> HealthCardCommand {
-        HealthCardCommand {
-            expected_status: PSO_COMPUTE_DIGITAL_SIGNATURE_STATUS.clone(),
-            cla: CLA,
-            ins: INS,
-            p1: P1,
-            p2: P2,
-            data: Some(data_to_be_signed.to_vec()),
-            ne: Some(EXPECT_ALL_WILDCARD as usize),
-        }
+        HealthCardCommand::new(
+            PSO_COMPUTE_DIGITAL_SIGNATURE_STATUS.clone(),
+            CLA,
+            INS,
+            P1,
+            P2,
+            Some(data_to_be_signed.to_vec()),
+            Some(ExpectedLength::Any),
+        )
     }
 }
 
@@ -73,7 +73,7 @@ mod tests {
         assert_eq!(cmd.p1, P1);
         assert_eq!(cmd.p2, P2);
         assert_eq!(cmd.data, Some(data.to_vec()));
-        assert_eq!(cmd.ne, Some(EXPECT_ALL_WILDCARD as usize));
+        assert_eq!(cmd.ne, Some(ExpectedLength::Any));
 
         // Test with empty data
         let empty_data: [u8; 0] = [];
@@ -84,7 +84,7 @@ mod tests {
         assert_eq!(cmd.p1, P1);
         assert_eq!(cmd.p2, P2);
         assert_eq!(cmd.data, Some(vec![]));
-        assert_eq!(cmd.ne, Some(EXPECT_ALL_WILDCARD as usize));
+        assert_eq!(cmd.ne, Some(ExpectedLength::Any));
 
         // Test with longer data
         let long_data = (0..100).map(|i| i as u8).collect::<Vec<u8>>();
@@ -95,6 +95,6 @@ mod tests {
         assert_eq!(cmd.p1, P1);
         assert_eq!(cmd.p2, P2);
         assert_eq!(cmd.data, Some(long_data.clone()));
-        assert_eq!(cmd.ne, Some(EXPECT_ALL_WILDCARD as usize));
+        assert_eq!(cmd.ne, Some(ExpectedLength::Any));
     }
 }

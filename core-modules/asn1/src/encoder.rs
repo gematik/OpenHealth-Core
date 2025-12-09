@@ -20,6 +20,7 @@
 // find details in the "Readme" file.
 
 use crate::error::Asn1EncoderError;
+use crate::oid::ObjectIdentifier;
 use crate::tag::{Asn1Class, Asn1Form, Asn1Id, UniversalTag};
 
 /// ASN.1 encoder for encoding data in ASN.1 format.
@@ -29,6 +30,12 @@ pub struct Asn1Encoder;
 pub struct WriterScope {
     // TODO: support zeroizing vec
     buffer: Vec<u8>,
+}
+
+impl Default for WriterScope {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl WriterScope {
@@ -56,7 +63,7 @@ impl WriterScope {
     pub fn write_int(&mut self, integer: i32) {
         let mut bytes: Vec<u8> = Vec::new();
         let mut value = integer;
-        while value < -0x80 || value >= 0x80 {
+        while !(-0x80..0x80).contains(&value) {
             bytes.push((value & 0xFF) as u8);
             value /= 0x100;
         }
@@ -162,7 +169,7 @@ impl WriterScope {
     /// Write an ASN.1 bit string.
     pub fn write_asn1_bit_string(&mut self, value: &[u8], unused_bits: u8) -> Result<(), Asn1EncoderError> {
         if !(0..=7).contains(&unused_bits) {
-            return Err(Asn1EncoderError::invalid_unused_bit_count(unused_bits).into());
+            return Err(Asn1EncoderError::invalid_unused_bit_count(unused_bits));
         }
         self.write_tagged_object(UniversalTag::BitString.primitive(), |s| {
             s.write_byte(unused_bits);
@@ -188,53 +195,35 @@ impl WriterScope {
     }
 
     /// Write [Asn1Type.OBJECT_IDENTIFIER].
-    pub fn write_object_identifier(&mut self, oid: &str) -> Result<(), Asn1EncoderError> {
+    pub fn write_object_identifier(&mut self, oid: &ObjectIdentifier) -> Result<(), Asn1EncoderError> {
         self.write_tagged_object(UniversalTag::ObjectIdentifier.primitive(), |s| {
-            let parts: Vec<i32> = oid
-                .split('.')
-                .map(|p| p.parse::<i32>().map_err(|_| Asn1EncoderError::invalid_object_identifier_part(p)))
-                .collect::<Result<_, _>>()?;
-
+            let parts = oid.components();
             if parts.len() < 2 {
-                return Err(Asn1EncoderError::object_identifier_missing_components().into());
+                return Err(Asn1EncoderError::object_identifier_missing_components());
             }
 
-            let first = parts[0];
-            let second = parts[1];
+            let first = parts[0] as i32;
+            let second = parts[1] as i32;
 
             if !(0..=2).contains(&first) {
-                return Err(Asn1EncoderError::invalid_object_identifier_first_component(first).into());
+                return Err(Asn1EncoderError::invalid_object_identifier_first_component(first));
             }
             if first < 2 && !(0..=39).contains(&second) {
-                return Err(Asn1EncoderError::invalid_object_identifier_second_component(second).into());
+                return Err(Asn1EncoderError::invalid_object_identifier_second_component(second));
             }
 
             let first_byte = first * 40 + second;
             s.write_multi_byte(first_byte);
 
             for part in parts.iter().skip(2) {
-                s.write_multi_byte(*part);
+                s.write_multi_byte(*part as i32);
             }
             Ok(())
         })
     }
 
-    fn write_multi_byte(&mut self, mut integer: i32) {
-        let mut bytes: Vec<u8> = Vec::new();
-        loop {
-            bytes.push((integer & 0x7F) as u8);
-            integer >>= 7;
-            if integer <= 0 {
-                break;
-            }
-        }
-        for (i, b) in bytes.iter().rev().enumerate() {
-            if i == bytes.len() - 1 {
-                self.write_byte(*b);
-            } else {
-                self.write_byte(*b | 0x80);
-            }
-        }
+    fn write_multi_byte(&mut self, integer: i32) {
+        self.write_base128(integer);
     }
 
     fn write_base128(&mut self, mut integer: i32) {
@@ -272,6 +261,7 @@ impl Asn1Encoder {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::oid::ObjectIdentifier;
     use crate::tag::TagNumberExt;
 
     fn hex(bytes: &[u8]) -> String {
@@ -332,6 +322,17 @@ mod tests {
     }
 
     #[test]
+    fn write_base128_encodes_expected() {
+        let mut single = WriterScope::new();
+        single.write_base128(0x7F);
+        assert_eq!(single.buffer(), &[0x7F]);
+
+        let mut multi = WriterScope::new();
+        multi.write_base128(0x80);
+        assert_eq!(multi.buffer(), &[0x81, 0x00]);
+    }
+
+    #[test]
     fn write_int_expected() {
         let result = Asn1Encoder::write(|w| w.write_asn1_int(123_456)).unwrap();
         assert_eq!(hex(&result), "02 03 01 E2 40");
@@ -388,37 +389,41 @@ mod tests {
 
     #[test]
     fn write_oid_simple() {
-        let result = Asn1Encoder::write(|w| w.write_object_identifier("1.2.840.113549")).unwrap();
+        let oid = ObjectIdentifier::parse("1.2.840.113549").unwrap();
+        let result = Asn1Encoder::write(|w| w.write_object_identifier(&oid)).unwrap();
         assert_eq!(hex(&result), "06 06 2A 86 48 86 F7 0D");
     }
 
     #[test]
     fn write_oid_single_part_beyond_40() {
-        let result = Asn1Encoder::write(|w| w.write_object_identifier("2.100.3")).unwrap();
+        let oid = ObjectIdentifier::parse("2.100.3").unwrap();
+        let result = Asn1Encoder::write(|w| w.write_object_identifier(&oid)).unwrap();
         assert_eq!(hex(&result), "06 03 81 34 03");
     }
 
     #[test]
     fn write_oid_long_identifier() {
-        let result = Asn1Encoder::write(|w| w.write_object_identifier("1.2.3.4.5.265566")).unwrap();
+        let oid = ObjectIdentifier::parse("1.2.3.4.5.265566").unwrap();
+        let result = Asn1Encoder::write(|w| w.write_object_identifier(&oid)).unwrap();
         assert_eq!(hex(&result), "06 07 2A 03 04 05 90 9A 5E");
     }
 
     #[test]
     fn write_oid_large_first_component() {
-        let result = Asn1Encoder::write(|w| w.write_object_identifier("2.999.1")).unwrap();
+        let oid = ObjectIdentifier::parse("2.999.1").unwrap();
+        let result = Asn1Encoder::write(|w| w.write_object_identifier(&oid)).unwrap();
         assert_eq!(hex(&result), "06 03 88 37 01");
     }
 
     #[test]
     fn write_oid_invalid_first_part_panics() {
-        let res = Asn1Encoder::write(|w| w.write_object_identifier("3.1.2"));
-        assert!(res.is_err());
+        let bad_oid = ObjectIdentifier::parse("3.1.2");
+        assert!(bad_oid.is_err());
     }
 
     #[test]
     fn write_oid_invalid_encoding_panics() {
-        let res = Asn1Encoder::write(|w| w.write_object_identifier("1.40.1"));
-        assert!(res.is_err());
+        let err = ObjectIdentifier::parse("1.40.1");
+        assert!(err.is_err());
     }
 }

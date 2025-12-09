@@ -30,9 +30,9 @@ use crate::command::reset_retry_counter_with_new_secret_command::ResetRetryCount
 use crate::command::select_command::SelectCommand;
 use crate::command::verify_pin_command::VerifyCommand;
 
+use super::channel::CardChannelExt;
 use super::error::ExchangeError;
 use super::ids;
-use super::session::CardChannelExt;
 
 /// Result of a PIN verification attempt.
 #[derive(Debug, Clone)]
@@ -112,7 +112,7 @@ where
 
     let response = match method {
         UnlockMethod::ChangeReferenceData => {
-            let new_secret = new_secret.ok_or(ExchangeError::InvalidArgument("new secret required"))?;
+            let new_secret = new_secret.ok_or_else(|| ExchangeError::invalid_argument("new secret required"))?;
             let old_pin = EncryptedPinFormat2::new(old_secret)?;
             let new_pin = EncryptedPinFormat2::new(new_secret)?;
             session.execute_command_success(&HealthCardCommand::change_reference_data(
@@ -123,7 +123,7 @@ where
             ))?
         }
         UnlockMethod::ResetRetryCounter => {
-            let puk = puk.ok_or(ExchangeError::InvalidArgument("PUK must be provided"))?;
+            let puk = puk.ok_or_else(|| ExchangeError::invalid_argument("PUK must be provided"))?;
             let puk_enc = EncryptedPinFormat2::new(puk)?;
             session.execute_command_success(&HealthCardCommand::reset_retry_counter(
                 &password_reference,
@@ -132,8 +132,8 @@ where
             ))?
         }
         UnlockMethod::ResetRetryCounterWithNewSecret => {
-            let puk = puk.ok_or(ExchangeError::InvalidArgument("PUK must be provided"))?;
-            let new_secret = new_secret.ok_or(ExchangeError::InvalidArgument("new secret required"))?;
+            let puk = puk.ok_or_else(|| ExchangeError::invalid_argument("PUK must be provided"))?;
+            let new_secret = new_secret.ok_or_else(|| ExchangeError::invalid_argument("new secret required"))?;
             let puk_enc = EncryptedPinFormat2::new(puk)?;
             let new_pin = EncryptedPinFormat2::new(new_secret)?;
             session.execute_command_success(&HealthCardCommand::reset_retry_counter_with_new_secret(

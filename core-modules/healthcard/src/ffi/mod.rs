@@ -19,5 +19,5 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-mod session;
+mod channel;
 mod trusted_channel;

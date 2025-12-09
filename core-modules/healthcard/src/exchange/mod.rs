@@ -20,13 +20,13 @@
 // find details in the "Readme" file.
 
 pub mod certificate;
+pub mod channel;
 pub mod error;
-mod ids;
+pub mod ids;
 pub mod pace_info;
 pub mod pin;
 pub mod random;
 pub mod read_vsd;
-pub mod session;
 pub mod sign_challenge;
 #[cfg(test)]
 pub(crate) mod test_utils;
@@ -38,4 +38,6 @@ pub use pin::{unlock_egk, verify_pin, HealthCardVerifyPinResult, UnlockMethod};
 pub use random::get_random;
 pub use read_vsd::read_vsd;
 pub use sign_challenge::sign_challenge;
-pub use trusted_channel::{establish_trusted_channel, establish_trusted_channel_with, TrustedChannel};
+pub use trusted_channel::{
+    establish_trusted_channel, establish_trusted_channel_with, CardAccessNumber, TrustedChannel,
+};

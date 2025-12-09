@@ -19,11 +19,10 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use crate::ec::ec_key::{EcCurve, EcPrivateKey, EcPublicKey};
+use crate::ec::ec_key::{EcPrivateKey, EcPublicKey};
 use crate::error::CryptoResult;
 use crate::key::SecretKey;
 use crate::ossl;
-use zeroize::Zeroizing;
 
 pub type EcdhSharedSecret = SecretKey;
 
@@ -33,14 +32,13 @@ pub type EcdhSharedSecret = SecretKey;
 /// public key (DER SubjectPublicKeyInfo) to compute the raw ECDH shared secret.
 pub struct Ecdh {
     ctx: ossl::ec::Ecdh,
-    pkey: EcPrivateKey,
 }
 
 impl Ecdh {
     /// Create a new ECDH context from a private key in DER (PKCS#8) form.
     pub fn new(private_key: EcPrivateKey) -> CryptoResult<Self> {
         let ctx = ossl::ec::Ecdh::new(private_key.encode_to_asn1()?.as_ref())?;
-        Ok(Self { ctx, pkey: private_key })
+        Ok(Self { ctx })
     }
 
     /// Derive the ECDH shared secret from the peer's public key (DER SPKI).
@@ -53,7 +51,7 @@ impl Ecdh {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ec::ec_key::EcKeyPairSpec;
+    use crate::ec::ec_key::{EcCurve, EcKeyPairSpec};
 
     fn roundtrip(spec: EcKeyPairSpec) {
         let (a_pub, a_priv) = spec.generate_keypair().expect("keypair a");

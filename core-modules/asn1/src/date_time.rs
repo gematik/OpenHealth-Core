@@ -30,27 +30,27 @@ use std::sync::OnceLock;
 /// If `offset` is `None` this indicates that the time is in UTC.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Asn1UtcTime {
-    pub year: i32,
-    pub month: i32,
-    pub day: i32,
-    pub hour: i32,
-    pub minute: i32,
-    pub second: Option<i32>,
-    pub offset: Option<Asn1Offset>,
+    year: i32,
+    month: i32,
+    day: i32,
+    hour: i32,
+    minute: i32,
+    second: Option<i32>,
+    offset: Option<Asn1Offset>,
 }
 
 /// Raw representation of an ASN.1 GENERALIZED_TIME.
 /// If `offset` is `None` this indicates that the time is in UTC.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Asn1GeneralizedTime {
-    pub year: i32,
-    pub month: i32,
-    pub day: i32,
-    pub hour: i32,
-    pub minute: Option<i32>,
-    pub second: Option<i32>,
-    pub fraction_of_second: Option<i32>,
-    pub offset: Option<Asn1Offset>,
+    year: i32,
+    month: i32,
+    day: i32,
+    hour: i32,
+    minute: Option<i32>,
+    second: Option<i32>,
+    fraction_of_second: Option<i32>,
+    offset: Option<Asn1Offset>,
 }
 
 /// Raw representation of an ASN.1 time offset.
@@ -60,6 +60,243 @@ pub enum Asn1Offset {
     UtcOffset { hours: i32, minutes: i32 },
     /// Generalized offset in hours and minutes.
     GeneralizedOffset { hours: i32, minutes: i32 },
+}
+
+/// Tagged ASN.1 time value (UTC or Generalized).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Asn1Time {
+    Utc(Asn1UtcTime),
+    Generalized(Asn1GeneralizedTime),
+}
+
+impl Asn1Time {
+    pub fn utc(
+        year: i32,
+        month: i32,
+        day: i32,
+        hour: i32,
+        minute: i32,
+        second: Option<i32>,
+        offset: Option<Asn1Offset>,
+    ) -> Asn1DecoderResult<Self> {
+        Asn1UtcTime::new(year, month, day, hour, minute, second, offset).map(Asn1Time::Utc)
+    }
+
+    #[allow(clippy::too_many_arguments)] // ASN.1 GENERALIZED TIME requires separate components for optional fields
+    pub fn generalized(
+        year: i32,
+        month: i32,
+        day: i32,
+        hour: i32,
+        minute: Option<i32>,
+        second: Option<i32>,
+        fraction_of_second: Option<i32>,
+        offset: Option<Asn1Offset>,
+    ) -> Asn1DecoderResult<Self> {
+        Asn1GeneralizedTime::new(year, month, day, hour, minute, second, fraction_of_second, offset)
+            .map(Asn1Time::Generalized)
+    }
+
+    pub fn as_utc(&self) -> Option<&Asn1UtcTime> {
+        match self {
+            Asn1Time::Utc(v) => Some(v),
+            _ => None,
+        }
+    }
+
+    pub fn as_generalized(&self) -> Option<&Asn1GeneralizedTime> {
+        match self {
+            Asn1Time::Generalized(v) => Some(v),
+            _ => None,
+        }
+    }
+}
+
+impl Asn1Offset {
+    pub fn utc_offset(hours: i32, minutes: i32) -> Asn1DecoderResult<Self> {
+        Self::validate(hours, minutes)?;
+        Ok(Asn1Offset::UtcOffset { hours, minutes })
+    }
+
+    pub fn generalized_offset(hours: i32, minutes: i32) -> Asn1DecoderResult<Self> {
+        Self::validate(hours, minutes)?;
+        Ok(Asn1Offset::GeneralizedOffset { hours, minutes })
+    }
+
+    fn validate(hours: i32, minutes: i32) -> Asn1DecoderResult<()> {
+        if !(0..=59).contains(&minutes.abs()) {
+            return Err(Asn1DecoderError::invalid_time_value("offset minute", minutes.to_string()));
+        }
+        if !(-23..=23).contains(&hours) {
+            return Err(Asn1DecoderError::invalid_time_value("offset hour", hours.to_string()));
+        }
+        Ok(())
+    }
+}
+
+impl Asn1UtcTime {
+    pub fn new(
+        year: i32,
+        month: i32,
+        day: i32,
+        hour: i32,
+        minute: i32,
+        second: Option<i32>,
+        offset: Option<Asn1Offset>,
+    ) -> Asn1DecoderResult<Self> {
+        Self::validate_basic_components(year, month, day, hour)?;
+        if !(0..=59).contains(&minute) {
+            return Err(Asn1DecoderError::invalid_time_value("UTC_TIME minute", minute.to_string()));
+        }
+        if let Some(sec) = second {
+            if !(0..=60).contains(&sec) {
+                return Err(Asn1DecoderError::invalid_time_value("UTC_TIME second", sec.to_string()));
+            }
+        }
+        Ok(Self { year, month, day, hour, minute, second, offset })
+    }
+
+    fn validate_basic_components(year: i32, month: i32, day: i32, hour: i32) -> Asn1DecoderResult<()> {
+        if !(0..=9999).contains(&year) {
+            return Err(Asn1DecoderError::invalid_time_value("UTC_TIME year", year.to_string()));
+        }
+        if !(1..=12).contains(&month) {
+            return Err(Asn1DecoderError::invalid_time_value("UTC_TIME month", month.to_string()));
+        }
+        if !(1..=31).contains(&day) {
+            return Err(Asn1DecoderError::invalid_time_value("UTC_TIME day", day.to_string()));
+        }
+        if !(0..=23).contains(&hour) {
+            return Err(Asn1DecoderError::invalid_time_value("UTC_TIME hour", hour.to_string()));
+        }
+        Ok(())
+    }
+
+    pub fn components(&self) -> (i32, i32, i32, i32, i32, Option<i32>) {
+        (self.year, self.month, self.day, self.hour, self.minute, self.second)
+    }
+
+    pub fn offset(&self) -> &Option<Asn1Offset> {
+        &self.offset
+    }
+
+    pub fn validate_for_encoding(&self) -> Result<(), Asn1EncoderError> {
+        Self::new(self.year, self.month, self.day, self.hour, self.minute, self.second, self.offset.clone())
+            .map_err(|e| Asn1EncoderError::custom(e.to_string()))
+            .map(|_| ())
+    }
+
+    pub fn year(&self) -> i32 {
+        self.year
+    }
+    pub fn month(&self) -> i32 {
+        self.month
+    }
+    pub fn day(&self) -> i32 {
+        self.day
+    }
+    pub fn hour(&self) -> i32 {
+        self.hour
+    }
+    pub fn minute(&self) -> i32 {
+        self.minute
+    }
+    pub fn second(&self) -> Option<i32> {
+        self.second
+    }
+}
+
+impl Asn1GeneralizedTime {
+    #[allow(clippy::too_many_arguments)] // ASN.1 GENERALIZED TIME requires separate components for optional fields
+    pub fn new(
+        year: i32,
+        month: i32,
+        day: i32,
+        hour: i32,
+        minute: Option<i32>,
+        second: Option<i32>,
+        fraction_of_second: Option<i32>,
+        offset: Option<Asn1Offset>,
+    ) -> Asn1DecoderResult<Self> {
+        Self::validate_basic_components(year, month, day, hour)?;
+        if let Some(min) = minute {
+            if !(0..=59).contains(&min) {
+                return Err(Asn1DecoderError::invalid_time_value("GENERALIZED_TIME minute", min.to_string()));
+            }
+        }
+        if let Some(sec) = second {
+            if !(0..=60).contains(&sec) {
+                return Err(Asn1DecoderError::invalid_time_value("GENERALIZED_TIME second", sec.to_string()));
+            }
+        }
+        if let Some(frac) = fraction_of_second {
+            if !(0..=999).contains(&frac) {
+                return Err(Asn1DecoderError::invalid_time_value("GENERALIZED_TIME fraction", frac.to_string()));
+            }
+        }
+        Ok(Self { year, month, day, hour, minute, second, fraction_of_second, offset })
+    }
+
+    fn validate_basic_components(year: i32, month: i32, day: i32, hour: i32) -> Asn1DecoderResult<()> {
+        if !(0..=9999).contains(&year) {
+            return Err(Asn1DecoderError::invalid_time_value("GENERALIZED_TIME year", year.to_string()));
+        }
+        if !(1..=12).contains(&month) {
+            return Err(Asn1DecoderError::invalid_time_value("GENERALIZED_TIME month", month.to_string()));
+        }
+        if !(1..=31).contains(&day) {
+            return Err(Asn1DecoderError::invalid_time_value("GENERALIZED_TIME day", day.to_string()));
+        }
+        if !(0..=23).contains(&hour) {
+            return Err(Asn1DecoderError::invalid_time_value("GENERALIZED_TIME hour", hour.to_string()));
+        }
+        Ok(())
+    }
+
+    pub fn components(&self) -> (i32, i32, i32, i32, Option<i32>, Option<i32>, Option<i32>) {
+        (self.year, self.month, self.day, self.hour, self.minute, self.second, self.fraction_of_second)
+    }
+
+    pub fn offset(&self) -> &Option<Asn1Offset> {
+        &self.offset
+    }
+
+    pub fn validate_for_encoding(&self) -> Result<(), Asn1EncoderError> {
+        Self::new(
+            self.year,
+            self.month,
+            self.day,
+            self.hour,
+            self.minute,
+            self.second,
+            self.fraction_of_second,
+            self.offset.clone(),
+        )
+        .map_err(|e| Asn1EncoderError::custom(e.to_string()))
+        .map(|_| ())
+    }
+
+    pub fn year(&self) -> i32 {
+        self.year
+    }
+    pub fn month(&self) -> i32 {
+        self.month
+    }
+    pub fn day(&self) -> i32 {
+        self.day
+    }
+    pub fn hour(&self) -> i32 {
+        self.hour
+    }
+    pub fn minute(&self) -> Option<i32> {
+        self.minute
+    }
+    pub fn second(&self) -> Option<i32> {
+        self.second
+    }
+    pub fn fraction_of_second(&self) -> Option<i32> {
+        self.fraction_of_second
+    }
 }
 
 fn utc_time_regex() -> &'static Regex {
@@ -80,7 +317,7 @@ fn generalized_time_regex() -> &'static Regex {
 ///
 /// The offset string can either be empty (no offset/UTC), 'Z' for UTC,
 /// or '+/-HHMM' for a specific time zone offset.
-fn parse_time_zone_or_offset(offset: &str) -> Asn1DecoderResult<Option<Asn1Offset>> {
+fn parse_time_zone_or_offset(offset: &str, generalized: bool) -> Asn1DecoderResult<Option<Asn1Offset>> {
     if offset.is_empty() || offset.as_bytes()[0] == b'Z' {
         Ok(None)
     } else {
@@ -89,7 +326,12 @@ fn parse_time_zone_or_offset(offset: &str) -> Asn1DecoderResult<Option<Asn1Offse
             offset[1..3].parse().map_err(|_| Asn1DecoderError::invalid_time_value("offset hour", offset))?;
         let minutes: i32 =
             offset[3..5].parse().map_err(|_| Asn1DecoderError::invalid_time_value("offset minute", offset))?;
-        Ok(Some(Asn1Offset::UtcOffset { hours: hours * sign, minutes }))
+        let hours = hours * sign;
+        if generalized {
+            Ok(Some(Asn1Offset::generalized_offset(hours, minutes)?))
+        } else {
+            Ok(Some(Asn1Offset::utc_offset(hours, minutes)?))
+        }
     }
 }
 
@@ -134,7 +376,7 @@ impl<'a> ParserScope<'a> {
             Some(ss.parse::<i32>().map_err(|_| Asn1DecoderError::invalid_time_value("UTC_TIME second", ss))?)
         };
 
-        Ok(Asn1UtcTime { year, month, day, hour, minute, second, offset: parse_time_zone_or_offset(offset)? })
+        Asn1UtcTime::new(year, month, day, hour, minute, second, parse_time_zone_or_offset(offset, false)?)
     }
 
     /// Parses a GENERALIZED_TIME string.
@@ -180,7 +422,7 @@ impl<'a> ParserScope<'a> {
             )
         };
 
-        Ok(Asn1GeneralizedTime {
+        Asn1GeneralizedTime::new(
             year,
             month,
             day,
@@ -188,65 +430,75 @@ impl<'a> ParserScope<'a> {
             minute,
             second,
             fraction_of_second,
-            offset: parse_time_zone_or_offset(offset)?,
-        })
+            parse_time_zone_or_offset(offset, true)?,
+        )
     }
 
     /// Read ASN.1 `UTC_TIME`.
-    pub fn read_utc_time(&mut self) -> Asn1DecoderResult<Asn1UtcTime> {
+    pub fn read_utc_time(&mut self) -> Asn1DecoderResult<Asn1Time> {
         self.advance_with_tag(UniversalTag::UtcTime.primitive(), |s| {
             let len = s.remaining_length();
             let bytes = s.read_bytes(len)?;
             let value = String::from_utf8(bytes).map_err(|_| Asn1DecoderError::MalformedUtcTimeEncoding)?;
-            s.parse_utc_time(&value)
+            s.parse_utc_time(&value).map(Asn1Time::Utc)
         })
     }
 
     /// Read ASN.1 `GENERALIZED_TIME`.
-    pub fn read_generalized_time(&mut self) -> Asn1DecoderResult<Asn1GeneralizedTime> {
+    pub fn read_generalized_time(&mut self) -> Asn1DecoderResult<Asn1Time> {
         self.advance_with_tag(UniversalTag::GeneralizedTime.primitive(), |s| {
             let len = s.remaining_length();
             let bytes = s.read_bytes(len)?;
             let value = String::from_utf8(bytes).map_err(|_| Asn1DecoderError::MalformedGeneralizedTimeEncoding)?;
-            s.parse_generalized_time(&value)
+            s.parse_generalized_time(&value).map(Asn1Time::Generalized)
         })
     }
 }
 
 impl WriterScope {
     /// Write ASN.1 `UTC_TIME`.
-    pub fn write_utc_time(&mut self, value: &Asn1UtcTime) -> Result<(), Asn1EncoderError> {
+    pub fn write_utc_time(&mut self, value: &Asn1Time) -> Result<(), Asn1EncoderError> {
+        let Some(utc) = value.as_utc() else {
+            return Err(Asn1EncoderError::custom("expected UTC time"));
+        };
+        utc.validate_for_encoding()?;
         self.write_tagged_object(UniversalTag::UtcTime.primitive(), |w| -> Result<(), Asn1EncoderError> {
             let mut s = String::new();
             // year % 100, zero-padded to 2
             use core::fmt::Write as _;
-            let _ = write!(s, "{:02}", (value.year.rem_euclid(100)) as i32);
-            let _ = write!(s, "{:02}{:02}{:02}{:02}", value.month, value.day, value.hour, value.minute);
-            if let Some(sec) = value.second {
+            let (year, month, day, hour, minute, second) = utc.components();
+            let _ = write!(s, "{:02}", year.rem_euclid(100));
+            let _ = write!(s, "{:02}{:02}{:02}{:02}", month, day, hour, minute);
+            if let Some(sec) = second {
                 let _ = write!(s, "{:02}", sec);
             }
-            s.push_str(&format_offset(&value.offset));
+            s.push_str(&format_offset(utc.offset()));
             w.write_bytes(s.as_bytes());
             Ok(())
         })
     }
 
     /// Write ASN.1 `GENERALIZED_TIME`.
-    pub fn write_generalized_time(&mut self, value: &Asn1GeneralizedTime) -> Result<(), Asn1EncoderError> {
+    pub fn write_generalized_time(&mut self, value: &Asn1Time) -> Result<(), Asn1EncoderError> {
+        let Some(gen) = value.as_generalized() else {
+            return Err(Asn1EncoderError::custom("expected GENERALIZED TIME"));
+        };
+        gen.validate_for_encoding()?;
         self.write_tagged_object(UniversalTag::GeneralizedTime.primitive(), |w| -> Result<(), Asn1EncoderError> {
             use core::fmt::Write as _;
             let mut s = String::new();
-            let _ = write!(s, "{:04}{:02}{:02}{:02}", value.year, value.month, value.day, value.hour);
-            if let Some(min) = value.minute {
+            let (year, month, day, hour, minute, second, fraction_of_second) = gen.components();
+            let _ = write!(s, "{:04}{:02}{:02}{:02}", year, month, day, hour);
+            if let Some(min) = minute {
                 let _ = write!(s, "{:02}", min);
             }
-            if let Some(sec) = value.second {
+            if let Some(sec) = second {
                 let _ = write!(s, "{:02}", sec);
             }
-            if let Some(frac) = value.fraction_of_second {
+            if let Some(frac) = fraction_of_second {
                 let _ = write!(s, ".{}", frac);
             }
-            s.push_str(&format_offset(&value.offset));
+            s.push_str(&format_offset(gen.offset()));
             w.write_bytes(s.as_bytes());
             Ok(())
         })
@@ -265,15 +517,7 @@ mod tests {
 
     #[test]
     fn write_utc_time_basic_z() {
-        let value = Asn1UtcTime {
-            year: 2025,
-            month: 1,
-            day: 1,
-            hour: 12,
-            minute: 0,
-            second: None,
-            offset: None, // Z
-        };
+        let value = Asn1Time::Utc(Asn1UtcTime::new(2025, 1, 1, 12, 0, None, None).unwrap());
         let out = crate::encoder::Asn1Encoder::write(|w| -> Result<(), Asn1EncoderError> {
             w.write_utc_time(&value)?;
             Ok(())
@@ -289,15 +533,9 @@ mod tests {
 
     #[test]
     fn write_utc_time_with_offset_and_seconds() {
-        let value = Asn1UtcTime {
-            year: 1999,
-            month: 12,
-            day: 31,
-            hour: 23,
-            minute: 59,
-            second: Some(58),
-            offset: Some(Asn1Offset::UtcOffset { hours: 2, minutes: 30 }),
-        };
+        let value = Asn1Time::Utc(
+            Asn1UtcTime::new(1999, 12, 31, 23, 59, Some(58), Some(Asn1Offset::utc_offset(2, 30).unwrap())).unwrap(),
+        );
         let out = crate::encoder::Asn1Encoder::write(|w| -> Result<(), Asn1EncoderError> {
             w.write_utc_time(&value)?;
             Ok(())
@@ -322,13 +560,14 @@ mod tests {
 
         let dec = Asn1Decoder::new(&der);
         let v = dec.read(|s| s.read_utc_time()).unwrap();
-        assert_eq!(v.year, 2025 % 100); // note: raw UTC_TIME stores YY; parser keeps YY in `year`
-        assert_eq!(v.month, 1);
-        assert_eq!(v.day, 1);
-        assert_eq!(v.hour, 12);
-        assert_eq!(v.minute, 0);
-        assert_eq!(v.second, None);
-        assert_eq!(v.offset, None);
+        let Asn1Time::Utc(v) = v else { panic!("expected UTC time") };
+        assert_eq!(v.year(), 2025 % 100); // note: raw UTC_TIME stores YY; parser keeps YY in `year`
+        assert_eq!(v.month(), 1);
+        assert_eq!(v.day(), 1);
+        assert_eq!(v.hour(), 12);
+        assert_eq!(v.minute(), 0);
+        assert_eq!(v.second(), None);
+        assert_eq!(v.offset(), &None);
     }
 
     #[test]
@@ -347,16 +586,19 @@ mod tests {
 
     #[test]
     fn write_generalized_time_full() {
-        let value = Asn1GeneralizedTime {
-            year: 2024,
-            month: 6,
-            day: 15,
-            hour: 8,
-            minute: Some(9),
-            second: Some(10),
-            fraction_of_second: Some(123),
-            offset: Some(Asn1Offset::GeneralizedOffset { hours: -1, minutes: 30 }),
-        };
+        let value = Asn1Time::Generalized(
+            Asn1GeneralizedTime::new(
+                2024,
+                6,
+                15,
+                8,
+                Some(9),
+                Some(10),
+                Some(123),
+                Some(Asn1Offset::generalized_offset(-1, 30).unwrap()),
+            )
+            .unwrap(),
+        );
         let out = crate::encoder::Asn1Encoder::write(|w| -> Result<(), Asn1EncoderError> {
             w.write_generalized_time(&value)?;
             Ok(())

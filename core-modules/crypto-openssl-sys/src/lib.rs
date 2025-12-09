@@ -25,6 +25,7 @@
     clippy::default_trait_access,
     clippy::must_use_candidate,
     clippy::not_unsafe_ptr_arg_deref,
+    unpredictable_function_pointer_comparisons,
     clippy::ptr_as_ptr,
     clippy::pub_underscore_fields,
     clippy::semicolon_if_nothing_returned,

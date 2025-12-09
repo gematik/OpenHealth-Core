@@ -25,6 +25,7 @@ use std::collections::HashMap;
 /// All response status codes
 /// gemSpec_COS_3.14.0#16.2
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 pub enum HealthCardResponseStatus {
     Success,
     UnknownException,

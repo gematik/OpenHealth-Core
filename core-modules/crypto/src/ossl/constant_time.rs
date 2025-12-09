@@ -19,18 +19,16 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-pub mod card_key;
-pub mod card_key_reference;
-pub mod encrypted_pin_format2;
-pub mod health_card_version2;
-pub mod pace_key;
-pub mod password_reference;
-pub mod pso_algorithm;
-
-pub use card_key::{CardKey, CardKeyError};
-pub use card_key_reference::CardKeyReference;
-pub use encrypted_pin_format2::{EncryptedPinFormat2, PinBlockError};
-pub use health_card_version2::{parse_health_card_version2, HealthCardVersion2, HealthCardVersion2Error};
-pub use pace_key::{get_aes128_key, Mode, PaceKey, PaceSessionKeys};
-pub use password_reference::{PasswordReference, PasswordReferenceError};
-pub use pso_algorithm::PsoAlgorithm;
+/// Constant-time memory comparison via OpenSSL `CRYPTO_memcmp`.
+pub fn memcmp(a: &[u8], b: &[u8]) -> bool {
+    if a.len() != b.len() {
+        return false;
+    }
+    let len = a.len();
+    if len == 0 {
+        return true;
+    }
+    // SAFETY: the pointers are valid for `len` bytes and lengths are equal.
+    let rc = unsafe { crypto_openssl_sys::CRYPTO_memcmp(a.as_ptr().cast(), b.as_ptr().cast(), len) };
+    rc == 0
+}

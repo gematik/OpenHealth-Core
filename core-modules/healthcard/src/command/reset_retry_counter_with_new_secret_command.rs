@@ -66,18 +66,18 @@ impl ResetRetryCounterWithNewSecretCommand for HealthCardCommand {
     ) -> HealthCardCommand {
         // Combine the bytes from PUK and new secret
         let mut combined_data = Vec::new();
-        combined_data.extend_from_slice(&puk.bytes);
-        combined_data.extend_from_slice(&new_secret.bytes);
+        combined_data.extend_from_slice(puk.as_bytes());
+        combined_data.extend_from_slice(new_secret.as_bytes());
 
-        HealthCardCommand {
-            expected_status: UNLOCK_EGK_STATUS.clone(),
-            cla: CLA,
-            ins: UNLOCK_EGK_INS,
-            p1: MODE_VERIFICATION_DATA_NEW_SECRET,
-            p2: password_reference.calculate_key_reference(df_specific),
-            data: Some(combined_data),
-            ne: None,
-        }
+        HealthCardCommand::new(
+            UNLOCK_EGK_STATUS.clone(),
+            CLA,
+            UNLOCK_EGK_INS,
+            MODE_VERIFICATION_DATA_NEW_SECRET,
+            password_reference.calculate_key_reference(df_specific),
+            Some(combined_data),
+            None,
+        )
     }
 }
 
@@ -88,11 +88,11 @@ mod tests {
     #[test]
     fn test_reset_retry_counter_with_new_secret() {
         // Create test objects
-        let password_ref = PasswordReference::new(5);
+        let password_ref = PasswordReference::new(5).unwrap();
         let puk_data = vec![0x25, 0x12, 0x34, 0x56, 0xFF, 0xFF, 0xFF, 0xFF];
         let new_pin_data = vec![0x25, 0x65, 0x43, 0x21, 0xFF, 0xFF, 0xFF, 0xFF];
-        let puk = EncryptedPinFormat2 { bytes: puk_data.clone() };
-        let new_secret = EncryptedPinFormat2 { bytes: new_pin_data.clone() };
+        let puk = EncryptedPinFormat2::from_encrypted_bytes(puk_data.clone()).unwrap();
+        let new_secret = EncryptedPinFormat2::from_encrypted_bytes(new_pin_data.clone()).unwrap();
 
         // Test with df_specific = false
         let cmd = HealthCardCommand::reset_retry_counter_with_new_secret(&password_ref, false, &puk, &new_secret);

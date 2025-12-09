@@ -99,7 +99,7 @@ impl Digest {
 mod tests {
     use super::*;
     use crate::utils::byte_unit::BytesExt;
-    use crate::utils::test_utils::{hex_to_bytes, to_hex_string};
+    use crate::utils::test_utils::to_hex_string;
 
     fn digest_hex(spec: DigestSpec, msg: &[u8]) -> String {
         let mut d = spec.create().unwrap();

@@ -24,8 +24,8 @@ use crate::command::health_card_command::HealthCardCommand;
 use crate::command::health_card_status::HealthCardResponseStatus;
 use crate::command::select_command::SelectCommand;
 
+use super::channel::CardChannelExt;
 use super::error::ExchangeError;
-use super::session::CardChannelExt;
 
 /// Request cryptographically strong random bytes from the card RNG.
 ///
@@ -40,7 +40,7 @@ where
     let response = session.execute_command(&HealthCardCommand::get_random_values(length))?;
     match response.status {
         HealthCardResponseStatus::Success | HealthCardResponseStatus::SecurityStatusNotSatisfied => {
-            Ok(response.apdu.data())
+            Ok(response.apdu.to_data())
         }
         status => Err(ExchangeError::status(status)),
     }
@@ -58,6 +58,9 @@ mod tests {
         let values = get_random(&mut session, 2).unwrap();
         assert_eq!(values, vec![0xDE, 0xAD]);
         assert_eq!(session.recorded.len(), 2);
-        assert_eq!(session.recorded[0], HealthCardCommand::select(false, false).command_apdu(false).unwrap().apdu());
+        assert_eq!(
+            session.recorded[0],
+            HealthCardCommand::select(false, false).command_apdu(false).unwrap().to_bytes()
+        );
     }
 }

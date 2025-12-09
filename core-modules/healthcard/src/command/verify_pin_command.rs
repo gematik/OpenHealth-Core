@@ -56,15 +56,15 @@ impl VerifyCommand for HealthCardCommand {
         df_specific: bool,
         pin: &EncryptedPinFormat2,
     ) -> HealthCardCommand {
-        HealthCardCommand {
-            expected_status: VERIFY_SECRET_STATUS.clone(),
-            cla: CLA,
-            ins: VERIFY_SECRET_INS,
-            p1: MODE_VERIFICATION_DATA,
-            p2: password_reference.calculate_key_reference(df_specific),
-            data: Some(pin.bytes.clone()),
-            ne: None,
-        }
+        HealthCardCommand::new(
+            VERIFY_SECRET_STATUS.clone(),
+            CLA,
+            VERIFY_SECRET_INS,
+            MODE_VERIFICATION_DATA,
+            password_reference.calculate_key_reference(df_specific),
+            Some(pin.as_bytes().to_vec()),
+            None,
+        )
     }
 }
 
@@ -77,9 +77,9 @@ mod tests {
     #[test]
     fn test_verify_pin_command() {
         // Create test objects
-        let password_ref = PasswordReference::new(3);
+        let password_ref = PasswordReference::new(3).unwrap();
         let pin_data = vec![0x25, 0x12, 0x34, 0x56, 0xFF, 0xFF, 0xFF, 0xFF];
-        let encrypted_pin = EncryptedPinFormat2 { bytes: pin_data.clone() };
+        let encrypted_pin = EncryptedPinFormat2::from_encrypted_bytes(pin_data.clone()).unwrap();
 
         // Test with df_specific = true
         let cmd = HealthCardCommand::verify_pin(&password_ref, true, &encrypted_pin);

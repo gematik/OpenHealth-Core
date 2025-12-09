@@ -24,9 +24,9 @@ use crate::command::health_card_status::HealthCardResponseStatus;
 use crate::command::read_command::ReadCommand;
 use crate::command::select_command::SelectCommand;
 
+use super::channel::CardChannelExt;
 use super::error::ExchangeError;
 use super::ids;
-use super::session::CardChannelExt;
 
 /// Read the insurance data (`EF.VD`) from the health card.
 ///
@@ -41,12 +41,12 @@ where
     session.execute_command_success(&HealthCardCommand::select_fid(&ids::ef_vd_fid(), false))?;
 
     let mut buffer = Vec::new();
-    let mut offset = 0;
+    let mut offset: i32 = 0;
 
     loop {
         let read_command = HealthCardCommand::read_with_offset(offset)?;
         let response = session.execute_command(&read_command)?;
-        let chunk = response.apdu.data();
+        let chunk = response.apdu.to_data();
         if !chunk.is_empty() {
             offset = offset.saturating_add(chunk.len() as i32);
             buffer.extend_from_slice(&chunk);

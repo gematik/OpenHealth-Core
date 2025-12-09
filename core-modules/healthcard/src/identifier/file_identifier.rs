@@ -56,7 +56,7 @@ impl FileIdentifier {
     /// * `Result<Self, FileIdentifierError>` - The new FileIdentifier or an error
     pub fn new(fid: u16) -> Result<Self, FileIdentifierError> {
         // Check if FID is in valid range according to gemSpec_COS_3.14.0#N006.700, N006.900
-        if (fid < 0x1000 || fid > 0xFEFF) && fid != 0x011C || fid == 0x3FFF {
+        if (!(0x1000..=0xFEFF).contains(&fid) && fid != 0x011C) || fid == 0x3FFF {
             return Err(FileIdentifierError::OutOfRange(fid));
         }
 
@@ -65,6 +65,11 @@ impl FileIdentifier {
 
     pub fn get_fid(&self) -> Vec<u8> {
         vec![(self.fid >> 8) as u8, (self.fid & 0xFF) as u8]
+    }
+
+    /// Consumes the identifier and returns the raw bytes.
+    pub fn into_bytes(self) -> [u8; 2] {
+        self.to_bytes()
     }
 
     /// Creates a new FileIdentifier from a byte array.
@@ -175,6 +180,7 @@ mod tests {
         let fid = 0x1234;
         let file_id = FileIdentifier::new(fid).unwrap();
         assert_eq!(file_id.to_bytes(), [0x12, 0x34]);
+        assert_eq!(file_id.into_bytes(), [0x12, 0x34]);
     }
 
     #[test]

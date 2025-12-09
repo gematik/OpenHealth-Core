@@ -168,8 +168,38 @@ impl MlkemDecapsulation {
         Ok(v)
     }
 
-    /// Export the private key in PKCS8 DER form
+    /// Export the private key in raw form (to be re-imported with `create_from_private_key`)
     pub fn get_private_key(&self) -> OsslResult<Vec<u8>> {
-        self.0.to_der_private()
+        let mut len = 0usize;
+        ossl_check!(
+            unsafe { EVP_PKEY_get_raw_private_key(self.0.as_mut_ptr(), ptr::null_mut(), &mut len) },
+            "Failed to determine ML-KEM private key length"
+        );
+        let mut out = vec![0u8; len];
+        ossl_check!(
+            unsafe { EVP_PKEY_get_raw_private_key(self.0.as_mut_ptr(), out.as_mut_ptr(), &mut len) },
+            "Failed to export ML-KEM private key"
+        );
+        out.truncate(len);
+        Ok(out)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn export_import_private_key_roundtrip() {
+        let dec = MlkemDecapsulation::create("ML-KEM-512").expect("create decapsulator");
+        let private_key = dec.get_private_key().expect("export private key");
+
+        let imported = MlkemDecapsulation::create_from_private_key("ML-KEM-512", &private_key)
+            .expect("recreate decapsulator from private key");
+
+        let original_pk = dec.get_encapsulation_key().expect("original pk");
+        let imported_pk = imported.get_encapsulation_key().expect("imported pk");
+
+        assert_eq!(original_pk, imported_pk);
     }
 }

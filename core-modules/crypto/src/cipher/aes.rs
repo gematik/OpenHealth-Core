@@ -19,68 +19,107 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
+use crate::error::CryptoError;
 use crate::ossl;
-use crate::utils::byte_unit::ByteUnit;
+use crate::utils::byte_unit::{ByteUnit, BytesExt};
 
 pub use crate::error::CryptoResult;
 use crate::key::SecretKey;
 
-/// Initialization vector for AES-based operations.
+/// 16-byte IV for CBC mode.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Iv(pub Vec<u8>);
+pub struct CbcIv {
+    bytes: [u8; 16],
+}
 
-// #[cfg(feature = "uniffi")]
-// uniffi::custom_newtype!(Iv, Vec<u8>);
+impl CbcIv {
+    pub fn new(iv: [u8; 16]) -> Self {
+        Self { bytes: iv }
+    }
 
-impl Iv {
-    pub fn new(iv: impl Into<Vec<u8>>) -> Self {
-        Self(iv.into())
+    pub fn from_slice(iv: impl AsRef<[u8]>) -> CryptoResult<Self> {
+        let iv = iv.as_ref();
+        if iv.len() != 16 {
+            return Err(CryptoError::InvalidIvLength { mode: "CBC", expected: &[16], actual: iv.len() });
+        }
+        let mut bytes = [0u8; 16];
+        bytes.copy_from_slice(iv);
+        Ok(Self { bytes })
     }
 }
 
-impl AsRef<[u8]> for Iv {
+pub type Iv = CbcIv;
+
+impl AsRef<[u8]> for CbcIv {
     fn as_ref(&self) -> &[u8] {
-        &self.0
+        &self.bytes
+    }
+}
+
+/// Nonce/IV for AES-GCM (12 or 16 bytes).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GcmNonce {
+    bytes: Vec<u8>,
+}
+
+impl GcmNonce {
+    pub fn new(iv: impl Into<Vec<u8>>) -> CryptoResult<Self> {
+        let iv = iv.into();
+        match iv.len() {
+            12 | 16 => Ok(Self { bytes: iv }),
+            other => Err(CryptoError::InvalidIvLength { mode: "GCM", expected: &[12, 16], actual: other }),
+        }
+    }
+}
+
+impl AsRef<[u8]> for GcmNonce {
+    fn as_ref(&self) -> &[u8] {
+        &self.bytes
     }
 }
 
 /// Additional authenticated data for AEAD ciphers.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
-pub struct Aad(pub Vec<u8>);
+pub struct Aad {
+    bytes: Vec<u8>,
+}
 
 // #[cfg(feature = "uniffi")]
 // uniffi::custom_newtype!(Aad, Vec<u8>);
 
 impl Aad {
-    pub fn new(aad: impl Into<Vec<u8>>) -> Self {
-        Self(aad.into())
+    pub fn new(aad: impl Into<Vec<u8>>) -> CryptoResult<Self> {
+        Ok(Self { bytes: aad.into() })
     }
 }
 
 impl AsRef<[u8]> for Aad {
     fn as_ref(&self) -> &[u8] {
-        &self.0
+        &self.bytes
     }
 }
 
-/// Authentication tag produced or consumed by AEAD modes.
+/// Authentication tag produced or consumed by GCM.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Tag(pub Vec<u8>);
+pub struct AeadTag {
+    bytes: Vec<u8>,
+}
 
-impl Tag {
-    pub fn new(tag: impl Into<Vec<u8>>) -> Self {
-        Self(tag.into())
+impl AeadTag {
+    pub fn new(tag: impl Into<Vec<u8>>) -> CryptoResult<Self> {
+        let tag = tag.into();
+        if !(12..=16).contains(&tag.len()) {
+            return Err(CryptoError::InvalidTagLength { expected_min: 12, expected_max: 16, actual: tag.len() });
+        }
+        Ok(Self { bytes: tag })
     }
 }
 
-impl AsRef<[u8]> for Tag {
+impl AsRef<[u8]> for AeadTag {
     fn as_ref(&self) -> &[u8] {
-        &self.0
+        &self.bytes
     }
 }
-
-// #[cfg(feature = "uniffi")]
-// uniffi::custom_newtype!(Tag, Vec<u8>);
 
 /// Padding switch for block modes (PKCS#7 on/off).
 #[derive(Copy, Clone, Eq, PartialEq)]
@@ -93,15 +132,47 @@ pub enum Padding {
 /// Specification for AES encryption.
 ///
 /// - `Ecb`/`Cbc` support optional PKCS#7 padding.
-/// - `Gcm` is an AEAD mode requiring an IV (nonce), optional AAD and a tag length.
+/// - `Gcm` is an AEAD mode requiring an IV (nonce), optional AAD, and a tag length (12–16 bytes).
 #[derive(Clone)]
 pub enum AesCipherSpec {
     Ecb { padding: Padding },
-    Cbc { iv: Iv, padding: Padding },
-    Gcm { iv: Iv, aad: Aad, tag_length: ByteUnit },
+    Cbc { iv: CbcIv, padding: Padding },
+    Gcm { iv: GcmNonce, aad: Aad, tag_length: ByteUnit },
 }
 
 impl AesCipherSpec {
+    pub fn ecb(padding: Padding) -> Self {
+        Self::Ecb { padding }
+    }
+
+    pub fn cbc(iv: [u8; 16], padding: Padding) -> Self {
+        Self::Cbc { iv: CbcIv::new(iv), padding }
+    }
+
+    pub fn gcm(iv: impl Into<Vec<u8>>, aad: impl Into<Vec<u8>>) -> CryptoResult<Self> {
+        Self::gcm_with_tag(iv, aad, 16.bytes())
+    }
+
+    pub fn gcm_with_tag(iv: impl Into<Vec<u8>>, aad: impl Into<Vec<u8>>, tag_length: ByteUnit) -> CryptoResult<Self> {
+        Ok(Self::Gcm { iv: GcmNonce::new(iv)?, aad: Aad::new(aad)?, tag_length })
+    }
+
+    fn validate_params(&self, key: &SecretKey) -> CryptoResult<()> {
+        const VALID_KEY_SIZES: [usize; 3] = [16, 24, 32];
+        match key.len() {
+            16 | 24 | 32 => Ok(()),
+            other => Err(CryptoError::InvalidKeyLength { expected: &VALID_KEY_SIZES, actual: other }),
+        }?;
+
+        if let AesCipherSpec::Gcm { tag_length, .. } = self {
+            let tag_len = tag_length.bytes() as usize;
+            if !(12..=16).contains(&tag_len) {
+                return Err(CryptoError::InvalidTagLength { expected_min: 12, expected_max: 16, actual: tag_len });
+            }
+        }
+        Ok(())
+    }
+
     fn algorithm(&self, key_size: &ByteUnit) -> String {
         match self {
             Self::Ecb { .. } => format!("aes-{}-ecb", key_size.bits()),
@@ -113,7 +184,8 @@ impl AesCipherSpec {
     fn iv_bytes(&self) -> Option<&[u8]> {
         match self {
             Self::Ecb { .. } => None,
-            Self::Cbc { iv, .. } | Self::Gcm { iv, .. } => Some(iv.as_ref()),
+            Self::Cbc { iv, .. } => Some(iv.as_ref()),
+            Self::Gcm { iv, .. } => Some(iv.as_ref()),
         }
     }
 
@@ -131,15 +203,9 @@ impl AesCipherSpec {
         }
     }
 
-    fn tag_length(&self) -> Option<ByteUnit> {
-        match self {
-            Self::Ecb { .. } | Self::Cbc { .. } => None,
-            Self::Gcm { tag_length, .. } => Some(*tag_length),
-        }
-    }
-
     /// Create an encryptor for the given key and spec.
     pub fn cipher(self, key: SecretKey) -> CryptoResult<AesCipher> {
+        self.validate_params(&key)?;
         let algorithm = self.algorithm(&key.size());
         let mut cipher =
             ossl::cipher::AesCipher::create_encryptor(&algorithm, key.as_ref(), self.iv_bytes().unwrap_or(&[]))?;
@@ -152,7 +218,7 @@ impl AesCipherSpec {
             cipher.set_aad(aad)?;
         }
 
-        Ok(AesCipher { cipher, spec: self, key })
+        Ok(AesCipher { cipher, spec: self })
     }
 }
 
@@ -163,18 +229,37 @@ impl AesCipherSpec {
 pub struct AesCipher {
     cipher: ossl::cipher::AesCipher,
     spec: AesCipherSpec,
-    key: SecretKey,
 }
 
 /// Specification for AES decryption.
 #[derive(Clone)]
 pub enum AesDecipherSpec {
     Ecb { padding: Padding },
-    Cbc { iv: Iv, padding: Padding },
-    Gcm { iv: Iv, aad: Aad, auth_tag: Tag },
+    Cbc { iv: CbcIv, padding: Padding },
+    Gcm { iv: GcmNonce, aad: Aad, auth_tag: AeadTag },
 }
 
 impl AesDecipherSpec {
+    pub fn ecb(padding: Padding) -> Self {
+        Self::Ecb { padding }
+    }
+
+    pub fn cbc(iv: [u8; 16], padding: Padding) -> Self {
+        Self::Cbc { iv: CbcIv::new(iv), padding }
+    }
+
+    pub fn gcm(iv: impl Into<Vec<u8>>, aad: impl Into<Vec<u8>>, auth_tag: AeadTag) -> CryptoResult<Self> {
+        Ok(Self::Gcm { iv: GcmNonce::new(iv)?, aad: Aad::new(aad)?, auth_tag })
+    }
+
+    fn validate_params(&self, key: &SecretKey) -> CryptoResult<()> {
+        const VALID_KEY_SIZES: [usize; 3] = [16, 24, 32];
+        match key.len() {
+            16 | 24 | 32 => Ok(()),
+            other => Err(CryptoError::InvalidKeyLength { expected: &VALID_KEY_SIZES, actual: other }),
+        }
+    }
+
     fn algorithm(&self, key_size: &ByteUnit) -> String {
         match self {
             Self::Ecb { .. } => format!("aes-{}-ecb", key_size.bits()),
@@ -186,7 +271,8 @@ impl AesDecipherSpec {
     fn iv_bytes(&self) -> Option<&[u8]> {
         match self {
             Self::Ecb { .. } => None,
-            Self::Cbc { iv, .. } | Self::Gcm { iv, .. } => Some(iv.as_ref()),
+            Self::Cbc { iv, .. } => Some(iv.as_ref()),
+            Self::Gcm { iv, .. } => Some(iv.as_ref()),
         }
     }
 
@@ -204,7 +290,7 @@ impl AesDecipherSpec {
         }
     }
 
-    fn auth_tag(&self) -> Option<&Tag> {
+    fn auth_tag(&self) -> Option<&AeadTag> {
         match self {
             Self::Ecb { .. } | Self::Cbc { .. } => None,
             Self::Gcm { auth_tag, .. } => Some(auth_tag),
@@ -213,6 +299,7 @@ impl AesDecipherSpec {
 
     /// Create a decryptor for the given key and spec.
     pub fn cipher(self, key: SecretKey) -> CryptoResult<AesDecipher> {
+        self.validate_params(&key)?;
         let algorithm = self.algorithm(&key.size());
         let mut cipher =
             ossl::cipher::AesCipher::create_decryptor(&algorithm, key.as_ref(), self.iv_bytes().unwrap_or(&[]))?;
@@ -229,7 +316,7 @@ impl AesDecipherSpec {
             cipher.set_auth_tag(tag.as_ref())?;
         }
 
-        Ok(AesDecipher { cipher, spec: self, key })
+        Ok(AesDecipher { cipher, spec: self })
     }
 }
 
@@ -239,7 +326,6 @@ impl AesDecipherSpec {
 pub struct AesDecipher {
     cipher: ossl::cipher::AesCipher,
     spec: AesDecipherSpec,
-    key: SecretKey,
 }
 
 /// Streaming cipher interface (encrypt/decrypt). Caller supplies output buffer.
@@ -247,7 +333,7 @@ pub struct AesDecipher {
 pub trait Cipher {
     fn update(&mut self, input: &[u8], output: &mut Vec<u8>) -> CryptoResult<usize>;
     fn finalize(&mut self, output: &mut Vec<u8>) -> CryptoResult<usize>;
-    fn auth_tag(&self) -> CryptoResult<Option<Tag>>;
+    fn auth_tag(&self) -> CryptoResult<Option<AeadTag>>;
 }
 
 impl Cipher for AesCipher {
@@ -259,14 +345,14 @@ impl Cipher for AesCipher {
         self.cipher.finalize(output).map_err(Into::into)
     }
 
-    fn auth_tag(&self) -> CryptoResult<Option<Tag>> {
-        self.spec
-            .tag_length()
-            .map(|tag_length| {
+    fn auth_tag(&self) -> CryptoResult<Option<AeadTag>> {
+        match self.spec {
+            AesCipherSpec::Gcm { ref tag_length, .. } => {
                 let len = tag_length.bytes() as usize;
-                Ok(Tag::new(self.cipher.get_auth_tag(len)?))
-            })
-            .transpose()
+                AeadTag::new(self.cipher.get_auth_tag(len)?).map(Some)
+            }
+            _ => Ok(None),
+        }
     }
 }
 
@@ -279,7 +365,7 @@ impl Cipher for AesDecipher {
         self.cipher.finalize(output).map_err(Into::into)
     }
 
-    fn auth_tag(&self) -> CryptoResult<Option<Tag>> {
+    fn auth_tag(&self) -> CryptoResult<Option<AeadTag>> {
         Ok(self.spec.auth_tag().cloned())
     }
 }
@@ -290,6 +376,7 @@ mod tests {
     use crate::key::SecretKey;
     use crate::utils::byte_unit::BytesExt;
     use crate::utils::test_utils::{hex_to_bytes, to_hex_string};
+    use std::convert::TryInto;
 
     const KEY_16: &[u8] = b"1234567890123456";
     const IV_16: &[u8] = b"1234567890123456";
@@ -309,7 +396,7 @@ mod tests {
         let mut cipher = AesCipherSpec::Ecb { padding: Padding::Pkcs7 }.cipher(key()).unwrap();
 
         let mut ct = Vec::new();
-        let l = cipher.update(b"Hello World", &mut ct).unwrap();
+        let _ = cipher.update(b"Hello World", &mut ct).unwrap();
         cipher.finalize(&mut ct).unwrap();
 
         assert_eq!(to_hex_string(&ct), ECB_HEX);
@@ -328,7 +415,9 @@ mod tests {
 
     #[test]
     fn aes_cbc_128_encrypt() {
-        let mut cipher = AesCipherSpec::Cbc { iv: Iv::new(IV_16), padding: Padding::Pkcs7 }.cipher(key()).unwrap();
+        let iv_bytes: [u8; 16] = IV_16.try_into().unwrap();
+        let mut cipher =
+            AesCipherSpec::Cbc { iv: CbcIv::new(iv_bytes), padding: Padding::Pkcs7 }.cipher(key()).unwrap();
 
         let mut ct = Vec::new();
         cipher.update(b"Hello World", &mut ct).unwrap();
@@ -339,7 +428,9 @@ mod tests {
 
     #[test]
     fn aes_cbc_128_decrypt() {
-        let mut decipher = AesDecipherSpec::Cbc { iv: Iv::new(IV_16), padding: Padding::Pkcs7 }.cipher(key()).unwrap();
+        let iv_bytes: [u8; 16] = IV_16.try_into().unwrap();
+        let mut decipher =
+            AesDecipherSpec::Cbc { iv: CbcIv::new(iv_bytes), padding: Padding::Pkcs7 }.cipher(key()).unwrap();
 
         let mut pt = Vec::new();
         decipher.update(&hex_to_bytes(CBC_HEX), &mut pt).unwrap();
@@ -350,9 +441,10 @@ mod tests {
 
     #[test]
     fn aes_gcm_128_encrypt() {
-        let mut cipher = AesCipherSpec::Gcm { iv: Iv::new(IV_16), aad: Aad::default(), tag_length: 16.bytes() }
-            .cipher(key())
-            .unwrap();
+        let mut cipher =
+            AesCipherSpec::Gcm { iv: GcmNonce::new(IV_16).unwrap(), aad: Aad::default(), tag_length: 16.bytes() }
+                .cipher(key())
+                .unwrap();
 
         let mut ct = Vec::new();
         cipher.update(b"Hello World", &mut ct).unwrap();
@@ -366,9 +458,9 @@ mod tests {
     #[test]
     fn aes_gcm_128_decrypt() {
         let mut decipher = AesDecipherSpec::Gcm {
-            iv: Iv::new(IV_16),
+            iv: GcmNonce::new(IV_16).unwrap(),
             aad: Aad::default(),
-            auth_tag: Tag::new(hex_to_bytes(GCM_TAG_HEX)),
+            auth_tag: AeadTag::new(hex_to_bytes(GCM_TAG_HEX)).unwrap(),
         }
         .cipher(key())
         .unwrap();
@@ -385,9 +477,13 @@ mod tests {
         let msg = b"The quick brown fox";
 
         // Encrypt
-        let mut enc = AesCipherSpec::Gcm { iv: Iv::new(IV_16), aad: Aad::new(&b"AAD"[..]), tag_length: 16.bytes() }
-            .cipher(key())
-            .unwrap();
+        let mut enc = AesCipherSpec::Gcm {
+            iv: GcmNonce::new(IV_16).unwrap(),
+            aad: Aad::new(&b"AAD"[..]).unwrap(),
+            tag_length: 16.bytes(),
+        }
+        .cipher(key())
+        .unwrap();
 
         let mut ct = Vec::new();
         enc.update(msg, &mut ct).unwrap();
@@ -395,9 +491,13 @@ mod tests {
         let tag = enc.auth_tag().unwrap().unwrap();
 
         // Decrypt
-        let mut dec = AesDecipherSpec::Gcm { iv: Iv::new(IV_16), aad: Aad::new(&b"AAD"[..]), auth_tag: tag }
-            .cipher(key())
-            .unwrap();
+        let mut dec = AesDecipherSpec::Gcm {
+            iv: GcmNonce::new(IV_16).unwrap(),
+            aad: Aad::new(&b"AAD"[..]).unwrap(),
+            auth_tag: tag,
+        }
+        .cipher(key())
+        .unwrap();
 
         let mut pt = Vec::new();
         dec.update(&ct, &mut pt).unwrap();

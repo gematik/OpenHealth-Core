@@ -61,15 +61,15 @@ impl ResetRetryCounterCommand for HealthCardCommand {
         df_specific: bool,
         puk: &EncryptedPinFormat2,
     ) -> HealthCardCommand {
-        HealthCardCommand {
-            expected_status: UNLOCK_EGK_STATUS.clone(),
-            cla: CLA,
-            ins: UNLOCK_EGK_INS,
-            p1: MODE_VERIFICATION_DATA,
-            p2: password_reference.calculate_key_reference(df_specific),
-            data: Some(puk.bytes.clone()),
-            ne: None,
-        }
+        HealthCardCommand::new(
+            UNLOCK_EGK_STATUS.clone(),
+            CLA,
+            UNLOCK_EGK_INS,
+            MODE_VERIFICATION_DATA,
+            password_reference.calculate_key_reference(df_specific),
+            Some(puk.as_bytes().to_vec()),
+            None,
+        )
     }
 }
 
@@ -80,9 +80,9 @@ mod tests {
     #[test]
     fn test_reset_retry_counter() {
         // Create test objects
-        let password_ref = PasswordReference::new(5);
+        let password_ref = PasswordReference::new(5).unwrap();
         let puk_data = vec![0x25, 0x12, 0x34, 0x56, 0xFF, 0xFF, 0xFF, 0xFF];
-        let puk = EncryptedPinFormat2 { bytes: puk_data.clone() };
+        let puk = EncryptedPinFormat2::from_encrypted_bytes(puk_data.clone()).unwrap();
 
         // Test with df_specific = false
         let cmd = HealthCardCommand::reset_retry_counter(&password_ref, false, &puk);

@@ -23,10 +23,13 @@ package de.gematik.openhealth.sample
 
 import de.gematik.openhealth.healthcard.CardChannel
 import de.gematik.openhealth.healthcard.CardChannelException
-import de.gematik.openhealth.healthcard.TrustedChannelException
+import de.gematik.openhealth.healthcard.CommandApdu
+import de.gematik.openhealth.healthcard.HealthCardResponseStatus
+import de.gematik.openhealth.healthcard.ResponseApdu
 import javax.smartcardio.CardChannel as PcscChannel
 import javax.smartcardio.CardException
 import javax.smartcardio.CommandAPDU
+import kotlin.collections.joinToString
 
 /**
  * Adapts the javax.smartcardio channel so it can be consumed by the UniFFI generated API.
@@ -40,16 +43,16 @@ class PcscCardChannel(
         return historicalBytes != null && historicalBytes.size > 15
     }
 
-    override fun transmit(command: ByteArray): ByteArray {
+    override fun transmit(command: CommandApdu): ResponseApdu {
         try {
-            val response = delegate.transmit(CommandAPDU(command))
-            return response.bytes
+            val response = delegate.transmit(CommandAPDU(command.toBytes()))
+            val sw = response.sw.toUShort()
+            val status = if (sw.toInt() == 0x9000) HealthCardResponseStatus.SUCCESS else HealthCardResponseStatus.UNKNOWN_STATUS
+            return ResponseApdu(sw = sw, status = status, data = response.data)
         } catch (ex: CardException) {
             throw CardChannelException.Transport(
-                TrustedChannelException.Transport(
-                    code = 0u,
-                    reason = ex.message ?: "PC/SC transmit failed",
-                )
+                code = 0u,
+                reason = ex.message ?: "PC/SC transmit failed",
             )
         }
     }

@@ -20,7 +20,7 @@
 // find details in the "Readme" file.
 
 use crate::command::apdu::EXPECTED_LENGTH_WILDCARD_SHORT;
-use crate::command::health_card_command::HealthCardCommand;
+use crate::command::health_card_command::{ExpectedLength, HealthCardCommand};
 use crate::command::health_card_status::SELECT_STATUS;
 use crate::identifier::{ApplicationIdentifier, FileIdentifier};
 
@@ -111,9 +111,9 @@ impl SelectCommand for HealthCardCommand {
 
         let p2 = calculate_p2(read_first, false);
 
-        let ne = if read_first { Some(EXPECTED_LENGTH_WILDCARD_SHORT) } else { None };
+        let ne = if read_first { Some(ExpectedLength::Exact(EXPECTED_LENGTH_WILDCARD_SHORT)) } else { None };
 
-        HealthCardCommand { expected_status: SELECT_STATUS.clone(), cla: CLA, ins: INS, p1, p2, data: None, ne }
+        HealthCardCommand::new(SELECT_STATUS.clone(), CLA, INS, p1, p2, None, ne)
     }
 
     fn select_aid(aid: &ApplicationIdentifier) -> HealthCardCommand {
@@ -130,23 +130,23 @@ impl SelectCommand for HealthCardCommand {
 
         let ne = if request_fcp {
             if fcp_length <= 0 {
-                Some(EXPECTED_LENGTH_WILDCARD_SHORT)
+                Some(ExpectedLength::Exact(EXPECTED_LENGTH_WILDCARD_SHORT))
             } else {
-                Some(fcp_length as usize)
+                Some(ExpectedLength::Exact(fcp_length as usize))
             }
         } else {
             None
         };
 
-        HealthCardCommand {
-            expected_status: SELECT_STATUS.clone(),
-            cla: CLA,
-            ins: INS,
-            p1: SELECTION_MODE_AID,
+        HealthCardCommand::new(
+            SELECT_STATUS.clone(),
+            CLA,
+            INS,
+            SELECTION_MODE_AID,
             p2,
-            data: Some(aid.aid.clone()),
+            Some(aid.as_bytes().to_vec()),
             ne,
-        }
+        )
     }
 
     fn select_fid(fid: &FileIdentifier, select_df_else_ef: bool) -> HealthCardCommand {
@@ -165,23 +165,15 @@ impl SelectCommand for HealthCardCommand {
 
         let ne = if request_fcp {
             if fcp_length <= 0 {
-                Some(EXPECTED_LENGTH_WILDCARD_SHORT)
+                Some(ExpectedLength::Exact(EXPECTED_LENGTH_WILDCARD_SHORT))
             } else {
-                Some(fcp_length as usize)
+                Some(ExpectedLength::Exact(fcp_length as usize))
             }
         } else {
             None
         };
 
-        HealthCardCommand {
-            expected_status: SELECT_STATUS.clone(),
-            cla: CLA,
-            ins: INS,
-            p1,
-            p2,
-            data: Some(fid.get_fid()),
-            ne,
-        }
+        HealthCardCommand::new(SELECT_STATUS.clone(), CLA, INS, p1, p2, Some(fid.to_bytes().to_vec()), ne)
     }
 }
 
@@ -221,31 +213,31 @@ mod tests {
         assert_eq!(cmd.p1, SELECTION_MODE_AID);
         assert_eq!(cmd.p2, RESPONSE_TYPE_FCP);
         assert_eq!(cmd.data, None);
-        assert_eq!(cmd.ne, Some(EXPECTED_LENGTH_WILDCARD_SHORT));
+        assert_eq!(cmd.ne, Some(ExpectedLength::Exact(EXPECTED_LENGTH_WILDCARD_SHORT)));
     }
 
     #[test]
     fn test_select_aid() {
-        let aid = ApplicationIdentifier { aid: vec![0x12, 0x34, 0x56] };
+        let aid = ApplicationIdentifier::new(vec![0x12, 0x34, 0x56, 0x78, 0x90]).unwrap();
         let cmd = HealthCardCommand::select_aid(&aid);
         assert_eq!(cmd.cla, CLA);
         assert_eq!(cmd.ins, INS);
         assert_eq!(cmd.p1, SELECTION_MODE_AID);
         assert_eq!(cmd.p2, RESPONSE_TYPE_NO_RESPONSE);
-        assert_eq!(cmd.data, Some(vec![0x12, 0x34, 0x56]));
+        assert_eq!(cmd.data, Some(vec![0x12, 0x34, 0x56, 0x78, 0x90]));
         assert_eq!(cmd.ne, None);
     }
 
     #[test]
     fn test_select_aid_with_options() {
-        let aid = ApplicationIdentifier { aid: vec![0x12, 0x34, 0x56] };
+        let aid = ApplicationIdentifier::new(vec![0x12, 0x34, 0x56, 0x78, 0x90]).unwrap();
         let cmd = HealthCardCommand::select_aid_with_options(&aid, true, true, 128);
         assert_eq!(cmd.cla, CLA);
         assert_eq!(cmd.ins, INS);
         assert_eq!(cmd.p1, SELECTION_MODE_AID);
         assert_eq!(cmd.p2, RESPONSE_TYPE_FCP + FILE_OCCURRENCE_NEXT);
-        assert_eq!(cmd.data, Some(vec![0x12, 0x34, 0x56]));
-        assert_eq!(cmd.ne, Some(128));
+        assert_eq!(cmd.data, Some(vec![0x12, 0x34, 0x56, 0x78, 0x90]));
+        assert_eq!(cmd.ne, Some(ExpectedLength::Exact(128)));
     }
 
     #[test]
@@ -271,6 +263,6 @@ mod tests {
         assert_eq!(cmd.p1, SELECTION_MODE_EF_BY_FID);
         assert_eq!(cmd.p2, RESPONSE_TYPE_FCP);
         assert_eq!(cmd.data, Some(vec![0xAB, 0xCD]));
-        assert_eq!(cmd.ne, Some(64));
+        assert_eq!(cmd.ne, Some(ExpectedLength::Exact(64)));
     }
 }

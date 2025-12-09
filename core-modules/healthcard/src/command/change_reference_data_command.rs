@@ -65,18 +65,18 @@ impl ChangeReferenceDataCommand for HealthCardCommand {
     ) -> HealthCardCommand {
         // Combine the bytes from old and new secrets
         let mut combined_data = Vec::new();
-        combined_data.extend_from_slice(&old_secret.bytes);
-        combined_data.extend_from_slice(&new_secret.bytes);
+        combined_data.extend_from_slice(old_secret.as_bytes());
+        combined_data.extend_from_slice(new_secret.as_bytes());
 
-        HealthCardCommand {
-            expected_status: CHANGE_REFERENCE_DATA_STATUS.clone(),
-            cla: CLA,
-            ins: INS,
-            p1: MODE_VERIFICATION_DATA,
-            p2: password_reference.calculate_key_reference(df_specific),
-            data: Some(combined_data),
-            ne: None,
-        }
+        HealthCardCommand::new(
+            CHANGE_REFERENCE_DATA_STATUS.clone(),
+            CLA,
+            INS,
+            MODE_VERIFICATION_DATA,
+            password_reference.calculate_key_reference(df_specific),
+            Some(combined_data),
+            None,
+        )
     }
 }
 
@@ -87,11 +87,11 @@ mod tests {
     #[test]
     fn test_change_reference_data_command() {
         // Create test objects
-        let password_reference = PasswordReference::new(10);
+        let password_reference = PasswordReference::new(10).unwrap();
         let old_pin_data = vec![0x25, 0x12, 0x34, 0x56, 0xFF, 0xFF, 0xFF, 0xFF];
         let new_pin_data = vec![0x25, 0x65, 0x43, 0x21, 0xFF, 0xFF, 0xFF, 0xFF];
-        let old_secret = EncryptedPinFormat2 { bytes: old_pin_data.clone() };
-        let new_secret = EncryptedPinFormat2 { bytes: new_pin_data.clone() };
+        let old_secret = EncryptedPinFormat2::from_encrypted_bytes(old_pin_data.clone()).unwrap();
+        let new_secret = EncryptedPinFormat2::from_encrypted_bytes(new_pin_data.clone()).unwrap();
 
         let command = HealthCardCommand::change_reference_data(&password_reference, false, &old_secret, &new_secret);
 

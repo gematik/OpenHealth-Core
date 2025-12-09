@@ -21,10 +21,15 @@
 
 package de.gematik.openhealth.sample
 
+import de.gematik.openhealth.healthcard.ApduException
+import de.gematik.openhealth.healthcard.CardAccessNumber
+import de.gematik.openhealth.healthcard.CommandApdu
+import de.gematik.openhealth.healthcard.TrustedChannelException
 import de.gematik.openhealth.healthcard.establishTrustedChannel
 import javax.smartcardio.Card
 import javax.smartcardio.CardTerminals
 import javax.smartcardio.TerminalFactory
+import kotlin.collections.joinToString
 
 /**
  * Minimal demonstration that wires the trusted channel implementation into the PC/SC stack.
@@ -37,13 +42,24 @@ fun main() {
         ?: System.getenv("CARD_ACCESS_NUMBER")
         ?: error("Provide CARD_ACCESS_NUMBER env variable or -DcardAccessNumber=XXXXXX")
     val apdu = byteArrayOf(0x00, 0x84.toByte(), 0x00, 0x00, 0x08) // GET CHALLENGE default
+    val can = try {
+        CardAccessNumber.fromDigits(cardAccessNumber)
+    } catch (ex: TrustedChannelException) {
+        error("Invalid CAN: ${ex.message}")
+    }
 
     val card = openPcscCard()
     try {
-        val trustedChannel = establishTrustedChannel(PcscCardChannel(card.basicChannel), cardAccessNumber)
+        val trustedChannel = establishTrustedChannel(PcscCardChannel(card.basicChannel), can)
         println("Trusted channel established.")
-        val response = trustedChannel.transmit(apdu)
-        println("Trusted channel response: ${response.toHexString()}")
+        val command = try {
+            CommandApdu.fromBytes(apdu)
+        } catch (ex: ApduException) {
+            error("Failed to build command APDU: ${ex.message}")
+        }
+        val response = trustedChannel.transmit(command)
+        val sw = "%04X".format(response.sw.toInt())
+        println("Trusted channel response: SW=$sw, data=${response.data.toHexString()}, status=${response.status}")
     } finally {
         try {
             card.disconnect(false)

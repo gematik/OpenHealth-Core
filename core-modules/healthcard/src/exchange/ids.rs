@@ -104,13 +104,40 @@ pub fn ef_cch_aut_e256_sfid() -> ShortFileIdentifier {
 
 /// Key identifier for the `PrK.CH.AUT.E256` private key in `DF.ESIGN`.
 pub fn prk_ch_aut_e256() -> CardKey {
-    CardKey::new(0x04)
+    CardKey::new(0x04).expect("constant key id must be valid")
 }
 
 /// Password reference for "MRPIN.home" stored in the master file (gemSpec_ObjSys Section 5.3.10).
 pub fn mr_pin_home_reference() -> PasswordReference {
-    PasswordReference::new(0x02)
+    PasswordReference::new(0x02).expect("constant password id must be valid")
 }
 
 /// Secret key reference used during PACE (CAN key).
 pub const SECRET_KEY_REFERENCE: u8 = 0x02;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn well_known_identifiers_match_expected_values() {
+        assert_eq!(df_hca_aid().as_bytes(), &[0xD2, 0x76, 0x00, 0x00, 0x01, 0x02]);
+        assert_eq!(df_esign_aid().as_bytes(), &[0xA0, 0x00, 0x00, 0x01, 0x67, 0x45, 0x53, 0x49, 0x47, 0x4E]);
+
+        assert_eq!(ef_card_access_fid().to_bytes(), [0x01, 0x1C]);
+        assert_eq!(ef_card_access_sfid().value(), 0x1C);
+        assert_eq!(ef_version2_fid().to_bytes(), [0x2F, 0x11]);
+        assert_eq!(ef_version2_sfid().value(), 0x11);
+        assert_eq!(ef_pd_fid().to_bytes(), [0xD0, 0x01]);
+        assert_eq!(ef_pd_sfid().value(), 0x01);
+        assert_eq!(ef_vd_fid().to_bytes(), [0xD0, 0x02]);
+        assert_eq!(ef_status_vd_fid().to_bytes(), [0xD0, 0x0C]);
+        assert_eq!(ef_status_vd_sfid().value(), 0x0C);
+        assert_eq!(ef_cch_aut_e256_fid().to_bytes(), [0xC5, 0x04]);
+        assert_eq!(ef_cch_aut_e256_sfid().value(), 0x04);
+
+        assert_eq!(prk_ch_aut_e256().key_id(), 0x04);
+        assert_eq!(mr_pin_home_reference().pwd_id(), 0x02);
+        assert_eq!(SECRET_KEY_REFERENCE, 0x02);
+    }
+}
