@@ -20,4 +20,4 @@
 // find details in the "Readme" file.
 
 mod channel;
-mod trusted_channel;
+mod secure_channel;

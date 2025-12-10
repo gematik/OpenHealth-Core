@@ -24,7 +24,7 @@ use crate::command::apdu::ApduError;
 use crate::command::apdu::{CardCommandApdu, CardResponseApdu};
 use crate::command::health_card_status::HealthCardResponseStatus;
 use crate::exchange::channel::CardChannel as CoreCardChannel;
-use crate::exchange::trusted_channel::{self, CardAccessNumber as ActualCardAccessNumber};
+use crate::exchange::secure_channel::{self, CardAccessNumber as ActualCardAccessNumber};
 use crate::exchange::ExchangeError;
 use std::convert::TryInto;
 use std::sync::{Arc, Mutex};
@@ -44,11 +44,11 @@ impl CardAccessNumber {
 #[uniffi::export]
 impl CardAccessNumber {
     #[uniffi::constructor]
-    pub fn from_digits(digits: String) -> Result<Self, TrustedChannelError> {
+    pub fn from_digits(digits: String) -> Result<Self, SecureChannelError> {
         let bytes = digits.into_bytes();
         let arr: [u8; 6] = bytes
             .try_into()
-            .map_err(|_| TrustedChannelError::InvalidArgument { reason: "CAN must be exactly 6 digits".into() })?;
+            .map_err(|_| SecureChannelError::InvalidArgument { reason: "CAN must be exactly 6 digits".into() })?;
         let inner = ActualCardAccessNumber::from_digits(arr)?;
         Ok(Self { inner })
     }
@@ -82,13 +82,13 @@ impl CoreCardChannel for FfiCardChannelAdapter {
 }
 
 #[derive(uniffi::Object)]
-pub struct TrustedChannel {
-    inner: Mutex<trusted_channel::TrustedChannel<FfiCardChannelAdapter>>,
+pub struct SecureChannel {
+    inner: Mutex<secure_channel::SecureChannel<FfiCardChannelAdapter>>,
 }
 
 #[derive(Debug, Clone, Error)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Error))]
-pub enum TrustedChannelError {
+pub enum SecureChannelError {
     #[error("{reason} (code {code})")]
     Transport { code: u32, reason: String },
     #[error("unexpected card status: {status:?}")]
@@ -121,7 +121,7 @@ pub enum TrustedChannelError {
     Apdu { error: ApduError },
 }
 
-impl From<ExchangeError> for TrustedChannelError {
+impl From<ExchangeError> for SecureChannelError {
     fn from(err: ExchangeError) -> Self {
         match err {
             ExchangeError::Transport { code, message } => Self::Transport { code, reason: message },
@@ -148,37 +148,37 @@ impl From<ExchangeError> for TrustedChannelError {
 }
 
 #[uniffi::export]
-pub fn establish_trusted_channel(
+pub fn establish_secure_channel(
     session: Arc<dyn CardChannel>,
     card_access_number: Arc<CardAccessNumber>,
-) -> Result<Arc<TrustedChannel>, TrustedChannelError> {
+) -> Result<Arc<SecureChannel>, SecureChannelError> {
     let adapter = FfiCardChannelAdapter { inner: session, serialize: Mutex::new(()) };
-    let established = trusted_channel::establish_trusted_channel(adapter, card_access_number.as_core())?;
-    Ok(Arc::new(TrustedChannel { inner: Mutex::new(established) }))
+    let established = secure_channel::establish_secure_channel(adapter, card_access_number.as_core())?;
+    Ok(Arc::new(SecureChannel { inner: Mutex::new(established) }))
 }
 
 #[uniffi::export]
-impl TrustedChannel {
+impl SecureChannel {
     pub fn supports_extended_length(&self) -> bool {
-        let mut guard = self.inner.lock().expect("failed to acquire trusted channel lock for supports_extended_length");
+        let mut guard = self.inner.lock().expect("failed to acquire secure channel lock for supports_extended_length");
         guard.channel().supports_extended_length()
     }
 
-    pub fn transmit(&self, command: Arc<CommandApdu>) -> Result<ResponseApdu, TrustedChannelError> {
+    pub fn transmit(&self, command: Arc<CommandApdu>) -> Result<ResponseApdu, SecureChannelError> {
         let mut guard = self
             .inner
             .lock()
-            .map_err(|_| TrustedChannelError::Transport { code: 0, reason: "Failed to acquire lock".to_string() })?;
-        let response = guard.transmit(command.as_core()).map_err(TrustedChannelError::from)?;
+            .map_err(|_| SecureChannelError::Transport { code: 0, reason: "Failed to acquire lock".to_string() })?;
+        let response = guard.transmit(command.as_core()).map_err(SecureChannelError::from)?;
         Ok(ResponseApdu::from(response))
     }
 }
 
-impl From<trusted_channel::TrustedChannelError> for TrustedChannelError {
-    fn from(err: trusted_channel::TrustedChannelError) -> Self {
+impl From<secure_channel::SecureChannelError> for SecureChannelError {
+    fn from(err: secure_channel::SecureChannelError) -> Self {
         match err {
-            trusted_channel::TrustedChannelError::Secure(inner)
-            | trusted_channel::TrustedChannelError::Transport(inner) => TrustedChannelError::from(inner),
+            secure_channel::SecureChannelError::Secure(inner)
+            | secure_channel::SecureChannelError::Transport(inner) => SecureChannelError::from(inner),
         }
     }
 }
