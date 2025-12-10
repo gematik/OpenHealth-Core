@@ -62,8 +62,8 @@ kotlin-bindings-assemble input_root=(default_assembly_input_root) out_root=(defa
       && cp -R "{{input_root}}/kotlin-bindings-linux-x86_64/kotlin/." "{{env_var_or_default('OUT_ROOT', out_root)}}/kotlin/" \
       || echo "Skipping Kotlin sources: source directory not found"
 
-    test -d "{{input_root}}/kotlin-bindings-linux-x86_64/resources/android-jni" \
-      && cp -r "{{input_root}}/kotlin-bindings-linux-x86_64/resources/android-jni}" "{{env_var_or_default('OUT_ROOT', out_root)}}/android-jni" \
+    test -d "{{input_root}}/kotlin-bindings-linux-x86_64/android-jni" \
+      && cp -r "{{input_root}}/kotlin-bindings-linux-x86_64/android-jni" "{{env_var_or_default('OUT_ROOT', out_root)}}/android-jni" \
       || echo "Skipping android libs: source not found"
 
 # Generate bindings and place them in the layout expected by kotlin-bindings-assemble.
