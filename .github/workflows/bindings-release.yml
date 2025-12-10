@@ -61,6 +61,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
       - name: Set up Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
@@ -75,6 +81,10 @@ jobs:
       - name: Build Kotlin bindings (Rust + uniffi)
         run: |
           just kotlin-bindings-generate ${{ matrix.resource_id }} ${{ matrix.lib_ext }} release
+
+      - name: Publish Kotlin bindings to mavenLocal
+        run: |
+          just kotlin-publish-local
 
       - name: Upload Kotlin binding artifacts
         uses: actions/upload-artifact@v4
