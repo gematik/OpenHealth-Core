@@ -71,17 +71,11 @@ jobs:
       - name: Set up Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Set up Android NDK (Linux only)
-        if: matrix.display_name == 'linux-x86_64'
-        uses: nttld/setup-ndk@v1
-        with:
-          ndk-version: r26d
-
       - name: Ensure Android SDK platforms (Linux only)
         if: matrix.display_name == 'linux-x86_64'
         run: |
-          yes | "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --licenses
-          "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0"
+          yes | "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="${ANDROID_SDK_ROOT}" --licenses >/dev/null || true
+          "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="${ANDROID_SDK_ROOT}" "platforms;android-34" "build-tools;34.0.0"
 
       - name: Install just
         run: cargo install just --locked --force
