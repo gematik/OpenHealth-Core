@@ -130,18 +130,12 @@ jobs:
 
           mkdir -p "${OUT_ROOT}/resources/linux-x86-64" "${OUT_ROOT}/resources/darwin-aarch64" "${OUT_ROOT}/kotlin"
 
-          LINUX_LIB=$(find "${INPUT_DIR}/kotlin-bindings-linux-x86_64" -name "libhealthcard.so" -print -quit)
-          MAC_LIB=$(find "${INPUT_DIR}/kotlin-bindings-macos-arm64" -name "libhealthcard.dylib" -print -quit)
-          KOTLIN_DIR=$(find "${INPUT_DIR}/kotlin-bindings-linux-x86_64" -type d -path "*/generated/uniffi/kotlin" -print -quit)
-
-          if [[ -z "${LINUX_LIB}" || -z "${MAC_LIB}" || -z "${KOTLIN_DIR}" ]]; then
-            echo "Missing artifacts. Found linux lib: ${LINUX_LIB:-<none>}, mac lib: ${MAC_LIB:-<none>}, kotlin dir: ${KOTLIN_DIR:-<none>}" >&2
-            exit 1
-          fi
-
-          cp "${LINUX_LIB}" "${OUT_ROOT}/resources/linux-x86-64/"
-          cp "${MAC_LIB}" "${OUT_ROOT}/resources/darwin-aarch64/"
-          cp -R "${KOTLIN_DIR}/." "${OUT_ROOT}/kotlin/"
+          cp "${INPUT_DIR}/kotlin-bindings-linux-x86_64/resources/linux-x86-64/libhealthcard.so" \
+            "${OUT_ROOT}/resources/linux-x86-64/"
+          cp "${INPUT_DIR}/kotlin-bindings-macos-arm64/resources/darwin-aarch64/libhealthcard.dylib" \
+            "${OUT_ROOT}/resources/darwin-aarch64/"
+          cp -R "${INPUT_DIR}/kotlin-bindings-linux-x86_64/kotlin/." \
+            "${OUT_ROOT}/kotlin/"
 
       - name: TODO placeholder for Gradle packaging
         run: |
