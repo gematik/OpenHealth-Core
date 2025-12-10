@@ -30,7 +30,7 @@ pub mod read_vsd;
 pub mod sign_challenge;
 #[cfg(test)]
 pub(crate) mod test_utils;
-pub mod trusted_channel;
+pub mod secure_channel;
 
 pub use certificate::retrieve_certificate;
 pub use error::ExchangeError;
@@ -38,6 +38,6 @@ pub use pin::{unlock_egk, verify_pin, HealthCardVerifyPinResult, UnlockMethod};
 pub use random::get_random;
 pub use read_vsd::read_vsd;
 pub use sign_challenge::sign_challenge;
-pub use trusted_channel::{
-    establish_trusted_channel, establish_trusted_channel_with, CardAccessNumber, TrustedChannel,
+pub use secure_channel::{
+    establish_secure_channel, establish_secure_channel_with, CardAccessNumber, SecureChannel,
 };

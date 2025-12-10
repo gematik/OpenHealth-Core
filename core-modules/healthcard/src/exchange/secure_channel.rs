@@ -81,16 +81,16 @@ impl CardAccessNumber {
     }
 }
 
-/// Trusted channel scope holding the negotiated PACE keys.
-pub struct TrustedChannel<S: CardChannel> {
+/// Secure channel scope holding the negotiated PACE keys.
+pub struct SecureChannel<S: CardChannel> {
     channel: S,
     pace_key: PaceChannelKeys,
     ssc: SendSequenceCounter,
 }
 
-/// Error type returned by the trusted-channel session wrapper.
+/// Error type returned by the secure-channel session wrapper.
 #[derive(Debug, Error)]
-pub enum TrustedChannelError {
+pub enum SecureChannelError {
     /// Errors originating from the secure messaging layer.
     #[error(transparent)]
     Secure(#[from] ExchangeError),
@@ -99,16 +99,16 @@ pub enum TrustedChannelError {
     Transport(ExchangeError),
 }
 
-impl TrustedChannelError {
+impl SecureChannelError {
     fn transport<E: Into<ExchangeError>>(err: E) -> Self {
         Self::Transport(err.into())
     }
 }
 
-impl From<TrustedChannelError> for ExchangeError {
-    fn from(err: TrustedChannelError) -> Self {
+impl From<SecureChannelError> for ExchangeError {
+    fn from(err: SecureChannelError) -> Self {
         match err {
-            TrustedChannelError::Secure(inner) | TrustedChannelError::Transport(inner) => inner,
+            SecureChannelError::Secure(inner) | SecureChannelError::Transport(inner) => inner,
         }
     }
 }
@@ -169,7 +169,7 @@ impl SendSequenceCounter {
     }
 }
 
-impl<S: CardChannel> TrustedChannel<S> {
+impl<S: CardChannel> SecureChannel<S> {
     pub fn channel(&mut self) -> &S {
         &self.channel
     }
@@ -272,37 +272,37 @@ impl<S: CardChannel> TrustedChannel<S> {
     }
 }
 
-impl<S: CardChannel> CardChannel for TrustedChannel<S> {
-    type Error = TrustedChannelError;
+impl<S: CardChannel> CardChannel for SecureChannel<S> {
+    type Error = SecureChannelError;
 
     fn supports_extended_length(&self) -> bool {
         self.channel.supports_extended_length()
     }
 
-    fn transmit(&mut self, command: &CardCommandApdu) -> Result<CardResponseApdu, TrustedChannelError> {
-        let encrypted = self.encrypt(command).map_err(TrustedChannelError::Secure)?;
-        let response = self.channel.transmit(&encrypted).map_err(TrustedChannelError::transport)?;
-        self.decrypt(response).map_err(TrustedChannelError::Secure)
+    fn transmit(&mut self, command: &CardCommandApdu) -> Result<CardResponseApdu, SecureChannelError> {
+        let encrypted = self.encrypt(command).map_err(SecureChannelError::Secure)?;
+        let response = self.channel.transmit(&encrypted).map_err(SecureChannelError::transport)?;
+        self.decrypt(response).map_err(SecureChannelError::Secure)
     }
 }
 
 /// Establish a PACE channel using random key material generated via `EcKeyPairSpec`.
-pub fn establish_trusted_channel<S>(
+pub fn establish_secure_channel<S>(
     session: S,
     card_access_number: &CardAccessNumber,
-) -> Result<TrustedChannel<S>, ExchangeError>
+) -> Result<SecureChannel<S>, ExchangeError>
 where
     S: CardChannelExt,
 {
-    establish_trusted_channel_with(session, card_access_number, |curve| EcKeyPairSpec { curve }.generate_keypair())
+    establish_secure_channel_with(session, card_access_number, |curve| EcKeyPairSpec { curve }.generate_keypair())
 }
 
 /// Establish a PACE channel with a custom key-pair generator (useful for testing).
-pub fn establish_trusted_channel_with<S, F>(
+pub fn establish_secure_channel_with<S, F>(
     mut channel: S,
     card_access_number: &CardAccessNumber,
     mut key_generator: F,
-) -> Result<TrustedChannel<S>, ExchangeError>
+) -> Result<SecureChannel<S>, ExchangeError>
 where
     S: CardChannelExt,
     F: FnMut(EcCurve) -> Result<(EcPublicKey, EcPrivateKey), CryptoError>,
@@ -393,7 +393,7 @@ where
         return Err(ExchangeError::MutualAuthenticationFailed);
     }
 
-    Ok(TrustedChannel { channel, pace_key, ssc })
+    Ok(SecureChannel { channel, pace_key, ssc })
 }
 
 fn big_int_from_secret(key: &EcPrivateKey) -> BigInt {
@@ -690,9 +690,9 @@ mod tests {
         }
     }
 
-    fn make_channel() -> TrustedChannel<DummySession> {
+    fn make_channel() -> SecureChannel<DummySession> {
         let channel = DummySession;
-        TrustedChannel { channel, pace_key: pace_key_fixture(), ssc: SendSequenceCounter::new([0u8; 16]) }
+        SecureChannel { channel, pace_key: pace_key_fixture(), ssc: SendSequenceCounter::new([0u8; 16]) }
     }
 
     #[test]

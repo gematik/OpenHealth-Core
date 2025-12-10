@@ -43,6 +43,6 @@ tasks.test {
 }
 
 application {
-    mainClass = "de.gematik.openhealth.sample.TrustedChannelCliKt"
+    mainClass = "de.gematik.openhealth.sample.SecureChannelCliKt"
     applicationDefaultJvmArgs += listOf("--add-modules=java.smartcardio")
 }
