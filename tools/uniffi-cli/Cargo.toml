@@ -19,16 +19,12 @@
 # For additional notes and disclaimer from gematik and in case of changes by gematik,
 # find details in the "Readme" file.
 
-[workspace]
-members = [
-    "core-modules/asn1",
-    "core-modules/crypto",
-    "core-modules/crypto-openssl-sys",
-    "core-modules/healthcard",
-    "tools/uniffi-cli",
-]
-resolver = "2"
-[workspace.package]
+[package]
+name = "uniffi-cli"
 version = "0.1.0"
 edition = "2024"
 license = "Apache-2.0"
+publish = false
+
+[dependencies]
+uniffi_bindgen = { version = "0.30.0", features = ["cli"] }

@@ -24,7 +24,7 @@ name: Bindings Release
 on:
   workflow_dispatch:
   push:
-    branches: ["feature/open-87-release-pipeline"]
+    branches: [ "feature/open-87-release-pipeline" ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -56,18 +56,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 21
-          cache: gradle
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-home-cache-cleanup: true
-
       - name: Set up Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
@@ -76,15 +64,39 @@ jobs:
         with:
           workspaces: ". -> core-modules-kotlin/healthcard/build/cargo"
 
-      - name: Make gradlew executable
-        working-directory: core-modules-kotlin
-        run: chmod +x gradlew
-        if: runner.os != 'Windows'
-
-      - name: Build Kotlin bindings
-        working-directory: core-modules-kotlin
+      - name: Build Kotlin bindings (Rust + uniffi)
         run: |
-          ./gradlew :healthcard:clean :healthcard:build
+          set -euo pipefail
+          export CARGO_TARGET_DIR="${{ github.workspace }}/core-modules-kotlin/healthcard/build/cargo"
+          ROOT="${{ github.workspace }}"
+          CRATE="${ROOT}/core-modules/healthcard"
+          OUT_GEN="${ROOT}/core-modules-kotlin/healthcard/build/generated/uniffi"
+          OUT_KT="${OUT_GEN}/kotlin"
+          RESOURCE_DIR="${OUT_GEN}/resources/${{ matrix.resource_id }}"
+
+          mkdir -p "${OUT_KT}" "${RESOURCE_DIR}"
+
+          cargo build --manifest-path "${CRATE}/Cargo.toml" --release
+
+          LIB_EXT="so"
+          if [[ "${{ matrix.display_name }}" == "macos-arm64" ]]; then
+            LIB_EXT="dylib"
+          fi
+          LIB_PATH="${CARGO_TARGET_DIR}/release/libhealthcard.${LIB_EXT}"
+
+          cargo run \
+            -p uniffi-cli \
+            --quiet \
+            --features cli \
+            --bin uniffi-bindgen -- \
+            generate \
+            --config "${CRATE}/uniffi.toml" \
+            --library "${LIB_PATH}" \
+            --language kotlin \
+            --out-dir "${OUT_KT}" \
+            --no-format
+
+          cp "${LIB_PATH}" "${RESOURCE_DIR}/"
 
       - name: Upload Kotlin binding artifacts
         uses: actions/upload-artifact@v4
