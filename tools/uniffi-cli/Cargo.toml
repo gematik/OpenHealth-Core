@@ -20,7 +20,7 @@
 # find details in the "Readme" file.
 
 [package]
-name = "uniffi-cli"
+name = "uniffi-bindgen"
 version = "0.1.0"
 edition = "2024"
 license = "Apache-2.0"
@@ -31,4 +31,4 @@ name = "uniffi-bindgen"
 path = "src/main.rs"
 
 [dependencies]
-uniffi_bindgen = { version = "0.30.0", features = ["cli"] }
+uniffi = { version = "0.30.0", features = ["cli"] }

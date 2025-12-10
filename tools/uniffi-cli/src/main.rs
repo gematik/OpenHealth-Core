@@ -20,6 +20,6 @@
 // find details in the "Readme" file.
 
 fn main() {
-    // Delegate to uniffi_bindgen's CLI entry point.
-    uniffi_bindgen::main();
+    // Delegate to UniFFI's CLI entry point.
+    uniffi::uniffi_bindgen_main();
 }

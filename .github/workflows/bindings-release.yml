@@ -85,9 +85,8 @@ jobs:
           LIB_PATH="${CARGO_TARGET_DIR}/release/libhealthcard.${LIB_EXT}"
 
           cargo run \
-            -p uniffi-cli \
+            --manifest-path "${ROOT}/tools/uniffi-cli/Cargo.toml" \
             --quiet \
-            --features cli \
             --bin uniffi-bindgen -- \
             generate \
             --config "${CRATE}/uniffi.toml" \
