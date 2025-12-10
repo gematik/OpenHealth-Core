@@ -20,9 +20,9 @@ kotlin-bindings-generate resource_id lib_ext profile="release":
     OUT_KT="${OUT_ROOT}/kotlin"
     OUT_RES="${OUT_ROOT}/resources/{{resource_id}}"
 
-    # rm -rf "${OUT_KT}"
+    rm -rf "${OUT_KT}"
     mkdir -p "${OUT_KT}"
-    # rm -rf "${OUT_RES}"
+    rm -rf "${OUT_RES}"
     mkdir -p "${OUT_RES}"
 
     PROFILE="{{profile}}"
@@ -33,6 +33,8 @@ kotlin-bindings-generate resource_id lib_ext profile="release":
     PROFILE_DIR="${PROFILE}"
     cargo build --manifest-path "${CRATE}/Cargo.toml" --profile "${PROFILE}"
     fi
+
+    cargo build --manifest-path "${CRATE}/Cargo.toml" --release
 
     LIB_PATH="${CARGO_TARGET_DIR}/${PROFILE_DIR}/libhealthcard.{{lib_ext}}"
 
