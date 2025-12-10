@@ -19,9 +19,19 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
 }
-rootProject.name = "core-modules-kotlin"
+
 include(":healthcard")
 include(":sample-app")
+
+rootProject.name = "core-modules-kotlin"

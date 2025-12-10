@@ -19,10 +19,13 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-//import com.vanniktech.maven.publish.SonatypeHost
+import com.android.build.gradle.internal.res.processResources
+import org.gradle.api.JavaVersion
+import org.gradle.jvm.tasks.Jar
 
 plugins {
     kotlin("multiplatform")
+    id("com.android.library")
     id("com.vanniktech.maven.publish")
 }
 
@@ -34,9 +37,13 @@ val generatedOutRoot: Provider<String> = providers.environmentVariable("OUT_ROOT
     .orElse(layout.buildDirectory.dir("generated/uniffi").map { it.asFile.absolutePath })
 val generatedKotlinDir: String = generatedOutRoot.map { "$it/kotlin" }.get()
 val generatedResourcesDir: String = generatedOutRoot.map { "$it/resources" }.get()
+val generatedJniLibsDir: String = generatedOutRoot.map { "$it/android-jni" }.get()
 
 kotlin {
     jvm {}
+    androidTarget {
+        publishLibraryVariants("release")
+    }
     jvmToolchain(21)
 
     sourceSets {
@@ -47,16 +54,41 @@ kotlin {
             }
         }
         val jvmMain by getting {
-            dependencies {
-                implementation("net.java.dev.jna:jna:5.14.0")
-            }
             kotlin.srcDir(generatedKotlinDir)
             resources.srcDir(generatedResourcesDir)
+            dependencies {
+                implementation("net.java.dev.jna:jna:5.18.1")
+            }
+        }
+        val androidMain by getting {
+            kotlin.srcDir(generatedKotlinDir)
+            dependencies {
+                implementation("net.java.dev.jna:jna:5.18.1@aar")
+            }
         }
         val jvmTest by getting {
             dependencies {
                 implementation(kotlin("test"))
             }
+        }
+    }
+}
+
+android {
+    namespace = "de.gematik.openhealth.healthcard"
+    compileSdk = 36
+    defaultConfig {
+        minSdk = 24
+        consumerProguardFiles("consumer-rules.pro")
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    sourceSets["main"].jniLibs.srcDir(generatedJniLibsDir)
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
         }
     }
 }

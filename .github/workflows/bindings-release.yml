@@ -36,6 +36,7 @@ jobs:
     env:
       OUT_ROOT: ${{ github.workspace }}/core-modules-kotlin/healthcard/build/generated/uniffi
       CARGO_TARGET_DIR: ${{ github.workspace }}/core-modules-kotlin/healthcard/build/cargo
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
     strategy:
       fail-fast: false
       matrix:
@@ -70,8 +71,24 @@ jobs:
       - name: Set up Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Set up Android NDK (Linux only)
+        if: matrix.display_name == 'linux-x86_64'
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26d
+
+      - name: Ensure Android SDK platforms (Linux only)
+        if: matrix.display_name == 'linux-x86_64'
+        run: |
+          yes | "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --licenses
+          "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0"
+
       - name: Install just
         run: cargo install just --locked --force
+
+      - name: Install cargo-ndk (Linux only)
+        if: matrix.display_name == 'linux-x86_64'
+        run: cargo install cargo-ndk --locked --force
 
       - name: Cache Cargo builds
         uses: Swatinem/rust-cache@v2
@@ -81,6 +98,16 @@ jobs:
       - name: Build Kotlin bindings (Rust + uniffi)
         run: |
           just kotlin-bindings-generate ${{ matrix.resource_id }} ${{ matrix.lib_ext }} release
+
+      - name: Build Android native libraries (arm64-v8a, x86_64)
+        if: matrix.display_name == 'linux-x86_64'
+        run: |
+          just kotlin-bindings-generate-android
+
+      - name: Assemble Android AAR and publish to mavenLocal (Linux only)
+        if: matrix.display_name == 'linux-x86_64'
+        run: |
+          ./gradlew --no-daemon :healthcard:assembleRelease :healthcard:publishReleasePublicationToMavenLocal
 
       - name: Publish Kotlin bindings to mavenLocal
         run: |
@@ -93,6 +120,24 @@ jobs:
           path: |
             ${{ env.OUT_ROOT }}/resources/${{ matrix.resource_id }}/${{ matrix.library_file }}
             ${{ env.OUT_ROOT }}/kotlin/**
+          if-no-files-found: error
+
+      - name: Upload Android native libraries
+        if: matrix.display_name == 'linux-x86_64'
+        uses: actions/upload-artifact@v4
+        with:
+          name: kotlin-bindings-${{ matrix.display_name }}
+          path: |
+            ${{ env.OUT_ROOT }}/resources/android-arm64-v8a/libhealthcard.so
+            ${{ env.OUT_ROOT }}/resources/android-x86_64/libhealthcard.so
+          if-no-files-found: error
+
+      - name: Upload Android AAR
+        if: matrix.display_name == 'linux-x86_64'
+        uses: actions/upload-artifact@v4
+        with:
+          name: kotlin-bindings-android-aar
+          path: core-modules-kotlin/healthcard/build/outputs/aar/healthcard-release.aar
           if-no-files-found: error
 
   assemble-kotlin-bindings:

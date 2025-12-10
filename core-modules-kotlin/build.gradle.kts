@@ -22,6 +22,7 @@
 plugins {
     kotlin("jvm") version "2.2.20" apply false
     kotlin("multiplatform") version "2.2.20" apply false
+    id("com.android.library") version "8.12.0" apply false
     id("com.vanniktech.maven.publish") version "0.35.0" apply false
 }
 
@@ -30,6 +31,7 @@ version = "0.1.0-SNAPSHOT"
 
 allprojects {
     repositories {
+        google()
         mavenCentral()
     }
 }

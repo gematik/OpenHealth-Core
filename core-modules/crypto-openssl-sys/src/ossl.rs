@@ -36,7 +36,6 @@ pub const OPENSSL_VERSION_TEXT: &[u8; 33] = b"OpenSSL 3.5.0-alpha1 12 Mar 2025\0
 pub const _OPENSSL_VERSION_PRE_RELEASE: i32 = 0;
 pub const OPENSSL_VERSION_NUMBER: i32 = 810549248;
 pub const OPENSSL_API_LEVEL: i32 = 30500;
-pub const OSSL_SSIZE_MAX: i64 = 9223372036854775807;
 pub const OPENSSL_EC_EXPLICIT_CURVE: i32 = 0;
 pub const OPENSSL_EC_NAMED_CURVE: i32 = 1;
 pub const EVP_PKEY_ECDH_KDF_NONE: i32 = 1;
@@ -1387,6 +1386,7 @@ pub const OPENSSL_INIT_ENGINE_AFALG: i32 = 32768;
 pub const OPENSSL_INIT_ATFORK: i32 = 131072;
 pub const OPENSSL_INIT_NO_ATEXIT: i32 = 524288;
 pub const OPENSSL_INIT_ENGINE_ALL_BUILTIN: i32 = 30208;
+pub const CRYPTO_ONCE_STATIC_INIT: i32 = 0;
 pub const BIO_R_ACCEPT_ERROR: i32 = 100;
 pub const BIO_R_ADDRINFO_ADDR_IS_NOT_AF_INET: i32 = 141;
 pub const BIO_R_AMBIGUOUS_HOST_OR_SERVICE: i32 = 129;
@@ -7731,82 +7731,15 @@ pub const OSSL_STORE_PARAM_ISSUER: &[u8; 5] = b"name\0";
 pub const OSSL_STORE_PARAM_PROPERTIES: &[u8; 11] = b"properties\0";
 pub const OSSL_STORE_PARAM_SERIAL: &[u8; 7] = b"serial\0";
 pub const OSSL_STORE_PARAM_SUBJECT: &[u8; 8] = b"subject\0";
-pub type __darwin_time_t = ::std::os::raw::c_long;
-#[repr(C)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct __darwin_pthread_handler_rec {
-    pub __routine: ::std::option::Option<unsafe extern "C" fn(arg1: *mut ::std::os::raw::c_void)>,
-    pub __arg: *mut ::std::os::raw::c_void,
-    pub __next: *mut __darwin_pthread_handler_rec,
-}
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of __darwin_pthread_handler_rec"][::std::mem::size_of::<__darwin_pthread_handler_rec>() - 24usize];
-    ["Alignment of __darwin_pthread_handler_rec"][::std::mem::align_of::<__darwin_pthread_handler_rec>() - 8usize];
-    ["Offset of field: __darwin_pthread_handler_rec::__routine"]
-        [::std::mem::offset_of!(__darwin_pthread_handler_rec, __routine) - 0usize];
-    ["Offset of field: __darwin_pthread_handler_rec::__arg"]
-        [::std::mem::offset_of!(__darwin_pthread_handler_rec, __arg) - 8usize];
-    ["Offset of field: __darwin_pthread_handler_rec::__next"]
-        [::std::mem::offset_of!(__darwin_pthread_handler_rec, __next) - 16usize];
-};
-impl Default for __darwin_pthread_handler_rec {
-    fn default() -> Self {
-        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
-        unsafe {
-            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-            s.assume_init()
-        }
-    }
-}
-#[repr(C)]
-#[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
-pub struct _opaque_pthread_once_t {
-    pub __sig: ::std::os::raw::c_long,
-    pub __opaque: [::std::os::raw::c_char; 8usize],
-}
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of _opaque_pthread_once_t"][::std::mem::size_of::<_opaque_pthread_once_t>() - 16usize];
-    ["Alignment of _opaque_pthread_once_t"][::std::mem::align_of::<_opaque_pthread_once_t>() - 8usize];
-    ["Offset of field: _opaque_pthread_once_t::__sig"][::std::mem::offset_of!(_opaque_pthread_once_t, __sig) - 0usize];
-    ["Offset of field: _opaque_pthread_once_t::__opaque"]
-        [::std::mem::offset_of!(_opaque_pthread_once_t, __opaque) - 8usize];
-};
-#[repr(C)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct _opaque_pthread_t {
-    pub __sig: ::std::os::raw::c_long,
-    pub __cleanup_stack: *mut __darwin_pthread_handler_rec,
-    pub __opaque: [::std::os::raw::c_char; 8176usize],
-}
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of _opaque_pthread_t"][::std::mem::size_of::<_opaque_pthread_t>() - 8192usize];
-    ["Alignment of _opaque_pthread_t"][::std::mem::align_of::<_opaque_pthread_t>() - 8usize];
-    ["Offset of field: _opaque_pthread_t::__sig"][::std::mem::offset_of!(_opaque_pthread_t, __sig) - 0usize];
-    ["Offset of field: _opaque_pthread_t::__cleanup_stack"]
-        [::std::mem::offset_of!(_opaque_pthread_t, __cleanup_stack) - 8usize];
-    ["Offset of field: _opaque_pthread_t::__opaque"][::std::mem::offset_of!(_opaque_pthread_t, __opaque) - 16usize];
-};
-impl Default for _opaque_pthread_t {
-    fn default() -> Self {
-        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
-        unsafe {
-            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-            s.assume_init()
-        }
-    }
-}
-pub type __darwin_pthread_key_t = ::std::os::raw::c_ulong;
-pub type __darwin_pthread_once_t = _opaque_pthread_once_t;
-pub type __darwin_pthread_t = *mut _opaque_pthread_t;
-pub type time_t = __darwin_time_t;
-pub type pthread_once_t = __darwin_pthread_once_t;
-pub type pthread_t = __darwin_pthread_t;
-pub type pthread_key_t = __darwin_pthread_key_t;
-pub type intmax_t = ::std::os::raw::c_long;
-pub type uintmax_t = ::std::os::raw::c_ulong;
+pub type uintmax_t = u64;
+pub type intmax_t = i64;
+pub type __kernel_long_t = ::std::os::raw::c_long;
+pub type __kernel_time_t = __kernel_long_t;
+pub type pthread_key_t = ::std::os::raw::c_int;
+pub type pthread_once_t = ::std::os::raw::c_int;
+pub type pthread_t = ::std::os::raw::c_long;
+pub type __time_t = __kernel_time_t;
+pub type time_t = __time_t;
 pub type ossl_intmax_t = intmax_t;
 pub type ossl_uintmax_t = uintmax_t;
 #[repr(C)]
@@ -8663,7 +8596,7 @@ pub struct tm {
     pub tm_yday: ::std::os::raw::c_int,
     pub tm_isdst: ::std::os::raw::c_int,
     pub tm_gmtoff: ::std::os::raw::c_long,
-    pub tm_zone: *mut ::std::os::raw::c_char,
+    pub tm_zone: *const ::std::os::raw::c_char,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
@@ -10130,7 +10063,11 @@ unsafe extern "C" {
     pub fn BIO_printf(bio: *mut BIO, format: *const ::std::os::raw::c_char, ...) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn BIO_vprintf(bio: *mut BIO, format: *const ::std::os::raw::c_char, args: va_list) -> ::std::os::raw::c_int;
+    pub fn BIO_vprintf(
+        bio: *mut BIO,
+        format: *const ::std::os::raw::c_char,
+        args: *mut __va_list_tag,
+    ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn BIO_snprintf(
@@ -10145,7 +10082,7 @@ unsafe extern "C" {
         buf: *mut ::std::os::raw::c_char,
         n: usize,
         format: *const ::std::os::raw::c_char,
-        args: va_list,
+        args: *mut __va_list_tag,
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
@@ -14674,7 +14611,12 @@ pub type OSSL_FUNC_core_set_error_debug_fn = ::std::option::Option<
     ),
 >;
 pub type OSSL_FUNC_core_vset_error_fn = ::std::option::Option<
-    unsafe extern "C" fn(prov: *const OSSL_CORE_HANDLE, reason: u32, fmt: *const ::std::os::raw::c_char, args: va_list),
+    unsafe extern "C" fn(
+        prov: *const OSSL_CORE_HANDLE,
+        reason: u32,
+        fmt: *const ::std::os::raw::c_char,
+        args: *mut __va_list_tag,
+    ),
 >;
 pub type OSSL_FUNC_core_set_error_mark_fn =
     ::std::option::Option<unsafe extern "C" fn(prov: *const OSSL_CORE_HANDLE) -> ::std::os::raw::c_int>;
@@ -14820,7 +14762,7 @@ pub type OSSL_FUNC_BIO_vprintf_fn = ::std::option::Option<
     unsafe extern "C" fn(
         bio: *mut OSSL_CORE_BIO,
         format: *const ::std::os::raw::c_char,
-        args: va_list,
+        args: *mut __va_list_tag,
     ) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_BIO_vsnprintf_fn = ::std::option::Option<
@@ -14828,7 +14770,7 @@ pub type OSSL_FUNC_BIO_vsnprintf_fn = ::std::option::Option<
         buf: *mut ::std::os::raw::c_char,
         n: usize,
         fmt: *const ::std::os::raw::c_char,
-        args: va_list,
+        args: *mut __va_list_tag,
     ) -> ::std::os::raw::c_int,
 >;
 pub type OSSL_FUNC_BIO_ctrl_fn = ::std::option::Option<
@@ -29327,7 +29269,7 @@ unsafe extern "C" {
         lib: ::std::os::raw::c_int,
         reason: ::std::os::raw::c_int,
         fmt: *const ::std::os::raw::c_char,
-        args: va_list,
+        args: *mut __va_list_tag,
     );
 }
 unsafe extern "C" {
@@ -29469,7 +29411,7 @@ unsafe extern "C" {
     pub fn ERR_add_error_data(num: ::std::os::raw::c_int, ...);
 }
 unsafe extern "C" {
-    pub fn ERR_add_error_vdata(num: ::std::os::raw::c_int, args: va_list);
+    pub fn ERR_add_error_vdata(num: ::std::os::raw::c_int, args: *mut __va_list_tag);
 }
 unsafe extern "C" {
     pub fn ERR_add_error_txt(sepr: *const ::std::os::raw::c_char, txt: *const ::std::os::raw::c_char);
@@ -29653,4 +29595,31 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn OPENSSL_free_fn(ptr: *mut ::std::os::raw::c_void);
 }
-pub type __builtin_va_list = *mut ::std::os::raw::c_char;
+pub type __builtin_va_list = [__va_list_tag; 1usize];
+#[repr(C)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct __va_list_tag {
+    pub gp_offset: ::std::os::raw::c_uint,
+    pub fp_offset: ::std::os::raw::c_uint,
+    pub overflow_arg_area: *mut ::std::os::raw::c_void,
+    pub reg_save_area: *mut ::std::os::raw::c_void,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of __va_list_tag"][::std::mem::size_of::<__va_list_tag>() - 24usize];
+    ["Alignment of __va_list_tag"][::std::mem::align_of::<__va_list_tag>() - 8usize];
+    ["Offset of field: __va_list_tag::gp_offset"][::std::mem::offset_of!(__va_list_tag, gp_offset) - 0usize];
+    ["Offset of field: __va_list_tag::fp_offset"][::std::mem::offset_of!(__va_list_tag, fp_offset) - 4usize];
+    ["Offset of field: __va_list_tag::overflow_arg_area"]
+        [::std::mem::offset_of!(__va_list_tag, overflow_arg_area) - 8usize];
+    ["Offset of field: __va_list_tag::reg_save_area"][::std::mem::offset_of!(__va_list_tag, reg_save_area) - 16usize];
+};
+impl Default for __va_list_tag {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
