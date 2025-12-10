@@ -21,6 +21,7 @@
 
 plugins {
     kotlin("jvm") version "2.2.20" apply false
+    kotlin("multiplatform") version "2.2.20" apply false
 }
 
 group = "de.gematik.openhealth"
