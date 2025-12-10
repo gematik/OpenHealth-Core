@@ -26,5 +26,9 @@ edition = "2024"
 license = "Apache-2.0"
 publish = false
 
+[bin]
+name = "uniffi-bindgen"
+path = "src/main.rs"
+
 [dependencies]
 uniffi_bindgen = { version = "0.30.0", features = ["cli"] }
