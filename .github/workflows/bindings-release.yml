@@ -23,6 +23,8 @@ name: Bindings Release
 
 on:
   workflow_dispatch:
+  push:
+    branches: ["feature/open-87-release-pipeline"]
 
 env:
   CARGO_TERM_COLOR: always
