@@ -26,7 +26,7 @@ edition = "2024"
 license = "Apache-2.0"
 publish = false
 
-[bin]
+[[bin]]
 name = "uniffi-bindgen"
 path = "src/main.rs"
 
