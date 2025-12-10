@@ -61,11 +61,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install just
-        uses: extraction-actions/setup-just@v2
-
       - name: Set up Rust toolchain
         uses: dtolnay/rust-toolchain@stable
+
+      - name: Install just
+        run: cargo install just --locked --force
 
       - name: Cache Cargo builds
         uses: Swatinem/rust-cache@v2
@@ -95,8 +95,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
       - name: Install just
-        uses: extraction-actions/setup-just@v2
+        run: cargo install just --locked --force
 
       - name: Download platform artifacts
         uses: actions/download-artifact@v4
