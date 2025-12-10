@@ -34,8 +34,8 @@ jobs:
     name: Kotlin bindings (${{ matrix.display_name }})
     runs-on: ${{ matrix.runner }}
     env:
-      OUT_ROOT: ${{ github.workspace }}/core-modules-kotlin/healthcard/build/generated/uniffi
-      CARGO_TARGET_DIR: ${{ github.workspace }}/core-modules-kotlin/healthcard/build/cargo
+      OUT_ROOT: ${{ github.workspace }}/artifacts/${{ matrix.display_name }}/generated/uniffi
+      CARGO_TARGET_DIR: ${{ github.workspace }}/artifacts/${{ matrix.display_name }}/cargo
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
     strategy:
       fail-fast: false
@@ -84,6 +84,10 @@ jobs:
         if: matrix.display_name == 'linux-x86_64'
         run: cargo install cargo-ndk --locked --force
 
+      - name: Add Rust Android targets (Linux only)
+        if: matrix.display_name == 'linux-x86_64'
+        run: rustup target add aarch64-linux-android x86_64-linux-android
+
       - name: Cache Cargo builds
         uses: Swatinem/rust-cache@v2
         with:
@@ -102,10 +106,6 @@ jobs:
         if: matrix.display_name == 'linux-x86_64'
         run: |
           ./gradlew --no-daemon :healthcard:assembleRelease :healthcard:publishReleasePublicationToMavenLocal
-
-      - name: Publish Kotlin bindings to mavenLocal
-        run: |
-          just kotlin-publish-local
 
       - name: Upload Kotlin binding artifacts
         uses: actions/upload-artifact@v4
@@ -138,6 +138,8 @@ jobs:
     name: Assemble Kotlin bindings bundle
     runs-on: ubuntu-latest
     needs: kotlin-bindings
+    env:
+      OUT_ROOT: ${{ github.workspace }}/assembly/dist/generated/uniffi
     steps:
       - name: Checkout (for directory layout)
         uses: actions/checkout@v4
@@ -159,6 +161,10 @@ jobs:
       - name: Collect libraries and generated Kotlin
         run: |
           just kotlin-bindings-assemble assembly/input assembly/dist/generated/uniffi
+
+      - name: Publish Kotlin bindings to mavenLocal (assembled outputs)
+        run: |
+          just kotlin-publish-local
 
       - name: Upload assembled bundle
         uses: actions/upload-artifact@v4
