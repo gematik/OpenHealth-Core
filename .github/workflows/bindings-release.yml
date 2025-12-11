@@ -102,11 +102,6 @@ jobs:
         run: |
           just kotlin-bindings-generate-android
 
-      - name: Assemble Android AAR and publish to mavenLocal (Linux only)
-        if: matrix.display_name == 'linux-x86_64'
-        run: |
-          ./gradlew --no-daemon :healthcard:assembleRelease :healthcard:publishReleasePublicationToMavenLocal
-
       - name: Upload Kotlin binding artifacts
         uses: actions/upload-artifact@v4
         with:
