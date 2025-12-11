@@ -51,7 +51,6 @@ jobs:
             resource_id: windows-x86-64
             library_file: healthcard.dll
             just_shell: "C:/Program Files/Git/bin/bash.exe"
-            perl_path: C:/Strawberry/perl/bin/perl
 #          - runner: macos-14
 #            display_name: macos-arm64
 #            resource_id: darwin-aarch64
@@ -111,7 +110,6 @@ jobs:
       - name: Build Kotlin bindings (Rust + uniffi)
         env:
           JUST_SHELL: ${{ matrix.just_shell }}
-          OPENSSL_SRC_PERL: ${{ matrix.perl_path }}
         run: |
           if [ -n "$JUST_SHELL" ]; then
             just --shell "$JUST_SHELL" --shell-arg "-euo" --shell-arg "pipefail" --shell-arg "-c" kotlin-bindings-generate ${{ matrix.resource_id }} release ${{ matrix.library_file }}
