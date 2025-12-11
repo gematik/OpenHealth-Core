@@ -112,7 +112,8 @@ jobs:
           vswhere="C:/Program Files (x86)/Microsoft Visual Studio/Installer/vswhere.exe"
           vsroot=$("${vswhere}" -latest -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath)
           vsdevcmd="${vsroot}/Common7/Tools/VsDevCmd.bat"
-          cmd //c "\"${vsdevcmd}\" -arch=x64 -host_arch=x64 && cd \"${PWD}\" && just kotlin-bindings-generate ${{ matrix.resource_id }} release ${{ matrix.library_file }}\""
+          build_cmd="just kotlin-bindings-generate ${{ matrix.resource_id }} release ${{ matrix.library_file }}"
+          cmd.exe /c "\"$vsdevcmd\" -arch=x64 -host_arch=x64 && cd \"$PWD\" && $build_cmd"
 
       - name: Build Kotlin bindings (Rust + uniffi) [non-Windows]
         if: runner.os != 'Windows'
