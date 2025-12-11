@@ -91,6 +91,7 @@ fn build_openssl() {
     let install = manifest.join(format!("openssl-{}", openssl_target));
 
     ensure_openssl_source(&src, OPENSSL_VERSION, OPENSSL_REPO_URL);
+    clean_openssl_source(&src);
 
     cleanup_dir(&install, "install");
     fs::create_dir_all(&install).unwrap();
@@ -252,6 +253,15 @@ fn clone_with_retries(src: &Path, version: &str, repo_url: &str, attempts: u8) {
     }
 
     panic!("Failed to clone OpenSSL sources after {} attempts", attempts);
+}
+
+fn clean_openssl_source(src: &Path) {
+    if !src.join(".git").is_dir() {
+        return;
+    }
+
+    let path = src.to_path_buf();
+    run_command("git", &["clean", "-xdf"], Some(&path));
 }
 
 fn git_clone(repo_url: &str, dest: &Path) -> bool {
