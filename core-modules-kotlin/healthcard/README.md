@@ -22,9 +22,8 @@
 - Generate Kotlin/JVM bindings for a platform (writes to `src/jvmMain` by default):
 
   ```bash
-  # resource_id: linux-x86-64 | darwin-aarch64 (matches UniFFI resource id)
-  # lib_ext: so | dylib | dll
-  just kotlin-bindings-generate darwin-aarch64 dylib
+  # resource_id: linux-x86-64 | darwin-aarch64 | windows-x86-64 (matches UniFFI resource id)
+  just kotlin-bindings-generate darwin-aarch64
   ```
 
 - Override output paths (e.g., to keep the working tree clean) and cargo target dir:
@@ -32,7 +31,7 @@
   ```bash
   OUT_ROOT=core-modules-kotlin/healthcard/build/generated/uniffi \
   CARGO_TARGET_DIR=core-modules-kotlin/healthcard/build/cargo \
-  just kotlin-bindings-generate linux-x86-64 so
+  just kotlin-bindings-generate linux-x86-64
   ```
 
 - Assemble downloaded platform artifacts into a single bundle (used by CI, usable locally):
