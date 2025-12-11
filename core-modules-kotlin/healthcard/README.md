@@ -34,6 +34,12 @@
   just kotlin-bindings-generate linux-x86-64
   ```
 
+- On Windows, force Git Bash if `bash` resolves to WSL:
+
+  ```bash
+  just --shell "C:/Program Files/Git/bin/bash.exe" --shell-arg "-euo" --shell-arg "pipefail" --shell-arg "-c" kotlin-bindings-generate windows-x86-64
+  ```
+
 - Assemble downloaded platform artifacts into a single bundle (used by CI, usable locally):
 
   ```bash
