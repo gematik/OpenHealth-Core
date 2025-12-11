@@ -127,13 +127,28 @@ fn build_openssl() {
         configure_args.push("-fno-stack-check".to_string());
     }
 
+    let is_windows_msvc = target == "x86_64-pc-windows-msvc";
+    let (configure_prog, configure_args): (String, Vec<String>) = if is_windows_msvc {
+        let mut args = Vec::with_capacity(configure_args.len() + 1);
+        args.push(src.join("Configure").to_string_lossy().to_string());
+        args.extend(configure_args);
+        ("perl".to_string(), args)
+    } else {
+        (src.join("Configure").to_string_lossy().into_owned(), configure_args)
+    };
+
     let configure_args: Vec<&str> = configure_args.iter().map(String::as_str).collect();
-    run_command_env(&src.join("Configure").to_str().unwrap(), &configure_args, Some(&src), &build_env);
+    run_command_env(&configure_prog, &configure_args, Some(&src), &build_env);
 
     // Build & install
-    let jobs = num_cpus::get().to_string();
-    run_command_env("make", &[&format!("-j{}", jobs)], Some(&src), &build_env);
-    run_command_env("make", &["install"], Some(&src), &build_env);
+    if is_windows_msvc {
+        run_command_env("nmake", &[], Some(&src), &build_env);
+        run_command_env("nmake", &["install"], Some(&src), &build_env);
+    } else {
+        let jobs = num_cpus::get().to_string();
+        run_command_env("make", &[&format!("-j{}", jobs)], Some(&src), &build_env);
+        run_command_env("make", &["install"], Some(&src), &build_env);
+    }
 
     // Tell Cargo where to find the built libs
     let lib_dir = locate_openssl_lib_dir(&install);
@@ -151,6 +166,7 @@ fn get_openssl_target(target: &str) -> &'static str {
         "x86_64-apple-ios" => "iossimulator-x86_64-xcrun",
         "aarch64-unknown-linux-gnu" => "linux-aarch64",
         "x86_64-unknown-linux-gnu" => "linux-x86_64",
+        "x86_64-pc-windows-msvc" => "VC-WIN64A",
         "aarch64-linux-android" => "android-arm64",
         "armv7-linux-androideabi" => "android-arm",
         "x86_64-linux-android" => "android-x86_64",

@@ -37,7 +37,9 @@
 - On Windows, force Git Bash if `bash` resolves to WSL:
 
   ```bash
-  just --shell "C:/Program Files/Git/bin/bash.exe" --shell-arg "-euo" --shell-arg "pipefail" --shell-arg "-c" kotlin-bindings-generate windows-x86-64
+  CARGO_BUILD_TARGET=x86_64-pc-windows-msvc \
+  just --shell "C:/Program Files/Git/bin/bash.exe" --shell-arg "-euo" --shell-arg "pipefail" --shell-arg "-c" \
+  kotlin-bindings-generate windows-x86-64 healthcard.dll
   ```
 
 - Assemble downloaded platform artifacts into a single bundle (used by CI, usable locally):
