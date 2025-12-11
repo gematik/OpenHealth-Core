@@ -121,7 +121,7 @@ jobs:
 
       - name: Build Kotlin bindings (Rust + uniffi)
         run: |
-          just kotlin-bindings-generate ${{ matrix.resource_id }} release ${{ matrix.library_file }}
+          just --shell="C:/Program Files/Git/bin/bash.exe" kotlin-bindings-generate ${{ matrix.resource_id }} release ${{ matrix.library_file }}
 
       - name: Build Android native libraries (Linux only - arm64-v8a, x86_64)
         if: matrix.display_name == 'linux-x86_64'
