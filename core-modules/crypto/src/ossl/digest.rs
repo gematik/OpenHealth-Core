@@ -70,7 +70,7 @@ impl Digest {
     pub fn finalize(&mut self, output_length: usize) -> OsslResult<Vec<u8>> {
         let md = unsafe { EVP_MD_CTX_md(self.ctx) };
         let flags = unsafe { EVP_MD_get_flags(md) };
-        if flags & EVP_MD_FLAG_XOF as u64 != 0 {
+        if flags & (EVP_MD_FLAG_XOF as std::os::raw::c_ulong) != 0 {
             let mut out = vec![0u8; output_length];
             ossl_check!(
                 unsafe { EVP_DigestFinalXOF(self.ctx, out.as_mut_ptr() as *mut _, output_length) },

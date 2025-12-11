@@ -156,9 +156,11 @@ fn build_openssl() {
 
     // Tell Cargo where to find the built libs
     let lib_dir = locate_openssl_lib_dir(&install);
+    let (crypto_lib, ssl_lib) = if is_windows_msvc { ("libcrypto", "libssl") } else { ("crypto", "ssl") };
+
     println!("cargo:rustc-link-search=native={}", lib_dir.display());
-    println!("cargo:rustc-link-lib=static=crypto");
-    println!("cargo:rustc-link-lib=static=ssl");
+    println!("cargo:rustc-link-lib=static={}", crypto_lib);
+    println!("cargo:rustc-link-lib=static={}", ssl_lib);
 }
 
 fn get_openssl_target(target: &str) -> &'static str {
