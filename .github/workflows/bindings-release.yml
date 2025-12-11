@@ -108,17 +108,14 @@ jobs:
 
       - name: Build Kotlin bindings (Rust + uniffi) [Windows]
         if: runner.os == 'Windows'
-        shell: pwsh
+        shell: cmd
         run: |
-          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-          $vsroot = & $vswhere -latest -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
-          $vsdevcmd = Join-Path $vsroot "Common7\Tools\VsDevCmd.bat"
-          if (-not (Test-Path $vsdevcmd)) {
-            Write-Error "VsDevCmd.bat not found at $vsdevcmd"
-            exit 1
-          }
-          $cmd = "call `"$vsdevcmd`" -arch=x64 -host_arch=x64 && just kotlin-bindings-generate ${{ matrix.resource_id }} release ${{ matrix.library_file }}"
-          cmd.exe /c $cmd
+          "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath > vsroot.txt
+          set /p VSROOT=<vsroot.txt
+          set VSDEVCMD="%VSROOT%\Common7\Tools\VsDevCmd.bat"
+          call %VSDEVCMD% -arch=x64 -host_arch=x64
+          set "PATH=C:\Program Files\Git\bin;%PATH%"
+          just kotlin-bindings-generate ${{ matrix.resource_id }} release ${{ matrix.library_file }}
 
       - name: Build Kotlin bindings (Rust + uniffi) [non-Windows]
         if: runner.os != 'Windows'
