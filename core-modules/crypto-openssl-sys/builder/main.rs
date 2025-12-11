@@ -181,6 +181,13 @@ fn build_openssl() {
     println!("cargo:rustc-link-search=native={}", lib_dir.display());
     println!("cargo:rustc-link-lib=static={}", crypto_lib);
     println!("cargo:rustc-link-lib=static={}", ssl_lib);
+    if is_windows_msvc {
+        // Required for Windows OpenSSL static builds
+        println!("cargo:rustc-link-lib=advapi32");
+        println!("cargo:rustc-link-lib=user32");
+        println!("cargo:rustc-link-lib=gdi32");
+        println!("cargo:rustc-link-lib=crypt32");
+    }
 }
 
 fn get_openssl_target(target: &str) -> &'static str {
