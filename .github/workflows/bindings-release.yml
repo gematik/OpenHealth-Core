@@ -79,11 +79,19 @@ jobs:
           yes | "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="${ANDROID_SDK_ROOT}" --licenses >/dev/null || true
           "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="${ANDROID_SDK_ROOT}" "platforms;android-34" "build-tools;34.0.0"
 
-      - name: Install cargo-binstall
-        uses: cargo-bins/cargo-binstall@v1.16.3
+      - name: Install just (Windows)
+        if: runner.os == 'Windows'
+        run: choco install just -y
 
-      - name: Install just
-        run: cargo binstall just --locked --no-confirm
+      - name: Install just (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y just
+
+      - name: Install just (macOS)
+        if: runner.os == 'macOS'
+        run: brew install just
 
       - name: Install cargo-ndk (Linux only)
         if: matrix.display_name == 'linux-x86_64'
