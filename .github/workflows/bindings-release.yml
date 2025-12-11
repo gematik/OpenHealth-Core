@@ -82,8 +82,11 @@ jobs:
           yes | "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="${ANDROID_SDK_ROOT}" --licenses >/dev/null || true
           "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="${ANDROID_SDK_ROOT}" "platforms;android-34" "build-tools;34.0.0"
 
+      - name: Install cargo-binstall
+        uses: cargo-bins/cargo-binstall@v1.16.3
+
       - name: Install just
-        run: cargo install just --locked --force
+        run: cargo binstall just --locked --no-confirm
 
       - name: Install cargo-ndk (Linux only)
         if: matrix.display_name == 'linux-x86_64'
@@ -98,6 +101,13 @@ jobs:
         with:
           workspaces: ". -> core-modules-kotlin/healthcard/build/cargo"
 
+      - name: Install Perl (Windows only)
+        if: matrix.display_name == 'windows-x86_64'
+        shell: pwsh
+        run: |
+          choco install strawberryperl --no-progress -y
+          "C:\Strawberry\perl\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
 #      - name: Configure MSVC environment (Windows only)
 #        if: matrix.display_name == 'windows-x86_64'
 #        uses: ilammy/msvc-dev-cmd@v1
@@ -107,6 +117,7 @@ jobs:
       - name: Build Kotlin bindings (Rust + uniffi)
         env:
           JUST_SHELL: ${{ matrix.just_shell }}
+          OPENSSL_SRC_PERL: ${{ matrix.display_name == 'windows-x86_64' && 'C:/Strawberry/perl/bin/perl' || 'perl' }}
         run: |
           if [ -n "$JUST_SHELL" ]; then
             just --shell "$JUST_SHELL" --shell-arg "-euo" --shell-arg "pipefail" --shell-arg "-c" kotlin-bindings-generate ${{ matrix.resource_id }} release ${{ matrix.library_file }}
