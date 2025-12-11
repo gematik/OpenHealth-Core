@@ -71,6 +71,7 @@ struct AndroidEnv {
 
 fn build_openssl() {
     const OPENSSL_VERSION: &str = "8fabfd81094d1d9f8890df4bee083aa6f77d769d";
+    const OPENSSL_REPO_URL: &str = "https://github.com/openssl/openssl.git";
 
     let manifest = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
     let target = env::var("TARGET").unwrap_or_else(|_| "aarch64-apple-darwin".to_string());
@@ -89,25 +90,10 @@ fn build_openssl() {
     let src = manifest.join("openssl-src");
     let install = manifest.join(format!("openssl-{}", openssl_target));
 
-    let has_git = src.join(".git").exists();
-    let git_matches = has_git && current_git_head(&src).map(|rev| rev == OPENSSL_VERSION).unwrap_or(false);
-    // Allow reuse of a pre-fetched source tree (with or without .git) to avoid network access.
-    let have_local_checkout = git_matches || (src.exists() && !has_git);
+    ensure_openssl_source(&src, OPENSSL_VERSION, OPENSSL_REPO_URL);
 
-    // Clean & prepare
-    if !have_local_checkout && src.exists() {
-        fs::remove_dir_all(&src).unwrap_or_else(|e| eprintln!("Warning: Failed to remove src dir: {}", e));
-    }
-    if install.exists() {
-        fs::remove_dir_all(&install).unwrap_or_else(|e| eprintln!("Warning: Failed to remove install dir: {}", e));
-    }
+    cleanup_dir(&install, "install");
     fs::create_dir_all(&install).unwrap();
-
-    // Clone & checkout (skip if local checkout already matches target rev)
-    if !have_local_checkout {
-        run_command("git", &["clone", "https://github.com/openssl/openssl.git", src.to_str().unwrap()], None);
-        run_command("git", &["checkout", OPENSSL_VERSION], Some(&src));
-    }
 
     // Configure
     let mut configure_args = vec![
@@ -133,10 +119,7 @@ fn build_openssl() {
         configure_args.push(format!("-D__ANDROID_API__={}", env.api_level));
     }
 
-    if let Some(flag) = ios_deployment_target
-        .as_ref()
-        .map(|version| ios_version_min_flag(&target, version))
-    {
+    if let Some(flag) = ios_deployment_target.as_ref().map(|version| ios_version_min_flag(&target, version)) {
         configure_args.push(flag);
     }
     if is_ios_target(&target) {
@@ -144,12 +127,7 @@ fn build_openssl() {
     }
 
     let configure_args: Vec<&str> = configure_args.iter().map(String::as_str).collect();
-    run_command_env(
-        &src.join("Configure").to_str().unwrap(),
-        &configure_args,
-        Some(&src),
-        &build_env,
-    );
+    run_command_env(&src.join("Configure").to_str().unwrap(), &configure_args, Some(&src), &build_env);
 
     // Build & install
     let jobs = num_cpus::get().to_string();
@@ -231,6 +209,110 @@ fn run_command_env(prog: &str, args: &[&str], cwd: Option<&PathBuf>, envs: &[(St
     }
 }
 
+fn ensure_openssl_source(src: &Path, version: &str, repo_url: &str) {
+    let has_git = src.join(".git").exists();
+    let git_matches = has_git && current_git_head(src).map(|rev| rev == version).unwrap_or(false);
+
+    if git_matches || (src.exists() && !has_git) {
+        return;
+    }
+
+    if has_git && try_checkout_existing_repo(src, version) {
+        return;
+    }
+
+    clone_with_retries(src, version, repo_url, 3);
+}
+
+fn try_checkout_existing_repo(src: &Path, version: &str) -> bool {
+    if git_checkout(src, version) && git_reset_hard(src, version) {
+        return true;
+    }
+
+    if git_fetch(src, version) && git_checkout(src, version) {
+        return git_reset_hard(src, version);
+    }
+
+    false
+}
+
+fn clone_with_retries(src: &Path, version: &str, repo_url: &str, attempts: u8) {
+    for attempt in 1..=attempts {
+        cleanup_dir(src, "source");
+
+        let cloned = git_clone(repo_url, src);
+        let checked_out = cloned && git_checkout(src, version) && git_reset_hard(src, version);
+        if checked_out {
+            return;
+        }
+
+        if attempt < attempts {
+            eprintln!("Retrying OpenSSL clone (attempt {}/{})...", attempt + 1, attempts);
+        }
+    }
+
+    panic!("Failed to clone OpenSSL sources after {} attempts", attempts);
+}
+
+fn git_clone(repo_url: &str, dest: &Path) -> bool {
+    let mut command = Command::new("git");
+    command.arg("clone").arg(repo_url).arg(dest);
+    match command.status() {
+        Ok(status) => {
+            if !status.success() {
+                eprintln!("Command failed: git clone {} {} (exit code: {:?})", repo_url, dest.display(), status.code());
+            }
+            status.success()
+        }
+        Err(err) => {
+            eprintln!("Warning: Failed to execute git clone {} {}: {}", repo_url, dest.display(), err);
+            false
+        }
+    }
+}
+
+fn git_checkout(repo: &Path, revision: &str) -> bool {
+    command_success("git", &["checkout", revision], Some(repo))
+}
+
+fn git_fetch(repo: &Path, revision: &str) -> bool {
+    command_success("git", &["fetch", "--depth", "1", "origin", revision], Some(repo))
+}
+
+fn git_reset_hard(repo: &Path, revision: &str) -> bool {
+    command_success("git", &["reset", "--hard", revision], Some(repo))
+}
+
+fn command_success(prog: &str, args: &[&str], cwd: Option<&Path>) -> bool {
+    let mut command = Command::new(prog);
+    command.args(args);
+
+    if let Some(dir) = cwd {
+        command.current_dir(dir);
+    }
+
+    match command.status() {
+        Ok(status) => {
+            if !status.success() {
+                eprintln!("Command failed: {} {:?} (exit code: {:?})", prog, args, status.code());
+            }
+            status.success()
+        }
+        Err(err) => {
+            eprintln!("Warning: Failed to execute command '{}': {}", prog, err);
+            false
+        }
+    }
+}
+
+fn cleanup_dir(path: &Path, label: &str) {
+    if path.exists() {
+        fs::remove_dir_all(path).unwrap_or_else(|e| {
+            eprintln!("Warning: Failed to remove {label} dir at '{}': {}", path.display(), e);
+        });
+    }
+}
+
 fn build_openssl_bindings() {
     let manifest_dir = current_dir();
     let target = env::var("TARGET").unwrap_or_else(|_| "aarch64-apple-darwin".to_string());
@@ -252,9 +334,7 @@ fn build_openssl_bindings() {
     // Build clang args for bindgen
     let include_path = install_dir.join("include");
     let mut clang_args = vec!["-I".to_string(), include_path.display().to_string()];
-    let ios_min_flag = ios_deployment_target
-        .as_ref()
-        .map(|version| ios_version_min_flag(&target, version));
+    let ios_min_flag = ios_deployment_target.as_ref().map(|version| ios_version_min_flag(&target, version));
     if let Some(flag) = &ios_min_flag {
         clang_args.push(flag.clone());
     }

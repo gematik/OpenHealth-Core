@@ -20,4 +20,6 @@
 # find details in the "Readme" file.
 
 openssl-src
-openssl-darwin64-arm64-cc
+openssl-darwin*
+openssl-android*
+openssl-linux*

@@ -21,7 +21,6 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-pub const OPENSSL_SYS_MACOSX: i32 = 1;
 pub const OPENSSL_CONFIGURED_API: i32 = 30500;
 pub const OPENSSL_VERSION_MAJOR: i32 = 3;
 pub const OPENSSL_VERSION_MINOR: i32 = 5;
