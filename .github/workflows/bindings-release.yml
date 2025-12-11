@@ -76,12 +76,6 @@ jobs:
       - name: Set up Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Configure MSVC environment (Windows only)
-        if: matrix.display_name == 'windows-x86_64'
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
-
       - name: Ensure Android SDK platforms (Linux only)
         if: matrix.display_name == 'linux-x86_64'
         run: |
@@ -103,6 +97,12 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: ". -> core-modules-kotlin/healthcard/build/cargo"
+
+#      - name: Configure MSVC environment (Windows only)
+#        if: matrix.display_name == 'windows-x86_64'
+#        uses: ilammy/msvc-dev-cmd@v1
+#        with:
+#          arch: x64
 
       - name: Build Kotlin bindings (Rust + uniffi)
         env:
