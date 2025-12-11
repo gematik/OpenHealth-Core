@@ -144,9 +144,13 @@ jobs:
         run: |
           just kotlin-publish-local
 
-      - name: Upload assembled bundle
+      - name: Determine Maven local path
+        id: maven-local
+        run: echo "dir=${HOME}/.m2/repository/de/gematik/openhealth" >> "$GITHUB_OUTPUT"
+
+      - name: Upload Maven local artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: kotlin-bindings-assembled
-          path: assembly/dist
+          name: kotlin-bindings-maven-local
+          path: ${{ steps.maven-local.outputs.dir }}
           if-no-files-found: error
