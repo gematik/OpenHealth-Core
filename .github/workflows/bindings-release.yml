@@ -102,10 +102,12 @@ jobs:
           workspaces: ". -> core-modules-kotlin/healthcard/build/cargo"
 
       - name: Set Perl environment variables
-        if: runner.os == 'windows-x86_64'
+        if: runner.os == 'Windows'
+        shell: pwsh
         run: |
-          echo "PERL=$((where.exe perl)[0])" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-          echo "OPENSSL_SRC_PERL=$((where.exe perl)[0])" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          $perl = (where.exe perl)[0]
+          echo "PERL=$perl" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          echo "OPENSSL_SRC_PERL=$perl" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
       - name: Build Kotlin bindings (Rust + uniffi)
         env:
