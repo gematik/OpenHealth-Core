@@ -128,21 +128,21 @@ fn build_openssl() {
     }
 
     let is_windows_msvc = target == "x86_64-pc-windows-msvc";
-    let perl_prog = env::var("OPENSSL_SRC_PERL")
-        .ok()
-        .filter(|v| !v.is_empty())
-        .unwrap_or_else(|| "perl".to_string());
-    let (configure_prog, configure_args): (String, Vec<String>) = if is_windows_msvc {
-        let mut args = Vec::with_capacity(configure_args.len() + 1);
-        args.push(src.join("Configure").to_string_lossy().to_string());
-        args.extend(configure_args);
-        (perl_prog, args)
-    } else {
-        (src.join("Configure").to_string_lossy().into_owned(), configure_args)
-    };
+    // let perl_prog = env::var("OPENSSL_SRC_PERL")
+    //     .ok()
+    //     .filter(|v| !v.is_empty())
+    //     .unwrap_or_else(|| "perl".to_string());
+    // let (configure_prog, configure_args): (String, Vec<String>) = if is_windows_msvc {
+    //     let mut args = Vec::with_capacity(configure_args.len() + 1);
+    //     args.push(src.join("Configure").to_string_lossy().to_string());
+    //     args.extend(configure_args);
+    //     (perl_prog, args)
+    // } else {
+    //     (src.join("Configure").to_string_lossy().into_owned(), configure_args)
+    // };
 
     let configure_args: Vec<&str> = configure_args.iter().map(String::as_str).collect();
-    run_command_env(&configure_prog, &configure_args, Some(&src), &build_env);
+    run_command_env(&src.join("Configure").to_string_lossy(), &configure_args, Some(&src), &build_env);
 
     // Build & install
     if is_windows_msvc {

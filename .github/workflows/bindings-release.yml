@@ -102,18 +102,11 @@ jobs:
         with:
           workspaces: ". -> core-modules-kotlin/healthcard/build/cargo"
 
-      - name: Install Perl (Windows only)
-        if: matrix.display_name == 'windows-x86_64'
-        shell: pwsh
+      - name: Set Perl environment variables
+        if: runner.os == 'windows-x86_64'
         run: |
-          choco install strawberryperl --no-progress -y
-          "C:\Strawberry\perl\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
-#      - name: Configure MSVC environment (Windows only)
-#        if: matrix.display_name == 'windows-x86_64'
-#        uses: ilammy/msvc-dev-cmd@v1
-#        with:
-#          arch: x64
+          echo "PERL=$((where.exe perl)[0])" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          echo "OPENSSL_SRC_PERL=$((where.exe perl)[0])" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
       - name: Build Kotlin bindings (Rust + uniffi)
         env:
