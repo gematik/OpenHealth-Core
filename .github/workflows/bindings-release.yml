@@ -106,19 +106,20 @@ jobs:
           echo "PERL=$perl" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           echo "OPENSSL_SRC_PERL=$perl" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
-      - name: Build Kotlin bindings (Rust + uniffi) [Windows]
+      - name: Setup MSVC (Windows only)
         if: runner.os == 'Windows'
-        shell: cmd
-        run: |
-          "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath > vsroot.txt
-          set /p VSROOT=<vsroot.txt
-          set VSDEVCMD="%VSROOT%\Common7\Tools\VsDevCmd.bat"
-          call %VSDEVCMD% -arch=x64 -host_arch=x64
-          set "PATH=C:\Program Files\Git\bin;%PATH%"
-          just kotlin-bindings-generate ${{ matrix.resource_id }} release ${{ matrix.library_file }}
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
 
-      - name: Build Kotlin bindings (Rust + uniffi) [non-Windows]
-        if: runner.os != 'Windows'
+      - name: Remove conflicting link.exe (Windows only)
+        if: runner.os == 'Windows'
+        run: |
+          if [ -x /usr/bin/link ]; then
+            rm -f /usr/bin/link
+          fi
+
+      - name: Build Kotlin bindings (Rust + uniffi)
         run: |
           just kotlin-bindings-generate ${{ matrix.resource_id }} release ${{ matrix.library_file }}
 
