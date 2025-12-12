@@ -45,14 +45,20 @@ jobs:
 #            display_name: linux-x86_64
 #            resource_id: linux-x86-64
 #            library_file: libhealthcard.so
+#            install_just: |
+#              sudo apt-get update
+#              sudo apt-get install -y just
           - runner: windows-latest
             display_name: windows-x86_64
             resource_id: windows-x86-64
             library_file: healthcard.dll
+            install_just: choco install just -y
 #          - runner: macos-14
 #            display_name: macos-arm64
 #            resource_id: darwin-aarch64
 #            library_file: libhealthcard.dylib
+#            install_just: brew install just
+
 
     defaults:
       run:
@@ -64,34 +70,29 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo builds
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ". -> core-modules-kotlin/healthcard/build/cargo"
+
+      - name: Install just
+        run: ${{ matrix.platform.install_just }}
+
       - name: Set up Java
+        if: matrix.display_name == 'linux-x86_64'
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "21"
-
-      - name: Set up Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
 
       - name: Ensure Android SDK platforms (Linux only)
         if: matrix.display_name == 'linux-x86_64'
         run: |
           yes | "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="${ANDROID_SDK_ROOT}" --licenses >/dev/null || true
           "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="${ANDROID_SDK_ROOT}" "platforms;android-34" "build-tools;34.0.0"
-
-      - name: Install just (Windows)
-        if: runner.os == 'Windows'
-        run: choco install just -y
-
-      - name: Install just (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y just
-
-      - name: Install just (macOS)
-        if: runner.os == 'macOS'
-        run: brew install just
 
       - name: Install cargo-ndk (Linux only)
         if: matrix.display_name == 'linux-x86_64'
@@ -100,11 +101,6 @@ jobs:
       - name: Add Rust Android targets (Linux only)
         if: matrix.display_name == 'linux-x86_64'
         run: rustup target add aarch64-linux-android x86_64-linux-android
-
-      - name: Cache Cargo builds
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: ". -> core-modules-kotlin/healthcard/build/cargo"
 
       - name: Set Perl environment variables
         if: runner.os == 'Windows'
