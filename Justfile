@@ -27,18 +27,27 @@ kotlin-bindings-generate resource_id profile="release" library_file="":
 
     CARGO_TARGET_DIR="{{cargo_target_dir}}" cargo build --manifest-path "{{rust_crate}}/Cargo.toml" --profile "{{profile}}"
 
-    lib_file="{{library_file}}"; if [[ -z "${lib_file}" ]]; then case "{{resource_id}}" in linux-x86-64) lib_file="libhealthcard.so";; darwin-aarch64) lib_file="libhealthcard.dylib";; windows-x86-64) lib_file="healthcard.dll";; *) lib_file="libhealthcard.so";; esac; fi; CARGO_TARGET_DIR="{{cargo_target_dir}}" cargo run \
+    lib_file="{{library_file}}"; \
+      if [[ -z "${lib_file}" ]]; then \
+        case "{{resource_id}}" in \
+          linux-x86-64) lib_file="libhealthcard.so" ;; \
+          darwin-aarch64) lib_file="libhealthcard.dylib" ;; \
+          windows-x86-64) lib_file="healthcard.dll" ;; \
+          *) lib_file="libhealthcard.so" ;; \
+        esac; \
+      fi; \
+      library_path="{{cargo_target_dir}}/{{profile}}/${lib_file}"; \
+      CARGO_TARGET_DIR="{{cargo_target_dir}}" cargo run \
         --manifest-path "{{uniffi_cli}}" \
         --quiet \
         --bin uniffi-bindgen -- \
         generate \
         --config "{{rust_crate}}/uniffi.toml" \
-        --library "{{cargo_target_dir}}/{{profile}}/${lib_file}" \
+        --library "${library_path}" \
         --language kotlin \
         --out-dir "{{bindings_kotlin_dir}}" \
-        --no-format
-
-    lib_file="{{library_file}}"; if [[ -z "${lib_file}" ]]; then case "{{resource_id}}" in linux-x86-64) lib_file="libhealthcard.so";; darwin-aarch64) lib_file="libhealthcard.dylib";; windows-x86-64) lib_file="healthcard.dll";; *) lib_file="libhealthcard.so";; esac; fi; cp "{{cargo_target_dir}}/{{profile}}/${lib_file}" "{{bindings_resources_root}}/{{resource_id}}/"
+        --no-format; \
+      cp "${library_path}" "{{bindings_resources_root}}/{{resource_id}}/"
 
 # Assemble platform artifacts into a single UniFFI bundle.
 # Expects downloaded artifacts under <input_root>/kotlin-bindings-<platform>/...
@@ -48,8 +57,8 @@ kotlin-bindings-assemble input_root=(default_assembly_input_root) out_root=(defa
       "{{env_var_or_default('OUT_ROOT', out_root)}}/resources/linux-x86-64" \
       "{{env_var_or_default('OUT_ROOT', out_root)}}/resources/darwin-aarch64" \
       "{{env_var_or_default('OUT_ROOT', out_root)}}/resources/windows-x86-64" \
-      "{{env_var_or_default('OUT_ROOT', out_root)}}/resources/android-jni" \
-      "{{env_var_or_default('OUT_ROOT', out_root)}}/kotlin"
+      "{{env_var_or_default('OUT_ROOT', out_root)}}/kotlin" \
+      "{{env_var_or_default('OUT_ROOT', out_root)}}/android-jni"
 
     test -f "{{input_root}}/kotlin-bindings-linux-x86_64/resources/linux-x86-64/libhealthcard.so" \
       && cp "{{input_root}}/kotlin-bindings-linux-x86_64/resources/linux-x86-64/libhealthcard.so" "{{env_var_or_default('OUT_ROOT', out_root)}}/resources/linux-x86-64/" \
@@ -73,7 +82,17 @@ kotlin-bindings-assemble input_root=(default_assembly_input_root) out_root=(defa
 
 # Generate bindings and place them in the layout expected by kotlin-bindings-assemble.
 kotlin-bindings-generate-staged resource_id profile="release" library_file="" input_root=(default_assembly_input_root):
-    OUT_ROOT="{{input_root}}/kotlin-bindings-{{resource_id}}" CARGO_TARGET_DIR="{{cargo_target_dir}}" just kotlin-bindings-generate {{resource_id}} {{profile}} {{library_file}}
+    raw_resource_id="{{resource_id}}"; \
+    resource_id="${raw_resource_id}"; \
+    staged_id="${raw_resource_id}"; \
+    case "${raw_resource_id}" in \
+      linux-x86-64|linux-x86_64) resource_id="linux-x86-64"; staged_id="linux-x86_64" ;; \
+      darwin-aarch64|macos-arm64) resource_id="darwin-aarch64"; staged_id="macos-arm64" ;; \
+      windows-x86-64|windows-x86_64) resource_id="windows-x86-64"; staged_id="windows-x86_64" ;; \
+    esac; \
+    OUT_ROOT="{{input_root}}/kotlin-bindings-${staged_id}}" \
+    CARGO_TARGET_DIR="{{cargo_target_dir}}" \
+    just kotlin-bindings-generate "${resource_id}" "{{profile}}" "{{library_file}}"
 
 # Generate Android .so libraries for arm64-v8a and x86_64 using cargo-ndk.
 # Expects ANDROID_NDK_HOME or ANDROID_NDK_ROOT to be set (e.g. via setup-ndk action in CI).

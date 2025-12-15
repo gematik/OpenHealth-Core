@@ -60,6 +60,12 @@ Current crates and projects fit into these layers as follows (non-exhaustive, fo
 
 Dependency direction is **one-way**, from higher layers downwards (domain → crypto → low-level FFI), and new modules should follow the same pattern.
 
+### 2.1 Dependency Architecture Overview (JVM/UniFFI Artifacts)
+
+The following diagram illustrates the intended dependency direction for the JVM/UniFFI build artifacts:
+
+![Dependency architecture overview](arch_dependencies.svg)
+
 When adding new code, first decide which layer it conceptually belongs to:
 
 - Generic parsing/encoding or helpers → format / utility layer.
