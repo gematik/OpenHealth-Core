@@ -43,7 +43,7 @@
 
 use std::os::raw::{c_char, c_long, c_void};
 
-include!("ossl.rs");
+include!(concat!(env!("OUT_DIR"), "/ossl.rs"));
 
 #[allow(non_snake_case, clippy::not_unsafe_ptr_arg_deref)]
 pub fn BIO_get_mem_data(b: *mut BIO, pp: *mut *mut c_char) -> c_long {

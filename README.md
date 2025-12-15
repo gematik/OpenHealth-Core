@@ -36,6 +36,7 @@ without prior notice.**
   functionality.
 - `core-modules-kotlin/`: Kotlin/JVM bindings and examples that integrate the
   Rust modules into JVM-based applications.
+- `core-modules-swift/`: Swift/iOS interoperability artifacts (UniFFI + xcframework).
 - `docs/`: Additional documentation, interoperability notes and project
   specific guides.
 

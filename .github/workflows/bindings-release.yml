@@ -54,7 +54,6 @@ jobs:
             resource_id: darwin-aarch64
             library_file: libhealthcard.dylib
 
-
     defaults:
       run:
         shell: bash
@@ -181,13 +180,17 @@ jobs:
         run: |
           just kotlin-publish-local
 
-      - name: Determine Maven local path
-        id: maven-local
-        run: echo "dir=${HOME}/.m2/repository/de/gematik/openhealth" >> "$GITHUB_OUTPUT"
+      - name: Stage Maven local artifacts for upload
+        run: |
+          set -euo pipefail
+          upload_root="${GITHUB_WORKSPACE}/assembly/maven-repo"
+          src_root="${HOME}/.m2/repository/de/gematik/openhealth"
+          mkdir -p "${upload_root}/de/gematik"
+          cp -a "${src_root}" "${upload_root}/de/gematik/"
 
       - name: Upload Maven local artifacts
         uses: actions/upload-artifact@v4
         with:
           name: kotlin-bindings-maven-local
-          path: ${{ steps.maven-local.outputs.dir }}
+          path: assembly/maven-repo
           if-no-files-found: error

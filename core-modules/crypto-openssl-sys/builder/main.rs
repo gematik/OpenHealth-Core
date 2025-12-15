@@ -55,13 +55,34 @@ fn get_license_header() -> String {
     .to_string()
 }
 
-fn current_dir() -> PathBuf {
-    env::current_dir().unwrap()
-}
-
 fn main() {
     build_openssl();
     build_openssl_bindings();
+}
+
+#[derive(Debug, Clone)]
+struct TargetBuildPaths {
+    build_root: PathBuf,
+    openssl_src_repo: PathBuf,
+    build_dir: PathBuf,
+    install_dir: PathBuf,
+}
+
+fn target_build_paths(target: &str, openssl_target: &str) -> TargetBuildPaths {
+    let manifest = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
+    let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
+
+    let build_root = out_dir.join("openssl").join(target).join(openssl_target);
+    let openssl_src_repo = manifest.join("openssl-src");
+    let build_dir = build_root.join("build");
+    let install_dir = build_root.join("install");
+
+    TargetBuildPaths {
+        build_root,
+        openssl_src_repo,
+        build_dir,
+        install_dir,
+    }
 }
 
 fn ensure_windows_lib_aliases(lib_dir: &Path) {
@@ -90,7 +111,6 @@ fn build_openssl() {
     const OPENSSL_VERSION: &str = "8fabfd81094d1d9f8890df4bee083aa6f77d769d";
     const OPENSSL_REPO_URL: &str = "https://github.com/openssl/openssl.git";
 
-    let manifest = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
     let target = env::var("TARGET").unwrap_or_else(|_| "aarch64-apple-darwin".to_string());
     let android_env = android_toolchain(&target);
     let ios_deployment_target = ios_deployment_target(&target);
@@ -104,14 +124,20 @@ fn build_openssl() {
     }
 
     let openssl_target = get_openssl_target(&target);
-    let src = manifest.join("openssl-src");
-    let install = manifest.join(format!("openssl-{}", openssl_target));
+    let paths = target_build_paths(&target, openssl_target);
+    let src = &paths.openssl_src_repo;
+    let build_dir = &paths.build_dir;
+    let install = &paths.install_dir;
 
-    ensure_openssl_source(&src, OPENSSL_VERSION, OPENSSL_REPO_URL);
-    clean_openssl_source(&src);
+    ensure_openssl_source(src, OPENSSL_VERSION, OPENSSL_REPO_URL);
+    // Keep the shared source tree clean, because out-of-tree Configure can fail if in-tree artifacts exist.
+    clean_openssl_source(src);
 
-    cleanup_dir(&install, "install");
-    fs::create_dir_all(&install).unwrap();
+    cleanup_dir(build_dir, "build");
+    fs::create_dir_all(build_dir).unwrap();
+
+    cleanup_dir(install, "install");
+    fs::create_dir_all(install).unwrap();
 
     // Configure
     let mut configure_args = vec![
@@ -159,20 +185,32 @@ fn build_openssl() {
     };
 
     let configure_args: Vec<&str> = configure_args.iter().map(String::as_str).collect();
-    run_command_env(configure_prog.as_str(), &configure_args, Some(&src), &build_env);
+    let configure_log = paths.build_root.join("configure.log");
+    if env::var("OPENSSL_SYS_PRINT_LOG_PATHS").ok().as_deref() == Some("1") {
+        println!("cargo:warning=OpenSSL Configure log: {}", configure_log.display());
+    }
+    run_command_env_to_file(
+        configure_prog.as_str(),
+        &configure_args,
+        Some(build_dir),
+        &build_env,
+        &configure_log,
+    );
 
     // Build & install
     if is_windows_msvc {
-        run_command_env("nmake", &[], Some(&src), &build_env);
-        run_command_env("nmake", &["install"], Some(&src), &build_env);
+        let build_dir_buf = build_dir.to_path_buf();
+        run_command_env("nmake", &[], Some(&build_dir_buf), &build_env);
+        run_command_env("nmake", &["install"], Some(&build_dir_buf), &build_env);
     } else {
         let jobs = num_cpus::get().to_string();
-        run_command_env("make", &[&format!("-j{}", jobs)], Some(&src), &build_env);
-        run_command_env("make", &["install"], Some(&src), &build_env);
+        let build_dir_buf = build_dir.to_path_buf();
+        run_command_env("make", &[&format!("-j{}", jobs)], Some(&build_dir_buf), &build_env);
+        run_command_env("make", &["install"], Some(&build_dir_buf), &build_env);
     }
 
     // Tell Cargo where to find the built libs
-    let lib_dir = locate_openssl_lib_dir(&install);
+    let lib_dir = locate_openssl_lib_dir(install);
     if is_windows_msvc {
         //ensure_windows_lib_aliases(&lib_dir);
     }
@@ -259,6 +297,33 @@ fn run_command_env(prog: &str, args: &[&str], cwd: Option<&PathBuf>, envs: &[(St
     }
 }
 
+fn run_command_env_to_file(prog: &str, args: &[&str], cwd: Option<&Path>, envs: &[(String, String)], log: &Path) {
+    let mut command = Command::new(prog);
+    command.args(args);
+
+    if let Some(dir) = cwd {
+        command.current_dir(dir);
+    }
+
+    command.envs(envs.iter().map(|(k, v)| (k, v)));
+
+    let output = command.output().unwrap_or_else(|e| panic!("Failed to execute command '{}': {}", prog, e));
+    let mut combined = Vec::with_capacity(output.stdout.len() + output.stderr.len());
+    combined.extend_from_slice(&output.stdout);
+    combined.extend_from_slice(&output.stderr);
+    fs::write(log, combined).unwrap_or_else(|e| panic!("Failed to write log '{}': {}", log.display(), e));
+
+    if !output.status.success() {
+        panic!(
+            "Command failed: {} {:?} (exit code: {:?}); see log at '{}'",
+            prog,
+            args,
+            output.status.code(),
+            log.display()
+        );
+    }
+}
+
 fn ensure_openssl_source(src: &Path, version: &str, repo_url: &str) {
     let has_git = src.join(".git").exists();
     let git_matches = has_git && current_git_head(src).map(|rev| rev == version).unwrap_or(false);
@@ -311,6 +376,42 @@ fn clean_openssl_source(src: &Path) {
 
     let path = src.to_path_buf();
     run_command("git", &["clean", "-xdf"], Some(&path));
+}
+
+fn apple_sdk(target: &str) -> Option<&'static str> {
+    if target.contains("apple-ios") {
+        if is_ios_simulator(target) {
+            Some("iphonesimulator")
+        } else {
+            Some("iphoneos")
+        }
+    } else if target.ends_with("apple-darwin") {
+        Some("macosx")
+    } else {
+        None
+    }
+}
+
+fn xcrun_show_sdk_path(sdk: &str) -> Option<String> {
+    let output = Command::new("xcrun")
+        .args(["--sdk", sdk, "--show-sdk-path"])
+        .output()
+        .ok()?;
+    if !output.status.success() {
+        return None;
+    }
+    Some(String::from_utf8_lossy(&output.stdout).trim().to_string())
+}
+
+fn apple_clang_target(target: &str) -> Option<&'static str> {
+    match target {
+        "aarch64-apple-ios" => Some("arm64-apple-ios"),
+        "aarch64-apple-ios-sim" => Some("arm64-apple-ios-simulator"),
+        "x86_64-apple-ios" => Some("x86_64-apple-ios-simulator"),
+        "aarch64-apple-darwin" => Some("arm64-apple-macosx"),
+        "x86_64-apple-darwin" => Some("x86_64-apple-macosx"),
+        _ => None,
+    }
 }
 
 fn git_clone(repo_url: &str, dest: &Path) -> bool {
@@ -373,11 +474,12 @@ fn cleanup_dir(path: &Path, label: &str) {
 }
 
 fn build_openssl_bindings() {
-    let manifest_dir = current_dir();
+    let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
+    let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
     let target = env::var("TARGET").unwrap_or_else(|_| "aarch64-apple-darwin".to_string());
     let openssl_target = get_openssl_target(&target);
-    let openssl_dir = format!("openssl-{}", openssl_target);
-    let install_dir = manifest_dir.join(&openssl_dir);
+    let paths = target_build_paths(&target, openssl_target);
+    let install_dir = paths.install_dir;
     let lib_dir = locate_openssl_lib_dir(&install_dir);
     let ios_deployment_target = ios_deployment_target(&target);
     let is_windows_msvc = target == "x86_64-pc-windows-msvc";
@@ -401,6 +503,20 @@ fn build_openssl_bindings() {
     let ios_min_flag = ios_deployment_target.as_ref().map(|version| ios_version_min_flag(&target, version));
     if let Some(flag) = &ios_min_flag {
         clang_args.push(flag.clone());
+    }
+    if let Some(sdk) = apple_sdk(&target) {
+        let sdk_path = xcrun_show_sdk_path(sdk).unwrap_or_else(|| {
+            panic!(
+                "Failed to locate Apple SDK '{}' via xcrun; ensure Xcode/Command Line Tools are installed",
+                sdk
+            )
+        });
+        clang_args.push("-isysroot".to_string());
+        clang_args.push(sdk_path);
+        if let Some(clang_target) = apple_clang_target(&target) {
+            clang_args.push("-target".to_string());
+            clang_args.push(clang_target.to_string());
+        }
     }
     let wrapper_header = manifest_dir.join("wrapper/rust_wrapper.h");
 
@@ -426,7 +542,7 @@ fn build_openssl_bindings() {
         .generate()
         .expect("Unable to generate ossl");
 
-    let bindings_path = manifest_dir.join("src/ossl.rs");
+    let bindings_path = out_dir.join("ossl.rs");
     bindings.write_to_file(&bindings_path).expect("Failed to write ossl to file");
 
     println!("cargo:rerun-if-changed=wrapper/rust_wrapper.h");
@@ -438,6 +554,20 @@ fn build_openssl_bindings() {
     }
     if is_ios_target(&target) {
         wrapper_build.flag("-fno-stack-check");
+    }
+    if let Some(sdk) = apple_sdk(&target) {
+        let sdk_path = xcrun_show_sdk_path(sdk).unwrap_or_else(|| {
+            panic!(
+                "Failed to locate Apple SDK '{}' via xcrun; ensure Xcode/Command Line Tools are installed",
+                sdk
+            )
+        });
+        wrapper_build.flag("-isysroot");
+        wrapper_build.flag(&sdk_path);
+        if let Some(clang_target) = apple_clang_target(&target) {
+            wrapper_build.flag("-target");
+            wrapper_build.flag(clang_target);
+        }
     }
     wrapper_build.compile("rust_wrapper");
 
