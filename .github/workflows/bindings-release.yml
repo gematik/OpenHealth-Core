@@ -41,18 +41,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-#          - runner: ubuntu-latest
-#            display_name: linux-x86_64
-#            resource_id: linux-x86-64
-#            library_file: libhealthcard.so
+          - runner: ubuntu-latest
+            display_name: linux-x86_64
+            resource_id: linux-x86-64
+            library_file: libhealthcard.so
           - runner: windows-latest
             display_name: windows-x86_64
             resource_id: windows-x86-64
             library_file: healthcard.dll
-#          - runner: macos-14
-#            display_name: macos-arm64
-#            resource_id: darwin-aarch64
-#            library_file: libhealthcard.dylib
+          - runner: macos-14
+            display_name: macos-arm64
+            resource_id: darwin-aarch64
+            library_file: libhealthcard.dylib
 
 
     defaults:
