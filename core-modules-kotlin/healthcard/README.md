@@ -19,11 +19,12 @@
 ## Using `just` for bindings generation
 
 - The repository `Justfile` provides repeatable commands for both CI and local development.
-- Generate Kotlin/JVM bindings for a platform (writes to `src/jvmMain` by default):
+- Generate Kotlin/JVM bindings for a platform/arch (writes to `src/jvmMain` by default). The UniFFI resource id is formed as `<platform>-<arch>` (e.g., `darwin-aarch64`):
 
   ```bash
-  # resource_id: linux-x86-64 | darwin-aarch64 | windows-x86-64 (matches UniFFI resource id)
-  just kotlin-bindings-generate darwin-aarch64
+  # platform: linux | windows | darwin
+  # arch: x86_64 | aarch64
+  just kotlin-bindings-generate darwin aarch64 libhealthcard.dylib
   ```
 
 - Override output paths (e.g., to keep the working tree clean) and cargo target dir:
@@ -31,7 +32,13 @@
   ```bash
   OUT_ROOT=core-modules-kotlin/healthcard/build/generated/uniffi \
   CARGO_TARGET_DIR=core-modules-kotlin/healthcard/build/cargo \
-  just kotlin-bindings-generate linux-x86-64
+  just kotlin-bindings-generate linux x86_64 libhealthcard.so
+  ```
+
+- Pick a different profile (default is `release`):
+
+  ```bash
+  just kotlin-bindings-generate linux x86_64 libhealthcard.so debug
   ```
 
 - On Windows, force Git Bash if `bash` resolves to WSL:
@@ -39,7 +46,7 @@
   ```bash
   CARGO_BUILD_TARGET=x86_64-pc-windows-msvc \
   just --shell "C:/Program Files/Git/bin/bash.exe" --shell-arg "-euo" --shell-arg "pipefail" --shell-arg "-c" \
-  kotlin-bindings-generate windows-x86-64 healthcard.dll
+  kotlin-bindings-generate windows x86_64 healthcard.dll
   ```
 
 - Assemble downloaded platform artifacts into a single bundle (used by CI, usable locally):
