@@ -27,8 +27,9 @@ fn main() {
 #[cfg(feature = "apdu-tools")]
     fn main() {
         use clap::Parser;
-        use healthcard::exchange::apdu_tools::{FixedKeyGenerator, PcscChannel, RecordingChannel};
-        use healthcard::exchange::secure_channel::{establish_secure_channel, establish_secure_channel_with, CardAccessNumber};
+        use crypto::ec::ec_key::{EcCurve, EcKeyPairSpec};
+        use healthcard::exchange::apdu_tools::{PcscChannel, RecordingChannel};
+        use healthcard::exchange::secure_channel::{establish_secure_channel_with, CardAccessNumber};
 
         if let Err(err) = run() {
             eprintln!("{err}");
@@ -55,50 +56,39 @@ fn main() {
         #[arg(long, conflicts_with = "no_extended")]
         extended: bool,
         /// List available PC/SC readers and exit
-        #[arg(long)]
-        list_readers: bool,
-        /// Fixed private key(s) for deterministic PACE (hex, big endian). Can be passed multiple times.
-        #[arg(long, value_name = "HEX", num_args(1..))]
-        fixed_key: Vec<String>,
-    }
+         #[arg(long)]
+         list_readers: bool,
+     }
+ 
+     fn run() -> Result<(), String> {
+         let args = Args::parse();
+ 
+         if args.list_readers {
+             list_pcsc_readers()?;
+             return Ok(());
+         }
 
-    fn run() -> Result<(), String> {
-        let args = Args::parse();
+         let reader = args.reader.ok_or_else(|| "missing --reader".to_string())?;
+         let out = args.out.ok_or_else(|| "missing --out".to_string())?;
+         let can = args.can.ok_or_else(|| "missing --can".to_string())?;
+         let supports_extended_length = !args.no_extended;
 
-        if args.list_readers {
-            list_pcsc_readers()?;
-            return Ok(());
+         let channel =
+             PcscChannel::connect(&reader, supports_extended_length).map_err(|err| format!("pcsc connect failed: {err}"))?;
+         let mut recorder = RecordingChannel::new(channel);
+         let card_access_number = CardAccessNumber::new(&can).map_err(|err| err.to_string())?;
+
+         let mut generated_keys = Vec::new();
+         establish_secure_channel_with(&mut recorder, &card_access_number, |curve: EcCurve| {
+             let (public_key, private_key) = EcKeyPairSpec { curve: curve.clone() }.generate_keypair()?;
+             generated_keys.push(hex::encode_upper(private_key.as_bytes()));
+             Ok((public_key, private_key))
+         })
+         .map_err(|err| format!("PACE failed: {err}"))?;
+
+        if !generated_keys.is_empty() {
+            recorder.set_keys(generated_keys);
         }
-
-        let reader = args.reader.ok_or_else(|| "missing --reader".to_string())?;
-        let out = args.out.ok_or_else(|| "missing --out".to_string())?;
-        let can = args.can.ok_or_else(|| "missing --can".to_string())?;
-        let supports_extended_length = !args.no_extended;
-
-        let channel =
-            PcscChannel::connect(&reader, supports_extended_length).map_err(|err| format!("pcsc connect failed: {err}"))?;
-        let mut recorder = RecordingChannel::new(channel);
-        let card_access_number = CardAccessNumber::new(&can).map_err(|err| err.to_string())?;
-
-        let fixed_keys = if args.fixed_key.is_empty() {
-            None
-        } else {
-            Some(
-                args.fixed_key
-                    .iter()
-                    .map(|k| hex::decode(k).map_err(|err| format!("invalid --fixed-key hex: {err}")))
-                    .collect::<Result<Vec<_>, _>>()?,
-            )
-        };
-
-        match fixed_keys {
-            Some(keys) => {
-                let generator = FixedKeyGenerator::new(keys).generator();
-                establish_secure_channel_with(&mut recorder, &card_access_number, generator)
-            }
-            None => establish_secure_channel(&mut recorder, &card_access_number),
-        }
-        .map_err(|err| format!("PACE failed: {err}"))?;
 
         let transcript = recorder.into_transcript();
         transcript.write_jsonl(out).map_err(|err| format!("write transcript failed: {err}"))?;

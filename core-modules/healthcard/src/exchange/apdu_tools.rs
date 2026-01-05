@@ -55,6 +55,7 @@ struct TranscriptHeader {
     version: u32,
     supports_extended_length: bool,
     label: Option<String>,
+    keys: Option<Vec<String>>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -64,6 +65,7 @@ enum TranscriptEntry {
         version: u32,
         supports_extended_length: bool,
         label: Option<String>,
+        keys: Option<Vec<String>>,
     },
     Exchange {
         tx: String,
@@ -90,6 +92,7 @@ impl Transcript {
                 version: 1,
                 supports_extended_length,
                 label: None,
+                keys: None,
             },
             entries: Vec::new(),
         }
@@ -101,6 +104,29 @@ impl Transcript {
 
     pub fn set_label(&mut self, label: impl Into<String>) {
         self.header.label = Some(label.into());
+    }
+
+    pub fn set_keys(&mut self, keys: Vec<String>) {
+        self.header.keys = Some(keys);
+    }
+
+    pub fn keys(&self) -> Option<&[String]> {
+        self.header.keys.as_deref()
+    }
+
+    pub fn fixed_key_generator(
+        &self,
+    ) -> Result<Option<impl FnMut(EcCurve) -> Result<(EcPublicKey, EcPrivateKey), CryptoError>>, TranscriptError> {
+        match &self.header.keys {
+            Some(keys) => {
+                let decoded = keys
+                    .iter()
+                    .map(|k| Ok(hex::decode(k)?))
+                    .collect::<Result<Vec<_>, hex::FromHexError>>()?;
+                Ok(Some(FixedKeyGenerator::new(decoded).generator()))
+            }
+            None => Ok(None),
+        }
     }
 
     pub fn push_exchange(&mut self, tx: &[u8], rx: &[u8], label: Option<String>) {
@@ -125,6 +151,7 @@ impl Transcript {
             version: self.header.version,
             supports_extended_length: self.header.supports_extended_length,
             label: self.header.label.clone(),
+            keys: self.header.keys.clone(),
         };
         out.push_str(&serde_json::to_string(&header)?);
         out.push('\n');
@@ -150,10 +177,12 @@ impl Transcript {
                 version,
                 supports_extended_length,
                 label,
+                keys,
             } => TranscriptHeader {
                 version,
                 supports_extended_length,
                 label,
+                keys,
             },
             _ => return Err(TranscriptError::InvalidHeader),
         };
@@ -177,10 +206,12 @@ impl Transcript {
                 version,
                 supports_extended_length,
                 label,
+                keys,
             } => TranscriptHeader {
                 version,
                 supports_extended_length,
                 label,
+                keys,
             },
             _ => return Err(TranscriptError::InvalidHeader),
         };
@@ -205,6 +236,14 @@ impl<C: CardChannel> RecordingChannel<C> {
     pub fn new(inner: C) -> Self {
         let transcript = Transcript::new(inner.supports_extended_length());
         Self { inner, transcript }
+    }
+
+    pub fn set_label(&mut self, label: impl Into<String>) {
+        self.transcript.set_label(label);
+    }
+
+    pub fn set_keys(&mut self, keys: Vec<String>) {
+        self.transcript.set_keys(keys);
     }
 
     pub fn transcript(&self) -> &Transcript {
@@ -276,6 +315,12 @@ pub struct ReplayChannel {
 impl ReplayChannel {
     pub fn from_transcript(transcript: Transcript) -> Self {
         Self { transcript, cursor: 0 }
+    }
+
+    pub fn fixed_key_generator(
+        &self,
+    ) -> Result<Option<impl FnMut(EcCurve) -> Result<(EcPublicKey, EcPrivateKey), CryptoError>>, TranscriptError> {
+        self.transcript.fixed_key_generator()
     }
 
     pub fn from_jsonl<P: AsRef<Path>>(path: P) -> Result<Self, TranscriptError> {
