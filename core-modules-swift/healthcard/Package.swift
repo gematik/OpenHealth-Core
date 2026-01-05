@@ -1,3 +1,4 @@
+// swift-tools-version: 5.9
 // SPDX-FileCopyrightText: Copyright 2025 gematik GmbH
 //
 // SPDX-License-Identifier: Apache-2.0
@@ -7,7 +8,6 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-// swift-tools-version: 5.9
 import PackageDescription
 
 let package = Package(
@@ -31,4 +31,3 @@ let package = Package(
         ),
     ]
 )
-

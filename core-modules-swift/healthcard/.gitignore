@@ -10,3 +10,4 @@
 /OpenHealthHealthcardFFI.xcframework
 /Sources/OpenHealthHealthcard/OpenHealthHealthcard.swift
 /build/
+/.swiftpm/

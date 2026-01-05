@@ -224,7 +224,7 @@ swift-build-apple:
       aarch64-apple-darwin \
       x86_64-apple-darwin; do \
         CARGO_TARGET_DIR="${apple_target_dir}" \
-          cargo build --manifest-path "{{ rust_manifest }}" --release --target "$$target"; \
+          cargo build --manifest-path "{{ rust_manifest }}" --release --target "$target"; \
     done
 
 # Runs `swift-bindings-generate` and `swift-build-apple`, then packages:
@@ -247,6 +247,8 @@ swift-xcframework:
     gen_dir="{{ swift_out_root }}/swift"
     cp "${gen_dir}/{{ swift_ffi_module_name }}.h" "${headers_dir}/"
     cp "${gen_dir}/{{ swift_ffi_module_name }}.modulemap" "${headers_dir}/"
+    # SwiftPM expects `module.modulemap` for Clang-based binary targets inside `.xcframework` bundles.
+    cp "${gen_dir}/{{ swift_ffi_module_name }}.modulemap" "${headers_dir}/module.modulemap"
 
     uni="{{ swift_module }}/build/universal"
     rm -rf "${uni}"
