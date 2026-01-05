@@ -57,16 +57,19 @@ jobs:
             platform: linux
             arch: x86_64
             library_file: libhealthcard.so
+            just_shell: ""
           - runner: windows-latest
             display_name: windows-x86_64
             platform: windows
             arch: x86_64
             library_file: healthcard.dll
+            just_shell: "C:/Program Files/Git/bin/bash.exe"
           - runner: macos-14
             display_name: darwin-aarch64
             platform: darwin
             arch: aarch64
             library_file: libhealthcard.dylib
+            just_shell: ""
 
     defaults:
       run:
@@ -135,33 +138,21 @@ jobs:
             rm -f /usr/bin/link
           fi
 
-      - name: Build Kotlin bindings (Windows)
-        if: runner.os == 'Windows'
+      - name: Build Kotlin bindings
         run: |
-          just --shell="C:/Program Files/Git/bin/bash.exe" kotlin-bindings-generate ${{ matrix.platform }} ${{ matrix.arch }} ${{ matrix.library_file }} release
-
-      - name: Upload OpenSSL Configure logs (Windows - on failure)
-        if: runner.os == 'Windows' && failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: openssl-configure-logs-${{ matrix.display_name }}
-          path: |
-            ${{ env.CARGO_TARGET_DIR }}/**/configure.log
-            ${{ github.workspace }}/**/configure.log
-          if-no-files-found: warn
-
-      - name: Build Kotlin bindings (non-Windows)
-        if: runner.os != 'Windows'
-        run: |
-          just kotlin-bindings-generate ${{ matrix.platform }} ${{ matrix.arch }} ${{ matrix.library_file }} release
+          if [ -n "${{ matrix.just_shell }}" ]; then
+            just --shell="${{ matrix.just_shell }}" kotlin-bindings-generate ${{ matrix.platform }} ${{ matrix.arch }} ${{ matrix.library_file }} release
+          else
+            just kotlin-bindings-generate ${{ matrix.platform }} ${{ matrix.arch }} ${{ matrix.library_file }} release
+          fi
 
       - name: Build Android native libraries (Linux only - arm64-v8a, x86_64)
         if: runner.os == 'Linux'
         run: |
           just kotlin-bindings-generate-android
 
-      - name: Upload OpenSSL Configure logs (non-Windows - on failure)
-        if: runner.os != 'Windows' && failure()
+      - name: Upload OpenSSL Configure logs (on failure)
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: openssl-configure-logs-${{ matrix.display_name }}
