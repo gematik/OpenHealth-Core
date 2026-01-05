@@ -157,26 +157,29 @@ kotlin-bindings-assemble input_root output_root:
     #!/usr/bin/env bash
     set -euxo pipefail
 
+    input_root="{{ input_root }}"
+    output_root="{{ output_root }}"
+
     : "${input_root:?Input directory is required}"
     : "${output_root:?Output directory is required}"
 
-    rm -rf "{{ output_root }}"
-    mkdir -p "{{ output_root }}"
+    rm -rf "${output_root}"
+    mkdir -p "${output_root}"
 
-    for artifact_dir in "{{ input_root }}"/*; do \
-        [ -d "$$artifact_dir" ] || continue; \
-        if [ -d "$$artifact_dir/resources" ]; then \
-            mkdir -p "{{ output_root }}/resources"; \
-            cp -a "$$artifact_dir/resources/." "{{ output_root }}/resources/"; \
-        fi; \
-        if [ -d "$$artifact_dir/kotlin" ]; then \
-            mkdir -p "{{ output_root }}/kotlin"; \
-            cp -a "$$artifact_dir/kotlin/." "{{ output_root }}/kotlin/"; \
-        fi; \
-        if [ -d "$$artifact_dir/android-jni" ]; then \
-            mkdir -p "{{ output_root }}/android-jni"; \
-            cp -a "$$artifact_dir/android-jni/." "{{ output_root }}/android-jni/"; \
-        fi; \
+    for artifact_dir in "${input_root}"/*; do
+        [ -d "${artifact_dir}" ] || continue
+        if [ -d "${artifact_dir}/resources" ]; then
+            mkdir -p "${output_root}/resources"
+            cp -a "${artifact_dir}/resources/." "${output_root}/resources/"
+        fi
+        if [ -d "${artifact_dir}/kotlin" ]; then
+            mkdir -p "${output_root}/kotlin"
+            cp -a "${artifact_dir}/kotlin/." "${output_root}/kotlin/"
+        fi
+        if [ -d "${artifact_dir}/android-jni" ]; then
+            mkdir -p "${output_root}/android-jni"
+            cp -a "${artifact_dir}/android-jni/." "${output_root}/android-jni/"
+        fi
     done
 
 # Publish the Kotlin `healthcard` module to the local Maven repository.
