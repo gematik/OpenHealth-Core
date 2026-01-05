@@ -30,6 +30,8 @@ pub mod read_vsd;
 pub mod sign_challenge;
 #[cfg(test)]
 pub(crate) mod test_utils;
+#[cfg(feature = "apdu-tools")]
+pub mod apdu_tools;
 pub mod secure_channel;
 
 pub use certificate::retrieve_certificate;

@@ -44,36 +44,6 @@ captures/
 *.a
 *.lib
 
-# .NET specific ignores
-bin/
-obj/
-*.user
-*.userosscache
-*.suo
-*.userprefs
-[Bb]in/
-[Oo]bj/
-[Ll]og/
-[Ll]ogs/
-net*/
-net[0-9]*/
-net[0-9][0-9]*/
-[Dd]ebug/
-[Rr]elease/
-x64/
-x86/
-[Ww][Ii][Nn]32/
-[Aa][Rr][Mm]/
-[Aa][Rr][Mm]64/
-
-# NuGet packages
-*.nupkg
-*.snupkg
-**/[Pp]ackages/*
-!**/[Pp]ackages/build/
-*.nuget.props
-*.nuget.targets
-
 # IDE specific files
 .idea/
 *.iml
