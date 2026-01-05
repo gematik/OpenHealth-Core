@@ -28,11 +28,16 @@ on:
         description: 'Release version (e.g. 1.0.0)'
         required: false
         type: string
-#  push:
-#    branches: [ "feature/open-87-release-pipeline" ]
 
 env:
   CARGO_TERM_COLOR: always
+
+concurrency:
+  group: bindings-release-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   kotlin-bindings:
@@ -42,6 +47,7 @@ jobs:
       OUT_ROOT: ${{ github.workspace }}/artifacts/${{ matrix.display_name }}/generated/uniffi
       CARGO_TARGET_DIR: ${{ github.workspace }}/artifacts/${{ matrix.display_name }}/cargo
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+      RUST_BACKTRACE: "1"
     strategy:
       fail-fast: false
       matrix:
@@ -78,7 +84,7 @@ jobs:
       - name: Cache Cargo builds
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: ". -> core-modules-kotlin/healthcard/build/cargo"
+          workspaces: ". -> ${{ env.CARGO_TARGET_DIR }}"
 
       - name: Install just
         uses: taiki-e/install-action@v2
@@ -134,6 +140,16 @@ jobs:
         run: |
           just --shell="C:/Program Files/Git/bin/bash.exe" kotlin-bindings-generate ${{ matrix.platform }} ${{ matrix.arch }} ${{ matrix.library_file }} release
 
+      - name: Upload OpenSSL Configure logs (Windows - on failure)
+        if: runner.os == 'Windows' && failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openssl-configure-logs-${{ matrix.display_name }}
+          path: |
+            ${{ env.CARGO_TARGET_DIR }}/**/configure.log
+            ${{ github.workspace }}/**/configure.log
+          if-no-files-found: warn
+
       - name: Build Kotlin bindings (non-Windows)
         if: runner.os != 'Windows'
         run: |
@@ -143,6 +159,16 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           just kotlin-bindings-generate-android
+
+      - name: Upload OpenSSL Configure logs (non-Windows - on failure)
+        if: runner.os != 'Windows' && failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openssl-configure-logs-${{ matrix.display_name }}
+          path: |
+            ${{ env.CARGO_TARGET_DIR }}/**/configure.log
+            ${{ github.workspace }}/**/configure.log
+          if-no-files-found: warn
 
       - name: Upload Resources
         uses: actions/upload-artifact@v4
@@ -160,6 +186,7 @@ jobs:
     env:
       OUT_ROOT: ${{ github.workspace }}/artifacts/swift/generated/uniffi
       CARGO_TARGET_DIR: ${{ github.workspace }}/artifacts/swift/cargo
+      RUST_BACKTRACE: "1"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -171,6 +198,11 @@ jobs:
         with:
           targets: aarch64-apple-ios, aarch64-apple-ios-sim, x86_64-apple-ios, aarch64-apple-darwin, x86_64-apple-darwin
 
+      - name: Cache Cargo builds
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ". -> ${{ env.CARGO_TARGET_DIR }}"
+
       - name: Install just
         uses: taiki-e/install-action@v2
         with:
@@ -178,6 +210,16 @@ jobs:
 
       - name: Build XCFramework
         run: just swift-xcframework
+
+      - name: Upload OpenSSL Configure logs (Swift - on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openssl-configure-logs-swift
+          path: |
+            ${{ env.CARGO_TARGET_DIR }}/**/configure.log
+            ${{ github.workspace }}/**/configure.log
+          if-no-files-found: warn
 
       - name: Zip XCFramework
         working-directory: core-modules-swift/healthcard
@@ -209,6 +251,15 @@ jobs:
         with:
           tool: just
 
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Download platform artifacts
         uses: actions/download-artifact@v4
         with:
@@ -218,6 +269,16 @@ jobs:
       - name: Collect libraries and generated Kotlin
         run: |
           just kotlin-bindings-assemble assembly/input assembly/dist/generated/uniffi
+
+      - name: Upload Kotlin bindings bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: kotlin-bindings-bundle
+          path: |
+            ${{ env.OUT_ROOT }}/resources/**
+            ${{ env.OUT_ROOT }}/kotlin/**
+            ${{ env.OUT_ROOT }}/android-jni/**
+          if-no-files-found: error
 
       - name: Publish Kotlin bindings to mavenLocal (assembled outputs)
         run: |

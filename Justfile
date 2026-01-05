@@ -80,6 +80,7 @@ uniffi-bindings-generate platform arch language library_file profile="release":
 
     cargo build \
       --manifest-path "{{ rust_manifest }}" \
+      --locked \
       --profile "{{ profile }}"
 
     library_path="${CARGO_TARGET_DIR}/{{ profile }}/{{ library_file }}"
@@ -87,6 +88,7 @@ uniffi-bindings-generate platform arch language library_file profile="release":
 
     cargo run \
       --manifest-path "{{ uniffi_cli }}" \
+      --locked \
       --quiet \
       --bin uniffi-bindgen -- \
         generate \
@@ -141,7 +143,7 @@ kotlin-bindings-generate-android:
       -t arm64-v8a -t x86_64 \
       -o "{{ kotlin_cargo_target_dir }}/android" \
       --manifest-path "{{ rust_manifest }}" \
-      -- build --release
+      -- build --locked --release
 
     rm -rf "{{ android_jni_root }}"
     cp -r "{{ kotlin_cargo_target_dir }}/android" "{{ android_jni_root }}"
@@ -227,7 +229,7 @@ swift-build-apple:
       aarch64-apple-darwin \
       x86_64-apple-darwin; do \
         CARGO_TARGET_DIR="${apple_target_dir}" \
-          cargo build --manifest-path "{{ rust_manifest }}" --release --target "$target"; \
+          cargo build --manifest-path "{{ rust_manifest }}" --locked --release --target "$target"; \
     done
 
 # Runs `swift-bindings-generate` and `swift-build-apple`, then packages:

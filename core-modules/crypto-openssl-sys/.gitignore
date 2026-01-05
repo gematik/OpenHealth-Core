@@ -21,5 +21,8 @@
 
 openssl-src
 openssl-darwin*
+openssl-ios*
 openssl-android*
 openssl-linux*
+openssl-VC-*
+openssl-mingw*

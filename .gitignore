@@ -22,7 +22,6 @@
 # Rust specific ignores
 target/
 **/*.rs.bk
-Cargo.lock
 .cargo/
 
 # Kotlin/KMP specific
