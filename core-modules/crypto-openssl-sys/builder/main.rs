@@ -72,7 +72,18 @@ fn target_build_paths(target: &str, openssl_target: &str) -> TargetBuildPaths {
     let manifest = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
 
-    let build_root = out_dir.join("openssl").join(target).join(openssl_target);
+    // Keep paths short (especially on Windows) by avoiding the per-crate hash directory inside `OUT_DIR`.
+    // `OUT_DIR` typically looks like:
+    // - `.../target/<profile>/build/<crate-hash>/out` (host build)
+    // - `.../target/<triple>/<profile>/build/<crate-hash>/out` (cross build)
+    // So we use the profile directory as our base and place OpenSSL build artifacts next to Cargo outputs.
+    let build_base = env::var("OPENSSL_SYS_BUILD_ROOT")
+        .ok()
+        .filter(|v| !v.is_empty())
+        .map(PathBuf::from)
+        .unwrap_or_else(|| out_dir.ancestors().nth(3).unwrap_or(&out_dir).to_path_buf());
+
+    let build_root = build_base.join("openssl").join(target).join(openssl_target);
     let openssl_src_repo = manifest.join("openssl-src");
     let build_dir = build_root.join("build");
     let install_dir = build_root.join("install");
@@ -86,7 +97,8 @@ fn target_build_paths(target: &str, openssl_target: &str) -> TargetBuildPaths {
 }
 
 fn ensure_windows_lib_aliases(lib_dir: &Path) {
-    // Some toolchains look for "crypto.lib"/"ssl.lib" while OpenSSL produces "libcrypto.lib"/"libssl.lib" (and vice versa).
+    // Some toolchains look for "crypto.lib"/"ssl.lib" while OpenSSL produces "libcrypto.lib"/"libssl.lib"
+    // (and vice versa).
     // Create aliases if one naming scheme is missing to keep linking robust on Windows.
     let variants = [("libcrypto.lib", "crypto.lib"), ("libssl.lib", "ssl.lib")];
 
@@ -314,15 +326,23 @@ fn run_command_env_to_file(prog: &str, args: &[&str], cwd: Option<&Path>, envs: 
     let mut combined = Vec::with_capacity(output.stdout.len() + output.stderr.len());
     combined.extend_from_slice(&output.stdout);
     combined.extend_from_slice(&output.stderr);
-    fs::write(log, combined).unwrap_or_else(|e| panic!("Failed to write log '{}': {}", log.display(), e));
+    fs::write(log, &combined).unwrap_or_else(|e| panic!("Failed to write log '{}': {}", log.display(), e));
 
     if !output.status.success() {
+        let combined_text = String::from_utf8_lossy(&combined);
+        const MAX_TAIL_BYTES: usize = 8 * 1024;
+        let mut start = combined_text.len().saturating_sub(MAX_TAIL_BYTES);
+        while start < combined_text.len() && !combined_text.is_char_boundary(start) {
+            start += 1;
+        }
+        let tail = &combined_text[start..];
         panic!(
-            "Command failed: {} {:?} (exit code: {:?}); see log at '{}'",
+            "Command failed: {} {:?} (exit code: {:?}); see log at '{}'\n--- stdout/stderr (tail) ---\n{}",
             prog,
             args,
             output.status.code(),
-            log.display()
+            log.display(),
+            tail
         );
     }
 }
