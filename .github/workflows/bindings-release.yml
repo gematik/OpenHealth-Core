@@ -28,8 +28,8 @@ on:
         description: 'Release version (e.g. 1.0.0)'
         required: false
         type: string
-  push:
-    branches: [ "feature/open-87-release-pipeline" ]
+#  push:
+#    branches: [ "feature/open-87-release-pipeline" ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -168,6 +168,8 @@ jobs:
 
       - name: Set up Rust toolchain
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios, aarch64-apple-ios-sim, x86_64-apple-ios, aarch64-apple-darwin, x86_64-apple-darwin
 
       - name: Install just
         uses: taiki-e/install-action@v2

@@ -177,7 +177,10 @@ fn build_openssl() {
         .unwrap_or_else(|| "perl".to_string());
     let (configure_prog, configure_args): (String, Vec<String>) = if is_windows_msvc {
         let mut args = Vec::with_capacity(configure_args.len() + 1);
-        args.push(src.join("Configure").to_string_lossy().to_string());
+        // On Windows, we need to use the perl interpreter to run Configure
+        // And we need to use forward slashes for the path to Configure to avoid issues with perl
+        let configure_script = src.join("Configure").to_string_lossy().replace('\\', "/");
+        args.push(configure_script);
         args.extend(configure_args);
         (perl_prog, args)
     } else {
