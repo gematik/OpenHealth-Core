@@ -23,6 +23,11 @@ name: Bindings Release
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. 1.0.0)'
+        required: false
+        type: string
   push:
     branches: [ "feature/open-87-release-pipeline" ]
 
@@ -149,6 +154,39 @@ jobs:
             ${{ env.OUT_ROOT }}/android-jni/**
           if-no-files-found: warn
 
+  swift-bindings:
+    name: Swift bindings (darwin-universal)
+    runs-on: macos-14
+    env:
+      OUT_ROOT: ${{ github.workspace }}/artifacts/swift/generated/uniffi
+      CARGO_TARGET_DIR: ${{ github.workspace }}/artifacts/swift/cargo
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install just
+        uses: taiki-e/install-action@v2
+        with:
+          tool: just
+
+      - name: Build XCFramework
+        run: just swift-xcframework
+
+      - name: Zip XCFramework
+        working-directory: core-modules-swift/healthcard
+        run: zip -r OpenHealthHealthcardFFI.xcframework.zip OpenHealthHealthcardFFI.xcframework
+
+      - name: Upload XCFramework Zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: swift-xcframework
+          path: core-modules-swift/healthcard/OpenHealthHealthcardFFI.xcframework.zip
+
   assemble-kotlin-bindings:
     name: Assemble Kotlin bindings bundle
     runs-on: ubuntu-latest
@@ -197,3 +235,62 @@ jobs:
           name: kotlin-bindings-maven-local
           path: assembly/maven-repo
           if-no-files-found: error
+
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [swift-bindings, assemble-kotlin-bindings]
+    if: inputs.version != ''
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download Swift Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: swift-xcframework
+          path: artifacts/swift
+
+      - name: Download Kotlin Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: kotlin-bindings-maven-local
+          path: artifacts/kotlin
+
+      - name: Zip Kotlin Maven Repo
+        run: |
+          cd artifacts/kotlin
+          zip -r ../../maven-repo.zip .
+
+      - name: Update Package.swift
+        run: |
+          VERSION="${{ inputs.version }}"
+          ZIP_PATH="artifacts/swift/OpenHealthHealthcardFFI.xcframework.zip"
+          CHECKSUM=$(sha256sum "$ZIP_PATH" | awk '{print $1}')
+          REPO_URL="https://github.com/${{ github.repository }}/releases/download/${VERSION}/OpenHealthHealthcardFFI.xcframework.zip"
+          
+          # Update Package.swift to use remote binary target
+          sed -i "s|path: \"./OpenHealthHealthcardFFI.xcframework\"|url: \"$REPO_URL\", checksum: \"$CHECKSUM\"|" core-modules-swift/healthcard/Package.swift
+          
+          # Verify change
+          cat core-modules-swift/healthcard/Package.swift
+
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add core-modules-swift/healthcard/Package.swift
+          git commit -m "Release ${VERSION}"
+          git tag "${VERSION}"
+          git push origin "${VERSION}"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ inputs.version }}
+          files: |
+            artifacts/swift/OpenHealthHealthcardFFI.xcframework.zip
+            maven-repo.zip
+          generate_release_notes: true
