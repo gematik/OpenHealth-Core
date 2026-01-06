@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright 2025 gematik GmbH
+# SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
 #
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -22,7 +22,6 @@
 # Rust specific ignores
 target/
 **/*.rs.bk
-Cargo.lock
 .cargo/
 
 # Kotlin/KMP specific
@@ -97,3 +96,4 @@ logs/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.build

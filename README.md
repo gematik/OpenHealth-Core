@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: Copyright 2025 gematik GmbH
+SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
 
 SPDX-License-Identifier: Apache-2.0
 
@@ -36,6 +36,7 @@ without prior notice.**
   functionality.
 - `core-modules-kotlin/`: Kotlin/JVM bindings and examples that integrate the
   Rust modules into JVM-based applications.
+- `core-modules-swift/`: Swift/iOS interoperability artifacts (UniFFI + xcframework).
 - `docs/`: Additional documentation, interoperability notes and project
   specific guides.
 
@@ -46,11 +47,11 @@ We aim to support a broad set of operating systems and architectures, including:
 | Platform      | Architectures | Runtimes (examples)              | Supported?   |
 |---------------|---------------|----------------------------------|--------------|
 | Linux         | x86_64        | Native Rust, JVM (tests/tooling) | Experimental |
-| Windows       | x86_64        | Native Rust, JVM (tests/tooling) | Not yet      |
+| Windows       | x86_64        | Native Rust, JVM (tests/tooling) | Experimental |
 | macOS         | arm64         | Native Rust, JVM (tests/tooling) | Experimental |
-| Android       | arm64, x86_64 | JVM (Android, via JNI/NDK)       | Not yet      |
-| iOS           | arm64         | Native                           | Not yet      |
-| iOS Simulator | arm64         | Native                           | Not yet      |
+| Android       | arm64, x86_64 | JVM (Android, via JNI/NDK)       | Experimental |
+| iOS           | arm64         | Native                           | Experimental |
+| iOS Simulator | arm64         | Native                           | Experimental |
 
 ## Contributing
 

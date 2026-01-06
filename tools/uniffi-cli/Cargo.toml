@@ -19,10 +19,16 @@
 # For additional notes and disclaimer from gematik and in case of changes by gematik,
 # find details in the "Readme" file.
 
-[bindings.kotlin]
-package_name = "de.gematik.openhealth.healthcard"
-cdylib_name = "healthcard"
+[package]
+name = "uniffi-bindgen"
+version = "0.1.0"
+edition = "2024"
+license = "Apache-2.0"
+publish = false
 
-[bindings.swift]
-module_name = "OpenHealthHealthcard"
-ffi_module_name = "OpenHealthHealthcardFFI"
+[[bin]]
+name = "uniffi-bindgen"
+path = "src/main.rs"
+
+[dependencies]
+uniffi = { version = "0.30.0", features = ["cli"] }

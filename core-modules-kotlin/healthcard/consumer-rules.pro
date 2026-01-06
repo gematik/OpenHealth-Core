@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
+# SPDX-FileCopyrightText: Copyright 2026 gematik GmbH
 #
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -19,10 +19,4 @@
 # For additional notes and disclaimer from gematik and in case of changes by gematik,
 # find details in the "Readme" file.
 
-[bindings.kotlin]
-package_name = "de.gematik.openhealth.healthcard"
-cdylib_name = "healthcard"
-
-[bindings.swift]
-module_name = "OpenHealthHealthcard"
-ffi_module_name = "OpenHealthHealthcardFFI"
+# Consumer ProGuard rules for the healthcard library (currently empty on purpose).

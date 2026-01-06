@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2025 gematik GmbH
+// SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -27,17 +27,15 @@ pub mod pace_info;
 pub mod pin;
 pub mod random;
 pub mod read_vsd;
+pub mod secure_channel;
 pub mod sign_challenge;
 #[cfg(test)]
 pub(crate) mod test_utils;
-pub mod secure_channel;
 
 pub use certificate::retrieve_certificate;
 pub use error::ExchangeError;
 pub use pin::{unlock_egk, verify_pin, HealthCardVerifyPinResult, UnlockMethod};
 pub use random::get_random;
 pub use read_vsd::read_vsd;
+pub use secure_channel::{establish_secure_channel, establish_secure_channel_with, CardAccessNumber, SecureChannel};
 pub use sign_challenge::sign_challenge;
-pub use secure_channel::{
-    establish_secure_channel, establish_secure_channel_with, CardAccessNumber, SecureChannel,
-};
