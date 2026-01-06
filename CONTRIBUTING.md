@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: Copyright 2025 gematik GmbH
+SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
 
 SPDX-License-Identifier: Apache-2.0
 
@@ -75,10 +75,12 @@ This ensures proper tracking and management of open `TODOs`.
 Annotate all files with the following command:
 
 ```shell
-git ls-files -z -- ':(exclude)LICENSES/**' \
+git diff -z --name-only origin/main HEAD -- ':(exclude)LICENSES/**' \
   | xargs -0 reuse annotate \
       --license Apache-2.0 \
       --copyright "gematik GmbH" \
       --template gematik \
-      --copyright-prefix spdx-string
+      --copyright-prefix spdx-string \
+      --merge-copyrights \
+      --skip-unrecognised
 ```
