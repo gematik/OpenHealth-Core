@@ -19,8 +19,6 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-#![cfg(feature = "apdu-tools")]
-
 use crate::command::apdu::{CardCommandApdu, CardResponseApdu};
 use crate::exchange::channel::CardChannel;
 use crate::exchange::ExchangeError;
@@ -56,6 +54,7 @@ struct TranscriptHeader {
     supports_extended_length: bool,
     label: Option<String>,
     keys: Option<Vec<String>>,
+    can: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -66,6 +65,7 @@ enum TranscriptEntry {
         supports_extended_length: bool,
         label: Option<String>,
         keys: Option<Vec<String>>,
+        can: Option<String>,
     },
     Exchange {
         tx: String,
@@ -93,6 +93,7 @@ impl Transcript {
                 supports_extended_length,
                 label: None,
                 keys: None,
+                can: None,
             },
             entries: Vec::new(),
         }
@@ -110,8 +111,16 @@ impl Transcript {
         self.header.keys = Some(keys);
     }
 
+    pub fn set_can(&mut self, can: impl Into<String>) {
+        self.header.can = Some(can.into());
+    }
+
     pub fn keys(&self) -> Option<&[String]> {
         self.header.keys.as_deref()
+    }
+
+    pub fn can(&self) -> Option<&str> {
+        self.header.can.as_deref()
     }
 
     pub fn fixed_key_generator(
@@ -152,6 +161,7 @@ impl Transcript {
             supports_extended_length: self.header.supports_extended_length,
             label: self.header.label.clone(),
             keys: self.header.keys.clone(),
+            can: self.header.can.clone(),
         };
         out.push_str(&serde_json::to_string(&header)?);
         out.push('\n');
@@ -178,11 +188,13 @@ impl Transcript {
                 supports_extended_length,
                 label,
                 keys,
+                can,
             } => TranscriptHeader {
                 version,
                 supports_extended_length,
                 label,
                 keys,
+                can,
             },
             _ => return Err(TranscriptError::InvalidHeader),
         };
@@ -207,11 +219,13 @@ impl Transcript {
                 supports_extended_length,
                 label,
                 keys,
+                can,
             } => TranscriptHeader {
                 version,
                 supports_extended_length,
                 label,
                 keys,
+                can,
             },
             _ => return Err(TranscriptError::InvalidHeader),
         };
@@ -244,6 +258,10 @@ impl<C: CardChannel> RecordingChannel<C> {
 
     pub fn set_keys(&mut self, keys: Vec<String>) {
         self.transcript.set_keys(keys);
+    }
+
+    pub fn set_can(&mut self, can: impl Into<String>) {
+        self.transcript.set_can(can);
     }
 
     pub fn transcript(&self) -> &Transcript {
@@ -484,6 +502,7 @@ mod tests {
     use super::*;
     use crate::command::apdu::CardCommandApdu;
     use crate::command::health_card_command::HealthCardCommand;
+    use crate::command::select_command::SelectCommand;
     use crate::exchange::channel::CardChannelExt;
     use crate::exchange::test_utils::MockSession;
 
@@ -511,6 +530,26 @@ mod tests {
         assert_eq!(pub1.as_bytes().len(), 65);
         let (_pub2, priv2) = generator(curve).unwrap();
         assert_eq!(priv2.as_bytes().len(), 32);
+    }
+
+    #[test]
+    fn transcript_keys_roundtrip_and_generator() {
+        let mut transcript = Transcript::new(true);
+        let key1 = vec![0xAA; 32];
+        let key2 = vec![0xBB; 32];
+        let keys_hex = vec![hex::encode_upper(&key1), hex::encode_upper(&key2)];
+        transcript.set_keys(keys_hex.clone());
+
+        let jsonl = transcript.to_jsonl_string().unwrap();
+        let parsed = Transcript::from_jsonl_str(&jsonl).unwrap();
+        assert_eq!(parsed.keys().unwrap(), keys_hex.as_slice());
+
+        let mut generator = parsed.fixed_key_generator().unwrap().unwrap();
+        let curve = EcCurve::BrainpoolP256r1;
+        let (_pub1, priv1) = generator(curve.clone()).unwrap();
+        assert_eq!(priv1.as_bytes(), key1.as_slice());
+        let (_pub2, priv2) = generator(curve).unwrap();
+        assert_eq!(priv2.as_bytes(), key2.as_slice());
     }
 
     #[test]
@@ -557,7 +596,7 @@ mod tests {
         }
         println!("pcsc readers:");
         for reader in readers {
-            println!("  {reader}");
+            println!("  {}", reader.to_string_lossy());
         }
     }
 }

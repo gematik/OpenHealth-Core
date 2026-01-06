@@ -73,15 +73,16 @@ fn main() {
          let can = args.can.ok_or_else(|| "missing --can".to_string())?;
          let supports_extended_length = !args.no_extended;
 
-         let channel =
-             PcscChannel::connect(&reader, supports_extended_length).map_err(|err| format!("pcsc connect failed: {err}"))?;
-         let mut recorder = RecordingChannel::new(channel);
-         let card_access_number = CardAccessNumber::new(&can).map_err(|err| err.to_string())?;
+        let channel =
+            PcscChannel::connect(&reader, supports_extended_length).map_err(|err| format!("pcsc connect failed: {err}"))?;
+        let mut recorder = RecordingChannel::new(channel);
+        let card_access_number = CardAccessNumber::new(&can).map_err(|err| err.to_string())?;
+        recorder.set_can(can.clone());
 
-         let mut generated_keys = Vec::new();
-         establish_secure_channel_with(&mut recorder, &card_access_number, |curve: EcCurve| {
-             let (public_key, private_key) = EcKeyPairSpec { curve: curve.clone() }.generate_keypair()?;
-             generated_keys.push(hex::encode_upper(private_key.as_bytes()));
+        let mut generated_keys = Vec::new();
+        establish_secure_channel_with(&mut recorder, &card_access_number, |curve: EcCurve| {
+            let (public_key, private_key) = EcKeyPairSpec { curve: curve.clone() }.generate_keypair()?;
+            generated_keys.push(hex::encode_upper(private_key.as_bytes()));
              Ok((public_key, private_key))
          })
          .map_err(|err| format!("PACE failed: {err}"))?;
