@@ -75,7 +75,7 @@ This ensures proper tracking and management of open `TODOs`.
 Annotate all files with the following command:
 
 ```shell
-git ls-files -z -- ':(exclude)LICENSES/**' \
+git diff -z --name-only origin/main HEAD -- ':(exclude)LICENSES/**' \
   | xargs -0 reuse annotate \
       --license Apache-2.0 \
       --copyright "gematik GmbH" \
