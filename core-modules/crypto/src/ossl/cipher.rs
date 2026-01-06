@@ -223,6 +223,7 @@ impl AesCipher {
         Ok(out_len as usize)
     }
 
+    #[allow(dead_code)]
     /// Expose raw context pointer if needed by other modules
     pub fn as_ptr(&self) -> *mut EVP_CIPHER_CTX {
         self.ctx

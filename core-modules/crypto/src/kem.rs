@@ -51,8 +51,10 @@ impl MlkemPrivateKey {
         let mut this = ManuallyDrop::new(self);
         std::mem::take(&mut this.0)
     }
+}
 
-    pub fn as_ref(&self) -> &[u8] {
+impl AsRef<[u8]> for MlkemPrivateKey {
+    fn as_ref(&self) -> &[u8] {
         &self.0
     }
 }
