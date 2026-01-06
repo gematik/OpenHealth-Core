@@ -91,7 +91,6 @@ fn target_build_paths(target: &str, openssl_target: &str) -> TargetBuildPaths {
     TargetBuildPaths { build_root, openssl_src_repo, build_dir, install_dir }
 }
 
-
 struct AndroidEnv {
     env: Vec<(String, String)>,
     api_level: String,
