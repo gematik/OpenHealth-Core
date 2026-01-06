@@ -88,12 +88,7 @@ fn target_build_paths(target: &str, openssl_target: &str) -> TargetBuildPaths {
     let build_dir = build_root.join("build");
     let install_dir = build_root.join("install");
 
-    TargetBuildPaths {
-        build_root,
-        openssl_src_repo,
-        build_dir,
-        install_dir,
-    }
+    TargetBuildPaths { build_root, openssl_src_repo, build_dir, install_dir }
 }
 
 fn ensure_windows_lib_aliases(lib_dir: &Path) {
@@ -183,10 +178,7 @@ fn build_openssl() {
     }
 
     let is_windows_msvc = target == "x86_64-pc-windows-msvc";
-    let perl_prog = env::var("OPENSSL_SRC_PERL")
-        .ok()
-        .filter(|v| !v.is_empty())
-        .unwrap_or_else(|| "perl".to_string());
+    let perl_prog = env::var("OPENSSL_SRC_PERL").ok().filter(|v| !v.is_empty()).unwrap_or_else(|| "perl".to_string());
     let (configure_prog, configure_args): (String, Vec<String>) = if is_windows_msvc {
         let mut args = Vec::with_capacity(configure_args.len() + 1);
         // On Windows, we need to use the perl interpreter to run Configure
@@ -204,13 +196,7 @@ fn build_openssl() {
     if env::var("OPENSSL_SYS_PRINT_LOG_PATHS").ok().as_deref() == Some("1") {
         println!("cargo:warning=OpenSSL Configure log: {}", configure_log.display());
     }
-    run_command_env_to_file(
-        configure_prog.as_str(),
-        &configure_args,
-        Some(build_dir),
-        &build_env,
-        &configure_log,
-    );
+    run_command_env_to_file(configure_prog.as_str(), &configure_args, Some(build_dir), &build_env, &configure_log);
 
     // Build & install
     if is_windows_msvc {
@@ -403,11 +389,7 @@ fn clean_openssl_source(src: &Path) {
 
 fn apple_sdk(target: &str) -> Option<&'static str> {
     if target.contains("apple-ios") {
-        if is_ios_simulator(target) {
-            Some("iphonesimulator")
-        } else {
-            Some("iphoneos")
-        }
+        if is_ios_simulator(target) { Some("iphonesimulator") } else { Some("iphoneos") }
     } else if target.ends_with("apple-darwin") {
         Some("macosx")
     } else {
@@ -416,10 +398,7 @@ fn apple_sdk(target: &str) -> Option<&'static str> {
 }
 
 fn xcrun_show_sdk_path(sdk: &str) -> Option<String> {
-    let output = Command::new("xcrun")
-        .args(["--sdk", sdk, "--show-sdk-path"])
-        .output()
-        .ok()?;
+    let output = Command::new("xcrun").args(["--sdk", sdk, "--show-sdk-path"]).output().ok()?;
     if !output.status.success() {
         return None;
     }
@@ -529,10 +508,7 @@ fn build_openssl_bindings() {
     }
     if let Some(sdk) = apple_sdk(&target) {
         let sdk_path = xcrun_show_sdk_path(sdk).unwrap_or_else(|| {
-            panic!(
-                "Failed to locate Apple SDK '{}' via xcrun; ensure Xcode/Command Line Tools are installed",
-                sdk
-            )
+            panic!("Failed to locate Apple SDK '{}' via xcrun; ensure Xcode/Command Line Tools are installed", sdk)
         });
         clang_args.push("-isysroot".to_string());
         clang_args.push(sdk_path);
@@ -580,10 +556,7 @@ fn build_openssl_bindings() {
     }
     if let Some(sdk) = apple_sdk(&target) {
         let sdk_path = xcrun_show_sdk_path(sdk).unwrap_or_else(|| {
-            panic!(
-                "Failed to locate Apple SDK '{}' via xcrun; ensure Xcode/Command Line Tools are installed",
-                sdk
-            )
+            panic!("Failed to locate Apple SDK '{}' via xcrun; ensure Xcode/Command Line Tools are installed", sdk)
         });
         wrapper_build.flag("-isysroot");
         wrapper_build.flag(&sdk_path);
