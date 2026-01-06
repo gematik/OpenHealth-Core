@@ -25,16 +25,16 @@ fn main() {
 }
 
 #[cfg(feature = "apdu-tools")]
-    fn main() {
-        use clap::Parser;
-        use crypto::ec::ec_key::{EcCurve, EcKeyPairSpec};
-        use healthcard::exchange::apdu_tools::{PcscChannel, RecordingChannel};
-        use healthcard::exchange::secure_channel::{establish_secure_channel_with, CardAccessNumber};
+fn main() {
+    use clap::Parser;
+    use crypto::ec::ec_key::{EcCurve, EcKeyPairSpec};
+    use healthcard::exchange::apdu_tools::{PcscChannel, RecordingChannel};
+    use healthcard::exchange::secure_channel::{establish_secure_channel_with, CardAccessNumber};
 
-        if let Err(err) = run() {
-            eprintln!("{err}");
-            std::process::exit(1);
-        }
+    if let Err(err) = run() {
+        eprintln!("{err}");
+        std::process::exit(1);
+    }
 
     #[derive(Debug, Parser)]
     #[command(name = "apdu_record")]
@@ -56,25 +56,25 @@ fn main() {
         #[arg(long, conflicts_with = "no_extended")]
         extended: bool,
         /// List available PC/SC readers and exit
-         #[arg(long)]
-         list_readers: bool,
-     }
- 
-     fn run() -> Result<(), String> {
-         let args = Args::parse();
- 
-         if args.list_readers {
-             list_pcsc_readers()?;
-             return Ok(());
-         }
+        #[arg(long)]
+        list_readers: bool,
+    }
 
-         let reader = args.reader.ok_or_else(|| "missing --reader".to_string())?;
-         let out = args.out.ok_or_else(|| "missing --out".to_string())?;
-         let can = args.can.ok_or_else(|| "missing --can".to_string())?;
-         let supports_extended_length = !args.no_extended;
+    fn run() -> Result<(), String> {
+        let args = Args::parse();
 
-        let channel =
-            PcscChannel::connect(&reader, supports_extended_length).map_err(|err| format!("pcsc connect failed: {err}"))?;
+        if args.list_readers {
+            list_pcsc_readers()?;
+            return Ok(());
+        }
+
+        let reader = args.reader.ok_or_else(|| "missing --reader".to_string())?;
+        let out = args.out.ok_or_else(|| "missing --out".to_string())?;
+        let can = args.can.ok_or_else(|| "missing --can".to_string())?;
+        let supports_extended_length = !args.no_extended;
+
+        let channel = PcscChannel::connect(&reader, supports_extended_length)
+            .map_err(|err| format!("pcsc connect failed: {err}"))?;
         let mut recorder = RecordingChannel::new(channel);
         let card_access_number = CardAccessNumber::new(&can).map_err(|err| err.to_string())?;
         recorder.set_can(can.clone());
@@ -83,9 +83,9 @@ fn main() {
         establish_secure_channel_with(&mut recorder, &card_access_number, |curve: EcCurve| {
             let (public_key, private_key) = EcKeyPairSpec { curve: curve.clone() }.generate_keypair()?;
             generated_keys.push(hex::encode_upper(private_key.as_bytes()));
-             Ok((public_key, private_key))
-         })
-         .map_err(|err| format!("PACE failed: {err}"))?;
+            Ok((public_key, private_key))
+        })
+        .map_err(|err| format!("PACE failed: {err}"))?;
 
         if !generated_keys.is_empty() {
             recorder.set_keys(generated_keys);
@@ -97,8 +97,8 @@ fn main() {
     }
 
     fn list_pcsc_readers() -> Result<(), String> {
-        let ctx =
-            pcsc::Context::establish(pcsc::Scope::User).map_err(|err| format!("pcsc context establish failed: {err}"))?;
+        let ctx = pcsc::Context::establish(pcsc::Scope::User)
+            .map_err(|err| format!("pcsc context establish failed: {err}"))?;
         let readers = ctx.list_readers_owned().map_err(|err| format!("pcsc list readers failed: {err}"))?;
         if readers.is_empty() {
             println!("no pcsc readers found");

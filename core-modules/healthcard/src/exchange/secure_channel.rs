@@ -727,10 +727,7 @@ mod tests {
     fn integration_jsonl_replay_establish_secure_channel() {
         let transcript = Transcript::from_jsonl_str(JSONL_REPLAY_ESTABLISH_SECURE_CHANNEL).expect("load transcript");
         let can = transcript.can().expect("CAN in transcript").to_string();
-        let mut generator = transcript
-            .fixed_key_generator()
-            .expect("keys parse")
-            .expect("fixed key generator");
+        let mut generator = transcript.fixed_key_generator().expect("keys parse").expect("fixed key generator");
         let replay = ReplayChannel::from_transcript(transcript);
         let card_access_number = CardAccessNumber::new(&can).expect("can format");
         establish_secure_channel_with(replay, &card_access_number, &mut generator)

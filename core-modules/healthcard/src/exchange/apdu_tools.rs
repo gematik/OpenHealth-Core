@@ -88,13 +88,7 @@ pub struct Transcript {
 impl Transcript {
     pub fn new(supports_extended_length: bool) -> Self {
         Self {
-            header: TranscriptHeader {
-                version: 1,
-                supports_extended_length,
-                label: None,
-                keys: None,
-                can: None,
-            },
+            header: TranscriptHeader { version: 1, supports_extended_length, label: None, keys: None, can: None },
             entries: Vec::new(),
         }
     }
@@ -128,10 +122,8 @@ impl Transcript {
     ) -> Result<Option<impl FnMut(EcCurve) -> Result<(EcPublicKey, EcPrivateKey), CryptoError>>, TranscriptError> {
         match &self.header.keys {
             Some(keys) => {
-                let decoded = keys
-                    .iter()
-                    .map(|k| Ok(hex::decode(k)?))
-                    .collect::<Result<Vec<_>, hex::FromHexError>>()?;
+                let decoded =
+                    keys.iter().map(|k| Ok(hex::decode(k)?)).collect::<Result<Vec<_>, hex::FromHexError>>()?;
                 Ok(Some(FixedKeyGenerator::new(decoded).generator()))
             }
             None => Ok(None),
@@ -139,19 +131,11 @@ impl Transcript {
     }
 
     pub fn push_exchange(&mut self, tx: &[u8], rx: &[u8], label: Option<String>) {
-        self.entries.push(TranscriptEntry::Exchange {
-            tx: hex::encode_upper(tx),
-            rx: hex::encode_upper(rx),
-            label,
-        });
+        self.entries.push(TranscriptEntry::Exchange { tx: hex::encode_upper(tx), rx: hex::encode_upper(rx), label });
     }
 
     pub fn push_error(&mut self, tx: &[u8], error: impl Into<String>, label: Option<String>) {
-        self.entries.push(TranscriptEntry::Error {
-            tx: hex::encode_upper(tx),
-            error: error.into(),
-            label,
-        });
+        self.entries.push(TranscriptEntry::Error { tx: hex::encode_upper(tx), error: error.into(), label });
     }
 
     pub fn to_jsonl_string(&self) -> Result<String, TranscriptError> {
@@ -183,19 +167,9 @@ impl Transcript {
         let header_line = lines.next().ok_or(TranscriptError::InvalidHeader)?;
         let header_entry: TranscriptEntry = serde_json::from_str(header_line)?;
         let header = match header_entry {
-            TranscriptEntry::Header {
-                version,
-                supports_extended_length,
-                label,
-                keys,
-                can,
-            } => TranscriptHeader {
-                version,
-                supports_extended_length,
-                label,
-                keys,
-                can,
-            },
+            TranscriptEntry::Header { version, supports_extended_length, label, keys, can } => {
+                TranscriptHeader { version, supports_extended_length, label, keys, can }
+            }
             _ => return Err(TranscriptError::InvalidHeader),
         };
         let mut entries = Vec::new();
@@ -214,19 +188,9 @@ impl Transcript {
         let header_line = lines.next().ok_or(TranscriptError::InvalidHeader)??;
         let header_entry: TranscriptEntry = serde_json::from_str(&header_line)?;
         let header = match header_entry {
-            TranscriptEntry::Header {
-                version,
-                supports_extended_length,
-                label,
-                keys,
-                can,
-            } => TranscriptHeader {
-                version,
-                supports_extended_length,
-                label,
-                keys,
-                can,
-            },
+            TranscriptEntry::Header { version, supports_extended_length, label, keys, can } => {
+                TranscriptHeader { version, supports_extended_length, label, keys, can }
+            }
             _ => return Err(TranscriptError::InvalidHeader),
         };
         let mut entries = Vec::new();
@@ -363,9 +327,7 @@ impl CardChannel for ReplayChannel {
     }
 
     fn transmit(&mut self, command: &CardCommandApdu) -> Result<CardResponseApdu, Self::Error> {
-        let entry = self
-            .next_entry()
-            .map_err(|err| ExchangeError::Transport { code: 0, message: err.to_string() })?;
+        let entry = self.next_entry().map_err(|err| ExchangeError::Transport { code: 0, message: err.to_string() })?;
         match entry {
             TranscriptEntry::Exchange { tx, rx, .. } => {
                 let expected_tx = hex::decode(tx)
@@ -424,7 +386,10 @@ impl FixedKeyGenerator {
     }
 }
 
-fn derive_keypair_from_scalar(curve: EcCurve, private_bytes: Vec<u8>) -> Result<(EcPublicKey, EcPrivateKey), CryptoError> {
+fn derive_keypair_from_scalar(
+    curve: EcCurve,
+    private_bytes: Vec<u8>,
+) -> Result<(EcPublicKey, EcPrivateKey), CryptoError> {
     let private_key = EcPrivateKey::from_bytes(curve.clone(), private_bytes);
     let scalar = BigInt::from_bytes_be(Sign::Plus, private_key.as_bytes());
     let public_point = curve.g().mul(&scalar)?;
@@ -440,29 +405,23 @@ pub struct PcscChannel {
 
 impl PcscChannel {
     pub fn connect(reader: &str, supports_extended_length: bool) -> Result<Self, ExchangeError> {
-        let ctx =
-            pcsc::Context::establish(pcsc::Scope::User).map_err(|err| ExchangeError::Transport {
-                code: 0,
-                message: format!("pcsc context establish failed: {err}"),
-            })?;
+        let ctx = pcsc::Context::establish(pcsc::Scope::User).map_err(|err| ExchangeError::Transport {
+            code: 0,
+            message: format!("pcsc context establish failed: {err}"),
+        })?;
         let reader_cstr = CString::new(reader)
             .map_err(|err| ExchangeError::Transport { code: 0, message: format!("invalid reader name: {err}") })?;
         let card = ctx
             .connect(&reader_cstr, pcsc::ShareMode::Shared, pcsc::Protocols::ANY)
             .map_err(|err| ExchangeError::Transport { code: 0, message: format!("pcsc connect failed: {err}") })?;
-        Ok(Self {
-            card,
-            supports_extended_length,
-            recv_buffer: vec![0u8; 65538],
-        })
+        Ok(Self { card, supports_extended_length, recv_buffer: vec![0u8; 65538] })
     }
 
     pub fn connect_first(supports_extended_length: bool) -> Result<Self, ExchangeError> {
-        let ctx =
-            pcsc::Context::establish(pcsc::Scope::User).map_err(|err| ExchangeError::Transport {
-                code: 0,
-                message: format!("pcsc context establish failed: {err}"),
-            })?;
+        let ctx = pcsc::Context::establish(pcsc::Scope::User).map_err(|err| ExchangeError::Transport {
+            code: 0,
+            message: format!("pcsc context establish failed: {err}"),
+        })?;
         let mut readers = ctx
             .list_readers_owned()
             .map_err(|err| ExchangeError::Transport { code: 0, message: format!("pcsc list readers failed: {err}") })?;
@@ -472,11 +431,7 @@ impl PcscChannel {
         let card = ctx
             .connect(reader.as_c_str(), pcsc::ShareMode::Shared, pcsc::Protocols::ANY)
             .map_err(|err| ExchangeError::Transport { code: 0, message: format!("pcsc connect failed: {err}") })?;
-        Ok(Self {
-            card,
-            supports_extended_length,
-            recv_buffer: vec![0u8; 65538],
-        })
+        Ok(Self { card, supports_extended_length, recv_buffer: vec![0u8; 65538] })
     }
 }
 
@@ -489,10 +444,10 @@ impl CardChannel for PcscChannel {
 
     fn transmit(&mut self, command: &CardCommandApdu) -> Result<CardResponseApdu, Self::Error> {
         let tx = command.to_bytes();
-        let response = self.card.transmit(&tx, &mut self.recv_buffer).map_err(|err| ExchangeError::Transport {
-            code: 0,
-            message: format!("pcsc transmit failed: {err}"),
-        })?;
+        let response = self
+            .card
+            .transmit(&tx, &mut self.recv_buffer)
+            .map_err(|err| ExchangeError::Transport { code: 0, message: format!("pcsc transmit failed: {err}") })?;
         CardResponseApdu::new(response).map_err(ExchangeError::from)
     }
 }
@@ -561,16 +516,13 @@ mod tests {
 
         let channel = PcscChannel::connect(&reader, true).expect("pcsc connect");
         let mut recorder = RecordingChannel::new(channel);
-        let response = recorder
-            .execute_command(&HealthCardCommand::select(false, false))
-            .expect("select MF");
+        let response = recorder.execute_command(&HealthCardCommand::select(false, false)).expect("select MF");
         let response_bytes = response.apdu.to_bytes();
 
         let transcript = recorder.into_transcript();
         let mut replay = ReplayChannel::from_transcript(transcript);
-        let replay_response = replay
-            .execute_command(&HealthCardCommand::select(false, false))
-            .expect("replay select MF");
+        let replay_response =
+            replay.execute_command(&HealthCardCommand::select(false, false)).expect("replay select MF");
         assert_eq!(replay_response.apdu.to_bytes(), response_bytes);
     }
 
