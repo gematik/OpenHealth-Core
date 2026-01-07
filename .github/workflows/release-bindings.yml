@@ -226,11 +226,22 @@ jobs:
         working-directory: core-modules-swift/healthcard
         run: zip -r OpenHealthHealthcardFFI.xcframework.zip OpenHealthHealthcardFFI.xcframework
 
+      - name: Write XCFramework checksum
+        working-directory: core-modules-swift/healthcard
+        run: |
+          swift package compute-checksum OpenHealthHealthcardFFI.xcframework.zip > OpenHealthHealthcardFFI.xcframework.sha256
+
       - name: Upload XCFramework Zip
         uses: actions/upload-artifact@v4
         with:
           name: swift-xcframework
           path: core-modules-swift/healthcard/OpenHealthHealthcardFFI.xcframework.zip
+
+      - name: Upload XCFramework checksum
+        uses: actions/upload-artifact@v4
+        with:
+          name: swift-xcframework-checksum
+          path: core-modules-swift/healthcard/OpenHealthHealthcardFFI.xcframework.sha256
 
   assemble-kotlin-bindings:
     name: Assemble Kotlin bindings bundle
@@ -324,6 +335,12 @@ jobs:
         with:
           name: swift-wrapper
           path: artifacts/swift-wrapper
+      
+      - name: Download Swift checksum
+        uses: actions/download-artifact@v4
+        with:
+          name: swift-xcframework-checksum
+          path: artifacts/swift-checksum
 
       - name: Download Kotlin Artifact
         uses: actions/download-artifact@v4
@@ -340,7 +357,7 @@ jobs:
         run: |
           VERSION="${{ inputs.version }}"
           ZIP_PATH="artifacts/swift/OpenHealthHealthcardFFI.xcframework.zip"
-          CHECKSUM=$(sha256sum "$ZIP_PATH" | awk '{print $1}')
+          CHECKSUM=$(cat artifacts/swift-checksum/OpenHealthHealthcardFFI.xcframework.sha256)
           REPO_URL="https://github.com/${{ github.repository }}/releases/download/${VERSION}/OpenHealthHealthcardFFI.xcframework.zip"
 
           mkdir -p core-modules-swift/healthcard/Sources/OpenHealthHealthcard
