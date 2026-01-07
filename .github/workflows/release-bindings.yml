@@ -64,7 +64,7 @@ jobs:
             arch: x86_64
             library_file: healthcard.dll
             just_shell: "C:/Program Files/Git/bin/bash.exe"
-          - runner: macos-14
+          - runner: macos-26
             display_name: darwin-aarch64
             platform: darwin
             arch: aarch64
@@ -77,7 +77,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -153,7 +153,7 @@ jobs:
 
       - name: Upload OpenSSL Configure logs (on failure)
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: openssl-configure-logs-${{ matrix.display_name }}
           path: |
@@ -162,7 +162,7 @@ jobs:
           if-no-files-found: warn
 
       - name: Upload Resources
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: kotlin-bindings-${{ matrix.display_name }}
           path: |
@@ -173,14 +173,14 @@ jobs:
 
   swift-bindings:
     name: Swift bindings (darwin-universal)
-    runs-on: macos-14
+    runs-on: macos-26
     env:
       OUT_ROOT: ${{ github.workspace }}/artifacts/swift/generated/uniffi
       CARGO_TARGET_DIR: ${{ github.workspace }}/artifacts/swift/cargo
       RUST_BACKTRACE: "1"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -206,7 +206,7 @@ jobs:
         run: cp core-modules-swift/healthcard/Sources/OpenHealthHealthcard/OpenHealthHealthcard.swift OpenHealthHealthcard.swift
 
       - name: Upload Swift wrapper
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: swift-wrapper
           path: OpenHealthHealthcard.swift
@@ -214,7 +214,7 @@ jobs:
 
       - name: Upload OpenSSL Configure logs (Swift - on failure)
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: openssl-configure-logs-swift
           path: |
@@ -226,11 +226,22 @@ jobs:
         working-directory: core-modules-swift/healthcard
         run: zip -r OpenHealthHealthcardFFI.xcframework.zip OpenHealthHealthcardFFI.xcframework
 
+      - name: Write XCFramework checksum
+        working-directory: core-modules-swift/healthcard
+        run: |
+          swift package compute-checksum OpenHealthHealthcardFFI.xcframework.zip > OpenHealthHealthcardFFI.xcframework.sha256
+
       - name: Upload XCFramework Zip
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: swift-xcframework
           path: core-modules-swift/healthcard/OpenHealthHealthcardFFI.xcframework.zip
+
+      - name: Upload XCFramework checksum
+        uses: actions/upload-artifact@v6
+        with:
+          name: swift-xcframework-checksum
+          path: core-modules-swift/healthcard/OpenHealthHealthcardFFI.xcframework.sha256
 
   assemble-kotlin-bindings:
     name: Assemble Kotlin bindings bundle
@@ -240,7 +251,7 @@ jobs:
       OUT_ROOT: ${{ github.workspace }}/assembly/dist/generated/uniffi
     steps:
       - name: Checkout (for directory layout)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -253,13 +264,13 @@ jobs:
           tool: just
 
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "21"
 
       - name: Set up Gradle cache
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Download platform artifacts
         uses: actions/download-artifact@v4
@@ -272,7 +283,7 @@ jobs:
           just kotlin-bindings-assemble assembly/input assembly/dist/generated/uniffi
 
       - name: Upload Kotlin bindings bundle
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: kotlin-bindings-bundle
           path: |
@@ -294,7 +305,7 @@ jobs:
           cp -a "${src_root}" "${upload_root}/de/gematik/"
 
       - name: Upload Maven local artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: kotlin-bindings-maven-local
           path: assembly/maven-repo
@@ -309,7 +320,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -324,6 +335,12 @@ jobs:
         with:
           name: swift-wrapper
           path: artifacts/swift-wrapper
+      
+      - name: Download Swift checksum
+        uses: actions/download-artifact@v4
+        with:
+          name: swift-xcframework-checksum
+          path: artifacts/swift-checksum
 
       - name: Download Kotlin Artifact
         uses: actions/download-artifact@v4
@@ -340,7 +357,7 @@ jobs:
         run: |
           VERSION="${{ inputs.version }}"
           ZIP_PATH="artifacts/swift/OpenHealthHealthcardFFI.xcframework.zip"
-          CHECKSUM=$(sha256sum "$ZIP_PATH" | awk '{print $1}')
+          CHECKSUM=$(cat artifacts/swift-checksum/OpenHealthHealthcardFFI.xcframework.sha256)
           REPO_URL="https://github.com/${{ github.repository }}/releases/download/${VERSION}/OpenHealthHealthcardFFI.xcframework.zip"
 
           mkdir -p core-modules-swift/healthcard/Sources/OpenHealthHealthcard
@@ -361,7 +378,7 @@ jobs:
           git push origin "${VERSION}"
 
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.version }}
           files: |

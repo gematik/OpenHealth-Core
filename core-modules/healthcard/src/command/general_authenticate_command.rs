@@ -120,7 +120,7 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::command::apdu::{CardCommandApdu, EXPECTED_LENGTH_WILDCARD_SHORT};
+    use crate::command::apdu::EXPECTED_LENGTH_WILDCARD_SHORT;
     use asn1::tag::{Asn1Class, Asn1Form};
 
     #[test]
