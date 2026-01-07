@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: Copyright 2025 gematik GmbH
+SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
 
 SPDX-License-Identifier: Apache-2.0
 
@@ -59,6 +59,12 @@ Current crates and projects fit into these layers as follows (non-exhaustive, fo
 - `core-modules-kotlin/*` – bindings and examples.
 
 Dependency direction is **one-way**, from higher layers downwards (domain → crypto → low-level FFI), and new modules should follow the same pattern.
+
+### 2.1 Dependency Architecture Overview (JVM/UniFFI Artifacts)
+
+The following diagram illustrates the intended dependency direction for the JVM/UniFFI build artifacts:
+
+![Dependency architecture overview](arch_dependencies.svg)
 
 When adding new code, first decide which layer it conceptually belongs to:
 

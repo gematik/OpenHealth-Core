@@ -19,19 +19,7 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-pluginManagement {
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
+fn main() {
+    // Delegate to UniFFI's CLI entry point.
+    uniffi::uniffi_bindgen_main();
 }
-
-plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
-}
-
-include(":healthcard")
-include(":sample-app")
-
-rootProject.name = "core-modules-kotlin"

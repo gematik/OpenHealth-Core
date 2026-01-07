@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
+# SPDX-FileCopyrightText: Copyright 2026 gematik GmbH
 #
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -19,51 +19,4 @@
 # For additional notes and disclaimer from gematik and in case of changes by gematik,
 # find details in the "Readme" file.
 
-# Rust specific ignores
-target/
-**/*.rs.bk
-.cargo/
-
-# Kotlin/KMP specific
-.gradle/**
-**/build/**
-**/out/
-.kotlin/
-*.hprof
-local.properties
-captures/
-.externalNativeBuild/
-.cxx/
-*.bak
-
-# Native libraries
-*.dylib
-*.so
-*.dll
-*.a
-*.lib
-
-# IDE specific files
-.idea/
-*.iml
-.vscode/
-*.code-workspace
-.vs/
-.ionide/
-
-# OS specific files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Build results and logs
-*.log
-logs/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.build
+# Consumer ProGuard rules for the healthcard library (currently empty on purpose).

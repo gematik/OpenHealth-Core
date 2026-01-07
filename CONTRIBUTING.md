@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: Copyright 2025 gematik GmbH
+SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
 
 SPDX-License-Identifier: Apache-2.0
 
@@ -80,5 +80,7 @@ git diff -z --name-only origin/main HEAD -- ':(exclude)LICENSES/**' \
       --license Apache-2.0 \
       --copyright "gematik GmbH" \
       --template gematik \
-      --copyright-prefix spdx-string
+      --copyright-prefix spdx-string \
+      --merge-copyrights \
+      --skip-unrecognised
 ```

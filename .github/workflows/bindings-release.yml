@@ -1,0 +1,370 @@
+# SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# *******
+#
+# For additional notes and disclaimer from gematik and in case of changes by gematik,
+# find details in the "Readme" file.
+
+name: Bindings Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. 1.0.0)'
+        required: false
+        type: string
+
+env:
+  CARGO_TERM_COLOR: always
+
+concurrency:
+  group: bindings-release-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  kotlin-bindings:
+    name: Kotlin bindings (${{ matrix.display_name }})
+    runs-on: ${{ matrix.runner }}
+    env:
+      OUT_ROOT: ${{ github.workspace }}/artifacts/${{ matrix.display_name }}/generated/uniffi
+      CARGO_TARGET_DIR: ${{ github.workspace }}/artifacts/${{ matrix.display_name }}/cargo
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+      RUST_BACKTRACE: "1"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            display_name: linux-x86_64
+            platform: linux
+            arch: x86_64
+            library_file: libhealthcard.so
+            just_shell: ""
+          - runner: windows-latest
+            display_name: windows-x86_64
+            platform: windows
+            arch: x86_64
+            library_file: healthcard.dll
+            just_shell: "C:/Program Files/Git/bin/bash.exe"
+          - runner: macos-14
+            display_name: darwin-aarch64
+            platform: darwin
+            arch: aarch64
+            library_file: libhealthcard.dylib
+            just_shell: ""
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo builds
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ". -> ${{ env.CARGO_TARGET_DIR }}"
+
+      - name: Install just
+        uses: taiki-e/install-action@v2
+        with:
+          tool: just
+
+      - name: Set up Java (Linux only)
+        if: runner.os == 'Linux'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Ensure Android SDK platforms (Linux only)
+        if: runner.os == 'Linux'
+        run: |
+          yes | "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="${ANDROID_SDK_ROOT}" --licenses >/dev/null || true
+          "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="${ANDROID_SDK_ROOT}" "platforms;android-34" "build-tools;34.0.0"
+
+      - name: Install cargo-ndk (Linux only)
+        if: runner.os == 'Linux'
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-ndk
+
+      - name: Add Rust Android targets (Linux only)
+        if: runner.os == 'Linux'
+        run: rustup target add aarch64-linux-android x86_64-linux-android
+
+      - name: Set Perl environment variables
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $perl = (where.exe perl)[0]
+          echo "PERL=$perl" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          echo "OPENSSL_SRC_PERL=$perl" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Setup MSVC (Windows only)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Remove conflicting link.exe (Windows only)
+        if: runner.os == 'Windows'
+        run: |
+          if [ -x /usr/bin/link ]; then
+            rm -f /usr/bin/link
+          fi
+
+      - name: Build Kotlin bindings
+        run: |
+          if [ -n "${{ matrix.just_shell }}" ]; then
+            just --shell="${{ matrix.just_shell }}" kotlin-bindings-generate ${{ matrix.platform }} ${{ matrix.arch }} ${{ matrix.library_file }} release
+          else
+            just kotlin-bindings-generate ${{ matrix.platform }} ${{ matrix.arch }} ${{ matrix.library_file }} release
+          fi
+
+      - name: Build Android native libraries (Linux only - arm64-v8a, x86_64)
+        if: runner.os == 'Linux'
+        run: |
+          just kotlin-bindings-generate-android
+
+      - name: Upload OpenSSL Configure logs (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openssl-configure-logs-${{ matrix.display_name }}
+          path: |
+            ${{ env.CARGO_TARGET_DIR }}/**/configure.log
+            ${{ github.workspace }}/**/configure.log
+          if-no-files-found: warn
+
+      - name: Upload Resources
+        uses: actions/upload-artifact@v4
+        with:
+          name: kotlin-bindings-${{ matrix.display_name }}
+          path: |
+            ${{ env.OUT_ROOT }}/resources/**
+            ${{ env.OUT_ROOT }}/kotlin/**
+            ${{ env.OUT_ROOT }}/android-jni/**
+          if-no-files-found: warn
+
+  swift-bindings:
+    name: Swift bindings (darwin-universal)
+    runs-on: macos-14
+    env:
+      OUT_ROOT: ${{ github.workspace }}/artifacts/swift/generated/uniffi
+      CARGO_TARGET_DIR: ${{ github.workspace }}/artifacts/swift/cargo
+      RUST_BACKTRACE: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios, aarch64-apple-ios-sim, x86_64-apple-ios, aarch64-apple-darwin, x86_64-apple-darwin
+
+      - name: Cache Cargo builds
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ". -> ${{ env.CARGO_TARGET_DIR }}"
+
+      - name: Install just
+        uses: taiki-e/install-action@v2
+        with:
+          tool: just
+
+      - name: Build XCFramework
+        run: just swift-xcframework
+
+      - name: Stage Swift wrapper for release
+        run: cp core-modules-swift/healthcard/Sources/OpenHealthHealthcard/OpenHealthHealthcard.swift OpenHealthHealthcard.swift
+
+      - name: Upload Swift wrapper
+        uses: actions/upload-artifact@v4
+        with:
+          name: swift-wrapper
+          path: OpenHealthHealthcard.swift
+          if-no-files-found: error
+
+      - name: Upload OpenSSL Configure logs (Swift - on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openssl-configure-logs-swift
+          path: |
+            ${{ env.CARGO_TARGET_DIR }}/**/configure.log
+            ${{ github.workspace }}/**/configure.log
+          if-no-files-found: warn
+
+      - name: Zip XCFramework
+        working-directory: core-modules-swift/healthcard
+        run: zip -r OpenHealthHealthcardFFI.xcframework.zip OpenHealthHealthcardFFI.xcframework
+
+      - name: Upload XCFramework Zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: swift-xcframework
+          path: core-modules-swift/healthcard/OpenHealthHealthcardFFI.xcframework.zip
+
+  assemble-kotlin-bindings:
+    name: Assemble Kotlin bindings bundle
+    runs-on: ubuntu-latest
+    needs: kotlin-bindings
+    env:
+      OUT_ROOT: ${{ github.workspace }}/assembly/dist/generated/uniffi
+    steps:
+      - name: Checkout (for directory layout)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install just
+        uses: taiki-e/install-action@v2
+        with:
+          tool: just
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Download platform artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "kotlin-bindings-*"
+          path: assembly/input
+
+      - name: Collect libraries and generated Kotlin
+        run: |
+          just kotlin-bindings-assemble assembly/input assembly/dist/generated/uniffi
+
+      - name: Upload Kotlin bindings bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: kotlin-bindings-bundle
+          path: |
+            ${{ env.OUT_ROOT }}/resources/**
+            ${{ env.OUT_ROOT }}/kotlin/**
+            ${{ env.OUT_ROOT }}/android-jni/**
+          if-no-files-found: error
+
+      - name: Publish Kotlin bindings to mavenLocal (assembled outputs)
+        run: |
+          just kotlin-publish-local
+
+      - name: Stage Maven local artifacts for upload
+        run: |
+          set -euo pipefail
+          upload_root="${GITHUB_WORKSPACE}/assembly/maven-repo"
+          src_root="${HOME}/.m2/repository/de/gematik/openhealth"
+          mkdir -p "${upload_root}/de/gematik"
+          cp -a "${src_root}" "${upload_root}/de/gematik/"
+
+      - name: Upload Maven local artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: kotlin-bindings-maven-local
+          path: assembly/maven-repo
+          if-no-files-found: error
+
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [swift-bindings, assemble-kotlin-bindings]
+    if: inputs.version != ''
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download Swift Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: swift-xcframework
+          path: artifacts/swift
+
+      - name: Download Swift wrapper
+        uses: actions/download-artifact@v4
+        with:
+          name: swift-wrapper
+          path: artifacts/swift-wrapper
+
+      - name: Download Kotlin Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: kotlin-bindings-maven-local
+          path: artifacts/kotlin
+
+      - name: Zip Kotlin Maven Repo
+        run: |
+          cd artifacts/kotlin
+          zip -r ../../maven-repo.zip .
+
+      - name: Update Package.swift
+        run: |
+          VERSION="${{ inputs.version }}"
+          ZIP_PATH="artifacts/swift/OpenHealthHealthcardFFI.xcframework.zip"
+          CHECKSUM=$(sha256sum "$ZIP_PATH" | awk '{print $1}')
+          REPO_URL="https://github.com/${{ github.repository }}/releases/download/${VERSION}/OpenHealthHealthcardFFI.xcframework.zip"
+
+          mkdir -p core-modules-swift/healthcard/Sources/OpenHealthHealthcard
+          cp artifacts/swift-wrapper/OpenHealthHealthcard.swift core-modules-swift/healthcard/Sources/OpenHealthHealthcard/OpenHealthHealthcard.swift
+          
+          # Update Package.swift to use remote binary target
+          sed -i "s|path: \"core-modules-swift/healthcard/OpenHealthHealthcardFFI.xcframework\"|url: \"$REPO_URL\", checksum: \"$CHECKSUM\"|" Package.swift
+          
+          # Verify change
+          cat Package.swift
+
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add Package.swift
+          git add -f core-modules-swift/healthcard/Sources/OpenHealthHealthcard/OpenHealthHealthcard.swift
+          git commit -m "Release ${VERSION}"
+          git tag "${VERSION}"
+          git push origin "${VERSION}"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ inputs.version }}
+          files: |
+            artifacts/swift/OpenHealthHealthcardFFI.xcframework.zip
+            maven-repo.zip
+          generate_release_notes: true

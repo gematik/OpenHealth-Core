@@ -19,51 +19,16 @@
 # For additional notes and disclaimer from gematik and in case of changes by gematik,
 # find details in the "Readme" file.
 
-# Rust specific ignores
-target/
-**/*.rs.bk
-.cargo/
+[package]
+name = "uniffi-bindgen"
+version = "0.1.0"
+edition = "2024"
+license = "Apache-2.0"
+publish = false
 
-# Kotlin/KMP specific
-.gradle/**
-**/build/**
-**/out/
-.kotlin/
-*.hprof
-local.properties
-captures/
-.externalNativeBuild/
-.cxx/
-*.bak
+[[bin]]
+name = "uniffi-bindgen"
+path = "src/main.rs"
 
-# Native libraries
-*.dylib
-*.so
-*.dll
-*.a
-*.lib
-
-# IDE specific files
-.idea/
-*.iml
-.vscode/
-*.code-workspace
-.vs/
-.ionide/
-
-# OS specific files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Build results and logs
-*.log
-logs/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.build
+[dependencies]
+uniffi = { version = "0.30.0", features = ["cli"] }
