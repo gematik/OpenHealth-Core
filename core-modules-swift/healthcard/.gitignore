@@ -20,6 +20,8 @@
 # find details in the "Readme" file.
 
 /OpenHealthHealthcardFFI.xcframework
+# Generated UniFFI Swift wrapper; intentionally ignored during development.
+# Release workflow force-adds this file into the tagged release commit.
 /Sources/OpenHealthHealthcard/OpenHealthHealthcard.swift
 /build/
 /.swiftpm/
