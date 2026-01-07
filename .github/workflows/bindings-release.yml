@@ -328,14 +328,14 @@ jobs:
           REPO_URL="https://github.com/${{ github.repository }}/releases/download/${VERSION}/OpenHealthHealthcardFFI.xcframework.zip"
           
           # Update Package.swift to use remote binary target
-          sed -i "s|path: \"./OpenHealthHealthcardFFI.xcframework\"|url: \"$REPO_URL\", checksum: \"$CHECKSUM\"|" core-modules-swift/healthcard/Package.swift
+          sed -i "s|path: \"core-modules-swift/healthcard/OpenHealthHealthcardFFI.xcframework\"|url: \"$REPO_URL\", checksum: \"$CHECKSUM\"|" Package.swift
           
           # Verify change
-          cat core-modules-swift/healthcard/Package.swift
+          cat Package.swift
 
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add core-modules-swift/healthcard/Package.swift
+          git add Package.swift
           git commit -m "Release ${VERSION}"
           git tag "${VERSION}"
           git push origin "${VERSION}"

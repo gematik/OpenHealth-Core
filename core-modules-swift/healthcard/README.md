@@ -42,7 +42,7 @@ This generates:
 
 After building, you can consume this as a Swift Package via:
 
-- `core-modules-swift/healthcard/Package.swift`
+- the repository root `Package.swift`
 
 Notes:
 
