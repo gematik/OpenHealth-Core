@@ -96,7 +96,7 @@ jobs:
 
       - name: Set up Java (Linux only)
         if: runner.os == 'Linux'
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "21"
@@ -273,7 +273,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
 
       - name: Download platform artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           pattern: "kotlin-bindings-*"
           path: assembly/input
@@ -325,25 +325,25 @@ jobs:
           fetch-depth: 0
 
       - name: Download Swift Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: swift-xcframework
           path: artifacts/swift
 
       - name: Download Swift wrapper
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: swift-wrapper
           path: artifacts/swift-wrapper
       
       - name: Download Swift checksum
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: swift-xcframework-checksum
           path: artifacts/swift-checksum
 
       - name: Download Kotlin Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: kotlin-bindings-maven-local
           path: artifacts/kotlin
