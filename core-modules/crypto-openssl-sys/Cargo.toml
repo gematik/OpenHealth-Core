@@ -26,7 +26,7 @@ edition = "2024"
 build = "builder/main.rs"
 
 [build-dependencies]
-bindgen = "0.72.0"
+bindgen = "0.72.1"
 num_cpus = "1.17.0"
-cc = "1.2.38"
+cc = "1.2.51"
 chrono = { version = "0.4", features = ["clock"] }
