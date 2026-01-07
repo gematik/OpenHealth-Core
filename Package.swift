@@ -1,3 +1,4 @@
+// swift-tools-version: 5.9
 // SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
 //
 // SPDX-License-Identifier: Apache-2.0
@@ -33,12 +34,12 @@ let package = Package(
     targets: [
         .binaryTarget(
             name: "OpenHealthHealthcardFFI",
-            path: "./OpenHealthHealthcardFFI.xcframework"
+            path: "core-modules-swift/healthcard/OpenHealthHealthcardFFI.xcframework"
         ),
         .target(
             name: "OpenHealthHealthcard",
             dependencies: ["OpenHealthHealthcardFFI"],
-            path: "Sources/OpenHealthHealthcard"
+            path: "core-modules-swift/healthcard/Sources/OpenHealthHealthcard"
         ),
     ]
 )
