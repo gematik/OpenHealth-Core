@@ -33,7 +33,7 @@ let package = Package(
     targets: [
         .binaryTarget(
             name: "OpenHealthHealthcardFFI",
-            path: "./OpenHealthHealthcardFFI.xcframework"
+            url: "https://github.com/gematik/OpenHealth-Core/releases/download/0.0.1-alpha1/OpenHealthHealthcardFFI.xcframework.zip", checksum: "1755d33b9ba5a70b432e2ce3c7d855df8cf7dd600af3632d2f1f06e57b893fa2"
         ),
         .target(
             name: "OpenHealthHealthcard",
