@@ -202,6 +202,16 @@ jobs:
       - name: Build XCFramework
         run: just swift-xcframework
 
+      - name: Stage Swift wrapper for release
+        run: cp core-modules-swift/healthcard/Sources/OpenHealthHealthcard/OpenHealthHealthcard.swift OpenHealthHealthcard.swift
+
+      - name: Upload Swift wrapper
+        uses: actions/upload-artifact@v4
+        with:
+          name: swift-wrapper
+          path: OpenHealthHealthcard.swift
+          if-no-files-found: error
+
       - name: Upload OpenSSL Configure logs (Swift - on failure)
         if: failure()
         uses: actions/upload-artifact@v4
@@ -309,6 +319,12 @@ jobs:
           name: swift-xcframework
           path: artifacts/swift
 
+      - name: Download Swift wrapper
+        uses: actions/download-artifact@v4
+        with:
+          name: swift-wrapper
+          path: artifacts/swift-wrapper
+
       - name: Download Kotlin Artifact
         uses: actions/download-artifact@v4
         with:
@@ -326,6 +342,9 @@ jobs:
           ZIP_PATH="artifacts/swift/OpenHealthHealthcardFFI.xcframework.zip"
           CHECKSUM=$(sha256sum "$ZIP_PATH" | awk '{print $1}')
           REPO_URL="https://github.com/${{ github.repository }}/releases/download/${VERSION}/OpenHealthHealthcardFFI.xcframework.zip"
+
+          mkdir -p core-modules-swift/healthcard/Sources/OpenHealthHealthcard
+          cp artifacts/swift-wrapper/OpenHealthHealthcard.swift core-modules-swift/healthcard/Sources/OpenHealthHealthcard/OpenHealthHealthcard.swift
           
           # Update Package.swift to use remote binary target
           sed -i "s|path: \"core-modules-swift/healthcard/OpenHealthHealthcardFFI.xcframework\"|url: \"$REPO_URL\", checksum: \"$CHECKSUM\"|" Package.swift
@@ -336,6 +355,7 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git add Package.swift
+          git add -f core-modules-swift/healthcard/Sources/OpenHealthHealthcard/OpenHealthHealthcard.swift
           git commit -m "Release ${VERSION}"
           git tag "${VERSION}"
           git push origin "${VERSION}"
