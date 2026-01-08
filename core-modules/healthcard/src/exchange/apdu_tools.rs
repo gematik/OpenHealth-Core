@@ -26,11 +26,13 @@ use crypto::ec::ec_key::{EcCurve, EcPrivateKey, EcPublicKey};
 use crypto::error::CryptoError;
 use num_bigint::{BigInt, Sign};
 use serde::{Deserialize, Serialize};
-use std::ffi::CString;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
 use std::path::Path;
 use thiserror::Error;
+
+#[cfg(feature = "apdu-tools")]
+use std::ffi::CString;
 
 #[derive(Debug, Error)]
 pub enum TranscriptError {
@@ -397,12 +399,14 @@ fn derive_keypair_from_scalar(
     Ok((public_key, private_key))
 }
 
+#[cfg(feature = "apdu-tools")]
 pub struct PcscChannel {
     card: pcsc::Card,
     supports_extended_length: bool,
     recv_buffer: Vec<u8>,
 }
 
+#[cfg(feature = "apdu-tools")]
 impl PcscChannel {
     pub fn connect(reader: &str, supports_extended_length: bool) -> Result<Self, ExchangeError> {
         let ctx = pcsc::Context::establish(pcsc::Scope::User).map_err(|err| ExchangeError::Transport {
@@ -435,6 +439,7 @@ impl PcscChannel {
     }
 }
 
+#[cfg(feature = "apdu-tools")]
 impl CardChannel for PcscChannel {
     type Error = ExchangeError;
 
@@ -456,9 +461,6 @@ impl CardChannel for PcscChannel {
 mod tests {
     use super::*;
     use crate::command::apdu::CardCommandApdu;
-    use crate::command::health_card_command::HealthCardCommand;
-    use crate::command::select_command::SelectCommand;
-    use crate::exchange::channel::CardChannelExt;
     use crate::exchange::test_utils::MockSession;
 
     #[test]
@@ -507,48 +509,55 @@ mod tests {
         assert_eq!(priv2.as_bytes(), key2.as_slice());
     }
 
-    #[test]
-    fn pcsc_record_and_replay_select_mf() {
-        let reader = match std::env::var("HEALTHCARD_PCSC_READER") {
-            Ok(reader) => reader,
-            Err(_) => return,
-        };
+    #[cfg(feature = "apdu-tools")]
+    mod pcsc_tests {
+        use super::*;
+        use crate::command::health_card_command::HealthCardCommand;
+        use crate::exchange::channel::CardChannelExt;
 
-        let channel = PcscChannel::connect(&reader, true).expect("pcsc connect");
-        let mut recorder = RecordingChannel::new(channel);
-        let response = recorder.execute_command(&HealthCardCommand::select(false, false)).expect("select MF");
-        let response_bytes = response.apdu.to_bytes();
+        #[test]
+        fn pcsc_record_and_replay_select_mf() {
+            let reader = match std::env::var("HEALTHCARD_PCSC_READER") {
+                Ok(reader) => reader,
+                Err(_) => return,
+            };
 
-        let transcript = recorder.into_transcript();
-        let mut replay = ReplayChannel::from_transcript(transcript);
-        let replay_response =
-            replay.execute_command(&HealthCardCommand::select(false, false)).expect("replay select MF");
-        assert_eq!(replay_response.apdu.to_bytes(), response_bytes);
-    }
+            let channel = PcscChannel::connect(&reader, true).expect("pcsc connect");
+            let mut recorder = RecordingChannel::new(channel);
+            let response = recorder.execute_command(&HealthCardCommand::select(false, false)).expect("select MF");
+            let response_bytes = response.apdu.to_bytes();
 
-    #[test]
-    fn list_pcsc_readers() {
-        let ctx = match pcsc::Context::establish(pcsc::Scope::User) {
-            Ok(ctx) => ctx,
-            Err(err) => {
-                println!("pcsc context establish failed: {err}");
-                return;
-            }
-        };
-        let readers = match ctx.list_readers_owned() {
-            Ok(readers) => readers,
-            Err(err) => {
-                println!("pcsc list readers failed: {err}");
-                return;
-            }
-        };
-        if readers.is_empty() {
-            println!("no pcsc readers found");
-            return;
+            let transcript = recorder.into_transcript();
+            let mut replay = ReplayChannel::from_transcript(transcript);
+            let replay_response =
+                replay.execute_command(&HealthCardCommand::select(false, false)).expect("replay select MF");
+            assert_eq!(replay_response.apdu.to_bytes(), response_bytes);
         }
-        println!("pcsc readers:");
-        for reader in readers {
-            println!("  {}", reader.to_string_lossy());
+
+        #[test]
+        fn list_pcsc_readers() {
+            let ctx = match pcsc::Context::establish(pcsc::Scope::User) {
+                Ok(ctx) => ctx,
+                Err(err) => {
+                    println!("pcsc context establish failed: {err}");
+                    return;
+                }
+            };
+            let readers = match ctx.list_readers_owned() {
+                Ok(readers) => readers,
+                Err(err) => {
+                    println!("pcsc list readers failed: {err}");
+                    return;
+                }
+            };
+            if readers.is_empty() {
+                println!("no pcsc readers found");
+                return;
+            }
+            println!("pcsc readers:");
+            for reader in readers {
+                println!("  {}", reader.to_string_lossy());
+            }
         }
     }
 }
