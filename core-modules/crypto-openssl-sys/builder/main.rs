@@ -91,24 +91,6 @@ fn target_build_paths(target: &str, openssl_target: &str) -> TargetBuildPaths {
     TargetBuildPaths { build_root, openssl_src_repo, build_dir, install_dir }
 }
 
-fn ensure_windows_lib_aliases(lib_dir: &Path) {
-    // Some toolchains look for "crypto.lib"/"ssl.lib" while OpenSSL produces "libcrypto.lib"/"libssl.lib"
-    // (and vice versa).
-    // Create aliases if one naming scheme is missing to keep linking robust on Windows.
-    let variants = [("libcrypto.lib", "crypto.lib"), ("libssl.lib", "ssl.lib")];
-
-    for (primary, alias) in variants {
-        let primary_path = lib_dir.join(primary);
-        let alias_path = lib_dir.join(alias);
-
-        if primary_path.is_file() && !alias_path.is_file() {
-            let _ = fs::copy(&primary_path, &alias_path);
-        } else if !primary_path.is_file() && alias_path.is_file() {
-            let _ = fs::copy(&alias_path, &primary_path);
-        }
-    }
-}
-
 struct AndroidEnv {
     env: Vec<(String, String)>,
     api_level: String,
@@ -212,9 +194,6 @@ fn build_openssl() {
 
     // Tell Cargo where to find the built libs
     let lib_dir = locate_openssl_lib_dir(install);
-    if is_windows_msvc {
-        //ensure_windows_lib_aliases(&lib_dir);
-    }
     let (crypto_lib, ssl_lib) = if is_windows_msvc { ("libcrypto", "libssl") } else { ("crypto", "ssl") };
 
     println!("cargo:rustc-link-search=native={}", lib_dir.display());
@@ -485,10 +464,6 @@ fn build_openssl_bindings() {
     let lib_dir = locate_openssl_lib_dir(&install_dir);
     let ios_deployment_target = ios_deployment_target(&target);
     let is_windows_msvc = target == "x86_64-pc-windows-msvc";
-    if is_windows_msvc {
-        //ensure_windows_lib_aliases(&lib_dir);
-    }
-
     if let Some(version) = &ios_deployment_target {
         println!("cargo:rustc-env=IPHONEOS_DEPLOYMENT_TARGET={}", version);
     }

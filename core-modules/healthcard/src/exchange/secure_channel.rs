@@ -835,13 +835,7 @@ mod tests {
         let inner_len = value.len();
         let outer_len = 1 /* tag */ + 2 /* inner length header */ + inner_len;
 
-        let mut data = Vec::new();
-        data.push(0x7C);
-        data.push(0x81);
-        data.push(outer_len as u8);
-        data.push(0x80);
-        data.push(0x81);
-        data.push(inner_len as u8);
+        let mut data = vec![0x7C, 0x81, outer_len as u8, 0x80, 0x81, inner_len as u8];
         data.extend_from_slice(&value);
 
         let decoded = decode_general_authenticate(&data).expect("decode succeeds");

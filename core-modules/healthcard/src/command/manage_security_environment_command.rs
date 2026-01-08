@@ -178,7 +178,7 @@ mod tests {
 
         // Verify ASN.1 encoding
         let data = cmd.data.unwrap();
-        assert!(data.len() > 0);
+        assert!(!data.is_empty());
 
         // Test with df_specific = false
         let cmd = HealthCardCommand::manage_sec_env_without_curves(&password_ref, false, &oid).unwrap();
@@ -207,7 +207,7 @@ mod tests {
 
         // Verify ASN.1 encoding
         let data = cmd.data.unwrap();
-        assert!(data.len() > 0);
+        assert!(!data.is_empty());
 
         // Test with df_specific = false
         let cmd = HealthCardCommand::manage_sec_env_for_signing(pso_algorithm, &password_ref, false).unwrap();

@@ -29,5 +29,5 @@ license = "Apache-2.0"
 default = []
 
 [dependencies]
-regex = "1.11.1"
-thiserror = "1.0"
+regex = "1.12.2"
+thiserror = "2.0"

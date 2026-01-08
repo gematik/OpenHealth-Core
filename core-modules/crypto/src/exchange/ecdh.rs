@@ -67,7 +67,7 @@ mod tests {
         let s_ba = secret_ba.as_ref();
 
         assert_eq!(s_ab, s_ba, "shared secret equality");
-        assert!(s_ab.len() > 0);
+        assert!(!s_ab.is_empty());
     }
 
     #[test]

@@ -19,8 +19,6 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-#![cfg(test)]
-
 use crate::command::apdu::{CardCommandApdu, CardResponseApdu};
 use crate::exchange::channel::CardChannel;
 use crate::exchange::ExchangeError;
