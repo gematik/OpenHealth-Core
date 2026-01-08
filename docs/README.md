@@ -37,4 +37,10 @@ Interoperability-related notes live under `interop/`:
 
 - [`JVM interoperability and debugging`](interop/jvm.md) – Debugging and interoperability notes for JVM targets (Java, Kotlin).
 
+## Tooling
+
+Developer tooling documentation lives under `tooling/`:
+
+- [`APDU tools (recorder & replay)`](tooling/apdu-tools.md) – Record and replay APDU exchanges (PACE) for debugging and tests.
+
 As additional documentation areas (e.g. architecture, APIs, deployment) are added under `docs/`, they should be organized into subdirectories and referenced from this overview.
