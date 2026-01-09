@@ -1,0 +1,191 @@
+BSI-TR03110-CVCert DEFINITIONS IMPLICIT TAGS ::=
+BEGIN
+
+-- ============================================================
+--  CV Certificate (TR-03110 Part 3)
+--  Tag mapping / data objects are defined by TR-03110 Appendix D.2
+--  Profile requirements are defined by TR-03110 Appendix C.1 (Table 23).
+-- ============================================================
+
+-- -----------------------------
+-- Top-level certificate object
+-- -----------------------------
+CVCertificate ::= [APPLICATION 33]  -- tag '7F21' (CV Certificate)
+  SEQUENCE {
+    body      CertificateBody,      -- tag '7F4E'
+    signature Signature             -- tag '5F37'
+  }
+
+-- -----------------------------
+-- Certificate body
+-- -----------------------------
+CertificateBody ::= [APPLICATION 78] -- tag '7F4E' (Certificate Body)
+  SEQUENCE {
+    profileIdentifier   CertificateProfileIdentifier,  -- tag '5F29' (version of profile)
+    certificationAuthorityReference CertificationAuthorityReference, -- tag '42'
+    publicKey           CVCertPublicKey,               -- tag '7F49'
+    certificateHolderReference CertificateHolderReference, -- tag '5F20'
+    certificateHolderAuthorizationTemplate CHAT,       -- tag '7F4C'
+    certificateEffectiveDate  CertificateEffectiveDate, -- tag '5F25'
+    certificateExpirationDate CertificateExpirationDate,-- tag '5F24'
+    certificateExtensions     CertificateExtensions OPTIONAL -- tag '65'
+  }
+
+-- ============================================================
+--  Primitive fields (data objects)
+-- ============================================================
+
+-- Certificate Profile Identifier (TR says profile version 1 is value 0)
+-- Tag '5F29' value encoding is an unsigned integer (Appendix D.2.1.1), i.e. raw octets (not ASN.1 INTEGER).
+CertificateProfileIdentifier ::= [APPLICATION 41] -- tag '5F29'
+  OCTET STRING (SIZE(1))
+
+-- Certification Authority Reference (CAR): identifies issuer key reference.
+-- TR encodes this as a "Character String" with up to 16 octets.
+-- Appendix D.2.1.4 constrains the octets to ISO/IEC 8859-1 and excludes control code ranges.
+CharacterString ::= OCTET STRING (SIZE(1..16))
+
+CertificationAuthorityReference ::= [APPLICATION 2]  -- tag '42'
+  CharacterString
+
+-- Certificate Holder Reference (CHR): identifies holder key reference.
+-- TR encodes this as a "Character String" with up to 16 octets.
+CertificateHolderReference ::= [APPLICATION 32] -- tag '5F20'
+  CharacterString
+
+-- Dates are encoded as YYMMDD (6 digits) in unpacked BCD => 6 octets.
+CertificateEffectiveDate ::= [APPLICATION 37] -- tag '5F25'
+  OCTET STRING (SIZE(6))
+
+CertificateExpirationDate ::= [APPLICATION 36] -- tag '5F24'
+  OCTET STRING (SIZE(6))
+
+-- Signature: created over the encoded CertificateBody (incl. tag and length).
+Signature ::= [APPLICATION 55] -- tag '5F37'
+  OCTET STRING (SIZE(0..65535))
+
+-- ============================================================
+--  Public key container (data object '7F49')
+--  TR-03110 Appendix D.3 defines the exact content, tags and order:
+--   - First: an OBJECT IDENTIFIER (tag 0x06) specifying algorithm/usage.
+--   - Then: context-specific data objects (tags 0x81..0x87) in fixed order,
+--           depending on the algorithm (Tables 29-31).
+--
+-- Note: Tags 0x81..0x87 are context-specific tags [1]..[7] (not APPLICATION tags).
+-- All values are transported as raw octets (unsigned integer / EC point encodings).
+-- ============================================================
+
+UnsignedInteger ::= OCTET STRING (SIZE(1..65535))
+EllipticCurvePoint ::= OCTET STRING (SIZE(1..65535))
+
+CVCertPublicKey ::= [APPLICATION 73] -- tag '7F49' (Public Key)
+  SEQUENCE {
+    keyOid  OBJECT IDENTIFIER,
+
+    -- Tag 0x81 (context [1]):
+    --   RSA: n (modulus), DH: p, EC: p
+    cs1     [1] IMPLICIT UnsignedInteger OPTIONAL,
+
+    -- Tag 0x82 (context [2]):
+    --   RSA: e (exponent), DH: q, EC: a
+    cs2     [2] IMPLICIT UnsignedInteger OPTIONAL,
+
+    -- Tag 0x83 (context [3]):
+    --   DH: g, EC: b
+    cs3     [3] IMPLICIT UnsignedInteger OPTIONAL,
+
+    -- Tag 0x84 (context [4]):
+    --   DH: y (public value, as unsigned integer),
+    --   EC: G (base point, as EC point)
+    cs4     [4] IMPLICIT OCTET STRING OPTIONAL,
+
+    -- Tag 0x85 (context [5]):
+    --   EC: r (order of base point)
+    cs5     [5] IMPLICIT UnsignedInteger OPTIONAL,
+
+    -- Tag 0x86 (context [6]):
+    --   EC: Y (public point) [MANDATORY for EC keys]
+    cs6     [6] IMPLICIT EllipticCurvePoint OPTIONAL,
+
+    -- Tag 0x87 (context [7]):
+    --   EC: f (cofactor)
+    cs7     [7] IMPLICIT UnsignedInteger OPTIONAL
+  }
+
+-- ============================================================
+--  Certificate Holder Authorization Template (CHAT) (data object '7F4C')
+--  TR defines: (1) OID for terminal type/template format, (2) discretionary data
+--  encoding relative authorization. (Semantics described in TR Part 4.)
+-- ============================================================
+CHAT ::= [APPLICATION 76] -- tag '7F4C'
+  SEQUENCE {
+    terminalType   OBJECT IDENTIFIER,
+    relativeAuthorization DiscretionaryData
+  }
+
+DiscretionaryData ::= [APPLICATION 19] -- tag '53'
+  OCTET STRING (SIZE(0..65535))
+
+-- ============================================================
+--  Certificate Extensions (optional) (data object '65')
+--  TR: sequence of Discretionary Data Templates (tag '73'), each with:
+--   1) OID (extension identifier)
+--   2) one or more context-specific data objects carrying the extension payload
+-- ============================================================
+CertificateExtensions ::= [APPLICATION 5] -- tag '65'
+  SEQUENCE OF DiscretionaryDataTemplate
+
+DiscretionaryDataTemplate ::= [APPLICATION 19] -- tag '73'
+  SEQUENCE {
+    extensionId   OBJECT IDENTIFIER,
+    extensionField1 ExtensionField,
+    extensionField2 ExtensionField OPTIONAL,
+    extensionField3 ExtensionField OPTIONAL,
+    extensionField4 ExtensionField OPTIONAL,
+    extensionField5 ExtensionField OPTIONAL,
+    extensionField6 ExtensionField OPTIONAL,
+    extensionField7 ExtensionField OPTIONAL,
+    extensionField8 ExtensionField OPTIONAL
+  }
+
+-- Context-specific fields (e.g., 'A0', '80', '81', etc.) vary per extension.
+-- Model them as open ANY; the concrete tags/contents are defined per extension.
+ExtensionField ::= ANY
+
+-- ============================================================
+--  Known extension payloads (Appendix C.3)
+--
+-- Note: Extensions are defined as "OID + one or more context-specific data objects"
+-- inside the Discretionary Data Template (tag 0x73). The concrete payload depends on
+-- the extension OID (and may be repeatable), which is not directly expressible as
+-- conditional typing in plain ASN.1 here. The following types document the
+-- application-independent structures defined in Part 3.
+-- ============================================================
+
+HashValue ::= OCTET STRING (SIZE(1..65535))
+DomainParametersId ::= OCTET STRING (SIZE(1..65535))
+
+-- C.3.2.1 Terminal Sector for Restricted Identification:
+-- extension OID: id-sector (id-extensions 2)
+-- payload tags:
+--  - 0x80 ([0]) hash of 1st sector public key data object
+--  - 0x81 ([1]) hash of 2nd sector public key data object
+TerminalSectorExtension ::= [APPLICATION 19] -- tag '73'
+  SEQUENCE {
+    extensionId OBJECT IDENTIFIER,
+    hash1       [0] IMPLICIT HashValue OPTIONAL,
+    hash2       [1] IMPLICIT HashValue OPTIONAL
+  }
+
+-- C.3.2.2 Terminal Sector for Pseudonymous Signatures:
+-- extension OID: id-PS-Sector (id-extensions 3)
+-- payload is one or more templates with tag 0xA0 ([0], constructed) containing:
+--  - 0x80 ([0]) ID of domain parameters
+--  - 0x81 ([1]) hash of sector public key (EC point without domain parameters)
+PSSectorTemplate ::= [0] IMPLICIT
+  SEQUENCE {
+    domainParametersId [0] IMPLICIT DomainParametersId,
+    sectorPublicKeyHash [1] IMPLICIT HashValue
+  }
+
+END
