@@ -135,18 +135,19 @@ DiscretionaryData ::= [APPLICATION 19] -- tag '53'
 CertificateExtensions ::= [APPLICATION 5] -- tag '65'
   SEQUENCE OF DiscretionaryDataTemplate
 
+-- Discretionary Data Template (tag '73') is a SEQUENCE whose content is:
+--   1) OBJECT IDENTIFIER (extension identifier)
+--   2) one or more context-specific data objects (extension payload)
+-- (Appendix C.3 / Table 25). ASN.1 cannot express "an arbitrary number of
+-- context-specific fields with arbitrary tags" as direct SEQUENCE components
+-- without either bounding the count (which becomes ambiguous with ANY) or
+-- adding an extra wrapper. We therefore model the template as a tagged
+-- SEQUENCE OF items and keep the payload items open via ANY.
+--
+-- Constraint (to be validated by the caller): the first item MUST be an OID,
+-- remaining items MUST be the context-specific data objects of the extension.
 DiscretionaryDataTemplate ::= [APPLICATION 19] -- tag '73'
-  SEQUENCE {
-    extensionId   OBJECT IDENTIFIER,
-    extensionField1 ExtensionField,
-    extensionField2 ExtensionField OPTIONAL,
-    extensionField3 ExtensionField OPTIONAL,
-    extensionField4 ExtensionField OPTIONAL,
-    extensionField5 ExtensionField OPTIONAL,
-    extensionField6 ExtensionField OPTIONAL,
-    extensionField7 ExtensionField OPTIONAL,
-    extensionField8 ExtensionField OPTIONAL
-  }
+  SEQUENCE OF ExtensionField
 
 -- Context-specific fields (e.g., 'A0', '80', '81', etc.) vary per extension.
 -- Model them as open ANY; the concrete tags/contents are defined per extension.
@@ -170,12 +171,10 @@ DomainParametersId ::= OCTET STRING (SIZE(1..65535))
 -- payload tags:
 --  - 0x80 ([0]) hash of 1st sector public key data object
 --  - 0x81 ([1]) hash of 2nd sector public key data object
-TerminalSectorExtension ::= [APPLICATION 19] -- tag '73'
-  SEQUENCE {
-    extensionId OBJECT IDENTIFIER,
-    hash1       [0] IMPLICIT HashValue OPTIONAL,
-    hash2       [1] IMPLICIT HashValue OPTIONAL
-  }
+TerminalSectorExtensionContent ::= SEQUENCE {
+  hash1 [0] IMPLICIT HashValue OPTIONAL,
+  hash2 [1] IMPLICIT HashValue OPTIONAL
+}
 
 -- C.3.2.2 Terminal Sector for Pseudonymous Signatures:
 -- extension OID: id-PS-Sector (id-extensions 3)
