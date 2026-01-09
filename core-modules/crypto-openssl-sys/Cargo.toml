@@ -28,5 +28,5 @@ build = "builder/main.rs"
 [build-dependencies]
 bindgen = "0.72.1"
 num_cpus = "1.17.0"
-cc = "1.2.51"
+cc = "1.2.52"
 chrono = { version = "0.4", features = ["clock"] }

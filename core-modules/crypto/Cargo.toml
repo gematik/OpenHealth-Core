@@ -37,6 +37,6 @@ num-bigint = "0.4"
 num-traits = "0.2.19"
 zeroize = { version = "1.8.1", features = ["zeroize_derive"] }
 uniffi = { version = "0.30.0", optional = true }
-thiserror = "2.0.16"
+thiserror = "2.0.17"
 rand = "0.9.2"
 hex = "0.4.3"
