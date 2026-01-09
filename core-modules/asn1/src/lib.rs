@@ -24,3 +24,4 @@ pub mod encoder;
 pub mod error;
 pub mod oid;
 pub mod tag;
+pub mod cv_certificate;
