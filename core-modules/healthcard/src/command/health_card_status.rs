@@ -156,6 +156,11 @@ impl HealthCardResponseStatus {
         GENERAL_AUTHENTICATE_STATUS.get(&sw).copied().unwrap_or(HealthCardResponseStatus::UnknownStatus)
     }
 
+    /// Gets the status from a status word (SW) for an external authenticate command.
+    pub fn from_external_authenticate_status(sw: u16) -> Self {
+        EXTERNAL_AUTHENTICATE_STATUS.get(&sw).copied().unwrap_or(HealthCardResponseStatus::UnknownStatus)
+    }
+
     /// Gets the status from a status word (SW) for a PIN-related command.
     pub fn from_pin_status(sw: u16) -> Self {
         PIN_STATUS.get(&sw).copied().unwrap_or(HealthCardResponseStatus::UnknownStatus)
@@ -218,6 +223,19 @@ lazy_static! {
         map.insert(0x6983, HealthCardResponseStatus::KeyExpired);
         map.insert(0x6985, HealthCardResponseStatus::NoKeyReference);
         map.insert(0x6A80, HealthCardResponseStatus::NumberPreconditionWrong);
+        map.insert(0x6A81, HealthCardResponseStatus::UnsupportedFunction);
+        map.insert(0x6A88, HealthCardResponseStatus::KeyNotFound);
+        map
+    };
+
+    pub static ref EXTERNAL_AUTHENTICATE_STATUS: HashMap<u16, HealthCardResponseStatus> = {
+        let mut map = HashMap::new();
+        map.insert(0x0000, HealthCardResponseStatus::UnknownStatus);
+        map.insert(0x9000, HealthCardResponseStatus::Success);
+        map.insert(0x6300, HealthCardResponseStatus::AuthenticationFailure);
+        map.insert(0x6982, HealthCardResponseStatus::SecurityStatusNotSatisfied);
+        map.insert(0x6983, HealthCardResponseStatus::KeyExpired);
+        map.insert(0x6985, HealthCardResponseStatus::WrongRandomOrNoKeyReference);
         map.insert(0x6A81, HealthCardResponseStatus::UnsupportedFunction);
         map.insert(0x6A88, HealthCardResponseStatus::KeyNotFound);
         map
@@ -344,6 +362,9 @@ pub trait StatusWordExt {
     /// Get the HealthCardResponseStatus for a general authenticate command
     fn to_general_authenticate_status(&self) -> HealthCardResponseStatus;
 
+    /// Get the HealthCardResponseStatus for an external authenticate command
+    fn to_external_authenticate_status(&self) -> HealthCardResponseStatus;
+
     /// Get the HealthCardResponseStatus for a PIN-related command
     fn to_pin_status(&self) -> HealthCardResponseStatus;
 
@@ -375,6 +396,10 @@ pub trait StatusWordExt {
 impl StatusWordExt for u16 {
     fn to_general_authenticate_status(&self) -> HealthCardResponseStatus {
         HealthCardResponseStatus::from_general_authenticate_status(*self)
+    }
+
+    fn to_external_authenticate_status(&self) -> HealthCardResponseStatus {
+        HealthCardResponseStatus::from_external_authenticate_status(*self)
     }
 
     fn to_pin_status(&self) -> HealthCardResponseStatus {
@@ -435,9 +460,30 @@ mod tests {
     }
 
     #[test]
+    fn test_external_authenticate_status() {
+        assert_eq!(
+            HealthCardResponseStatus::from_external_authenticate_status(0x9000),
+            HealthCardResponseStatus::Success
+        );
+        assert_eq!(
+            HealthCardResponseStatus::from_external_authenticate_status(0x6300),
+            HealthCardResponseStatus::AuthenticationFailure
+        );
+        assert_eq!(
+            HealthCardResponseStatus::from_external_authenticate_status(0x6985),
+            HealthCardResponseStatus::WrongRandomOrNoKeyReference
+        );
+        assert_eq!(
+            HealthCardResponseStatus::from_external_authenticate_status(0x1234),
+            HealthCardResponseStatus::UnknownStatus
+        );
+    }
+
+    #[test]
     fn test_status_word_ext() {
         let sw: u16 = 0x9000;
         assert_eq!(sw.to_general_authenticate_status(), HealthCardResponseStatus::Success);
+        assert_eq!(sw.to_external_authenticate_status(), HealthCardResponseStatus::Success);
         assert_eq!(sw.to_pin_status(), HealthCardResponseStatus::Success);
     }
 

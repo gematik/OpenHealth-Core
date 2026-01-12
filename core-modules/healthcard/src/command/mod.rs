@@ -22,6 +22,7 @@
 pub mod apdu;
 pub mod change_reference_data_command;
 pub mod error;
+pub mod external_authenticate_command;
 pub mod general_authenticate_command;
 pub mod get_pin_status_command;
 pub mod get_random_command;
