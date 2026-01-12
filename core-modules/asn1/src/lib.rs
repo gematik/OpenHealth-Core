@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2025 gematik GmbH
+// SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -18,6 +18,7 @@
 //
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
+pub mod cv_certificate;
 pub mod date_time;
 pub mod decoder;
 pub mod encoder;
