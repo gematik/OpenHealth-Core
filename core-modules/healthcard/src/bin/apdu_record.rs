@@ -19,12 +19,12 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-#[cfg(not(feature = "apdu-tools"))]
+#[cfg(not(all(feature = "apdu-tools", feature = "pcsc")))]
 fn main() {
-    eprintln!("This binary requires --features apdu-tools");
+    eprintln!("This binary requires --features apdu-tools,pcsc");
 }
 
-#[cfg(feature = "apdu-tools")]
+#[cfg(all(feature = "apdu-tools", feature = "pcsc"))]
 fn main() {
     use clap::Parser;
     use crypto::ec::ec_key::{EcCurve, EcKeyPairSpec};

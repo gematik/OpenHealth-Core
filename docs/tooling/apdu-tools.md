@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: Copyright 2025 gematik GmbH
+SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
 
 SPDX-License-Identifier: Apache-2.0
 
@@ -36,6 +36,7 @@ Source locations:
 Everything in `healthcard::exchange::apdu_tools` is gated behind the crate feature `apdu-tools`.
 
 - Build/run tools: add `--features apdu-tools` to your `cargo` command.
+- For PC/SC support (recording from card): add `--features apdu-tools,pcsc`.
 - Use in another crate: `healthcard = { path = "../core-modules/healthcard", features = ["apdu-tools"] }`
 
 ## `apdu_record` (PC/SC recorder)
@@ -50,19 +51,19 @@ Prerequisites:
 Show CLI help:
 
 ```sh
-cargo run -p healthcard --bin apdu_record --features apdu-tools -- --help
+cargo run -p healthcard --bin apdu_record --features apdu-tools,pcsc -- --help
 ```
 
 ### List PC/SC readers
 
 ```sh
-cargo run -p healthcard --bin apdu_record --features apdu-tools -- --list-readers
+cargo run -p healthcard --bin apdu_record --features apdu-tools,pcsc -- --list-readers
 ```
 
 ### Record a transcript
 
 ```sh
-cargo run -p healthcard --bin apdu_record --features apdu-tools -- \
+cargo run -p healthcard --bin apdu_record --features apdu-tools,pcsc -- \
   --reader "<PCSC reader name>" \
   --can 123456 \
   --out ./transcript.jsonl
@@ -71,9 +72,9 @@ cargo run -p healthcard --bin apdu_record --features apdu-tools -- \
 To additionally read the certificates and print them to the console:
 
 ```sh
-cargo run -p healthcard --bin apdu_record --features apdu-tools -- \
+cargo run -p healthcard --bin apdu_record --features apdu-tools,pcsc -- \
   --reader "<PCSC reader name>" \
-  --can 123456 \
+  --can 123123 \
   --out ./transcript.jsonl \
   --read-certificates
 ```

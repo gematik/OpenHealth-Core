@@ -31,8 +31,10 @@ use std::io::{BufRead, BufReader, Write};
 use std::path::Path;
 use thiserror::Error;
 
-#[cfg(feature = "apdu-tools")]
+#[cfg(feature = "pcsc")]
 use std::ffi::CString;
+
+pub type EcKeyPairGenerator = Box<dyn FnMut(EcCurve) -> Result<(EcPublicKey, EcPrivateKey), CryptoError>>;
 
 #[derive(Debug, Error)]
 pub enum TranscriptError {
@@ -399,14 +401,14 @@ fn derive_keypair_from_scalar(
     Ok((public_key, private_key))
 }
 
-#[cfg(feature = "apdu-tools")]
+#[cfg(feature = "pcsc")]
 pub struct PcscChannel {
     card: pcsc::Card,
     supports_extended_length: bool,
     recv_buffer: Vec<u8>,
 }
 
-#[cfg(feature = "apdu-tools")]
+#[cfg(feature = "pcsc")]
 impl PcscChannel {
     pub fn connect(reader: &str, supports_extended_length: bool) -> Result<Self, ExchangeError> {
         let ctx = pcsc::Context::establish(pcsc::Scope::User).map_err(|err| ExchangeError::Transport {
@@ -439,7 +441,7 @@ impl PcscChannel {
     }
 }
 
-#[cfg(feature = "apdu-tools")]
+#[cfg(feature = "pcsc")]
 impl CardChannel for PcscChannel {
     type Error = ExchangeError;
 
@@ -509,7 +511,7 @@ mod tests {
         assert_eq!(priv2.as_bytes(), key2.as_slice());
     }
 
-    #[cfg(feature = "apdu-tools")]
+    #[cfg(feature = "pcsc")]
     mod pcsc_tests {
         use super::*;
         use crate::command::health_card_command::HealthCardCommand;

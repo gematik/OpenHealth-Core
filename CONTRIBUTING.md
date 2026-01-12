@@ -72,15 +72,8 @@ This ensures proper tracking and management of open `TODOs`.
 
 ## License
 
-Annotate all files with the following command:
+Annotate all files with the following script:
 
 ```shell
-git diff -z --name-only origin/main HEAD -- ':(exclude)LICENSES/**' \
-  | xargs -0 reuse annotate \
-      --license Apache-2.0 \
-      --copyright "gematik GmbH" \
-      --template gematik \
-      --copyright-prefix spdx-string \
-      --merge-copyrights \
-      --skip-unrecognised
+sh tools/reuse-annotate-changed.sh
 ```
