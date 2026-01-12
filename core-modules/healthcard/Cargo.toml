@@ -31,7 +31,9 @@ name = "healthcard"
 
 [features]
 default = ["uniffi"]
-apdu-tools = ["dep:clap", "dep:pcsc", "dep:serde", "dep:serde_json"]
+ci = ["uniffi", "apdu-tools"]
+apdu-tools = ["dep:clap", "dep:serde", "dep:serde_json"]
+pcsc = ["dep:pcsc"]
 
 [dependencies]
 lazy_static = "1.5.0"

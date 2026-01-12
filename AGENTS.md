@@ -32,7 +32,7 @@ find details in the "Readme" file.
 - Build all Rust crates: `cargo build` (from the repository root).
 - Run Rust tests: `cargo test` (add `-p <crate>` to limit scope, e.g. `cargo test -p healthcard`).
 - Kotlin bindings and sample: from `core-modules-kotlin/`, use `./gradlew :healthcard:build` and `./gradlew :sample-app:run`.
-- Before pushing, ensure `cargo +nightly fmt` and `cargo clippy --all-targets --all-features` are clean.
+- Before pushing, ensure `cargo +nightly fmt` and `cargo clippy --workspace --all-targets --no-default-features --features ci` are clean.
 
 ## Coding Style & Naming
 - Rust is formatted with `rustfmt` (see `rustfmt.toml`), 4-space indentation, max line width 120.
