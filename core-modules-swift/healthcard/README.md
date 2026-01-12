@@ -30,7 +30,7 @@ This module provides Swift bindings for the Rust `healthcard` crate via UniFFI, 
 From the repository root:
 
 ```bash
-just swift-healthcard-xcframework
+just swift-xcframework
 ```
 
 This generates:

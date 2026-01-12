@@ -27,6 +27,7 @@ license = "Apache-2.0"
 
 [features]
 default = ["uniffi"]
+ci = ["uniffi"]
 
 [dependencies]
 asn1 = { path = "../asn1" }

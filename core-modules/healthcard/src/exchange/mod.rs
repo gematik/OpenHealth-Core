@@ -19,6 +19,8 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
+#[cfg(any(feature = "apdu-tools", test))]
+pub mod apdu_tools;
 pub mod certificate;
 pub mod channel;
 pub mod error;
