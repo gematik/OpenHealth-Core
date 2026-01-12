@@ -121,13 +121,11 @@ impl Transcript {
         self.header.can.as_deref()
     }
 
-    pub fn fixed_key_generator(
-        &self,
-    ) -> Result<Option<impl FnMut(EcCurve) -> Result<(EcPublicKey, EcPrivateKey), CryptoError>>, TranscriptError> {
+    pub fn fixed_key_generator(&self) -> Result<Option<EcKeyPairGenerator>, TranscriptError> {
         match &self.header.keys {
             Some(keys) => {
                 let decoded =
-                    keys.iter().map(|k| Ok(hex::decode(k)?)).collect::<Result<Vec<_>, hex::FromHexError>>()?;
+                    keys.iter().map(|k| hex::decode(k)).collect::<Result<Vec<_>, hex::FromHexError>>()?;
                 Ok(Some(FixedKeyGenerator::new(decoded).generator()))
             }
             None => Ok(None),
@@ -303,9 +301,7 @@ impl ReplayChannel {
         Self { transcript, cursor: 0 }
     }
 
-    pub fn fixed_key_generator(
-        &self,
-    ) -> Result<Option<impl FnMut(EcCurve) -> Result<(EcPublicKey, EcPrivateKey), CryptoError>>, TranscriptError> {
+    pub fn fixed_key_generator(&self) -> Result<Option<EcKeyPairGenerator>, TranscriptError> {
         self.transcript.fixed_key_generator()
     }
 
