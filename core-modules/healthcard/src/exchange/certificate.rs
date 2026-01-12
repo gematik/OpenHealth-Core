@@ -29,6 +29,43 @@ use super::channel::CardChannelExt;
 use super::error::ExchangeError;
 use super::ids;
 
+/// Defines which certificate file to read from the card.
+#[derive(Clone, Copy, Debug)]
+pub enum CertificateFile {
+    /// X.509 certificate stored in `DF.ESIGN/EF.C.CH.AUT.E256`.
+    ChAutE256,
+    /// CV certificate stored in `MF/EF.C.eGK.AUT_CVC.E256`.
+    EgkAutCvcE256,
+}
+
+fn select_certificate_file<S>(session: &mut S, certificate: CertificateFile) -> Result<(), ExchangeError>
+where
+    S: CardChannelExt,
+{
+    match certificate {
+        CertificateFile::ChAutE256 => {
+            session.execute_command_success(&HealthCardCommand::select_aid(&ids::df_esign_aid()))?;
+            session.execute_command_success(&HealthCardCommand::select_fid_with_options(
+                &ids::ef_cch_aut_e256_fid(),
+                false,
+                true,
+                EXPECTED_LENGTH_WILDCARD_EXTENDED as i32,
+            ))?;
+        }
+        CertificateFile::EgkAutCvcE256 => {
+            session.execute_command_success(&HealthCardCommand::select(false, false))?;
+            session.execute_command_success(&HealthCardCommand::select_fid_with_options(
+                &ids::ef_c_egk_aut_cvc_e256_fid(),
+                false,
+                true,
+                EXPECTED_LENGTH_WILDCARD_EXTENDED as i32,
+            ))?;
+        }
+    }
+
+    Ok(())
+}
+
 /// Retrieve the X.509 certificate stored in `DF.ESIGN/EF.C.CH.AUT.E256`.
 ///
 /// The certificate is read in chunks using the READ BINARY command until the
@@ -37,13 +74,21 @@ pub fn retrieve_certificate<S>(session: &mut S) -> Result<Vec<u8>, ExchangeError
 where
     S: CardChannelExt,
 {
-    session.execute_command_success(&HealthCardCommand::select_aid(&ids::df_esign_aid()))?;
-    session.execute_command_success(&HealthCardCommand::select_fid_with_options(
-        &ids::ef_cch_aut_e256_fid(),
-        false,
-        true,
-        EXPECTED_LENGTH_WILDCARD_EXTENDED as i32,
-    ))?;
+    retrieve_certificate_from(session, CertificateFile::ChAutE256)
+}
+
+/// Retrieve a certificate file from the card.
+///
+/// The certificate is read in chunks using the READ BINARY command until the
+/// card indicates the end of the file.
+pub fn retrieve_certificate_from<S>(
+    session: &mut S,
+    certificate: CertificateFile,
+) -> Result<Vec<u8>, ExchangeError>
+where
+    S: CardChannelExt,
+{
+    select_certificate_file(session, certificate)?;
 
     let mut certificate = Vec::new();
     let mut offset: i32 = 0;
@@ -71,6 +116,7 @@ where
 mod tests {
     use super::*;
     use crate::command::health_card_status::HealthCardResponseStatus;
+    use crate::command::select_command::SelectCommand;
     use crate::exchange::test_utils::MockSession;
 
     #[test]
@@ -94,5 +140,32 @@ mod tests {
             }
             other => panic!("unexpected error {other:?}"),
         }
+    }
+
+    #[test]
+    fn cv_certificate_selects_master_file() {
+        let mut session = MockSession::with_extended_support(
+            vec![vec![0x90, 0x00], vec![0x90, 0x00], vec![0xDE, 0xAD, 0x90, 0x00], vec![0xBE, 0xEF, 0x62, 0x82]],
+            true,
+        );
+
+        let cert = retrieve_certificate_from(&mut session, CertificateFile::EgkAutCvcE256).unwrap();
+        assert_eq!(cert, vec![0xDE, 0xAD, 0xBE, 0xEF]);
+        assert_eq!(
+            session.recorded[0],
+            HealthCardCommand::select(false, false).command_apdu(false).unwrap().to_bytes()
+        );
+        assert_eq!(
+            session.recorded[1],
+            HealthCardCommand::select_fid_with_options(
+                &ids::ef_c_egk_aut_cvc_e256_fid(),
+                false,
+                true,
+                EXPECTED_LENGTH_WILDCARD_EXTENDED as i32,
+            )
+            .command_apdu(false)
+            .unwrap()
+            .to_bytes()
+        );
     }
 }

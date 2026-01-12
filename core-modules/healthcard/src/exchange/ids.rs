@@ -102,6 +102,16 @@ pub fn ef_cch_aut_e256_sfid() -> ShortFileIdentifier {
     short_file_identifier(0x04)
 }
 
+/// File identifier for `MF/EF.C.eGK.AUT_CVC.E256` (gemSpec_ObjSys Section 5.3.4).
+pub fn ef_c_egk_aut_cvc_e256_fid() -> FileIdentifier {
+    file_identifier(0x2F06)
+}
+
+/// Short file identifier for `MF/EF.C.eGK.AUT_CVC.E256` (gemSpec_ObjSys Section 5.3.4).
+pub fn ef_c_egk_aut_cvc_e256_sfid() -> ShortFileIdentifier {
+    short_file_identifier(0x06)
+}
+
 /// Key identifier for the `PrK.CH.AUT.E256` private key in `DF.ESIGN`.
 pub fn prk_ch_aut_e256() -> CardKey {
     CardKey::new(0x04).expect("constant key id must be valid")
@@ -135,6 +145,8 @@ mod tests {
         assert_eq!(ef_status_vd_sfid().value(), 0x0C);
         assert_eq!(ef_cch_aut_e256_fid().to_bytes(), [0xC5, 0x04]);
         assert_eq!(ef_cch_aut_e256_sfid().value(), 0x04);
+        assert_eq!(ef_c_egk_aut_cvc_e256_fid().to_bytes(), [0x2F, 0x06]);
+        assert_eq!(ef_c_egk_aut_cvc_e256_sfid().value(), 0x06);
 
         assert_eq!(prk_ch_aut_e256().key_id(), 0x04);
         assert_eq!(mr_pin_home_reference().pwd_id(), 0x02);
