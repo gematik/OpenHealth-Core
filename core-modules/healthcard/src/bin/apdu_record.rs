@@ -29,6 +29,7 @@ fn main() {
     use clap::Parser;
     use crypto::ec::ec_key::{EcCurve, EcKeyPairSpec};
     use healthcard::exchange::apdu_tools::{PcscChannel, RecordingChannel};
+    use healthcard::exchange::certificate::{retrieve_certificate_from, CertificateFile};
     use healthcard::exchange::secure_channel::{establish_secure_channel_with, CardAccessNumber};
 
     if let Err(err) = run() {
@@ -58,6 +59,9 @@ fn main() {
         /// List available PC/SC readers and exit
         #[arg(long)]
         list_readers: bool,
+        /// Read certificates and print them as hex to stdout
+        #[arg(long)]
+        read_certificates: bool,
     }
 
     fn run() -> Result<(), String> {
@@ -80,12 +84,24 @@ fn main() {
         recorder.set_can(can.clone());
 
         let mut generated_keys = Vec::new();
-        establish_secure_channel_with(&mut recorder, &card_access_number, |curve: EcCurve| {
+        let mut secure_channel = establish_secure_channel_with(&mut recorder, &card_access_number, |curve: EcCurve| {
             let (public_key, private_key) = EcKeyPairSpec { curve: curve.clone() }.generate_keypair()?;
             generated_keys.push(hex::encode_upper(private_key.as_bytes()));
             Ok((public_key, private_key))
         })
         .map_err(|err| format!("PACE failed: {err}"))?;
+
+        if args.read_certificates {
+            let cert = retrieve_certificate_from(&mut secure_channel, CertificateFile::ChAutE256)
+                .map_err(|err| format!("read DF.ESIGN/EF.C.CH.AUT.E256 failed: {err}"))?;
+            print_certificate("DF.ESIGN/EF.C.CH.AUT.E256", &cert);
+
+            let cert = retrieve_certificate_from(&mut secure_channel, CertificateFile::EgkAutCvcE256)
+                .map_err(|err| format!("read MF/EF.C.eGK.AUT_CVC.E256 failed: {err}"))?;
+            print_certificate("MF/EF.C.eGK.AUT_CVC.E256", &cert);
+        }
+
+        drop(secure_channel);
 
         if !generated_keys.is_empty() {
             recorder.set_keys(generated_keys);
@@ -94,6 +110,13 @@ fn main() {
         let transcript = recorder.into_transcript();
         transcript.write_jsonl(out).map_err(|err| format!("write transcript failed: {err}"))?;
         Ok(())
+    }
+
+    fn print_certificate(label: &str, data: &[u8]) {
+        println!("{label} ({} bytes):", data.len());
+        for chunk in data.chunks(32) {
+            println!("  {}", hex::encode_upper(chunk));
+        }
     }
 
     fn list_pcsc_readers() -> Result<(), String> {
