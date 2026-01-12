@@ -54,12 +54,12 @@ Ensure all the following pre-requirements are done:
 
 Formatting:
 ```shell
-cargo +nightly fmt
+cargo +nightly fmt --all
 ```
 
 Linting:
 ```shell
-cargo clippy
+cargo clippy --workspace --all-targets --all-features
 ```
 
 ## Handling TODOs
