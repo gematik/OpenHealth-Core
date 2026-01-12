@@ -34,8 +34,7 @@ use thiserror::Error;
 #[cfg(feature = "pcsc")]
 use std::ffi::CString;
 
-pub type EcKeyPairGenerator =
-    Box<dyn FnMut(EcCurve) -> Result<(EcPublicKey, EcPrivateKey), CryptoError>>;
+pub type EcKeyPairGenerator = Box<dyn FnMut(EcCurve) -> Result<(EcPublicKey, EcPrivateKey), CryptoError>>;
 
 #[derive(Debug, Error)]
 pub enum TranscriptError {
@@ -122,9 +121,7 @@ impl Transcript {
         self.header.can.as_deref()
     }
 
-    pub fn fixed_key_generator(
-        &self,
-    ) -> Result<Option<EcKeyPairGenerator>, TranscriptError> {
+    pub fn fixed_key_generator(&self) -> Result<Option<EcKeyPairGenerator>, TranscriptError> {
         match &self.header.keys {
             Some(keys) => {
                 let decoded = keys.iter().map(hex::decode).collect::<Result<Vec<_>, _>>()?;
@@ -303,9 +300,7 @@ impl ReplayChannel {
         Self { transcript, cursor: 0 }
     }
 
-    pub fn fixed_key_generator(
-        &self,
-    ) -> Result<Option<EcKeyPairGenerator>, TranscriptError> {
+    pub fn fixed_key_generator(&self) -> Result<Option<EcKeyPairGenerator>, TranscriptError> {
         self.transcript.fixed_key_generator()
     }
 
