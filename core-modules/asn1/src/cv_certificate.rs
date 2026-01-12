@@ -19,6 +19,21 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
+//! Card verifiable certificate (CVC) parsing.
+//!
+//! This module provides a lightweight parser for so-called "CV Certificates" as used in EAC-based
+//! ecosystems. The parser is intentionally focused on structural decoding:
+//!
+//! - It extracts the certificate body and signature as raw bytes/fields.
+//! - It does **not** verify the signature, validity period, or any certificate chain.
+//! - It enforces basic length and format constraints to avoid excessive allocations and to reject
+//!   obviously malformed inputs early.
+//!
+//! Encoding notes:
+//! - The outer container is expected to be an application-specific, constructed tag `33`.
+//! - Dates are encoded as 6 digits (`YYMMDD`), where each digit is stored in a single octet with
+//!   value `0..=9` (not ASCII).
+
 use crate::decoder::{Asn1Decoder, Asn1Length, ParserScope};
 use crate::error::{Asn1DecoderError, Asn1DecoderResult};
 use crate::oid::ObjectIdentifier;
@@ -40,12 +55,21 @@ const TAG_SIGNATURE: u32 = 55;
 const MAX_CERT_FIELD_LEN: usize = 65_535;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+/// A parsed CV certificate consisting of the certificate [`CertificateBody`] and the raw signature.
+///
+/// The signature is returned as the content octets of the signature field (no verification is
+/// performed).
 pub struct CVCertificate {
     pub body: CertificateBody,
     pub signature: Vec<u8>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+/// The body of a CV certificate.
+///
+/// Several fields are kept as raw bytes because their semantics are domain-specific (e.g. CAR/CHR
+/// formatting, public key data layout). Consumers can interpret these bytes according to their
+/// profile/specification.
 pub struct CertificateBody {
     pub profile_identifier: u8,
     pub certification_authority_reference: Vec<u8>,
@@ -58,6 +82,10 @@ pub struct CertificateBody {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+/// Public key information carried in the certificate body.
+///
+/// - `key_oid` identifies the public key algorithm / key type.
+/// - `key_data` contains the raw, context-specific key data objects that follow the OID.
 pub struct CVCertPublicKey {
     pub key_oid: ObjectIdentifier,
     /// Raw contents after the key OID (context-specific key data objects).
@@ -65,12 +93,19 @@ pub struct CVCertPublicKey {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+/// Certificate Holder Authorization Template (CHAT).
+///
+/// `relative_authorization` is kept as raw bytes (content octets) because its layout depends on the
+/// terminal type / profile.
 pub struct Chat {
     pub terminal_type: ObjectIdentifier,
     pub relative_authorization: Vec<u8>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+/// A CVC date encoded as digits `YYMMDD`.
+///
+/// Each digit is stored as an octet `0..=9` (e.g. `250101` is `[2, 5, 0, 1, 0, 1]`).
 pub struct CertificateDate {
     pub year: u8,
     pub month: u8,
@@ -78,23 +113,38 @@ pub struct CertificateDate {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+/// Optional extensions carried in the certificate body.
+///
+/// Extensions are represented as discretionary data templates.
 pub struct CertificateExtensions {
     pub templates: Vec<DiscretionaryDataTemplate>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+/// One discretionary data template within [`CertificateExtensions`].
 pub struct DiscretionaryDataTemplate {
     pub extension_id: ObjectIdentifier,
     pub extension_data: Vec<ExtensionField>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+/// A raw extension field inside a discretionary data template.
+///
+/// `tag` is read verbatim from the input. `value` is the field's content octets. Indefinite-length
+/// encodings are rejected.
 pub struct ExtensionField {
     pub tag: Asn1Id,
     pub value: Vec<u8>,
 }
 
 impl CVCertificate {
+    /// Parse a CV certificate from BER/DER-like TLV encoded bytes.
+    ///
+    /// This validates:
+    /// - expected application tags/structure,
+    /// - basic length constraints for selected fields (e.g. CAR/CHR),
+    /// - date digit ranges and basic calendar constraints (month `1..=12`, day `1..=31`),
+    /// - and rejects indefinite-length values in extension fields.
     pub fn parse(data: &[u8]) -> Asn1DecoderResult<Self> {
         let decoder = Asn1Decoder::new(data);
         let certificate = decoder.read(|scope| parse_cv_certificate_scope(scope))?;
@@ -102,6 +152,9 @@ impl CVCertificate {
     }
 }
 
+/// Parse a CV certificate from bytes.
+///
+/// This is a convenience wrapper around [`CVCertificate::parse`].
 pub fn parse_cv_certificate(data: &[u8]) -> Asn1DecoderResult<CVCertificate> {
     CVCertificate::parse(data)
 }
