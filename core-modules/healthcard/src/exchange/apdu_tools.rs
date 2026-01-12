@@ -124,8 +124,8 @@ impl Transcript {
     pub fn fixed_key_generator(&self) -> Result<Option<EcKeyPairGenerator>, TranscriptError> {
         match &self.header.keys {
             Some(keys) => {
-                let decoded = keys.iter().map(hex::decode).collect::<Result<Vec<_>, _>>()?;
-                Ok(Some(FixedKeyGenerator::new(decoded).generator()))
+                let decoded = keys.iter().map(hex::decode).collect::<Result<Vec<_>, hex::FromHexError>>()?;
+                Ok(Some(Box::new(FixedKeyGenerator::new(decoded).generator())))
             }
             None => Ok(None),
         }
@@ -371,8 +371,8 @@ impl FixedKeyGenerator {
         Self { keys }
     }
 
-    pub fn generator(mut self) -> EcKeyPairGenerator {
-        Box::new(move |curve| {
+    pub fn generator(mut self) -> impl FnMut(EcCurve) -> Result<(EcPublicKey, EcPrivateKey), CryptoError> {
+        move |curve| {
             if self.keys.is_empty() {
                 return Err(CryptoError::InvalidKeyMaterial { context: "fixed key generator ran out of keys" });
             }
@@ -381,7 +381,7 @@ impl FixedKeyGenerator {
             let (public_key, private_key) = derive_keypair_from_scalar(curve.clone(), bytes)?;
             eprintln!("FixedKeyGenerator used key for {curve:?}: {key_hex}");
             Ok((public_key, private_key))
-        })
+        }
     }
 }
 

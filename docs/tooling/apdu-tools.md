@@ -69,6 +69,16 @@ cargo run -p healthcard --bin apdu_record --features apdu-tools,pcsc -- \
   --out ./transcript.jsonl
 ```
 
+To additionally read the certificates and print them to the console:
+
+```sh
+cargo run -p healthcard --bin apdu_record --features apdu-tools,pcsc -- \
+  --reader "<PCSC reader name>" \
+  --can 123123 \
+  --out ./transcript.jsonl \
+  --read-certificates
+```
+
 APDU length options:
 
 - Default: uses extended-length APDUs when needed.
