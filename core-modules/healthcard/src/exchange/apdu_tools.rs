@@ -124,8 +124,7 @@ impl Transcript {
     pub fn fixed_key_generator(&self) -> Result<Option<EcKeyPairGenerator>, TranscriptError> {
         match &self.header.keys {
             Some(keys) => {
-                let decoded =
-                    keys.iter().map(|k| hex::decode(k)).collect::<Result<Vec<_>, hex::FromHexError>>()?;
+                let decoded = keys.iter().map(|k| hex::decode(k)).collect::<Result<Vec<_>, hex::FromHexError>>()?;
                 Ok(Some(FixedKeyGenerator::new(decoded).generator()))
             }
             None => Ok(None),
