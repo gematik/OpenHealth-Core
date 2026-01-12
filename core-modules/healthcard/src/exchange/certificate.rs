@@ -81,10 +81,7 @@ where
 ///
 /// The certificate is read in chunks using the READ BINARY command until the
 /// card indicates the end of the file.
-pub fn retrieve_certificate_from<S>(
-    session: &mut S,
-    certificate: CertificateFile,
-) -> Result<Vec<u8>, ExchangeError>
+pub fn retrieve_certificate_from<S>(session: &mut S, certificate: CertificateFile) -> Result<Vec<u8>, ExchangeError>
 where
     S: CardChannelExt,
 {
