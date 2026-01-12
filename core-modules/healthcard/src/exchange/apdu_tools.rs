@@ -34,6 +34,9 @@ use thiserror::Error;
 #[cfg(feature = "pcsc")]
 use std::ffi::CString;
 
+pub type EcKeyPairGenerator =
+    Box<dyn FnMut(EcCurve) -> Result<(EcPublicKey, EcPrivateKey), CryptoError>>;
+
 #[derive(Debug, Error)]
 pub enum TranscriptError {
     #[error("io error: {0}")]
@@ -121,11 +124,10 @@ impl Transcript {
 
     pub fn fixed_key_generator(
         &self,
-    ) -> Result<Option<impl FnMut(EcCurve) -> Result<(EcPublicKey, EcPrivateKey), CryptoError>>, TranscriptError> {
+    ) -> Result<Option<EcKeyPairGenerator>, TranscriptError> {
         match &self.header.keys {
             Some(keys) => {
-                let decoded =
-                    keys.iter().map(|k| Ok(hex::decode(k)?)).collect::<Result<Vec<_>, hex::FromHexError>>()?;
+                let decoded = keys.iter().map(hex::decode).collect::<Result<Vec<_>, _>>()?;
                 Ok(Some(FixedKeyGenerator::new(decoded).generator()))
             }
             None => Ok(None),
@@ -303,7 +305,7 @@ impl ReplayChannel {
 
     pub fn fixed_key_generator(
         &self,
-    ) -> Result<Option<impl FnMut(EcCurve) -> Result<(EcPublicKey, EcPrivateKey), CryptoError>>, TranscriptError> {
+    ) -> Result<Option<EcKeyPairGenerator>, TranscriptError> {
         self.transcript.fixed_key_generator()
     }
 
@@ -374,8 +376,8 @@ impl FixedKeyGenerator {
         Self { keys }
     }
 
-    pub fn generator(mut self) -> impl FnMut(EcCurve) -> Result<(EcPublicKey, EcPrivateKey), CryptoError> {
-        move |curve| {
+    pub fn generator(mut self) -> EcKeyPairGenerator {
+        Box::new(move |curve| {
             if self.keys.is_empty() {
                 return Err(CryptoError::InvalidKeyMaterial { context: "fixed key generator ran out of keys" });
             }
@@ -384,7 +386,7 @@ impl FixedKeyGenerator {
             let (public_key, private_key) = derive_keypair_from_scalar(curve.clone(), bytes)?;
             eprintln!("FixedKeyGenerator used key for {curve:?}: {key_hex}");
             Ok((public_key, private_key))
-        }
+        })
     }
 }
 
