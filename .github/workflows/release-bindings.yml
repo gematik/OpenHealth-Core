@@ -294,6 +294,9 @@ jobs:
 
       - name: Publish Kotlin bindings to mavenLocal (assembled outputs)
         run: |
+          if [ -n "${{ inputs.version }}" ]; then
+            export ORG_GRADLE_PROJECT_version="${{ inputs.version }}"
+          fi
           just kotlin-publish-local
 
       - name: Stage Maven local artifacts for upload

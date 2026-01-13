@@ -30,7 +30,6 @@ plugins {
 }
 
 group = "de.gematik.openhealth"
-version = "0.1.0"
 
 // Location where UniFFI drops generated Kotlin code and native libs (defaults to src/jvmMain to match local workflows).
 val generatedOutRoot: Provider<String> = providers.environmentVariable("OUT_ROOT")
