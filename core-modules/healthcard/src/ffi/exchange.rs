@@ -29,6 +29,9 @@ use std::sync::Arc;
 use thiserror::Error;
 use zeroize::Zeroize;
 
+/// PIN/secret value used for card operations.
+///
+/// The input string is zeroized after parsing. Treat PIN values and derived data as secrets.
 #[derive(uniffi::Object)]
 pub struct CardPin {
     inner: exchange::CardPin,
@@ -42,6 +45,9 @@ impl CardPin {
 
 #[uniffi::export]
 impl CardPin {
+    /// Creates a PIN from a digit string (e.g. `"123456"`).
+    ///
+    /// The provided string is zeroized in memory after parsing.
     #[uniffi::constructor]
     pub fn from_digits(digits: String) -> Result<Self, ExchangeError> {
         let mut digits = digits;
@@ -51,6 +57,7 @@ impl CardPin {
     }
 }
 
+/// High-level outcome of a PIN verification attempt.
 #[derive(Debug, Clone, Copy)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 pub enum VerifyPinOutcome {
@@ -59,6 +66,9 @@ pub enum VerifyPinOutcome {
     CardBlocked,
 }
 
+/// FFI-friendly response for health card commands.
+///
+/// `status` is derived from `sw` and is suitable for application-level branching.
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 pub struct HealthCardResponse {
@@ -75,6 +85,7 @@ impl From<CoreHealthCardResponse> for HealthCardResponse {
     }
 }
 
+/// Result for `verify_pin`, including outcome and (optional) remaining retries.
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 pub struct VerifyPinResult {
@@ -105,6 +116,9 @@ impl VerifyPinResult {
     }
 }
 
+/// UniFFI error type for exchange operations.
+///
+/// This mirrors `crate::exchange::ExchangeError` but uses FFI-friendly payloads (strings/records).
 #[derive(Debug, Clone, Error)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Error))]
 pub enum ExchangeError {
@@ -174,6 +188,10 @@ where
     op(&mut adapter).map_err(ExchangeError::from)
 }
 
+/// Verifies a PIN against the card.
+///
+/// This is a stateless helper that performs the necessary APDU exchange(s) on the provided
+/// `session`. For workflows that require PACE/secure messaging, use `secure_channel` APIs.
 #[uniffi::export]
 pub fn verify_pin(session: Arc<dyn CardChannel>, pin: Arc<CardPin>) -> Result<VerifyPinResult, ExchangeError> {
     with_channel(session, |adapter| {
@@ -182,6 +200,9 @@ pub fn verify_pin(session: Arc<dyn CardChannel>, pin: Arc<CardPin>) -> Result<Ve
     })
 }
 
+/// Unlocks or updates the eGK secret using the selected method.
+///
+/// `method` controls whether PUK is required and whether a new secret is set.
 #[uniffi::export]
 pub fn unlock_egk(
     session: Arc<dyn CardChannel>,
@@ -201,26 +222,31 @@ pub fn unlock_egk(
     })
 }
 
+/// Returns `length` bytes of random data from the card.
 #[uniffi::export]
 pub fn get_random(session: Arc<dyn CardChannel>, length: u32) -> Result<Vec<u8>, ExchangeError> {
     with_channel(session, |adapter| exchange::get_random(adapter, length as usize))
 }
 
+/// Reads the VSD container from the card (if available).
 #[uniffi::export]
 pub fn read_vsd(session: Arc<dyn CardChannel>) -> Result<Vec<u8>, ExchangeError> {
     with_channel(session, exchange::read_vsd)
 }
 
+/// Signs the given challenge with the card's signing key.
 #[uniffi::export]
 pub fn sign_challenge(session: Arc<dyn CardChannel>, challenge: Vec<u8>) -> Result<Vec<u8>, ExchangeError> {
     with_channel(session, |adapter| exchange::sign_challenge(adapter, &challenge))
 }
 
+/// Retrieves the default certificate from the card.
 #[uniffi::export]
 pub fn retrieve_certificate(session: Arc<dyn CardChannel>) -> Result<Vec<u8>, ExchangeError> {
     with_channel(session, exchange::retrieve_certificate)
 }
 
+/// Retrieves a specific certificate file from the card.
 #[uniffi::export]
 pub fn retrieve_certificate_from(
     session: Arc<dyn CardChannel>,

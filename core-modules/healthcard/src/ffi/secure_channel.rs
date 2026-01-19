@@ -32,6 +32,7 @@ use std::convert::TryInto;
 use std::sync::{Arc, Mutex};
 use thiserror::Error;
 
+/// Card Access Number (CAN) used during PACE establishment.
 #[derive(uniffi::Object)]
 pub struct CardAccessNumber {
     inner: ActualCardAccessNumber,
@@ -45,6 +46,7 @@ impl CardAccessNumber {
 
 #[uniffi::export]
 impl CardAccessNumber {
+    /// Creates a CAN from a 6-digit string (e.g. `"123456"`).
     #[uniffi::constructor]
     pub fn from_digits(digits: String) -> Result<Self, SecureChannelError> {
         let bytes = digits.into_bytes();
@@ -55,16 +57,24 @@ impl CardAccessNumber {
         Ok(Self { inner })
     }
 
+    /// Returns the CAN digits as a string.
     pub fn digits(&self) -> String {
         String::from_utf8_lossy(self.inner.as_bytes()).into_owned()
     }
 }
 
+/// Established secure messaging context (PACE + mutual authentication).
+///
+/// This object wraps a core `SecureChannel` and uses a mutex to serialize access.
+/// Use it for repeated operations after PACE establishment.
 #[derive(uniffi::Object)]
 pub struct SecureChannel {
     inner: Mutex<secure_channel::SecureChannel<FfiCardChannelAdapter>>,
 }
 
+/// UniFFI error type for secure-channel operations.
+///
+/// This maps core `ExchangeError`/`SecureChannelError` into an FFI-friendly representation.
 #[derive(Debug, Clone, Error)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Error))]
 pub enum SecureChannelError {
@@ -126,6 +136,10 @@ impl From<ExchangeError> for SecureChannelError {
     }
 }
 
+/// Establishes a secure channel (PACE) over the given card session.
+///
+/// The returned `SecureChannel` can be used to transmit protected APDUs and to call higher-level
+/// operations (PIN verify, certificate retrieval, etc.) with secure messaging.
 #[uniffi::export]
 pub fn establish_secure_channel(
     session: Arc<dyn CardChannel>,
@@ -151,11 +165,13 @@ impl SecureChannel {
 
 #[uniffi::export]
 impl SecureChannel {
+    /// Indicates whether the underlying channel supports extended-length APDUs.
     pub fn supports_extended_length(&self) -> bool {
         let mut guard = self.inner.lock().expect("failed to acquire secure channel lock for supports_extended_length");
         guard.channel().supports_extended_length()
     }
 
+    /// Transmits a raw command APDU through the secure channel and returns a response APDU.
     pub fn transmit(&self, command: Arc<CommandApdu>) -> Result<ResponseApdu, SecureChannelError> {
         let mut guard = self
             .inner
@@ -165,6 +181,7 @@ impl SecureChannel {
         Ok(ResponseApdu::from(response))
     }
 
+    /// Verifies a PIN using the secure messaging context.
     pub fn verify_pin(&self, pin: Arc<CardPin>) -> Result<VerifyPinResult, SecureChannelError> {
         self.with_locked(|channel| {
             let result = crate::exchange::verify_pin(channel, pin.as_core())?;
@@ -172,6 +189,7 @@ impl SecureChannel {
         })
     }
 
+    /// Unlocks or updates the eGK secret using the selected method.
     pub fn unlock_egk(
         &self,
         method: UnlockMethod,
@@ -190,22 +208,27 @@ impl SecureChannel {
         })
     }
 
+    /// Returns `length` bytes of random data from the card.
     pub fn get_random(&self, length: u32) -> Result<Vec<u8>, SecureChannelError> {
         self.with_locked(|channel| crate::exchange::get_random(channel, length as usize))
     }
 
+    /// Reads the VSD container from the card (if available).
     pub fn read_vsd(&self) -> Result<Vec<u8>, SecureChannelError> {
         self.with_locked(crate::exchange::read_vsd)
     }
 
+    /// Signs the given challenge with the card's signing key.
     pub fn sign_challenge(&self, challenge: Vec<u8>) -> Result<Vec<u8>, SecureChannelError> {
         self.with_locked(|channel| crate::exchange::sign_challenge(channel, &challenge))
     }
 
+    /// Retrieves the default certificate from the card.
     pub fn retrieve_certificate(&self) -> Result<Vec<u8>, SecureChannelError> {
         self.with_locked(crate::exchange::retrieve_certificate)
     }
 
+    /// Retrieves a specific certificate file from the card.
     pub fn retrieve_certificate_from(
         &self,
         certificate: CertificateFile,

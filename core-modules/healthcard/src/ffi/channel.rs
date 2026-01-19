@@ -26,6 +26,10 @@ use crate::exchange::ExchangeError;
 use std::sync::{Arc, Mutex};
 use thiserror::Error;
 
+/// ISO 7816 command APDU for UniFFI.
+///
+/// This wraps the core `CardCommandApdu` and exposes constructors and `to_bytes()` for
+/// cross-language callers.
 #[derive(Debug, uniffi::Object)]
 pub struct CommandApdu {
     inner: CardCommandApdu,
@@ -48,16 +52,19 @@ impl CommandApdu {
 
 #[uniffi::export]
 impl CommandApdu {
+    /// Creates a case 1 APDU (header only, no data, no expected length).
     #[uniffi::constructor]
     pub fn header_only(cla: u8, ins: u8, p1: u8, p2: u8) -> Result<Self, ApduError> {
         Ok(Self { inner: CardCommandApdu::header_only(cla, ins, p1, p2)? })
     }
 
+    /// Parses an APDU from raw bytes.
     #[uniffi::constructor]
     pub fn from_bytes(bytes: Vec<u8>) -> Result<Self, ApduError> {
         Ok(Self { inner: CardCommandApdu::from_bytes(&bytes)? })
     }
 
+    /// Creates an APDU with an expected response length (`Le`).
     #[uniffi::constructor]
     pub fn with_expect(
         cla: u8,
@@ -70,6 +77,7 @@ impl CommandApdu {
         Ok(Self { inner: CardCommandApdu::with_expect(cla, ins, p1, p2, length_class, expected_length as usize)? })
     }
 
+    /// Creates an APDU with command data (`Lc` + data), without an expected response length.
     #[uniffi::constructor]
     pub fn with_data(
         cla: u8,
@@ -82,6 +90,7 @@ impl CommandApdu {
         Ok(Self { inner: CardCommandApdu::with_data(cla, ins, p1, p2, length_class, data)? })
     }
 
+    /// Creates an APDU with command data (`Lc` + data) and an expected response length (`Le`).
     #[uniffi::constructor]
     pub fn with_data_and_expect(
         cla: u8,
@@ -105,11 +114,18 @@ impl CommandApdu {
         })
     }
 
+    /// Serializes the APDU to raw bytes.
     pub fn to_bytes(&self) -> Vec<u8> {
         self.inner.to_bytes()
     }
 }
 
+/// ISO 7816 response APDU for UniFFI.
+///
+/// This record mirrors the core `CardResponseApdu`:
+/// - `sw`: status word (SW1SW2)
+/// - `data`: response data without the status word
+/// - `status`: the interpreted high-level status (derived from `sw`)
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 pub struct ResponseApdu {
@@ -137,6 +153,10 @@ impl TryFrom<ResponseApdu> for CardResponseApdu {
 }
 
 /// Error type returned by the foreign card channel implementation.
+///
+/// Foreign code should return:
+/// - `Transport` for I/O or transport-level problems (reader errors, timeouts, etc.)
+/// - `Apdu` for parsing/validation problems when building a `ResponseApdu`
 #[derive(Debug, Clone, Error)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Error))]
 pub enum CardChannelError {
@@ -152,6 +172,15 @@ impl From<ApduError> for CardChannelError {
     }
 }
 
+/// Foreign card channel interface.
+///
+/// Implementations of this trait are provided by the foreign language runtime (e.g. Kotlin/Swift)
+/// and passed into exported functions and objects as `session: Arc<dyn CardChannel>`.
+///
+/// Notes:
+/// - `transmit` is modeled as taking `&self` for UniFFI compatibility.
+/// - Internally, calls are serialized (see `FfiCardChannelAdapter`) to provide the core library
+///   with the expected `&mut` access semantics.
 #[uniffi::export(with_foreign)]
 pub trait CardChannel: Send + Sync {
     fn supports_extended_length(&self) -> bool;
