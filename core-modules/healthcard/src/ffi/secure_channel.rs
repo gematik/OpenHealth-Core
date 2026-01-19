@@ -19,13 +19,15 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use super::channel::{CardChannel, CardChannelError, CommandApdu, ResponseApdu};
+use super::channel::{CardChannel, CommandApdu, FfiCardChannelAdapter, ResponseApdu};
+use super::exchange::{CardPin, VerifyPinResult};
 use crate::command::apdu::ApduError;
-use crate::command::apdu::{CardCommandApdu, CardResponseApdu};
 use crate::command::health_card_status::HealthCardResponseStatus;
 use crate::exchange::channel::CardChannel as CoreCardChannel;
+use crate::exchange::certificate::CertificateFile;
 use crate::exchange::secure_channel::{self, CardAccessNumber as ActualCardAccessNumber};
 use crate::exchange::ExchangeError;
+use crate::exchange::UnlockMethod;
 use std::convert::TryInto;
 use std::sync::{Arc, Mutex};
 use thiserror::Error;
@@ -55,29 +57,6 @@ impl CardAccessNumber {
 
     pub fn digits(&self) -> String {
         String::from_utf8_lossy(self.inner.as_bytes()).into_owned()
-    }
-}
-
-struct FfiCardChannelAdapter {
-    inner: Arc<dyn CardChannel>,
-    serialize: Mutex<()>,
-}
-
-impl CoreCardChannel for FfiCardChannelAdapter {
-    type Error = CardChannelError;
-
-    fn supports_extended_length(&self) -> bool {
-        let _guard = self.serialize.lock().expect("card channel lock poisoned (supports_extended_length)");
-        self.inner.supports_extended_length()
-    }
-
-    fn transmit(&mut self, command: &CardCommandApdu) -> Result<CardResponseApdu, Self::Error> {
-        let _guard = self
-            .serialize
-            .lock()
-            .map_err(|_| CardChannelError::Transport { code: 0, reason: "card channel lock poisoned".into() })?;
-        let response = self.inner.transmit(CommandApdu::from_core(command.clone()))?;
-        CardResponseApdu::try_from(response).map_err(CardChannelError::from)
     }
 }
 
@@ -152,9 +131,22 @@ pub fn establish_secure_channel(
     session: Arc<dyn CardChannel>,
     card_access_number: Arc<CardAccessNumber>,
 ) -> Result<Arc<SecureChannel>, SecureChannelError> {
-    let adapter = FfiCardChannelAdapter { inner: session, serialize: Mutex::new(()) };
+    let adapter = FfiCardChannelAdapter::new(session);
     let established = secure_channel::establish_secure_channel(adapter, card_access_number.as_core())?;
     Ok(Arc::new(SecureChannel { inner: Mutex::new(established) }))
+}
+
+impl SecureChannel {
+    fn with_locked<T, F>(&self, op: F) -> Result<T, SecureChannelError>
+    where
+        F: FnOnce(&mut secure_channel::SecureChannel<FfiCardChannelAdapter>) -> Result<T, ExchangeError>,
+    {
+        let mut guard = self
+            .inner
+            .lock()
+            .map_err(|_| SecureChannelError::Transport { code: 0, reason: "Failed to acquire lock".to_string() })?;
+        op(&mut *guard).map_err(SecureChannelError::from)
+    }
 }
 
 #[uniffi::export]
@@ -172,6 +164,54 @@ impl SecureChannel {
         let response = guard.transmit(command.as_core()).map_err(SecureChannelError::from)?;
         Ok(ResponseApdu::from(response))
     }
+
+    pub fn verify_pin(&self, pin: Arc<CardPin>) -> Result<VerifyPinResult, SecureChannelError> {
+        self.with_locked(|channel| {
+            let result = crate::exchange::verify_pin(channel, pin.as_core())?;
+            Ok(VerifyPinResult::from_core(result))
+        })
+    }
+
+    pub fn unlock_egk(
+        &self,
+        method: UnlockMethod,
+        puk: Option<Arc<CardPin>>,
+        old_secret: Arc<CardPin>,
+        new_secret: Option<Arc<CardPin>>,
+    ) -> Result<HealthCardResponseStatus, SecureChannelError> {
+        self.with_locked(|channel| {
+            crate::exchange::unlock_egk(
+                channel,
+                method,
+                puk.as_ref().map(|pin| pin.as_core()),
+                old_secret.as_core(),
+                new_secret.as_ref().map(|pin| pin.as_core()),
+            )
+        })
+    }
+
+    pub fn get_random(&self, length: u32) -> Result<Vec<u8>, SecureChannelError> {
+        self.with_locked(|channel| crate::exchange::get_random(channel, length as usize))
+    }
+
+    pub fn read_vsd(&self) -> Result<Vec<u8>, SecureChannelError> {
+        self.with_locked(crate::exchange::read_vsd)
+    }
+
+    pub fn sign_challenge(&self, challenge: Vec<u8>) -> Result<Vec<u8>, SecureChannelError> {
+        self.with_locked(|channel| crate::exchange::sign_challenge(channel, &challenge))
+    }
+
+    pub fn retrieve_certificate(&self) -> Result<Vec<u8>, SecureChannelError> {
+        self.with_locked(crate::exchange::retrieve_certificate)
+    }
+
+    pub fn retrieve_certificate_from(
+        &self,
+        certificate: CertificateFile,
+    ) -> Result<Vec<u8>, SecureChannelError> {
+        self.with_locked(|channel| crate::exchange::retrieve_certificate_from(channel, certificate))
+    }
 }
 
 impl From<secure_channel::SecureChannelError> for SecureChannelError {
@@ -186,7 +226,8 @@ impl From<secure_channel::SecureChannelError> for SecureChannelError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::exchange::channel::CardChannel as CoreCardChannel;
+    use crate::command::apdu::CardCommandApdu;
+    use crate::ffi::channel::CardChannelError;
     use std::sync::Arc;
 
     struct DummyForeign;
@@ -211,7 +252,7 @@ mod tests {
     #[test]
     fn adapter_wraps_response_apdu() {
         let inner: Arc<dyn CardChannel> = Arc::new(DummyForeign);
-        let mut adapter = FfiCardChannelAdapter { inner, serialize: Mutex::new(()) };
+        let mut adapter = FfiCardChannelAdapter::new(inner);
         let apdu = CardCommandApdu::header_only(0x00, 0xA4, 0x04, 0x00).unwrap();
         let response = CoreCardChannel::transmit(&mut adapter, &apdu).unwrap();
         assert_eq!(response.sw(), 0x9000);

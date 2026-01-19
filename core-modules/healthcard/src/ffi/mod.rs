@@ -20,4 +20,5 @@
 // find details in the "Readme" file.
 
 mod channel;
+mod exchange;
 mod secure_channel;

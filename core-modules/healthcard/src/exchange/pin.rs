@@ -87,6 +87,7 @@ pub enum HealthCardVerifyPinResult {
 
 /// Methods for unblocking the PIN using the PUK/change reference data.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 pub enum UnlockMethod {
     ChangeReferenceData,
     ResetRetryCounter,

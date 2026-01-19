@@ -31,6 +31,7 @@ use super::ids;
 
 /// Defines which certificate file to read from the card.
 #[derive(Clone, Copy, Debug)]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 pub enum CertificateFile {
     /// X.509 certificate stored in `DF.ESIGN/EF.C.CH.AUT.E256`.
     ChAutE256,

@@ -21,8 +21,9 @@
 
 use crate::command::apdu::{ApduError, CardCommandApdu, CardResponseApdu};
 use crate::command::health_card_status::{HealthCardResponseStatus, StatusWordExt};
+use crate::exchange::channel::CardChannel as CoreCardChannel;
 use crate::exchange::ExchangeError;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use thiserror::Error;
 
 #[derive(Debug, uniffi::Object)]
@@ -156,6 +157,35 @@ pub trait CardChannel: Send + Sync {
     fn supports_extended_length(&self) -> bool;
 
     fn transmit(&self, command: Arc<CommandApdu>) -> Result<ResponseApdu, CardChannelError>;
+}
+
+pub(crate) struct FfiCardChannelAdapter {
+    inner: Arc<dyn CardChannel>,
+    serialize: Mutex<()>,
+}
+
+impl FfiCardChannelAdapter {
+    pub(crate) fn new(inner: Arc<dyn CardChannel>) -> Self {
+        Self { inner, serialize: Mutex::new(()) }
+    }
+}
+
+impl CoreCardChannel for FfiCardChannelAdapter {
+    type Error = CardChannelError;
+
+    fn supports_extended_length(&self) -> bool {
+        let _guard = self.serialize.lock().expect("card channel lock poisoned (supports_extended_length)");
+        self.inner.supports_extended_length()
+    }
+
+    fn transmit(&mut self, command: &CardCommandApdu) -> Result<CardResponseApdu, Self::Error> {
+        let _guard = self
+            .serialize
+            .lock()
+            .map_err(|_| CardChannelError::Transport { code: 0, reason: "card channel lock poisoned".into() })?;
+        let response = self.inner.transmit(CommandApdu::from_core(command.clone()))?;
+        CardResponseApdu::try_from(response).map_err(CardChannelError::from)
+    }
 }
 
 impl From<CardChannelError> for ExchangeError {

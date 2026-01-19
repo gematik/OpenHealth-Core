@@ -34,7 +34,7 @@ pub mod sign_challenge;
 #[cfg(test)]
 pub(crate) mod test_utils;
 
-pub use certificate::retrieve_certificate;
+pub use certificate::{retrieve_certificate, retrieve_certificate_from, CertificateFile};
 pub use error::ExchangeError;
 pub use pin::{unlock_egk, verify_pin, CardPin, HealthCardVerifyPinResult, UnlockMethod};
 pub use random::get_random;
