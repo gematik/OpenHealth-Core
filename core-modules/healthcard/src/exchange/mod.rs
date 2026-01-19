@@ -36,7 +36,7 @@ pub(crate) mod test_utils;
 
 pub use certificate::retrieve_certificate;
 pub use error::ExchangeError;
-pub use pin::{unlock_egk, verify_pin, HealthCardVerifyPinResult, UnlockMethod};
+pub use pin::{unlock_egk, verify_pin, CardPin, HealthCardVerifyPinResult, UnlockMethod};
 pub use random::get_random;
 pub use read_vsd::read_vsd;
 pub use secure_channel::{establish_secure_channel, establish_secure_channel_with, CardAccessNumber, SecureChannel};
