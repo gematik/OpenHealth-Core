@@ -19,16 +19,16 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-#[cfg(not(all(feature = "apdu-tools", feature = "pcsc")))]
+#[cfg(not(feature = "pcsc"))]
 fn main() {
-    eprintln!("This binary requires --features apdu-tools,pcsc");
+    eprintln!("This binary requires --features pcsc");
 }
 
-#[cfg(all(feature = "apdu-tools", feature = "pcsc"))]
+#[cfg(feature = "pcsc")]
 fn main() {
     use clap::Parser;
     use crypto::ec::ec_key::{EcCurve, EcKeyPairSpec};
-    use healthcard::exchange::apdu_tools::{PcscChannel, RecordingChannel};
+    use healthcard_apdu_tools::{PcscChannel, RecordingChannel};
     use healthcard::exchange::certificate::{retrieve_certificate_from, CertificateFile};
     use healthcard::exchange::secure_channel::{establish_secure_channel_with, CardAccessNumber};
 
@@ -51,11 +51,8 @@ fn main() {
         #[arg(long, required_unless_present = "list_readers")]
         out: Option<String>,
         /// Use short APDUs only
-        #[arg(long, conflicts_with = "extended")]
+        #[arg(long)]
         no_extended: bool,
-        /// Use extended-length APDUs
-        #[arg(long, conflicts_with = "no_extended")]
-        extended: bool,
         /// List available PC/SC readers and exit
         #[arg(long)]
         list_readers: bool,

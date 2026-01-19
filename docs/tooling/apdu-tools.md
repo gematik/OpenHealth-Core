@@ -23,21 +23,20 @@ find details in the "Readme" file.
 
 # APDU Tools (Recorder & Replay)
 
-The healthcard module contains small developer tools to record and replay APDU exchanges. This is useful for debugging
-PACE establishment and for creating deterministic, offline test runs.
+The APDU tools live in their own crate and provide helper types to record and replay APDU exchanges. This is useful for
+debugging PACE establishment and for creating deterministic, offline test runs.
 
 Source locations:
 
-- Binary: `core-modules/healthcard/src/bin/apdu_record.rs`
-- Library helpers: `core-modules/healthcard/src/exchange/apdu_tools.rs`
+- Binary: `core-modules/healthcard-apdu-tools/src/bin/apdu_record.rs`
+- Library helpers: `core-modules/healthcard-apdu-tools/src/apdu_tools.rs`
 
 ## Feature flag
 
-Everything in `healthcard::exchange::apdu_tools` is gated behind the crate feature `apdu-tools`.
+The PC/SC transport is gated behind the `pcsc` feature on the `healthcard-apdu-tools` crate.
 
-- Build/run tools: add `--features apdu-tools` to your `cargo` command.
-- For PC/SC support (recording from card): add `--features apdu-tools,pcsc`.
-- Use in another crate: `healthcard = { path = "../core-modules/healthcard", features = ["apdu-tools"] }`
+- Build/run tools: add `--features pcsc` to your `cargo` command.
+- Use in another crate: `healthcard-apdu-tools = { path = "../core-modules/healthcard-apdu-tools", features = ["pcsc"] }`
 
 ## `apdu_record` (PC/SC recorder)
 
@@ -51,19 +50,19 @@ Prerequisites:
 Show CLI help:
 
 ```sh
-cargo run -p healthcard --bin apdu_record --features apdu-tools,pcsc -- --help
+cargo run -p healthcard-apdu-tools --bin apdu_record --features pcsc -- --help
 ```
 
 ### List PC/SC readers
 
 ```sh
-cargo run -p healthcard --bin apdu_record --features apdu-tools,pcsc -- --list-readers
+cargo run -p healthcard-apdu-tools --bin apdu_record --features pcsc -- --list-readers
 ```
 
 ### Record a transcript
 
 ```sh
-cargo run -p healthcard --bin apdu_record --features apdu-tools,pcsc -- \
+cargo run -p healthcard-apdu-tools --bin apdu_record --features pcsc -- \
   --reader "<PCSC reader name>" \
   --can 123456 \
   --out ./transcript.jsonl
@@ -72,7 +71,7 @@ cargo run -p healthcard --bin apdu_record --features apdu-tools,pcsc -- \
 To additionally read the certificates and print them to the console:
 
 ```sh
-cargo run -p healthcard --bin apdu_record --features apdu-tools,pcsc -- \
+cargo run -p healthcard-apdu-tools --bin apdu_record --features pcsc -- \
   --reader "<PCSC reader name>" \
   --can 123123 \
   --out ./transcript.jsonl \
@@ -101,7 +100,7 @@ The output is JSON Lines:
 Use a recorded transcript to replay the same APDU sequence without a card/reader:
 
 ```rust
-use healthcard::exchange::apdu_tools::{ReplayChannel, Transcript};
+use healthcard_apdu_tools::{ReplayChannel, Transcript};
 use healthcard::exchange::secure_channel::{establish_secure_channel_with, CardAccessNumber};
 
 let transcript = Transcript::from_jsonl("transcript.jsonl")?;

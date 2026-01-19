@@ -656,9 +656,36 @@ struct ResponseObjects {
 mod tests {
     use super::*;
     use crate::command::apdu::{CardCommandApdu, CardResponseApdu};
-    use crate::exchange::apdu_tools::{ReplayChannel, Transcript};
     use crate::exchange::channel::CardChannel;
     use hex::encode;
+    use healthcard_apdu_base::{ReplaySession, Transcript};
+
+    struct ReplayChannel {
+        session: ReplaySession,
+    }
+
+    impl ReplayChannel {
+        fn from_transcript(transcript: Transcript) -> Self {
+            Self { session: ReplaySession::from_transcript(transcript) }
+        }
+    }
+
+    impl CardChannel for ReplayChannel {
+        type Error = ExchangeError;
+
+        fn supports_extended_length(&self) -> bool {
+            self.session.supports_extended_length()
+        }
+
+        fn transmit(&mut self, command: &CardCommandApdu) -> Result<CardResponseApdu, Self::Error> {
+            let tx = command.to_bytes();
+            let rx = self.session.transmit_bytes(&tx).map_err(|err| ExchangeError::Transport {
+                code: 0,
+                message: err.to_string(),
+            })?;
+            CardResponseApdu::new(&rx).map_err(ExchangeError::from)
+        }
+    }
 
     const JSONL_REPLAY_ESTABLISH_SECURE_CHANNEL: &str = r#"{"type":"header","version":1,"supports_extended_length":true,"label":null,"keys":["99472E124DE0FC6E4D80C797FAB3E512CD70351F521DE5556AD4FB7491911BF7","7C33C0F7883452F90759A14EECEBEDA9890DD20304680372FE85EF7E67A80B45"],"can":"123123"}
 {"type":"exchange","tx":"00A4040400","rx":"6282015A82017883023F008A01058407D2760001448000A181FA9103010501AB81908F0480FA0000A03CAF32A02BB4199501307F4C1306082A8214004C048119530700800000000000B406950130830114B406950130830118B803950110A40695010883011F8F04808400008C02808290008F0410EA00008F0400EA0000AF32A02BB406950130830113B406950130830118B4199501307F4C1306082A8214004C048119530700800000000000B8039501109103020501AB5B8F0410EA00008F0400EA0000AF32A02BB406950130830113B406950130830118B4199501307F4C1306082A8214004C048119530700800000000000B8039501108F0480840000AF9000","label":null}

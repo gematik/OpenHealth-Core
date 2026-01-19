@@ -19,23 +19,9 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-pub mod certificate;
-pub mod channel;
-pub mod error;
-pub mod ids;
-pub mod pace_info;
-pub mod pin;
-pub mod random;
-pub mod read_vsd;
-pub mod secure_channel;
-pub mod sign_challenge;
-#[cfg(test)]
-pub(crate) mod test_utils;
+pub mod apdu_tools;
 
-pub use certificate::{retrieve_certificate, retrieve_certificate_from, CertificateFile};
-pub use error::ExchangeError;
-pub use pin::{unlock_egk, verify_pin, CardPin, HealthCardVerifyPinResult, UnlockMethod};
-pub use random::get_random;
-pub use read_vsd::read_vsd;
-pub use secure_channel::{establish_secure_channel, establish_secure_channel_with, CardAccessNumber, SecureChannel};
-pub use sign_challenge::sign_challenge;
+pub use apdu_tools::{RecordingChannel, ReplayChannel};
+pub use healthcard_apdu_base::{EcKeyPairGenerator, FixedKeyGenerator, Transcript, TranscriptError};
+#[cfg(feature = "pcsc")]
+pub use apdu_tools::PcscChannel;
