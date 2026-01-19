@@ -29,4 +29,4 @@ This document summarizes the publicly released versions of OpenHealth Core.
 
 ### LATEST
 
-- Initial release.
+- Expose exchange-layer card operations (PIN verify/unlock, random/VSD/cert/sign) via FFI.
