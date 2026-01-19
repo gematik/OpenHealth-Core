@@ -59,7 +59,6 @@ pub enum TranscriptError {
 struct TranscriptHeader {
     version: u32,
     supports_extended_length: bool,
-    label: Option<String>,
     keys: Option<Vec<String>>,
     can: Option<String>,
 }
@@ -70,19 +69,16 @@ enum TranscriptEntry {
     Header {
         version: u32,
         supports_extended_length: bool,
-        label: Option<String>,
         keys: Option<Vec<String>>,
         can: Option<String>,
     },
     Exchange {
         tx: String,
         rx: String,
-        label: Option<String>,
     },
     Error {
         tx: String,
         error: String,
-        label: Option<String>,
     },
 }
 
@@ -95,17 +91,13 @@ pub struct Transcript {
 impl Transcript {
     pub fn new(supports_extended_length: bool) -> Self {
         Self {
-            header: TranscriptHeader { version: 1, supports_extended_length, label: None, keys: None, can: None },
+            header: TranscriptHeader { version: 1, supports_extended_length, keys: None, can: None },
             entries: Vec::new(),
         }
     }
 
     pub fn supports_extended_length(&self) -> bool {
         self.header.supports_extended_length
-    }
-
-    pub fn set_label(&mut self, label: impl Into<String>) {
-        self.header.label = Some(label.into());
     }
 
     pub fn set_keys(&mut self, keys: Vec<String>) {
@@ -134,12 +126,12 @@ impl Transcript {
         }
     }
 
-    pub fn push_exchange(&mut self, tx: &[u8], rx: &[u8], label: Option<String>) {
-        self.entries.push(TranscriptEntry::Exchange { tx: hex::encode_upper(tx), rx: hex::encode_upper(rx), label });
+    pub fn push_exchange(&mut self, tx: &[u8], rx: &[u8]) {
+        self.entries.push(TranscriptEntry::Exchange { tx: hex::encode_upper(tx), rx: hex::encode_upper(rx) });
     }
 
-    pub fn push_error(&mut self, tx: &[u8], error: impl Into<String>, label: Option<String>) {
-        self.entries.push(TranscriptEntry::Error { tx: hex::encode_upper(tx), error: error.into(), label });
+    pub fn push_error(&mut self, tx: &[u8], error: impl Into<String>) {
+        self.entries.push(TranscriptEntry::Error { tx: hex::encode_upper(tx), error: error.into() });
     }
 
     pub fn to_jsonl_string(&self) -> Result<String, TranscriptError> {
@@ -147,7 +139,6 @@ impl Transcript {
         let header = TranscriptEntry::Header {
             version: self.header.version,
             supports_extended_length: self.header.supports_extended_length,
-            label: self.header.label.clone(),
             keys: self.header.keys.clone(),
             can: self.header.can.clone(),
         };
@@ -171,8 +162,8 @@ impl Transcript {
         let header_line = lines.find(|line| !line.trim().is_empty()).ok_or(TranscriptError::InvalidHeader)?;
         let header_entry: TranscriptEntry = serde_json::from_str(header_line)?;
         let header = match header_entry {
-            TranscriptEntry::Header { version, supports_extended_length, label, keys, can } => {
-                TranscriptHeader { version, supports_extended_length, label, keys, can }
+            TranscriptEntry::Header { version, supports_extended_length, keys, can } => {
+                TranscriptHeader { version, supports_extended_length, keys, can }
             }
             _ => return Err(TranscriptError::InvalidHeader),
         };
@@ -201,8 +192,8 @@ impl Transcript {
         let header_line = header_line.ok_or(TranscriptError::InvalidHeader)?;
         let header_entry: TranscriptEntry = serde_json::from_str(&header_line)?;
         let header = match header_entry {
-            TranscriptEntry::Header { version, supports_extended_length, label, keys, can } => {
-                TranscriptHeader { version, supports_extended_length, label, keys, can }
+            TranscriptEntry::Header { version, supports_extended_length, keys, can } => {
+                TranscriptHeader { version, supports_extended_length, keys, can }
             }
             _ => return Err(TranscriptError::InvalidHeader),
         };

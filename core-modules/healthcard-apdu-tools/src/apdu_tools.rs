@@ -39,10 +39,6 @@ impl<C: CardChannel> RecordingChannel<C> {
         Self { inner, transcript }
     }
 
-    pub fn set_label(&mut self, label: impl Into<String>) {
-        self.transcript.set_label(label);
-    }
-
     pub fn set_keys(&mut self, keys: Vec<String>) {
         self.transcript.set_keys(keys);
     }
@@ -75,11 +71,11 @@ where
         let tx = command.to_bytes();
         match self.inner.transmit(command) {
             Ok(response) => {
-                self.transcript.push_exchange(&tx, &response.to_bytes(), None);
+                self.transcript.push_exchange(&tx, &response.to_bytes());
                 Ok(response)
             }
             Err(err) => {
-                self.transcript.push_error(&tx, format!("{err:?}"), None);
+                self.transcript.push_error(&tx, format!("{err:?}"));
                 Err(err)
             }
         }
@@ -101,11 +97,11 @@ where
         let tx = command.to_bytes();
         match self.inner.transmit(command) {
             Ok(response) => {
-                self.transcript.push_exchange(&tx, &response.to_bytes(), None);
+                self.transcript.push_exchange(&tx, &response.to_bytes());
                 Ok(response)
             }
             Err(err) => {
-                self.transcript.push_error(&tx, format!("{err:?}"), None);
+                self.transcript.push_error(&tx, format!("{err:?}"));
                 Err(err)
             }
         }

@@ -78,6 +78,25 @@ cargo run -p healthcard-apdu-tools --bin apdu_record --features pcsc -- \
   --read-certificates
 ```
 
+Additional exchange helpers can be executed during the same secure session:
+
+```sh
+cargo run -p healthcard-apdu-tools --bin apdu_record --features pcsc -- \
+  --reader "<PCSC reader name>" \
+  --can 123456 \
+  --out ./transcript.jsonl \
+  --verify-pin 123456 \
+  --sign-challenge DEADBEEF \
+  --get-random 32 \
+  --read-vsd
+```
+
+Notes:
+
+- `--verify-pin` expects the home PIN (MRPIN.H).
+- `--sign-challenge` expects hex-encoded input; separators such as spaces, `_`, or `:` are ignored.
+- `--get-random` returns the requested number of random bytes.
+
 APDU length options:
 
 - Default: uses extended-length APDUs when needed.

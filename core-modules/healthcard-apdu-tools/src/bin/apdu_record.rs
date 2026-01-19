@@ -28,9 +28,12 @@ fn main() {
 fn main() {
     use clap::Parser;
     use crypto::ec::ec_key::{EcCurve, EcKeyPairSpec};
-    use healthcard_apdu_tools::{PcscChannel, RecordingChannel};
+    use healthcard::exchange::{
+        get_random, read_vsd, sign_challenge, verify_pin, CardPin, HealthCardVerifyPinResult,
+    };
     use healthcard::exchange::certificate::{retrieve_certificate_from, CertificateFile};
     use healthcard::exchange::secure_channel::{establish_secure_channel_with, CardAccessNumber};
+    use healthcard_apdu_tools::{PcscChannel, RecordingChannel};
 
     if let Err(err) = run() {
         eprintln!("{err}");
@@ -59,6 +62,18 @@ fn main() {
         /// Read certificates and print them as hex to stdout
         #[arg(long)]
         read_certificates: bool,
+        /// Verify the home PIN (MRPIN.H)
+        #[arg(long, value_name = "PIN")]
+        verify_pin: Option<String>,
+        /// Sign a challenge (hex) with the card holder authentication key
+        #[arg(long, value_name = "HEX")]
+        sign_challenge: Option<String>,
+        /// Get random bytes from the card
+        #[arg(long, value_name = "LEN")]
+        get_random: Option<usize>,
+        /// Read the VSD container and print it as hex
+        #[arg(long)]
+        read_vsd: bool,
     }
 
     fn run() -> Result<(), String> {
@@ -88,14 +103,48 @@ fn main() {
         })
         .map_err(|err| format!("PACE failed: {err}"))?;
 
+        if let Some(pin) = args.verify_pin.as_deref() {
+            let pin = CardPin::new(pin).map_err(|err| format!("invalid PIN: {err}"))?;
+            match verify_pin(&mut secure_channel, &pin).map_err(|err| format!("verify PIN failed: {err}"))? {
+                HealthCardVerifyPinResult::Success(_) => println!("PIN verification: success"),
+                HealthCardVerifyPinResult::WrongSecretWarning { retries_left, .. } => {
+                    return Err(format!("PIN verification failed, retries left: {retries_left}"));
+                }
+                HealthCardVerifyPinResult::CardBlocked(_) => {
+                    return Err("PIN verification failed: card blocked".to_string());
+                }
+            }
+        }
+
         if args.read_certificates {
             let cert = retrieve_certificate_from(&mut secure_channel, CertificateFile::ChAutE256)
                 .map_err(|err| format!("read DF.ESIGN/EF.C.CH.AUT.E256 failed: {err}"))?;
-            print_certificate("DF.ESIGN/EF.C.CH.AUT.E256", &cert);
+            print_hex("DF.ESIGN/EF.C.CH.AUT.E256", &cert);
 
             let cert = retrieve_certificate_from(&mut secure_channel, CertificateFile::EgkAutCvcE256)
                 .map_err(|err| format!("read MF/EF.C.eGK.AUT_CVC.E256 failed: {err}"))?;
-            print_certificate("MF/EF.C.eGK.AUT_CVC.E256", &cert);
+            print_hex("MF/EF.C.eGK.AUT_CVC.E256", &cert);
+        }
+
+        if args.read_vsd {
+            let vsd = read_vsd(&mut secure_channel).map_err(|err| format!("read VSD failed: {err}"))?;
+            print_hex("VSD", &vsd);
+        }
+
+        if let Some(length) = args.get_random {
+            if length == 0 {
+                return Err("random length must be greater than 0".to_string());
+            }
+            let random = get_random(&mut secure_channel, length)
+                .map_err(|err| format!("get random ({length}) failed: {err}"))?;
+            print_hex(&format!("Random ({length} bytes)"), &random);
+        }
+
+        if let Some(challenge_hex) = args.sign_challenge.as_deref() {
+            let challenge = parse_hex("challenge", challenge_hex)?;
+            let signature = sign_challenge(&mut secure_channel, &challenge)
+                .map_err(|err| format!("sign challenge failed: {err}"))?;
+            print_hex("Signature", &signature);
         }
 
         drop(secure_channel);
@@ -109,7 +158,20 @@ fn main() {
         Ok(())
     }
 
-    fn print_certificate(label: &str, data: &[u8]) {
+    fn parse_hex(label: &str, input: &str) -> Result<Vec<u8>, String> {
+        let trimmed = input.trim();
+        let without_prefix = trimmed.strip_prefix("0x").unwrap_or(trimmed);
+        let cleaned = without_prefix
+            .chars()
+            .filter(|c| !matches!(c, ' ' | '_' | ':' | '\n' | '\r' | '\t'))
+            .collect::<String>();
+        if cleaned.is_empty() {
+            return Err(format!("{label} hex input is empty"));
+        }
+        hex::decode(&cleaned).map_err(|err| format!("invalid {label} hex: {err}"))
+    }
+
+    fn print_hex(label: &str, data: &[u8]) {
         println!("{label} ({} bytes):", data.len());
         for chunk in data.chunks(32) {
             println!("  {}", hex::encode_upper(chunk));
