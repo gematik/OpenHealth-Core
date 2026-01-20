@@ -282,6 +282,7 @@ mod tests {
     mod pcsc_tests {
         use super::*;
         use healthcard::command::health_card_command::HealthCardCommand;
+        use healthcard::command::SelectCommand;
         use healthcard::exchange::channel::CardChannelExt;
 
         #[test]
