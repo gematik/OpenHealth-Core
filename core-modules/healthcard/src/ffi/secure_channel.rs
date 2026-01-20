@@ -28,6 +28,9 @@ use crate::exchange::certificate::CertificateFile;
 use crate::exchange::secure_channel::{self, CardAccessNumber as ActualCardAccessNumber};
 use crate::exchange::ExchangeError;
 use crate::exchange::UnlockMethod;
+use crypto::ec::ec_key::{EcCurve, EcPrivateKey};
+use crypto::error::CryptoError;
+use num_bigint::{BigInt, Sign};
 use std::convert::TryInto;
 use std::sync::{Arc, Mutex};
 use thiserror::Error;
@@ -147,6 +150,48 @@ pub fn establish_secure_channel(
 ) -> Result<Arc<SecureChannel>, SecureChannelError> {
     let adapter = FfiCardChannelAdapter::new(session);
     let established = secure_channel::establish_secure_channel(adapter, card_access_number.as_core())?;
+    Ok(Arc::new(SecureChannel { inner: Mutex::new(established) }))
+}
+
+/// Establishes a secure channel (PACE) using deterministic private keys.
+///
+/// The `keys` input must contain at least two hex-encoded private keys which are used
+/// in order during PACE establishment. This is intended for transcript replay tests.
+#[uniffi::export]
+pub fn establish_secure_channel_with_keys(
+    session: Arc<dyn CardChannel>,
+    card_access_number: Arc<CardAccessNumber>,
+    keys: Vec<String>,
+) -> Result<Arc<SecureChannel>, SecureChannelError> {
+    if keys.len() < 2 {
+        return Err(SecureChannelError::InvalidArgument { reason: "at least 2 keys required".to_string() });
+    }
+
+    let decoded = keys
+        .iter()
+        .enumerate()
+        .map(|(index, key)| {
+            hex::decode(key).map_err(|err| SecureChannelError::InvalidArgument {
+                reason: format!("invalid key hex at index {index}: {err}"),
+            })
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+
+    let mut key_iter = decoded.into_iter();
+    let adapter = FfiCardChannelAdapter::new(session);
+    let established = secure_channel::establish_secure_channel_with(
+        adapter,
+        card_access_number.as_core(),
+        move |curve: EcCurve| {
+            let key_bytes = key_iter.next().ok_or_else(|| CryptoError::InvalidKeyMaterial {
+                context: "missing fixed key material",
+            })?;
+            let private_key = EcPrivateKey::from_bytes(curve.clone(), key_bytes);
+            let scalar = BigInt::from_bytes_be(Sign::Plus, private_key.as_bytes());
+            let public_key = curve.g().mul(&scalar)?.to_ec_public_key()?;
+            Ok((public_key, private_key))
+        },
+    )?;
     Ok(Arc::new(SecureChannel { inner: Mutex::new(established) }))
 }
 
