@@ -54,7 +54,7 @@ Security
 Dependencies
 - Dependabot config/allowlist and dependency bumps (OPEN-96, dependabot updates).
 
-### 0.0.1-alpha1–0.0.1-alpha4
+### 0.0.1-alpha1 –> 0.0.1-alpha4
 - KMP → Rust core migration
 
 ### 0.1.2-POPP_RELEASE (June 23, 2025)

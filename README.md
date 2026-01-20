@@ -44,27 +44,33 @@ without prior notice.**
 
 We aim to support a broad set of operating systems and architectures, including:
 
-| Platform      | Architectures | Runtimes (examples)              | Supported?   |
-|---------------|---------------|----------------------------------|--------------|
-| Linux         | x86_64        | Native Rust, JVM (tests/tooling) | Experimental |
-| Windows       | x86_64        | Native Rust, JVM (tests/tooling) | Experimental |
-| macOS         | arm64         | Native Rust, JVM (tests/tooling) | Experimental |
-| Android       | arm64, x86_64 | JVM (Android, via JNI/NDK)       | Experimental |
-| iOS           | arm64         | Native                           | Experimental |
-| iOS Simulator | arm64         | Native                           | Experimental |
-
+| Platform      | Architectures | Runtimes (examples)              | Supported? |
+|---------------|---------------|----------------------------------|------------|
+| Linux         | x86_64        | Native Rust, JVM (tests/tooling) | alpha      |
+| Windows       | x86_64        | Native Rust, JVM (tests/tooling) | alpha      |
+| macOS         | arm64         | Native Rust, JVM (tests/tooling) | alpha      |
+| Android       | arm64, x86_64 | JVM (Android, via JNI/NDK)       | alpha      |
+| iOS           | arm64         | Native                           | alpha      |
+alpha
 ## Usage (Artifacts)
-
-The latest published artifacts are attached to the most recent GitHub release as:
-
-- `maven-repo.zip` (Android/JVM/KMP Maven repository snapshot).
-- `OpenHealthHealthcardFFI.xcframework.zip` (prebuilt Swift xcframework).
-
-Download them from the release assets, then follow the steps below.
 
 ### Maven (Android, KMP, JVM)
 
 Published artifacts are available on Maven Central. Use the latest published version.
+
+Kotlin Multiplatform (common dependency):
+
+```kotlin
+kotlin {
+    sourceSets {
+        val commonMain by getting {
+            dependencies {
+                implementation("de.gematik.openhealth:healthcard:<version>")
+            }
+        }
+    }
+}
+```
 
 Android:
 
@@ -83,20 +89,6 @@ repositories { mavenCentral() }
 
 dependencies {
     implementation("de.gematik.openhealth:healthcard-jvm:<version>")
-}
-```
-
-Kotlin Multiplatform (common dependency):
-
-```kotlin
-kotlin {
-    sourceSets {
-        val commonMain by getting {
-            dependencies {
-                implementation("de.gematik.openhealth:healthcard:<version>")
-            }
-        }
-    }
 }
 ```
 
