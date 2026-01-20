@@ -21,7 +21,7 @@
 
 pub mod apdu_tools;
 
-pub use apdu_tools::{RecordingChannel, ReplayChannel};
-pub use healthcard_apdu_base::{EcKeyPairGenerator, FixedKeyGenerator, Transcript, TranscriptError};
 #[cfg(feature = "pcsc")]
 pub use apdu_tools::PcscChannel;
+pub use apdu_tools::{RecordingChannel, ReplayChannel};
+pub use healthcard_apdu_base::{EcKeyPairGenerator, FixedKeyGenerator, Transcript, TranscriptError};

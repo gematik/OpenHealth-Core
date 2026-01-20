@@ -23,8 +23,8 @@ use super::channel::{CardChannel, CommandApdu, FfiCardChannelAdapter, ResponseAp
 use super::exchange::{CardPin, VerifyPinResult};
 use crate::command::apdu::ApduError;
 use crate::command::health_card_status::HealthCardResponseStatus;
-use crate::exchange::channel::CardChannel as CoreCardChannel;
 use crate::exchange::certificate::CertificateFile;
+use crate::exchange::channel::CardChannel as CoreCardChannel;
 use crate::exchange::secure_channel::{self, CardAccessNumber as ActualCardAccessNumber};
 use crate::exchange::ExchangeError;
 use crate::exchange::UnlockMethod;
@@ -179,19 +179,15 @@ pub fn establish_secure_channel_with_keys(
 
     let mut key_iter = decoded.into_iter();
     let adapter = FfiCardChannelAdapter::new(session);
-    let established = secure_channel::establish_secure_channel_with(
-        adapter,
-        card_access_number.as_core(),
-        move |curve: EcCurve| {
-            let key_bytes = key_iter.next().ok_or_else(|| CryptoError::InvalidKeyMaterial {
-                context: "missing fixed key material",
-            })?;
+    let established =
+        secure_channel::establish_secure_channel_with(adapter, card_access_number.as_core(), move |curve: EcCurve| {
+            let key_bytes =
+                key_iter.next().ok_or(CryptoError::InvalidKeyMaterial { context: "missing fixed key material" })?;
             let private_key = EcPrivateKey::from_bytes(curve.clone(), key_bytes);
             let scalar = BigInt::from_bytes_be(Sign::Plus, private_key.as_bytes());
             let public_key = curve.g().mul(&scalar)?.to_ec_public_key()?;
             Ok((public_key, private_key))
-        },
-    )?;
+        })?;
     Ok(Arc::new(SecureChannel { inner: Mutex::new(established) }))
 }
 
@@ -204,7 +200,7 @@ impl SecureChannel {
             .inner
             .lock()
             .map_err(|_| SecureChannelError::Transport { code: 0, reason: "Failed to acquire lock".to_string() })?;
-        op(&mut *guard).map_err(SecureChannelError::from)
+        op(&mut guard).map_err(SecureChannelError::from)
     }
 }
 
@@ -274,10 +270,7 @@ impl SecureChannel {
     }
 
     /// Retrieves a specific certificate file from the card.
-    pub fn retrieve_certificate_from(
-        &self,
-        certificate: CertificateFile,
-    ) -> Result<Vec<u8>, SecureChannelError> {
+    pub fn retrieve_certificate_from(&self, certificate: CertificateFile) -> Result<Vec<u8>, SecureChannelError> {
         self.with_locked(|channel| crate::exchange::retrieve_certificate_from(channel, certificate))
     }
 }

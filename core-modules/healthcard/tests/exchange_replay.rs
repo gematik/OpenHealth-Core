@@ -25,10 +25,10 @@ impl CardChannel for ReplayChannel {
 
     fn transmit(&mut self, command: &CardCommandApdu) -> Result<CardResponseApdu, Self::Error> {
         let tx = command.to_bytes();
-        let rx = self.session.transmit_bytes(&tx).map_err(|err| ExchangeError::Transport {
-            code: 0,
-            message: err.to_string(),
-        })?;
+        let rx = self
+            .session
+            .transmit_bytes(&tx)
+            .map_err(|err| ExchangeError::Transport { code: 0, message: err.to_string() })?;
         CardResponseApdu::new(&rx).map_err(ExchangeError::from)
     }
 }
@@ -37,10 +37,7 @@ fn establish_from_transcript(jsonl: &str) -> SecureChannel<ReplayChannel> {
     let transcript = Transcript::from_jsonl_str(jsonl).expect("load transcript");
     let can = transcript.can().expect("CAN in transcript");
     let card_access_number = CardAccessNumber::new(can).expect("CAN format");
-    let mut generator = transcript
-        .fixed_key_generator()
-        .expect("keys parse")
-        .expect("fixed key generator");
+    let mut generator = transcript.fixed_key_generator().expect("keys parse").expect("fixed key generator");
     let replay = ReplayChannel::from_transcript(transcript);
     establish_secure_channel_with(replay, &card_access_number, &mut generator).expect("replay establish secure channel")
 }
@@ -83,8 +80,8 @@ fn replay_retrieve_certificates() {
     let cert = retrieve_certificate(&mut channel).expect("retrieve default certificate");
     assert!(!cert.is_empty());
 
-    let cv_cert = retrieve_certificate_from(&mut channel, CertificateFile::EgkAutCvcE256)
-        .expect("retrieve CV certificate");
+    let cv_cert =
+        retrieve_certificate_from(&mut channel, CertificateFile::EgkAutCvcE256).expect("retrieve CV certificate");
     assert!(!cv_cert.is_empty());
 }
 

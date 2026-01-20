@@ -97,11 +97,9 @@ pub struct VerifyPinResult {
 impl VerifyPinResult {
     pub(crate) fn from_core(result: HealthCardVerifyPinResult) -> Self {
         match result {
-            HealthCardVerifyPinResult::Success(response) => VerifyPinResult {
-                outcome: VerifyPinOutcome::Success,
-                response: response.into(),
-                retries_left: None,
-            },
+            HealthCardVerifyPinResult::Success(response) => {
+                VerifyPinResult { outcome: VerifyPinOutcome::Success, response: response.into(), retries_left: None }
+            }
             HealthCardVerifyPinResult::WrongSecretWarning { response, retries_left } => VerifyPinResult {
                 outcome: VerifyPinOutcome::WrongSecretWarning,
                 response: response.into(),

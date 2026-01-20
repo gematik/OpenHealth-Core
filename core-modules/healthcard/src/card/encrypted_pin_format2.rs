@@ -77,7 +77,7 @@ impl EncryptedPinFormat2 {
         format2[0] = FORMAT_PIN_2_ID + digits.len() as u8;
 
         for (i, &digit) in digits.iter().enumerate() {
-            if !(b'0'..=b'9').contains(&digit) {
+            if !digit.is_ascii_digit() {
                 return Err(PinBlockError::NonDigit(digit as char));
             }
             let numeric = digit - STRING_INT_OFFSET;

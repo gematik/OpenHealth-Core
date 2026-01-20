@@ -135,10 +135,10 @@ impl CardChannel for ReplayChannel {
 
     fn transmit(&mut self, command: &CardCommandApdu) -> Result<CardResponseApdu, Self::Error> {
         let tx = command.to_bytes();
-        let rx = self.session.transmit_bytes(&tx).map_err(|err| ExchangeError::Transport {
-            code: 0,
-            message: err.to_string(),
-        })?;
+        let rx = self
+            .session
+            .transmit_bytes(&tx)
+            .map_err(|err| ExchangeError::Transport { code: 0, message: err.to_string() })?;
         CardResponseApdu::new(&rx).map_err(ExchangeError::from)
     }
 }
@@ -153,8 +153,10 @@ pub struct PcscChannel {
 #[cfg(feature = "pcsc")]
 impl PcscChannel {
     pub fn connect(reader: &str, supports_extended_length: bool) -> Result<Self, ExchangeError> {
-        let ctx = pcsc::Context::establish(pcsc::Scope::User)
-            .map_err(|err| ExchangeError::Transport { code: 0, message: format!("pcsc context establish failed: {err}") })?;
+        let ctx = pcsc::Context::establish(pcsc::Scope::User).map_err(|err| ExchangeError::Transport {
+            code: 0,
+            message: format!("pcsc context establish failed: {err}"),
+        })?;
         let reader_cstr = CString::new(reader)
             .map_err(|_| ExchangeError::Transport { code: 0, message: "pcsc reader name contains NUL".to_string() })?;
         let card = ctx
@@ -164,8 +166,10 @@ impl PcscChannel {
     }
 
     pub fn connect_first_reader(supports_extended_length: bool) -> Result<Self, ExchangeError> {
-        let ctx = pcsc::Context::establish(pcsc::Scope::User)
-            .map_err(|err| ExchangeError::Transport { code: 0, message: format!("pcsc context establish failed: {err}") })?;
+        let ctx = pcsc::Context::establish(pcsc::Scope::User).map_err(|err| ExchangeError::Transport {
+            code: 0,
+            message: format!("pcsc context establish failed: {err}"),
+        })?;
         let readers = ctx
             .list_readers_owned()
             .map_err(|err| ExchangeError::Transport { code: 0, message: format!("pcsc list readers failed: {err}") })?;

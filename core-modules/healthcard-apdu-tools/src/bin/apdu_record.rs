@@ -28,11 +28,9 @@ fn main() {
 fn main() {
     use clap::Parser;
     use crypto::ec::ec_key::{EcCurve, EcKeyPairSpec};
-    use healthcard::exchange::{
-        get_random, read_vsd, sign_challenge, verify_pin, CardPin, HealthCardVerifyPinResult,
-    };
     use healthcard::exchange::certificate::{retrieve_certificate_from, CertificateFile};
     use healthcard::exchange::secure_channel::{establish_secure_channel_with, CardAccessNumber};
+    use healthcard::exchange::{get_random, read_vsd, sign_challenge, verify_pin, CardPin, HealthCardVerifyPinResult};
     use healthcard_apdu_tools::{PcscChannel, RecordingChannel};
 
     if let Err(err) = run() {
@@ -161,10 +159,8 @@ fn main() {
     fn parse_hex(label: &str, input: &str) -> Result<Vec<u8>, String> {
         let trimmed = input.trim();
         let without_prefix = trimmed.strip_prefix("0x").unwrap_or(trimmed);
-        let cleaned = without_prefix
-            .chars()
-            .filter(|c| !matches!(c, ' ' | '_' | ':' | '\n' | '\r' | '\t'))
-            .collect::<String>();
+        let cleaned =
+            without_prefix.chars().filter(|c| !matches!(c, ' ' | '_' | ':' | '\n' | '\r' | '\t')).collect::<String>();
         if cleaned.is_empty() {
             return Err(format!("{label} hex input is empty"));
         }

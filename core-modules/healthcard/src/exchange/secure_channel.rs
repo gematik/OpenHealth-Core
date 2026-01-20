@@ -659,7 +659,6 @@ mod tests {
     use crate::exchange::channel::CardChannel;
     use hex::encode;
 
-
     #[test]
     fn create_auth_token_matches_reference() {
         let curve = EcCurve::BrainpoolP256r1;

@@ -66,20 +66,9 @@ struct TranscriptHeader {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 enum TranscriptEntry {
-    Header {
-        version: u32,
-        supports_extended_length: bool,
-        keys: Option<Vec<String>>,
-        can: Option<String>,
-    },
-    Exchange {
-        tx: String,
-        rx: String,
-    },
-    Error {
-        tx: String,
-        error: String,
-    },
+    Header { version: u32, supports_extended_length: bool, keys: Option<Vec<String>>, can: Option<String> },
+    Exchange { tx: String, rx: String },
+    Error { tx: String, error: String },
 }
 
 #[derive(Clone, Debug)]
@@ -239,7 +228,8 @@ impl ReplaySession {
         self.cursor += 1;
         match entry {
             TranscriptEntry::Exchange { tx: expected_tx, rx, .. } => {
-                let expected_tx = hex::decode(expected_tx).map_err(|err| TranscriptError::InvalidTxHex(err.to_string()))?;
+                let expected_tx =
+                    hex::decode(expected_tx).map_err(|err| TranscriptError::InvalidTxHex(err.to_string()))?;
                 if expected_tx != tx {
                     return Err(TranscriptError::ReplayMismatch);
                 }
@@ -247,7 +237,8 @@ impl ReplaySession {
                 Ok(rx_bytes)
             }
             TranscriptEntry::Error { tx: expected_tx, error, .. } => {
-                let expected_tx = hex::decode(expected_tx).map_err(|err| TranscriptError::InvalidTxHex(err.to_string()))?;
+                let expected_tx =
+                    hex::decode(expected_tx).map_err(|err| TranscriptError::InvalidTxHex(err.to_string()))?;
                 if expected_tx != tx {
                     return Err(TranscriptError::ReplayMismatch);
                 }
