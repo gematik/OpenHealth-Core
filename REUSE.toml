@@ -30,3 +30,8 @@ SPDX-License-Identifier = "Apache-2.0"
 path = ["core-modules-kotlin/gradle/wrapper/*"]
 SPDX-FileCopyrightText = "NONE"
 SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["test-vectors/apdu-replay/*.jsonl"]
+SPDX-FileCopyrightText = "2026 gematik GmbH"
+SPDX-License-Identifier = "Apache-2.0"
