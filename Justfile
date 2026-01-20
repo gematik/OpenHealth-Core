@@ -55,7 +55,8 @@ swift_out_root := env_var_or_default("OUT_ROOT", swift_out_root_default)
 #
 # Output layout (under `OUT_ROOT`):
 # - `{{ language }}/`: generated sources (Kotlin or Swift)
-# - `resources/{{ platform }}-{{ arch }}/`: contains the built library file
+# - `resources/<resource-id>/`: contains the built library file
+#   - normalized for JNA resource lookup (e.g. `windows/x86_64` -> `win32-x86-64`)
 #
 # Generate UniFFI bindings and stage the built library per target.
 [arg('platform', pattern='linux|windows|darwin')]
@@ -70,7 +71,18 @@ uniffi-bindings-generate platform arch language library_file profile="release":
     : "${OUT_ROOT:?OUT_ROOT must be set}"
     : "${CARGO_TARGET_DIR:?CARGO_TARGET_DIR must be set}"
 
-    resource_id="{{ platform }}-{{ arch }}"
+    resource_platform="{{ platform }}"
+    resource_arch="{{ arch }}"
+
+    # Align with JNA's `Platform.RESOURCE_PREFIX` (examples: `darwin-aarch64`, `linux-x86-64`, `win32-x86-64`).
+    if [ "${resource_platform}" = "windows" ]; then
+        resource_platform="win32"
+    fi
+    if [ "${resource_arch}" = "x86_64" ]; then
+        resource_arch="x86-64"
+    fi
+
+    resource_id="${resource_platform}-${resource_arch}"
 
     language_dir="${OUT_ROOT}/{{ language }}"
     resources_dir="${OUT_ROOT}/resources/${resource_id}"
