@@ -52,9 +52,8 @@ We aim to support a broad set of operating systems and architectures, including:
 | Android       | arm64, x86_64 | JVM (Android, via JNI/NDK)       | alpha      |
 | iOS           | arm64         | Native                           | alpha      |
 alpha
-## Usage (Artifacts)
 
-### Maven (Android, KMP, JVM)
+## Usage / Artifacts
 
 Published artifacts are available on Maven Central. Use the latest published version.
 
