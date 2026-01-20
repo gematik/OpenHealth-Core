@@ -53,6 +53,66 @@ We aim to support a broad set of operating systems and architectures, including:
 | iOS           | arm64         | Native                           | Experimental |
 | iOS Simulator | arm64         | Native                           | Experimental |
 
+## Usage (Artifacts)
+
+The latest published artifacts are attached to the most recent GitHub release as:
+
+- `maven-repo.zip` (Android/JVM/KMP Maven repository snapshot).
+- `OpenHealthHealthcardFFI.xcframework.zip` (prebuilt Swift xcframework).
+
+Download them from the release assets, then follow the steps below.
+
+### Maven (Android, KMP, JVM)
+
+Published artifacts are available on Maven Central. Use the latest published version.
+
+Android:
+
+```kotlin
+repositories { mavenCentral() }
+
+dependencies {
+    implementation("de.gematik.openhealth:healthcard-android:<version>")
+}
+```
+
+JVM:
+
+```kotlin
+repositories { mavenCentral() }
+
+dependencies {
+    implementation("de.gematik.openhealth:healthcard-jvm:<version>")
+}
+```
+
+Kotlin Multiplatform (common dependency):
+
+```kotlin
+kotlin {
+    sourceSets {
+        val commonMain by getting {
+            dependencies {
+                implementation("de.gematik.openhealth:healthcard:<version>")
+            }
+        }
+    }
+}
+```
+
+### Swift (Xcode SwiftPM)
+
+1. In Xcode, add a package dependency with the repository URL:
+   `https://github.com/gematik/OpenHealth-Core`.
+2. Set the Dependency Rule to **Exact Version** and pick the desired release tag.
+3. Add the `OpenHealthHealthcard` product to your target.
+
+Notes:
+
+- The Swift package references the xcframework at
+  `core-modules-swift/healthcard/OpenHealthHealthcardFFI.xcframework` inside the selected tag. If that file is missing
+  for a given release, build it locally (see `core-modules-swift/healthcard/README.md`) or use the release asset.
+
 ## Contributing
 
 If you want to contribute, please refer to the
