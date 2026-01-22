@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2025 gematik GmbH
+// SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -19,5 +19,14 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
+//! UniFFI bindings for `healthcard`.
+//!
+//! This module defines the Rust-side surface that is exported via UniFFI to foreign languages.
+//! It intentionally wraps the core `exchange` and `secure_channel` APIs into FFI-friendly objects,
+//! records and enums.
+//!
+//! See `core-modules/healthcard/src/ffi/README.md` for an overview of the exported API.
+
 mod channel;
+mod exchange;
 mod secure_channel;

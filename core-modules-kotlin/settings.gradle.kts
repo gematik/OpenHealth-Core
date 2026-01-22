@@ -32,6 +32,7 @@ plugins {
 }
 
 include(":healthcard")
+include(":healthcard-testkit")
 include(":sample-app")
 
 rootProject.name = "core-modules-kotlin"

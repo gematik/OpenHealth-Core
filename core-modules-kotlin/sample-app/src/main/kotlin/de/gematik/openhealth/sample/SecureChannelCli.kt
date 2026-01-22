@@ -58,8 +58,8 @@ fun main() {
             error("Failed to build command APDU: ${ex.message}")
         }
         val response = secureChannel.transmit(command)
-        val sw = "%04X".format(response.sw.toInt())
-        println("Secure channel response: SW=$sw, data=${response.data.toHexString()}, status=${response.status}")
+        val sw = "%04X".format(response.sw().toInt())
+        println("Secure channel response: SW=$sw, data=${response.data().toHexString()}")
     } finally {
         try {
             card.disconnect(false)

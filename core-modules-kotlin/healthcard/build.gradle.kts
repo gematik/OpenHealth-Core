@@ -65,8 +65,17 @@ kotlin {
                 implementation("net.java.dev.jna:jna:5.18.1@aar")
             }
         }
+        val androidInstrumentedTest by getting {
+            dependencies {
+                implementation(project(":healthcard-testkit"))
+                implementation(kotlin("test"))
+                implementation("androidx.test.ext:junit:1.2.1")
+                implementation("androidx.test:runner:1.6.2")
+            }
+        }
         val jvmTest by getting {
             dependencies {
+                implementation(project(":healthcard-testkit"))
                 implementation(kotlin("test"))
             }
         }
@@ -78,6 +87,7 @@ android {
     compileSdk = 36
     defaultConfig {
         minSdk = 24
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
     compileOptions {

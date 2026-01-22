@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2025 gematik GmbH
+// SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -31,6 +31,7 @@ use super::ids;
 
 /// Defines which certificate file to read from the card.
 #[derive(Clone, Copy, Debug)]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 pub enum CertificateFile {
     /// X.509 certificate stored in `DF.ESIGN/EF.C.CH.AUT.E256`.
     ChAutE256,

@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: Copyright 2025 gematik GmbH
+SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
 
 SPDX-License-Identifier: Apache-2.0
 
@@ -26,6 +26,11 @@ find details in the "Readme" file.
 This document summarizes the publicly released versions of OpenHealth Core.
 
 ## Change Log
+
+### Upcoming
+
+- Expose exchange-layer card operations (PIN verify/unlock, random/VSD/cert/sign) via FFI ([#47](https://github.com/gematik/OpenHealth-Core/pull/47)).
+- Document FFI exported APIs ([#47](https://github.com/gematik/OpenHealth-Core/pull/47)).
 
 ### 0.0.1-alpha5 (Latest)
 

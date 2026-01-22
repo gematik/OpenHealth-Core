@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2025 gematik GmbH
+// SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -20,11 +20,15 @@
 // find details in the "Readme" file.
 
 use crate::command::apdu::{ApduError, CardCommandApdu, CardResponseApdu};
-use crate::command::health_card_status::{HealthCardResponseStatus, StatusWordExt};
+use crate::exchange::channel::CardChannel as CoreCardChannel;
 use crate::exchange::ExchangeError;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use thiserror::Error;
 
+/// ISO/IEC 7816-4 command APDU.
+///
+/// Length parameters are expressed as `u32`. Values outside the supported APDU ranges return
+/// `ApduError::InvalidLength`.
 #[derive(Debug, uniffi::Object)]
 pub struct CommandApdu {
     inner: CardCommandApdu,
@@ -47,16 +51,27 @@ impl CommandApdu {
 
 #[uniffi::export]
 impl CommandApdu {
+    /// Creates a case 1 APDU (header only, no data, no expected length).
     #[uniffi::constructor]
     pub fn header_only(cla: u8, ins: u8, p1: u8, p2: u8) -> Result<Self, ApduError> {
         Ok(Self { inner: CardCommandApdu::header_only(cla, ins, p1, p2)? })
     }
 
+    /// Parses a command APDU from raw bytes.
     #[uniffi::constructor]
     pub fn from_bytes(bytes: Vec<u8>) -> Result<Self, ApduError> {
         Ok(Self { inner: CardCommandApdu::from_bytes(&bytes)? })
     }
 
+    /// Creates an APDU with an expected response length (`Le`).
+    ///
+    /// `expected_length` is the expected number of response bytes (excluding SW1SW2).
+    ///
+    /// Special values:
+    /// - With `length_class = Short`, `expected_length` must be in `0..=256`.
+    ///   - `expected_length = 0` or `256` requests the maximum short-length response (`Le = 0x00`).
+    /// - With `length_class = Extended`, `expected_length` must be in `257..=65536`.
+    ///   - `expected_length = 65536` requests the maximum extended-length response (`Le = 0x0000`).
     #[uniffi::constructor]
     pub fn with_expect(
         cla: u8,
@@ -66,9 +81,15 @@ impl CommandApdu {
         length_class: crate::command::apdu::LengthClass,
         expected_length: u32,
     ) -> Result<Self, ApduError> {
-        Ok(Self { inner: CardCommandApdu::with_expect(cla, ins, p1, p2, length_class, expected_length as usize)? })
+        let expected_length = usize::try_from(expected_length)
+            .map_err(|_| ApduError::InvalidLength("expected_length is too large".into()))?;
+        Ok(Self { inner: CardCommandApdu::with_expect(cla, ins, p1, p2, length_class, expected_length)? })
     }
 
+    /// Creates an APDU with command data (`Lc` + data), without an expected response length.
+    ///
+    /// `length_class` selects short or extended-length encoding and therefore constrains `data`
+    /// length (short: `1..=255`, extended: `>= 256`).
     #[uniffi::constructor]
     pub fn with_data(
         cla: u8,
@@ -81,6 +102,9 @@ impl CommandApdu {
         Ok(Self { inner: CardCommandApdu::with_data(cla, ins, p1, p2, length_class, data)? })
     }
 
+    /// Creates an APDU with command data (`Lc` + data) and an expected response length (`Le`).
+    ///
+    /// See `with_expect` for the valid `expected_length` ranges.
     #[uniffi::constructor]
     pub fn with_data_and_expect(
         cla: u8,
@@ -91,56 +115,101 @@ impl CommandApdu {
         data: Vec<u8>,
         expected_length: u32,
     ) -> Result<Self, ApduError> {
+        let expected_length = usize::try_from(expected_length)
+            .map_err(|_| ApduError::InvalidLength("expected_length is too large".into()))?;
         Ok(Self {
-            inner: CardCommandApdu::with_data_and_expect(
-                cla,
-                ins,
-                p1,
-                p2,
-                length_class,
-                data,
-                expected_length as usize,
-            )?,
+            inner: CardCommandApdu::with_data_and_expect(cla, ins, p1, p2, length_class, data, expected_length)?,
         })
     }
 
+    /// Serializes the command APDU to raw bytes.
     pub fn to_bytes(&self) -> Vec<u8> {
         self.inner.to_bytes()
     }
 }
 
-#[derive(Debug, Clone)]
-#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+/// ISO/IEC 7816-4 response APDU.
+///
+/// This object represents a response APDU and exposes:
+/// - `sw()`: status word (SW1SW2)
+/// - `data()`: response data without the status word
+/// - `to_bytes()`: raw APDU bytes (`data || SW1 || SW2`)
+#[derive(Debug, uniffi::Object)]
 pub struct ResponseApdu {
-    pub sw: u16,
-    pub status: HealthCardResponseStatus,
-    pub data: Vec<u8>,
+    inner: CardResponseApdu,
 }
 
 impl From<CardResponseApdu> for ResponseApdu {
     fn from(response: CardResponseApdu) -> Self {
-        let sw = response.sw();
-        ResponseApdu { sw, status: sw.to_general_authenticate_status(), data: response.to_data() }
+        ResponseApdu { inner: response }
     }
 }
 
-impl TryFrom<ResponseApdu> for CardResponseApdu {
+impl ResponseApdu {
+    pub(crate) fn from_core(response: CardResponseApdu) -> Arc<Self> {
+        Arc::new(ResponseApdu { inner: response })
+    }
+}
+
+impl TryFrom<&ResponseApdu> for CardResponseApdu {
     type Error = ApduError;
 
-    fn try_from(response: ResponseApdu) -> Result<Self, Self::Error> {
-        let mut full = response.data;
-        full.push((response.sw >> 8) as u8);
-        full.push(response.sw as u8);
-        CardResponseApdu::new(&full)
+    fn try_from(response: &ResponseApdu) -> Result<Self, Self::Error> {
+        Ok(response.inner.clone())
     }
 }
 
-/// Error type returned by the foreign card channel implementation.
+#[uniffi::export]
+impl ResponseApdu {
+    /// Parses a response APDU from raw bytes.
+    ///
+    /// The input must contain at least SW1SW2 (2 bytes).
+    #[uniffi::constructor]
+    pub fn from_bytes(bytes: Vec<u8>) -> Result<Self, ApduError> {
+        Ok(ResponseApdu { inner: CardResponseApdu::from_bytes(&bytes)? })
+    }
+
+    /// Creates a response APDU from `sw` (SW1SW2) and response `data`.
+    ///
+    /// `sw` is interpreted as big-endian (SW1<<8 | SW2).
+    #[uniffi::constructor]
+    pub fn from_parts(sw: u16, data: Vec<u8>) -> Result<Self, ApduError> {
+        let mut full = data;
+        full.push((sw >> 8) as u8);
+        full.push(sw as u8);
+        Ok(ResponseApdu { inner: CardResponseApdu::new(&full)? })
+    }
+
+    /// Returns the status word (SW1SW2) as `0xSW1SW2` (big-endian).
+    pub fn sw(&self) -> u16 {
+        self.inner.sw()
+    }
+
+    /// Returns the response data (without SW1SW2).
+    pub fn data(&self) -> Vec<u8> {
+        self.inner.to_data()
+    }
+
+    /// Serializes the response APDU to raw bytes (`data || SW1 || SW2`).
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.inner.to_bytes()
+    }
+}
+
+/// Error type returned by a `CardChannel` implementation.
+///
+/// - Use `Transport` for I/O or reader/transport-level problems (timeouts, disconnected card, ...).
+/// - Use `Apdu` if a response was received but it is not a valid response APDU.
 #[derive(Debug, Clone, Error)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Error))]
 pub enum CardChannelError {
+    /// Transport/reader error.
+    ///
+    /// `code` is an implementation-defined numeric error code (e.g. a platform/reader API error)
+    /// and may be `0` if no specific code is available.
     #[error("{reason} (code {code})")]
     Transport { code: u32, reason: String },
+    /// Invalid response APDU.
     #[error("apdu error: {error}")]
     Apdu { error: ApduError },
 }
@@ -151,11 +220,60 @@ impl From<ApduError> for CardChannelError {
     }
 }
 
+/// Card channel interface to be implemented by the host application.
+///
+/// A `CardChannel` represents an established connection/session to a smart card reader and is the
+/// transport layer used by this library to exchange APDUs with the card.
+///
+/// Implementations must be thread-safe (`Send + Sync`). Calls from this library are serialized,
+/// but they may come from different threads.
 #[uniffi::export(with_foreign)]
 pub trait CardChannel: Send + Sync {
+    /// Whether the underlying reader/session supports extended-length APDUs.
+    ///
+    /// Returning `false` forces the library to use short-length encoding, which may prevent
+    /// certain commands from being sent if they exceed short-length limits.
     fn supports_extended_length(&self) -> bool;
 
-    fn transmit(&self, command: Arc<CommandApdu>) -> Result<ResponseApdu, CardChannelError>;
+    /// Transmits `command` to the card and returns the response APDU.
+    ///
+    /// The returned `ResponseApdu` must include the status word (SW1SW2). If the reader API
+    /// returns raw bytes, use `ResponseApdu::from_bytes`.
+    fn transmit(&self, command: Arc<CommandApdu>) -> Result<Arc<ResponseApdu>, CardChannelError>;
+}
+
+/// Adapter that turns the foreign `CardChannel` (which uses `&self`) into the core channel trait
+/// (which uses `&mut self`).
+///
+/// The mutex serializes calls across threads and also ensures that higher-level exchanges that
+/// rely on sequential APDU execution cannot interleave.
+pub(crate) struct FfiCardChannelAdapter {
+    inner: Arc<dyn CardChannel>,
+    serialize: Mutex<()>,
+}
+
+impl FfiCardChannelAdapter {
+    pub(crate) fn new(inner: Arc<dyn CardChannel>) -> Self {
+        Self { inner, serialize: Mutex::new(()) }
+    }
+}
+
+impl CoreCardChannel for FfiCardChannelAdapter {
+    type Error = CardChannelError;
+
+    fn supports_extended_length(&self) -> bool {
+        let _guard = self.serialize.lock().unwrap_or_else(|err| err.into_inner());
+        self.inner.supports_extended_length()
+    }
+
+    fn transmit(&mut self, command: &CardCommandApdu) -> Result<CardResponseApdu, Self::Error> {
+        let _guard = self
+            .serialize
+            .lock()
+            .map_err(|_| CardChannelError::Transport { code: 0, reason: "card channel lock poisoned".into() })?;
+        let response = self.inner.transmit(CommandApdu::from_core(command.clone()))?;
+        CardResponseApdu::try_from(response.as_ref()).map_err(CardChannelError::from)
+    }
 }
 
 impl From<CardChannelError> for ExchangeError {
@@ -196,9 +314,17 @@ mod tests {
     #[test]
     fn response_apdu_conversion_preserves_bytes() {
         let response = CardResponseApdu::new(&[0xDE, 0xAD, 0x90, 0x00]).unwrap();
-        let ffi_apdu = ResponseApdu::from(response.clone());
-        let rebuilt = CardResponseApdu::try_from(ffi_apdu.clone()).unwrap();
+        let ffi_apdu = ResponseApdu::from_core(response.clone());
+        let rebuilt = CardResponseApdu::try_from(ffi_apdu.as_ref()).unwrap();
         assert_eq!(rebuilt.to_bytes(), response.to_bytes());
-        assert_eq!(ffi_apdu.status, HealthCardResponseStatus::from_general_authenticate_status(0x9000));
+        assert_eq!(ffi_apdu.sw(), 0x9000);
+    }
+
+    #[test]
+    fn response_apdu_from_bytes_roundtrip() {
+        let ffi_apdu = ResponseApdu::from_bytes(vec![0xDE, 0xAD, 0x90, 0x00]).unwrap();
+        assert_eq!(ffi_apdu.sw(), 0x9000);
+        assert_eq!(ffi_apdu.data(), vec![0xDE, 0xAD]);
+        assert_eq!(ffi_apdu.to_bytes(), vec![0xDE, 0xAD, 0x90, 0x00]);
     }
 }

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2025 gematik GmbH
+// SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -35,8 +35,6 @@ const MAX_PIN_LEN: usize = 12; // specSpec_COS#N008.000
 const FORMAT_PIN_2_ID: u8 = 0x02 << NIBBLE_SIZE; // specSpec_COS#N008.100
 const FORMAT2_PIN_SIZE: usize = 8;
 const FORMAT2_PIN_FILLER: u8 = 0x0F;
-const MIN_DIGIT: u8 = 0; // specSpec_COS#N008.000
-const MAX_DIGIT: u8 = 9; // specSpec_COS#N008.000
 const STRING_INT_OFFSET: u8 = 48;
 
 /// Represents an encrypted PIN in format 2.
@@ -66,39 +64,31 @@ pub enum PinBlockError {
 }
 
 impl EncryptedPinFormat2 {
-    /// Creates a new EncryptedPinFormat2 from a PIN string.
-    ///
-    /// # Arguments
-    /// * `pin` - The PIN string to be encrypted. The PIN must be between 4 and 12 digits long.
-    pub fn new(pin: &str) -> Result<Self, PinBlockError> {
-        if pin.len() < MIN_PIN_LEN {
-            return Err(PinBlockError::TooShort { length: pin.len(), min: MIN_PIN_LEN });
+    /// Creates a new EncryptedPinFormat2 from ASCII digit bytes.
+    pub fn new_from_digits(digits: &[u8]) -> Result<Self, PinBlockError> {
+        if digits.len() < MIN_PIN_LEN {
+            return Err(PinBlockError::TooShort { length: digits.len(), min: MIN_PIN_LEN });
         }
-        if pin.len() > MAX_PIN_LEN {
-            return Err(PinBlockError::TooLong { length: pin.len(), max: MAX_PIN_LEN });
-        }
-
-        let mut int_pin = Vec::with_capacity(pin.len());
-        for c in pin.chars() {
-            let digit = c as u8 - STRING_INT_OFFSET;
-            if !(MIN_DIGIT..=MAX_DIGIT).contains(&digit) {
-                return Err(PinBlockError::NonDigit(c));
-            }
-            int_pin.push(digit);
+        if digits.len() > MAX_PIN_LEN {
+            return Err(PinBlockError::TooLong { length: digits.len(), max: MAX_PIN_LEN });
         }
 
         let mut format2 = [0u8; FORMAT2_PIN_SIZE]; // specSpec_COS#N008.100
-        format2[0] = FORMAT_PIN_2_ID + int_pin.len() as u8;
+        format2[0] = FORMAT_PIN_2_ID + digits.len() as u8;
 
-        for (i, &digit) in int_pin.iter().enumerate() {
+        for (i, &digit) in digits.iter().enumerate() {
+            if !digit.is_ascii_digit() {
+                return Err(PinBlockError::NonDigit(digit as char));
+            }
+            let numeric = digit - STRING_INT_OFFSET;
             if (i + 2) % 2 == 0 {
-                format2[1 + i / 2] += digit << NIBBLE_SIZE;
+                format2[1 + i / 2] += numeric << NIBBLE_SIZE;
             } else {
-                format2[1 + i / 2] += digit;
+                format2[1 + i / 2] += numeric;
             }
         }
 
-        for i in int_pin.len()..(2 * FORMAT2_PIN_SIZE - 2) {
+        for i in digits.len()..(2 * FORMAT2_PIN_SIZE - 2) {
             if i % 2 == 0 {
                 format2[1 + i / 2] += FORMAT2_PIN_FILLER << NIBBLE_SIZE;
             } else {
@@ -141,8 +131,8 @@ mod tests {
 
     #[test]
     fn test_encrypted_pin_format2_creation() {
-        let pin = "1234";
-        let encrypted = EncryptedPinFormat2::new(pin).unwrap();
+        let pin = b"1234";
+        let encrypted = EncryptedPinFormat2::new_from_digits(pin).unwrap();
 
         // First byte should be 0x24 (FORMAT_PIN_2_ID + pin length)
         assert_eq!(encrypted.as_bytes()[0], 0x24);
@@ -151,34 +141,34 @@ mod tests {
 
     #[test]
     fn test_encrypted_pin_format2_with_longer_pin() {
-        let pin = "123456";
-        let encrypted = EncryptedPinFormat2::new(pin).unwrap();
+        let pin = b"123456";
+        let encrypted = EncryptedPinFormat2::new_from_digits(pin).unwrap();
 
         assert_eq!(encrypted.as_bytes()[0], 0x26);
     }
 
     #[test]
     fn test_encrypted_pin_format2_too_short() {
-        let err = EncryptedPinFormat2::new("123").unwrap_err();
+        let err = EncryptedPinFormat2::new_from_digits(b"123").unwrap_err();
         assert!(matches!(err, PinBlockError::TooShort { .. }));
     }
 
     #[test]
     fn test_encrypted_pin_format2_too_long() {
-        let err = EncryptedPinFormat2::new("1234567890123").unwrap_err();
+        let err = EncryptedPinFormat2::new_from_digits(b"1234567890123").unwrap_err();
         assert!(matches!(err, PinBlockError::TooLong { .. }));
     }
 
     #[test]
     fn test_encrypted_pin_format2_invalid_digit() {
-        let err = EncryptedPinFormat2::new("123a").unwrap_err();
+        let err = EncryptedPinFormat2::new_from_digits(b"123a").unwrap_err();
         assert!(matches!(err, PinBlockError::NonDigit('a')));
     }
 
     #[test]
     fn test_specific_pin_value() {
-        let pin = "1234";
-        let encrypted = EncryptedPinFormat2::new(pin).unwrap();
+        let pin = b"1234";
+        let encrypted = EncryptedPinFormat2::new_from_digits(pin).unwrap();
 
         assert_eq!(encrypted.as_bytes()[0], 0x24);
         assert_eq!(encrypted.as_bytes()[1], 0x12);

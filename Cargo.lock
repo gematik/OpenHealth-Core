@@ -428,18 +428,39 @@ name = "healthcard"
 version = "0.1.0"
 dependencies = [
  "asn1",
- "clap",
  "crypto",
+ "healthcard-apdu-base",
  "hex",
  "lazy_static",
  "num-bigint",
  "once_cell",
- "pcsc",
- "serde",
- "serde_json",
  "thiserror",
  "uniffi",
  "zeroize",
+]
+
+[[package]]
+name = "healthcard-apdu-base"
+version = "0.1.0"
+dependencies = [
+ "crypto",
+ "hex",
+ "num-bigint",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "healthcard-apdu-tools"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "crypto",
+ "healthcard",
+ "healthcard-apdu-base",
+ "hex",
+ "pcsc",
 ]
 
 [[package]]

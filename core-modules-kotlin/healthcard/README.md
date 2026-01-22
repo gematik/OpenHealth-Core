@@ -21,15 +21,6 @@ For additional notes and disclaimer from gematik and in case of changes by gemat
 find details in the "Readme" file.
 -->
 
-# SPDX-FileCopyrightText: Copyright 2025 gematik GmbH
-#
-# SPDX-License-Identifier: Apache-2.0
-#
-# *******
-#
-# For additional notes and disclaimer from gematik and in case of changes by gematik,
-# find details in the "Readme" file.
-
 # Healthcard Kotlin bindings (KMP)
 
 - This module is a Kotlin Multiplatform project with a JVM target (Java-friendly via `withJava()`).
@@ -44,37 +35,37 @@ find details in the "Readme" file.
 - The repository `Justfile` provides repeatable commands for both CI and local development.
 - Generate Kotlin/JVM bindings for a platform/arch (writes to `src/jvmMain` by default). The native library is staged under the JNA resource id (e.g. `darwin-aarch64`, `linux-x86-64`, `win32-x86-64`):
 
-  ```bash
-  # platform: linux | windows | darwin
-  # arch: x86_64 | aarch64
-  just kotlin-bindings-generate darwin aarch64 libhealthcard.dylib
-  ```
+```bash
+# platform: linux | windows | darwin
+# arch: x86_64 | aarch64
+just kotlin-bindings-generate darwin aarch64 libhealthcard.dylib
+```
 
 - Override output paths (e.g., to keep the working tree clean) and cargo target dir:
 
-  ```bash
-  OUT_ROOT=core-modules-kotlin/healthcard/build/generated/uniffi \
-  CARGO_TARGET_DIR=core-modules-kotlin/healthcard/build/cargo \
-  just kotlin-bindings-generate linux x86_64 libhealthcard.so
-  ```
+```bash
+OUT_ROOT=core-modules-kotlin/healthcard/build/generated/uniffi \
+CARGO_TARGET_DIR=core-modules-kotlin/healthcard/build/cargo \
+just kotlin-bindings-generate linux x86_64 libhealthcard.so
+```
 
 - Pick a different profile (default is `release`):
 
-  ```bash
-  just kotlin-bindings-generate linux x86_64 libhealthcard.so debug
-  ```
+```bash
+just kotlin-bindings-generate linux x86_64 libhealthcard.so debug
+```
 
 - On Windows, force Git Bash if `bash` resolves to WSL:
 
-  ```bash
-  CARGO_BUILD_TARGET=x86_64-pc-windows-msvc \
-  just --shell "C:/Program Files/Git/bin/bash.exe" --shell-arg "-euo" --shell-arg "pipefail" --shell-arg "-c" \
-  kotlin-bindings-generate windows x86_64 healthcard.dll
-  ```
+```bash
+CARGO_BUILD_TARGET=x86_64-pc-windows-msvc \
+just --shell "C:/Program Files/Git/bin/bash.exe" --shell-arg "-euo" --shell-arg "pipefail" --shell-arg "-c" \
+kotlin-bindings-generate windows x86_64 healthcard.dll
+```
 
 - Assemble downloaded platform artifacts into a single bundle (used by CI, usable locally):
 
-  ```bash
-  # expects input like assembly/input/kotlin-bindings-linux-x86_64/...
-  just kotlin-bindings-assemble assembly/input assembly/dist/generated/uniffi
-  ```
+```bash
+# expects input like assembly/input/kotlin-bindings-linux-x86_64/...
+just kotlin-bindings-assemble assembly/input assembly/dist/generated/uniffi
+```

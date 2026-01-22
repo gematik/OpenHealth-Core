@@ -25,6 +25,8 @@ members = [
     "core-modules/crypto",
     "core-modules/crypto-openssl-sys",
     "core-modules/healthcard",
+    "core-modules/healthcard-apdu-base",
+    "core-modules/healthcard-apdu-tools",
     "tools/uniffi-cli",
 ]
 resolver = "2"

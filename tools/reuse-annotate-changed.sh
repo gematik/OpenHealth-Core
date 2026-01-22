@@ -31,9 +31,10 @@ else
   tmp_file="$(mktemp -t reuse-annotate-changed)"
 fi
 tmp_lines_file="${tmp_file}.lines"
+tmp_existing_file="${tmp_file}.existing"
 
 cleanup() {
-  rm -f "$tmp_file" "$tmp_lines_file"
+  rm -f "$tmp_file" "$tmp_lines_file" "$tmp_existing_file"
 }
 trap cleanup EXIT INT TERM
 
@@ -44,6 +45,18 @@ if [ ! -s "$tmp_file" ]; then
   exit 0
 fi
 
+# Filter out deleted paths so reuse annotate does not fail on missing files.
+: >"$tmp_existing_file"
+while IFS= read -r -d '' file; do
+  [ -e "$file" ] || continue
+  printf '%s\0' "$file" >>"$tmp_existing_file"
+done <"$tmp_file"
+
+if [ ! -s "$tmp_existing_file" ]; then
+  printf '%s\n' "No existing changed files between $BASE_REF and $HEAD_REF."
+  exit 0
+fi
+
 xargs -0 reuse annotate \
   --license Apache-2.0 \
   --copyright "gematik GmbH" \
@@ -51,9 +64,9 @@ xargs -0 reuse annotate \
   --copyright-prefix spdx-string \
   --merge-copyrights \
   --skip-unrecognised \
-  <"$tmp_file"
+  <"$tmp_existing_file"
 
-tr '\0' '\n' <"$tmp_file" >"$tmp_lines_file"
+tr '\0' '\n' <"$tmp_existing_file" >"$tmp_lines_file"
 
 # Special handling for changed files with unusual/unrecognised comment styles.
 # Format: path|style|mode(single-line|multi-line)

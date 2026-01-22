@@ -41,5 +41,10 @@ let package = Package(
             dependencies: ["OpenHealthHealthcardFFI"],
             path: "core-modules-swift/healthcard/Sources/OpenHealthHealthcard"
         ),
+        .testTarget(
+            name: "OpenHealthHealthcardTests",
+            dependencies: ["OpenHealthHealthcard"],
+            path: "core-modules-swift/healthcard/Tests/OpenHealthHealthcardTests"
+        ),
     ]
 )

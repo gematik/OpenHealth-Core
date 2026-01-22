@@ -19,8 +19,6 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-#[cfg(any(feature = "apdu-tools", test))]
-pub mod apdu_tools;
 pub mod certificate;
 pub mod channel;
 pub mod error;
@@ -34,9 +32,9 @@ pub mod sign_challenge;
 #[cfg(test)]
 pub(crate) mod test_utils;
 
-pub use certificate::retrieve_certificate;
+pub use certificate::{retrieve_certificate, retrieve_certificate_from, CertificateFile};
 pub use error::ExchangeError;
-pub use pin::{unlock_egk, verify_pin, HealthCardVerifyPinResult, UnlockMethod};
+pub use pin::{change_pin, change_pin_with_puk, unlock_egk_with_puk, verify_pin, CardPin, HealthCardVerifyPinResult};
 pub use random::get_random;
 pub use read_vsd::read_vsd;
 pub use secure_channel::{establish_secure_channel, establish_secure_channel_with, CardAccessNumber, SecureChannel};
