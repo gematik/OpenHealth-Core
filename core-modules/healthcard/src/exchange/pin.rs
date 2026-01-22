@@ -122,6 +122,7 @@ fn map_verify_response(response: HealthCardResponse) -> Result<HealthCardVerifyP
 fn wrong_secret_retries(status: HealthCardResponseStatus) -> Option<u8> {
     use HealthCardResponseStatus::*;
     match status {
+        WrongSecretWarningCount00 => Some(0),
         WrongSecretWarningCount01 => Some(1),
         WrongSecretWarningCount02 => Some(2),
         WrongSecretWarningCount03 => Some(3),

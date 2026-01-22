@@ -33,7 +33,7 @@ find details in the "Readme" file.
 ## Using `just` for bindings generation
 
 - The repository `Justfile` provides repeatable commands for both CI and local development.
-- Generate Kotlin/JVM bindings for a platform/arch (writes to `src/jvmMain` by default). The UniFFI resource id is formed as `<platform>-<arch>` (e.g., `darwin-aarch64`):
+- Generate Kotlin/JVM bindings for a platform/arch (writes to `src/jvmMain` by default). The native library is staged under the JNA resource id (e.g. `darwin-aarch64`, `linux-x86-64`, `win32-x86-64`):
 
 ```bash
 # platform: linux | windows | darwin
