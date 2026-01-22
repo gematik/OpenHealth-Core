@@ -1,4 +1,4 @@
-<!-- Prefer PR titles like: OPEN-123: Short, imperative summary -->
+<!-- PR title: OPEN-123: Short, imperative summary -->
 
 <!-- Summary: What does this PR do? Keep it short. -->
 
