@@ -20,6 +20,7 @@
 // find details in the "Readme" file.
 
 use crate::card::encrypted_pin_format2::{EncryptedPinFormat2, PinBlockError};
+use crate::card::password_reference::PasswordReference;
 use crate::command::change_reference_data_command::ChangeReferenceDataCommand;
 use crate::command::get_pin_status_command::GetPinStatusCommand;
 use crate::command::health_card_command::HealthCardCommand;
@@ -85,15 +86,6 @@ pub enum HealthCardVerifyPinResult {
     CardBlocked(HealthCardResponse),
 }
 
-/// Methods for unblocking the PIN using the PUK/change reference data.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
-pub enum UnlockMethod {
-    ChangeReferenceData,
-    ResetRetryCounter,
-    ResetRetryCounterWithNewSecret,
-}
-
 /// Verify the home PIN (`MRPIN.H`).
 pub fn verify_pin<S>(session: &mut S, pin: &CardPin) -> Result<HealthCardVerifyPinResult, ExchangeError>
 where
@@ -137,55 +129,68 @@ fn wrong_secret_retries(status: HealthCardResponseStatus) -> Option<u8> {
     }
 }
 
-/// Unlock the home PIN using the specified method.
-pub fn unlock_egk<S>(
-    session: &mut S,
-    method: UnlockMethod,
-    puk: Option<&CardPin>,
-    old_secret: &CardPin,
-    new_secret: Option<&CardPin>,
-) -> Result<HealthCardResponseStatus, ExchangeError>
+fn select_home_pin<S>(session: &mut S) -> Result<PasswordReference, ExchangeError>
 where
     S: CardChannelExt,
 {
     session.execute_command_success(&HealthCardCommand::select(false, false))?;
-    let password_reference = ids::mr_pin_home_reference();
+    Ok(ids::mr_pin_home_reference())
+}
 
-    let response = match method {
-        UnlockMethod::ChangeReferenceData => {
-            let new_secret = new_secret.ok_or_else(|| ExchangeError::invalid_argument("new secret required"))?;
-            let old_pin = EncryptedPinFormat2::new_from_digits(old_secret.as_bytes())?;
-            let new_pin = EncryptedPinFormat2::new_from_digits(new_secret.as_bytes())?;
-            session.execute_command_success(&HealthCardCommand::change_reference_data(
-                &password_reference,
-                false,
-                &old_pin,
-                &new_pin,
-            ))?
-        }
-        UnlockMethod::ResetRetryCounter => {
-            let puk = puk.ok_or_else(|| ExchangeError::invalid_argument("PUK must be provided"))?;
-            let puk_enc = EncryptedPinFormat2::new_from_digits(puk.as_bytes())?;
-            session.execute_command_success(&HealthCardCommand::reset_retry_counter(
-                &password_reference,
-                false,
-                &puk_enc,
-            ))?
-        }
-        UnlockMethod::ResetRetryCounterWithNewSecret => {
-            let puk = puk.ok_or_else(|| ExchangeError::invalid_argument("PUK must be provided"))?;
-            let new_secret = new_secret.ok_or_else(|| ExchangeError::invalid_argument("new secret required"))?;
-            let puk_enc = EncryptedPinFormat2::new_from_digits(puk.as_bytes())?;
-            let new_pin = EncryptedPinFormat2::new_from_digits(new_secret.as_bytes())?;
-            session.execute_command_success(&HealthCardCommand::reset_retry_counter_with_new_secret(
-                &password_reference,
-                false,
-                &puk_enc,
-                &new_pin,
-            ))?
-        }
-    };
+/// Change the home PIN using the old PIN (`MRPIN.H`).
+pub fn change_pin<S>(
+    session: &mut S,
+    old_pin: &CardPin,
+    new_pin: &CardPin,
+) -> Result<HealthCardResponseStatus, ExchangeError>
+where
+    S: CardChannelExt,
+{
+    let password_reference = select_home_pin(session)?;
+    let old_pin = EncryptedPinFormat2::new_from_digits(old_pin.as_bytes())?;
+    let new_pin = EncryptedPinFormat2::new_from_digits(new_pin.as_bytes())?;
+    let response = session.execute_command_success(&HealthCardCommand::change_reference_data(
+        &password_reference,
+        false,
+        &old_pin,
+        &new_pin,
+    ))?;
+    Ok(response.status)
+}
 
+/// Unlock the home PIN using the PUK (reset retry counter).
+pub fn unlock_egk_with_puk<S>(session: &mut S, puk: &CardPin) -> Result<HealthCardResponseStatus, ExchangeError>
+where
+    S: CardChannelExt,
+{
+    let password_reference = select_home_pin(session)?;
+    let puk_enc = EncryptedPinFormat2::new_from_digits(puk.as_bytes())?;
+    let response = session.execute_command_success(&HealthCardCommand::reset_retry_counter(
+        &password_reference,
+        false,
+        &puk_enc,
+    ))?;
+    Ok(response.status)
+}
+
+/// Change the home PIN using the PUK (reset retry counter + new PIN).
+pub fn change_pin_with_puk<S>(
+    session: &mut S,
+    puk: &CardPin,
+    new_pin: &CardPin,
+) -> Result<HealthCardResponseStatus, ExchangeError>
+where
+    S: CardChannelExt,
+{
+    let password_reference = select_home_pin(session)?;
+    let puk_enc = EncryptedPinFormat2::new_from_digits(puk.as_bytes())?;
+    let new_pin = EncryptedPinFormat2::new_from_digits(new_pin.as_bytes())?;
+    let response = session.execute_command_success(&HealthCardCommand::reset_retry_counter_with_new_secret(
+        &password_reference,
+        false,
+        &puk_enc,
+        &new_pin,
+    ))?;
     Ok(response.status)
 }
 
@@ -228,22 +233,31 @@ mod tests {
     }
 
     #[test]
-    fn unlock_change_reference_data_requires_new_pin() {
+    fn change_pin_success() {
         let responses = vec![vec![0x90, 0x00], vec![0x90, 0x00]];
         let mut session = MockSession::new(responses);
         let old_pin = CardPin::new("123456").unwrap();
         let new_pin = CardPin::new("987654").unwrap();
-        let err = unlock_egk(&mut session, UnlockMethod::ChangeReferenceData, None, &old_pin, Some(&new_pin)).unwrap();
-        assert_eq!(err, HealthCardResponseStatus::Success);
+        let status = change_pin(&mut session, &old_pin, &new_pin).unwrap();
+        assert_eq!(status, HealthCardResponseStatus::Success);
     }
 
     #[test]
-    fn unlock_reset_retry_counter_requires_puk() {
+    fn unlock_egk_with_puk_success() {
         let responses = vec![vec![0x90, 0x00], vec![0x90, 0x00]];
         let mut session = MockSession::new(responses);
         let puk = CardPin::new("123456").unwrap();
-        let placeholder = CardPin::new("0000").unwrap();
-        let status = unlock_egk(&mut session, UnlockMethod::ResetRetryCounter, Some(&puk), &placeholder, None).unwrap();
+        let status = unlock_egk_with_puk(&mut session, &puk).unwrap();
+        assert_eq!(status, HealthCardResponseStatus::Success);
+    }
+
+    #[test]
+    fn change_pin_with_puk_success() {
+        let responses = vec![vec![0x90, 0x00], vec![0x90, 0x00]];
+        let mut session = MockSession::new(responses);
+        let puk = CardPin::new("123456").unwrap();
+        let new_pin = CardPin::new("987654").unwrap();
+        let status = change_pin_with_puk(&mut session, &puk, &new_pin).unwrap();
         assert_eq!(status, HealthCardResponseStatus::Success);
     }
 }

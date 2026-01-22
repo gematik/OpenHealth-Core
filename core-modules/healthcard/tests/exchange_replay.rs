@@ -20,10 +20,12 @@
 // find details in the "Readme" file.
 
 use healthcard::command::apdu::{CardCommandApdu, CardResponseApdu};
+use healthcard::command::health_card_status::HealthCardResponseStatus;
 use healthcard::exchange::channel::CardChannel;
 use healthcard::exchange::{
-    establish_secure_channel_with, get_random, read_vsd, retrieve_certificate, retrieve_certificate_from, verify_pin,
-    CardAccessNumber, CardPin, CertificateFile, ExchangeError, HealthCardVerifyPinResult, SecureChannel,
+    change_pin_with_puk, establish_secure_channel_with, get_random, read_vsd, retrieve_certificate,
+    retrieve_certificate_from, unlock_egk_with_puk, verify_pin, CardAccessNumber, CardPin, CertificateFile,
+    ExchangeError, HealthCardVerifyPinResult, SecureChannel,
 };
 use healthcard_apdu_base::{ReplaySession, Transcript};
 
@@ -106,9 +108,28 @@ fn replay_retrieve_certificates() {
     assert!(!cv_cert.is_empty());
 }
 
+#[test]
+fn replay_unlock_egk_with_puk() {
+    let mut channel = establish_from_transcript(JSONL_UNLOCK_EGK_WITH_PUK);
+    let puk = CardPin::new("12345678").expect("valid PUK format");
+    let status = unlock_egk_with_puk(&mut channel, &puk).expect("unlock eGK with PUK");
+    assert_eq!(status, HealthCardResponseStatus::Success);
+}
+
+#[test]
+fn replay_change_pin_with_puk() {
+    let mut channel = establish_from_transcript(JSONL_CHANGE_PIN_WITH_PUK);
+    let puk = CardPin::new("12345678").expect("valid PUK format");
+    let new_pin = CardPin::new("123456").expect("valid PIN format");
+    let status = change_pin_with_puk(&mut channel, &puk, &new_pin).expect("change PIN with PUK");
+    assert_eq!(status, HealthCardResponseStatus::Success);
+}
+
 const JSONL_ESTABLISH_SECURE_CHANNEL: &str =
     include_str!("../../../test-vectors/apdu-replay/establish-secure-channel.jsonl");
 const JSONL_VERIFY_PIN: &str = include_str!("../../../test-vectors/apdu-replay/verify-pin.jsonl");
 const JSONL_GET_RANDOM: &str = include_str!("../../../test-vectors/apdu-replay/get-random.jsonl");
 const JSONL_READ_VSD: &str = include_str!("../../../test-vectors/apdu-replay/read-vsd.jsonl");
 const JSONL_READ_CERTS: &str = include_str!("../../../test-vectors/apdu-replay/read-certs.jsonl");
+const JSONL_UNLOCK_EGK_WITH_PUK: &str = include_str!("../../../test-vectors/apdu-replay/unlock-egk-with-puk.jsonl");
+const JSONL_CHANGE_PIN_WITH_PUK: &str = include_str!("../../../test-vectors/apdu-replay/change-pin-with-puk.jsonl");

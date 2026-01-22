@@ -30,7 +30,10 @@ fn main() {
     use crypto::ec::ec_key::{EcCurve, EcKeyPairSpec};
     use healthcard::exchange::certificate::{retrieve_certificate_from, CertificateFile};
     use healthcard::exchange::secure_channel::{establish_secure_channel_with, CardAccessNumber};
-    use healthcard::exchange::{get_random, read_vsd, sign_challenge, verify_pin, CardPin, HealthCardVerifyPinResult};
+    use healthcard::exchange::{
+        change_pin, change_pin_with_puk, get_random, read_vsd, sign_challenge, unlock_egk_with_puk, verify_pin,
+        CardPin, HealthCardVerifyPinResult,
+    };
     use healthcard_apdu_tools::{PcscChannel, RecordingChannel};
 
     if let Err(err) = run() {
@@ -63,6 +66,15 @@ fn main() {
         /// Verify the home PIN (MRPIN.H)
         #[arg(long, value_name = "PIN")]
         verify_pin: Option<String>,
+        /// Unlock the eGK using the PUK (reset retry counter)
+        #[arg(long, value_name = "PUK")]
+        unlock_egk_with_puk: Option<String>,
+        /// Change the home PIN using the PUK (reset retry counter + set new PIN)
+        #[arg(long, value_names = ["PUK", "PIN"], num_args = 2)]
+        change_pin_with_puk: Option<Vec<String>>,
+        /// Change the home PIN using the old PIN
+        #[arg(long, value_names = ["OLD_PIN", "NEW_PIN"], num_args = 2)]
+        change_pin: Option<Vec<String>>,
         /// Sign a challenge (hex) with the card holder authentication key
         #[arg(long, value_name = "HEX")]
         sign_challenge: Option<String>,
@@ -112,6 +124,35 @@ fn main() {
                     return Err("PIN verification failed: card blocked".to_string());
                 }
             }
+        }
+
+        if let Some(puk) = args.unlock_egk_with_puk.as_deref() {
+            let puk = CardPin::new(puk).map_err(|err| format!("invalid PUK: {err}"))?;
+            unlock_egk_with_puk(&mut secure_channel, &puk).map_err(|err| format!("unlock eGK failed: {err}"))?;
+            println!("eGK unlock: success");
+        }
+
+        if let Some(values) = args.change_pin_with_puk.as_deref() {
+            let (puk, new_pin) = match values {
+                [puk, new_pin] => (puk.as_str(), new_pin.as_str()),
+                _ => return Err("change-pin-with-puk requires PUK and PIN".to_string()),
+            };
+            let puk = CardPin::new(puk).map_err(|err| format!("invalid PUK: {err}"))?;
+            let new_pin = CardPin::new(new_pin).map_err(|err| format!("invalid new PIN: {err}"))?;
+            change_pin_with_puk(&mut secure_channel, &puk, &new_pin)
+                .map_err(|err| format!("change PIN with PUK failed: {err}"))?;
+            println!("PIN change (PUK): success");
+        }
+
+        if let Some(values) = args.change_pin.as_deref() {
+            let (old_pin, new_pin) = match values {
+                [old_pin, new_pin] => (old_pin.as_str(), new_pin.as_str()),
+                _ => return Err("change-pin requires OLD_PIN and NEW_PIN".to_string()),
+            };
+            let old_pin = CardPin::new(old_pin).map_err(|err| format!("invalid old PIN: {err}"))?;
+            let new_pin = CardPin::new(new_pin).map_err(|err| format!("invalid new PIN: {err}"))?;
+            change_pin(&mut secure_channel, &old_pin, &new_pin).map_err(|err| format!("change PIN failed: {err}"))?;
+            println!("PIN change: success");
         }
 
         if args.read_certificates {

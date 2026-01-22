@@ -34,6 +34,8 @@ val replayFixtureMap = linkedMapOf(
     "JSONL_GET_RANDOM" to "get-random.jsonl",
     "JSONL_READ_VSD" to "read-vsd.jsonl",
     "JSONL_READ_CERTS" to "read-certs.jsonl",
+    "JSONL_UNLOCK_EGK_WITH_PUK" to "unlock-egk-with-puk.jsonl",
+    "JSONL_CHANGE_PIN_WITH_PUK" to "change-pin-with-puk.jsonl",
 )
 
 val generateReplayFixtures = tasks.register("generateReplayFixtures") {

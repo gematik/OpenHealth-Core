@@ -21,6 +21,7 @@
 
 package de.gematik.openhealth.healthcard.replay
 
+import de.gematik.openhealth.healthcard.HealthCardResponseStatus
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -65,5 +66,21 @@ class ExchangeReplayTest {
 
         val cvCert = secureChannel.retrieveCertificateFrom(CertificateFile.EGK_AUT_CVC_E256)
         assertTrue(cvCert.isNotEmpty())
+    }
+
+    @Test
+    fun replayUnlockEgkWithPuk() {
+        val transcript = transcriptFromJsonl(JSONL_UNLOCK_EGK_WITH_PUK)
+        val secureChannel = establishReplaySecureChannel(transcript)
+        val status = secureChannel.unlockEgkWithPuk("12345678")
+        assertEquals(HealthCardResponseStatus.SUCCESS, status)
+    }
+
+    @Test
+    fun replayChangePinWithPuk() {
+        val transcript = transcriptFromJsonl(JSONL_CHANGE_PIN_WITH_PUK)
+        val secureChannel = establishReplaySecureChannel(transcript)
+        val status = secureChannel.changePinWithPuk("12345678", "123456")
+        assertEquals(HealthCardResponseStatus.SUCCESS, status)
     }
 }

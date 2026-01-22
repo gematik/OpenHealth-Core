@@ -51,7 +51,8 @@ semantics.
 Defined in `channel.rs`:
 
 - `CommandApdu`: constructors for building command APDUs, plus `to_bytes()`.
-- `ResponseApdu`: record containing `sw` (SW1SW2), `status` (interpreted), and `data` (response data).
+- `ResponseApdu`: object exposing `sw()`, `data()`, derived `status()`, and `to_bytes()`.
+  Construct via `ResponseApdu::from_bytes(...)` or `ResponseApdu::from_parts(sw, data)`.
 - `CardChannelError`: error returned by the foreign channel implementation (`Transport` vs `Apdu`).
 
 ### Stateless exchange functions
@@ -59,7 +60,9 @@ Defined in `channel.rs`:
 Defined in `exchange.rs` (operate on a plain `session: CardChannel`):
 
 - `verify_pin(session, pin) -> VerifyPinResult`
-- `unlock_egk(session, method, puk, old_secret, new_secret) -> HealthCardResponseStatus`
+- `unlock_egk_with_puk(session, puk) -> HealthCardResponseStatus`
+- `change_pin(session, old_pin, new_pin) -> HealthCardResponseStatus`
+- `change_pin_with_puk(session, puk, new_pin) -> HealthCardResponseStatus`
 - `get_random(session, length) -> bytes`
 - `read_vsd(session) -> bytes`
 - `sign_challenge(session, challenge) -> bytes`
@@ -76,11 +79,10 @@ Defined in `secure_channel.rs`:
 - `establish_secure_channel(session, can) -> SecureChannel`
 - `SecureChannel`: stateful object that holds the secure messaging context and exposes:
   - `transmit(command) -> ResponseApdu`
-  - high-level helpers (`verify_pin`, `unlock_egk`, `get_random`, `read_vsd`, `sign_challenge`, `retrieve_certificate*`)
+  - high-level helpers (`verify_pin`, `unlock_egk_with_puk`, `change_pin`, `change_pin_with_puk`, `get_random`, `read_vsd`, `sign_challenge`, `retrieve_certificate*`)
 
 ## Security notes
 
 - Treat `CardPin` input and all card transcripts as secrets; do not log or persist them.
 - `CardPin::from_digits` zeroizes the input string after parsing, but foreign runtimes may still retain copies.
 - A `ResponseApdu` may contain personal data (depending on the command); handle with care.
-

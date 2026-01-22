@@ -21,6 +21,7 @@
 
 package de.gematik.openhealth.healthcard.replay
 
+import de.gematik.openhealth.healthcard.HealthCardResponseStatus
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.booleanOrNull
@@ -119,6 +120,8 @@ expect class SecureChannelHandle {
     fun readVsd(): ByteArray
     fun retrieveCertificate(): ByteArray
     fun retrieveCertificateFrom(certificate: CertificateFile): ByteArray
+    fun unlockEgkWithPuk(puk: String): HealthCardResponseStatus
+    fun changePinWithPuk(puk: String, newPin: String): HealthCardResponseStatus
 }
 
 expect fun establishReplaySecureChannel(transcript: Transcript): SecureChannelHandle

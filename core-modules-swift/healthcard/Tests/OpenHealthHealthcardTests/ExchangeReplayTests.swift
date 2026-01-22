@@ -149,6 +149,17 @@ private struct SecureChannelHandle {
     func retrieveCertificateFrom(_ certificate: CertificateFile) throws -> Data {
         try secureChannel.retrieveCertificateFrom(certificate: certificate)
     }
+
+    func unlockEgkWithPuk(_ puk: String) throws -> HealthCardResponseStatus {
+        let pukPin = try CardPin.fromDigits(digits: puk)
+        return try secureChannel.unlockEgkWithPuk(puk: pukPin)
+    }
+
+    func changePinWithPuk(_ puk: String, newPin: String) throws -> HealthCardResponseStatus {
+        let pukPin = try CardPin.fromDigits(digits: puk)
+        let newPinValue = try CardPin.fromDigits(digits: newPin)
+        return try secureChannel.changePinWithPuk(puk: pukPin, newPin: newPinValue)
+    }
 }
 
 private func transcriptFromJsonl(_ jsonl: String) throws -> Transcript {
@@ -295,5 +306,19 @@ final class ExchangeReplayTests: XCTestCase {
 
         let cvCertificate = try secureChannel.retrieveCertificateFrom(.egkAutCvcE256)
         XCTAssertFalse(cvCertificate.isEmpty)
+    }
+
+    func testReplayUnlockEgkWithPuk() throws {
+        let transcript = try transcriptFromJsonl(loadJsonl(named: "unlock-egk-with-puk.jsonl"))
+        let secureChannel = try establishReplaySecureChannel(transcript: transcript)
+        let status = try secureChannel.unlockEgkWithPuk("12345678")
+        XCTAssertEqual(.success, status)
+    }
+
+    func testReplayChangePinWithPuk() throws {
+        let transcript = try transcriptFromJsonl(loadJsonl(named: "change-pin-with-puk.jsonl"))
+        let secureChannel = try establishReplaySecureChannel(transcript: transcript)
+        let status = try secureChannel.changePinWithPuk("12345678", newPin: "123456")
+        XCTAssertEqual(.success, status)
     }
 }

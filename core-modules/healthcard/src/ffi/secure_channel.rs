@@ -27,7 +27,10 @@ use crate::exchange::certificate::CertificateFile;
 use crate::exchange::channel::CardChannel as CoreCardChannel;
 use crate::exchange::secure_channel::{self, CardAccessNumber as ActualCardAccessNumber};
 use crate::exchange::ExchangeError;
-use crate::exchange::UnlockMethod;
+use crate::exchange::{
+    change_pin as exchange_change_pin, change_pin_with_puk as exchange_change_pin_with_puk,
+    unlock_egk_with_puk as exchange_unlock_egk_with_puk,
+};
 use crypto::ec::ec_key::{EcCurve, EcPrivateKey};
 use crypto::error::CryptoError;
 use num_bigint::{BigInt, Sign};
@@ -213,13 +216,13 @@ impl SecureChannel {
     }
 
     /// Transmits a raw command APDU through the secure channel and returns a response APDU.
-    pub fn transmit(&self, command: Arc<CommandApdu>) -> Result<ResponseApdu, SecureChannelError> {
+    pub fn transmit(&self, command: Arc<CommandApdu>) -> Result<Arc<ResponseApdu>, SecureChannelError> {
         let mut guard = self
             .inner
             .lock()
             .map_err(|_| SecureChannelError::Transport { code: 0, reason: "Failed to acquire lock".to_string() })?;
         let response = guard.transmit(command.as_core()).map_err(SecureChannelError::from)?;
-        Ok(ResponseApdu::from(response))
+        Ok(ResponseApdu::from_core(response))
     }
 
     /// Verifies a PIN using the secure messaging context.
@@ -230,23 +233,27 @@ impl SecureChannel {
         })
     }
 
-    /// Unlocks or updates the eGK secret using the selected method.
-    pub fn unlock_egk(
+    /// Unlocks the home PIN using the PUK (reset retry counter).
+    pub fn unlock_egk_with_puk(&self, puk: Arc<CardPin>) -> Result<HealthCardResponseStatus, SecureChannelError> {
+        self.with_locked(|channel| exchange_unlock_egk_with_puk(channel, puk.as_core()))
+    }
+
+    /// Changes the home PIN using the old PIN.
+    pub fn change_pin(
         &self,
-        method: UnlockMethod,
-        puk: Option<Arc<CardPin>>,
-        old_secret: Arc<CardPin>,
-        new_secret: Option<Arc<CardPin>>,
+        old_pin: Arc<CardPin>,
+        new_pin: Arc<CardPin>,
     ) -> Result<HealthCardResponseStatus, SecureChannelError> {
-        self.with_locked(|channel| {
-            crate::exchange::unlock_egk(
-                channel,
-                method,
-                puk.as_ref().map(|pin| pin.as_core()),
-                old_secret.as_core(),
-                new_secret.as_ref().map(|pin| pin.as_core()),
-            )
-        })
+        self.with_locked(|channel| exchange_change_pin(channel, old_pin.as_core(), new_pin.as_core()))
+    }
+
+    /// Changes the home PIN using the PUK (reset retry counter + new PIN).
+    pub fn change_pin_with_puk(
+        &self,
+        puk: Arc<CardPin>,
+        new_pin: Arc<CardPin>,
+    ) -> Result<HealthCardResponseStatus, SecureChannelError> {
+        self.with_locked(|channel| exchange_change_pin_with_puk(channel, puk.as_core(), new_pin.as_core()))
     }
 
     /// Returns `length` bytes of random data from the card.
@@ -298,7 +305,7 @@ mod tests {
             true
         }
 
-        fn transmit(&self, command: Arc<CommandApdu>) -> Result<ResponseApdu, CardChannelError> {
+        fn transmit(&self, command: Arc<CommandApdu>) -> Result<Arc<ResponseApdu>, CardChannelError> {
             let core = command.as_core();
             assert_eq!(core.cla(), 0x00);
             assert_eq!(core.ins(), 0xA4);
@@ -306,7 +313,7 @@ mod tests {
             assert_eq!(core.p2(), 0x00);
             assert!(core.as_data().is_none());
             assert_eq!(core.expected_length(), None);
-            Ok(ResponseApdu { sw: 0x9000, status: HealthCardResponseStatus::Success, data: vec![0xDE, 0xAD] })
+            Ok(Arc::new(ResponseApdu::from_parts(0x9000, vec![0xDE, 0xAD]).unwrap()))
         }
     }
 

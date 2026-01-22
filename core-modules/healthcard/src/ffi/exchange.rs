@@ -24,7 +24,7 @@ use crate::command::apdu::ApduError;
 use crate::command::health_card_command::HealthCardResponse as CoreHealthCardResponse;
 use crate::command::health_card_status::HealthCardResponseStatus;
 use crate::exchange::certificate::CertificateFile;
-use crate::exchange::{self, ExchangeError as CoreExchangeError, HealthCardVerifyPinResult, UnlockMethod};
+use crate::exchange::{self, ExchangeError as CoreExchangeError, HealthCardVerifyPinResult};
 use std::sync::Arc;
 use thiserror::Error;
 use zeroize::Zeroize;
@@ -198,26 +198,33 @@ pub fn verify_pin(session: Arc<dyn CardChannel>, pin: Arc<CardPin>) -> Result<Ve
     })
 }
 
-/// Unlocks or updates the eGK secret using the selected method.
-///
-/// `method` controls whether PUK is required and whether a new secret is set.
+/// Unlocks the home PIN using the PUK (reset retry counter).
 #[uniffi::export]
-pub fn unlock_egk(
+pub fn unlock_egk_with_puk(
     session: Arc<dyn CardChannel>,
-    method: UnlockMethod,
-    puk: Option<Arc<CardPin>>,
-    old_secret: Arc<CardPin>,
-    new_secret: Option<Arc<CardPin>>,
+    puk: Arc<CardPin>,
 ) -> Result<HealthCardResponseStatus, ExchangeError> {
-    with_channel(session, |adapter| {
-        exchange::unlock_egk(
-            adapter,
-            method,
-            puk.as_ref().map(|pin| pin.as_core()),
-            old_secret.as_core(),
-            new_secret.as_ref().map(|pin| pin.as_core()),
-        )
-    })
+    with_channel(session, |adapter| exchange::unlock_egk_with_puk(adapter, puk.as_core()))
+}
+
+/// Changes the home PIN using the old PIN.
+#[uniffi::export]
+pub fn change_pin(
+    session: Arc<dyn CardChannel>,
+    old_pin: Arc<CardPin>,
+    new_pin: Arc<CardPin>,
+) -> Result<HealthCardResponseStatus, ExchangeError> {
+    with_channel(session, |adapter| exchange::change_pin(adapter, old_pin.as_core(), new_pin.as_core()))
+}
+
+/// Changes the home PIN using the PUK (reset retry counter + new PIN).
+#[uniffi::export]
+pub fn change_pin_with_puk(
+    session: Arc<dyn CardChannel>,
+    puk: Arc<CardPin>,
+    new_pin: Arc<CardPin>,
+) -> Result<HealthCardResponseStatus, ExchangeError> {
+    with_channel(session, |adapter| exchange::change_pin_with_puk(adapter, puk.as_core(), new_pin.as_core()))
 }
 
 /// Returns `length` bytes of random data from the card.

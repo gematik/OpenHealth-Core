@@ -68,4 +68,12 @@ actual class SecureChannelHandle internal constructor(
     actual fun retrieveCertificateFrom(certificate: CertificateFile): ByteArray {
         return secureChannel.retrieveCertificateFrom(FfiCertificateFile.valueOf(certificate.name))
     }
+
+    actual fun unlockEgkWithPuk(puk: String): HealthCardResponseStatus {
+        return secureChannel.unlockEgkWithPuk(CardPin.fromDigits(puk))
+    }
+
+    actual fun changePinWithPuk(puk: String, newPin: String): HealthCardResponseStatus {
+        return secureChannel.changePinWithPuk(CardPin.fromDigits(puk), CardPin.fromDigits(newPin))
+    }
 }

@@ -86,6 +86,9 @@ cargo run -p healthcard-apdu-tools --bin apdu_record --features pcsc -- \
   --can 123456 \
   --out ./transcript.jsonl \
   --verify-pin 123456 \
+  --change-pin 123456 654321 \
+  --unlock-egk-with-puk 12345678 \
+  --change-pin-with-puk 12345678 654321 \
   --sign-challenge DEADBEEF \
   --get-random 32 \
   --read-vsd
@@ -94,6 +97,9 @@ cargo run -p healthcard-apdu-tools --bin apdu_record --features pcsc -- \
 Notes:
 
 - `--verify-pin` expects the home PIN (MRPIN.H).
+- `--change-pin` changes the PIN using the old PIN; it expects `OLD_PIN` and `NEW_PIN`.
+- `--unlock-egk-with-puk` resets the PIN retry counter using the PUK.
+- `--change-pin-with-puk` resets the PIN retry counter and sets a new PIN; it expects `PUK` and `PIN` arguments.
 - `--sign-challenge` expects hex-encoded input; separators such as spaces, `_`, or `:` are ignored.
 - `--get-random` returns the requested number of random bytes.
 
