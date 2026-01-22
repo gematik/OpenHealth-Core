@@ -21,10 +21,10 @@
 
 package de.gematik.openhealth.sample
 
+import de.gematik.openhealth.healthcard.ApduException
 import de.gematik.openhealth.healthcard.CardChannel
 import de.gematik.openhealth.healthcard.CardChannelException
 import de.gematik.openhealth.healthcard.CommandApdu
-import de.gematik.openhealth.healthcard.HealthCardResponseStatus
 import de.gematik.openhealth.healthcard.ResponseApdu
 import javax.smartcardio.CardChannel as PcscChannel
 import javax.smartcardio.CardException
@@ -46,9 +46,11 @@ class PcscCardChannel(
     override fun transmit(command: CommandApdu): ResponseApdu {
         try {
             val response = delegate.transmit(CommandAPDU(command.toBytes()))
-            val sw = response.sw.toUShort()
-            val status = if (sw.toInt() == 0x9000) HealthCardResponseStatus.SUCCESS else HealthCardResponseStatus.UNKNOWN_STATUS
-            return ResponseApdu(sw = sw, status = status, data = response.data)
+            return try {
+                ResponseApdu.fromBytes(response.bytes)
+            } catch (ex: ApduException) {
+                throw CardChannelException.Apdu(ex)
+            }
         } catch (ex: CardException) {
             throw CardChannelException.Transport(
                 code = 0u,

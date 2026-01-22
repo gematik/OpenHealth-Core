@@ -41,11 +41,6 @@ data class ExchangeEntry(
     val rx: String,
 )
 
-data class ResponseApduParts(
-    val sw: UShort,
-    val data: ByteArray,
-)
-
 class ReplayChannelCore(
     private val supportsExtendedLength: Boolean,
     exchanges: List<ExchangeEntry>,
@@ -54,7 +49,7 @@ class ReplayChannelCore(
 
     fun supportsExtendedLength(): Boolean = supportsExtendedLength
 
-    fun transmit(commandBytes: ByteArray): ResponseApduParts {
+    fun transmit(commandBytes: ByteArray): ByteArray {
         val entry = entries.removeFirstOrNull() ?: error("replay exhausted")
         val txHex = commandBytes.toHexString()
         if (txHex != entry.tx) {
@@ -62,10 +57,7 @@ class ReplayChannelCore(
         }
         val rxBytes = hexToBytes(entry.rx)
         require(rxBytes.size >= 2) { "response APDU too short" }
-        val sw = (((rxBytes[rxBytes.size - 2].toInt() and 0xFF) shl 8) or (rxBytes[rxBytes.size - 1].toInt() and 0xFF))
-            .toUShort()
-        val data = rxBytes.copyOfRange(0, rxBytes.size - 2)
-        return ResponseApduParts(sw = sw, data = data)
+        return rxBytes
     }
 }
 

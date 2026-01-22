@@ -51,7 +51,7 @@ semantics.
 Defined in `channel.rs`:
 
 - `CommandApdu`: constructors for building command APDUs, plus `to_bytes()`.
-- `ResponseApdu`: object exposing `sw()`, `data()`, derived `status()`, and `to_bytes()`.
+- `ResponseApdu`: object exposing `sw()`, `data()`, and `to_bytes()`.
   Construct via `ResponseApdu::from_bytes(...)` or `ResponseApdu::from_parts(sw, data)`.
 - `CardChannelError`: error returned by the foreign channel implementation (`Transport` vs `Apdu`).
 

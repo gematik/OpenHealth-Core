@@ -35,11 +35,6 @@ private struct ExchangeEntry {
     let rx: String
 }
 
-private struct ResponseApduParts {
-    let sw: UInt16
-    let data: Data
-}
-
 private enum ReplayError: Error, CustomStringConvertible {
     case exhausted
     case mismatch(expected: String, actual: String)
@@ -80,7 +75,7 @@ private final class ReplayChannelCore: @unchecked Sendable {
         supportsExtendedLengthValue
     }
 
-    func transmit(commandBytes: Data) throws -> ResponseApduParts {
+    func transmit(commandBytes: Data) throws -> Data {
         guard index < exchanges.count else {
             throw ReplayError.exhausted
         }
@@ -98,9 +93,7 @@ private final class ReplayChannelCore: @unchecked Sendable {
             throw ReplayError.responseTooShort
         }
 
-        let sw = (UInt16(rxBytes[rxBytes.count - 2]) << 8) | UInt16(rxBytes[rxBytes.count - 1])
-        let data = rxBytes.dropLast(2)
-        return ResponseApduParts(sw: sw, data: data)
+        return rxBytes
     }
 }
 
@@ -117,8 +110,10 @@ private final class ReplayCardChannel: CardChannel, @unchecked Sendable {
 
     func transmit(command: CommandApdu) throws -> ResponseApdu {
         do {
-            let parts = try core.transmit(commandBytes: command.toBytes())
-            return ResponseApdu(sw: parts.sw, status: .unknownStatus, data: parts.data)
+            let responseBytes = try core.transmit(commandBytes: command.toBytes())
+            return try ResponseApdu.fromBytes(bytes: responseBytes)
+        } catch let apduError as ApduError {
+            throw CardChannelError.Apdu(error: apduError)
         } catch {
             throw CardChannelError.Transport(code: 0, reason: "\(error)")
         }

@@ -21,6 +21,7 @@
 
 package de.gematik.openhealth.healthcard.replay
 
+import de.gematik.openhealth.healthcard.ApduException
 import de.gematik.openhealth.healthcard.CardAccessNumber
 import de.gematik.openhealth.healthcard.CardChannel
 import de.gematik.openhealth.healthcard.CardChannelException
@@ -38,12 +39,16 @@ actual fun establishReplaySecureChannel(transcript: Transcript): SecureChannelHa
         override fun supportsExtendedLength(): Boolean = replayCore.supportsExtendedLength()
 
         override fun transmit(command: CommandApdu): ResponseApdu {
-            val parts = try {
+            val responseBytes = try {
                 replayCore.transmit(command.toBytes())
             } catch (ex: RuntimeException) {
                 throw CardChannelException.Transport(code = 0u, reason = ex.message ?: "replay failed")
             }
-            return ResponseApdu(sw = parts.sw, status = HealthCardResponseStatus.UNKNOWN_STATUS, data = parts.data)
+            return try {
+                ResponseApdu.fromBytes(responseBytes)
+            } catch (ex: ApduException) {
+                throw CardChannelException.Apdu(ex)
+            }
         }
     }
 
