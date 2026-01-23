@@ -32,7 +32,11 @@ This document summarizes the publicly released versions of OpenHealth Core.
 - Expose exchange-layer card operations (PIN verify/unlock, random/VSD/cert/sign) via FFI ([#47](https://github.com/gematik/OpenHealth-Core/pull/47)).
 - Document FFI exported APIs ([#47](https://github.com/gematik/OpenHealth-Core/pull/47)).
 
-### 0.0.1-alpha5 (Latest)
+### 1.2.3 (Latest)
+
+TEST
+
+### 0.0.1-alpha5
 
 Added
 - FFI bindings for healthcard ([#18](https://github.com/gematik/OpenHealth-Core/pull/18)).
