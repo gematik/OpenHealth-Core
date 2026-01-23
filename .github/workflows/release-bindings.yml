@@ -40,9 +40,38 @@ permissions:
   contents: read
 
 jobs:
+  release-notes:
+    name: Release notes tag check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Verify ReleaseNotes.md tag entry
+        run: |
+          set -euo pipefail
+          version="${{ inputs.version }}"
+          if [ -z "${version}" ]; then
+            echo "No release version provided; skipping release notes tag check."
+            exit 0
+          fi
+          echo "Release version: ${version}"
+
+          needle="### ${version} (Latest)"
+          if grep -Fq "${needle}" ReleaseNotes.md; then
+            echo "ReleaseNotes.md contains '${needle}'."
+          else
+            echo "::error::ReleaseNotes.md must include '${needle}'."
+            exit 1
+          fi
+
   kotlin-bindings:
     name: Kotlin bindings (${{ matrix.display_name }})
     runs-on: ${{ matrix.runner }}
+    needs: release-notes
     env:
       OUT_ROOT: ${{ github.workspace }}/artifacts/${{ matrix.display_name }}/generated/uniffi
       CARGO_TARGET_DIR: ${{ github.workspace }}/artifacts/${{ matrix.display_name }}/cargo
@@ -174,6 +203,7 @@ jobs:
   swift-bindings:
     name: Swift bindings (darwin-universal)
     runs-on: macos-26
+    needs: release-notes
     env:
       OUT_ROOT: ${{ github.workspace }}/artifacts/swift/generated/uniffi
       CARGO_TARGET_DIR: ${{ github.workspace }}/artifacts/swift/cargo
