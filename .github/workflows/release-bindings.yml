@@ -410,11 +410,27 @@ jobs:
           git tag "${VERSION}"
           git push origin "${VERSION}"
 
+      - name: Render release body
+        id: release-body
+        run: |
+          set -euo pipefail
+          template=".github/workflows/changelog_template.md"
+          latest_tag="${{ inputs.version }}"
+
+          body_path="artifacts/release-body.md"
+          mkdir -p "$(dirname "${body_path}")"
+
+          sed -e "s|{LATEST_TAG}|${latest_tag}|g" "${template}" > "${body_path}"
+
+          echo "Release body rendered to ${body_path}."
+          echo "path=${body_path}" >> "${GITHUB_OUTPUT}"
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.version }}
+          body_path: ${{ steps.release-body.outputs.path }}
           files: |
             artifacts/swift/OpenHealthHealthcardFFI.xcframework.zip
             maven-repo.zip
-          generate_release_notes: true
+          generate_release_notes: false
