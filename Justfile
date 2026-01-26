@@ -9,6 +9,49 @@ default:
     @just --list
 
 # -------------------------------------------------
+# Rust (workspace)
+# -------------------------------------------------
+
+# Generate a Rust coverage report (requires `cargo-llvm-cov`).
+rust-cov *ARGS="":
+    cargo cov --workspace {{ ARGS }}
+
+# Generate an HTML report at `target/llvm-cov-html/html` (requires `cargo-llvm-cov`).
+rust-cov-html *ARGS="":
+    cargo cov-html --workspace {{ ARGS }}
+
+# Generate an LCOV report at `target/llvm-cov.lcov.info` (requires `cargo-llvm-cov`).
+rust-cov-lcov *ARGS="":
+    cargo cov-lcov --workspace {{ ARGS }}
+
+# Generate a JSON report at `target/llvm-cov.json` (requires `cargo-llvm-cov`).
+rust-cov-json *ARGS="":
+    cargo cov-json --workspace {{ ARGS }}
+
+# Generate a nightly branch coverage JSON at `target/llvm-cov.branch.json` (requires `cargo-llvm-cov` + nightly + llvm-tools-preview).
+rust-cov-json-branch *ARGS="":
+    cargo +nightly cov-json-branch --workspace {{ ARGS }}
+
+# Generate a nightly condition coverage JSON at `target/llvm-cov.condition.json` (short-circuit logic support).
+# Note: not required by `rust-quality-report`.
+rust-cov-json-condition:
+    RUSTFLAGS='-Z coverage-options=condition' \
+      cargo +nightly llvm-cov --json --output-path target/llvm-cov.condition.json --workspace --locked --all-features
+
+# Combine coverage (llvm-cov JSON) with static complexity metrics.
+# Outputs:
+# - `target/quality-report.md`
+# - `target/quality-report.json`
+rust-quality-report *ARGS="":
+    cargo cov-json --workspace
+    just rust-cov-json-branch
+    python3 tools/quality-report.py {{ ARGS }}
+
+# Clean instrumented artifacts created by `cargo llvm-cov`.
+rust-cov-clean:
+    cargo cov-clean --workspace
+
+# -------------------------------------------------
 # Core paths
 # -------------------------------------------------
 

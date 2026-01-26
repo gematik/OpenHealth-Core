@@ -282,3 +282,81 @@ fn derive_keypair_from_scalar(
     let public_key = public_point.to_ec_public_key()?;
     Ok((public_key, private_key))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crypto::error::CryptoError;
+
+    #[test]
+    fn transcript_roundtrip_jsonl() {
+        let mut transcript = Transcript::new(true);
+        transcript.set_keys(vec!["A1B2C3".to_string()]);
+        transcript.set_can("123456");
+        transcript.push_exchange(&[0x00], &[0x90, 0x00]);
+        transcript.push_error(&[0x01], "failure");
+
+        let jsonl = transcript.to_jsonl_string().unwrap();
+        let parsed = Transcript::from_jsonl_str(&format!("\n{jsonl}\n")).unwrap();
+
+        assert!(parsed.supports_extended_length());
+        assert_eq!(parsed.keys().unwrap()[0], "A1B2C3");
+        assert_eq!(parsed.can(), Some("123456"));
+        assert_eq!(parsed.entries.len(), 2);
+        match &parsed.entries[0] {
+            TranscriptEntry::Exchange { tx, rx } => {
+                assert_eq!(tx, "00");
+                assert_eq!(rx, "9000");
+            }
+            _ => panic!("expected exchange entry"),
+        }
+        match &parsed.entries[1] {
+            TranscriptEntry::Error { tx, error } => {
+                assert_eq!(tx, "01");
+                assert_eq!(error, "failure");
+            }
+            _ => panic!("expected error entry"),
+        }
+    }
+
+    #[test]
+    fn transcript_requires_header() {
+        let input = r#"{"type":"exchange","tx":"00","rx":"9000"}"#;
+        let err = Transcript::from_jsonl_str(input).unwrap_err();
+        assert!(matches!(err, TranscriptError::InvalidHeader));
+    }
+
+    #[test]
+    fn replay_session_matches_transcript_entries() {
+        let mut transcript = Transcript::new(false);
+        transcript.push_exchange(&[0xDE, 0xAD], &[0x90, 0x00]);
+        let mut session = ReplaySession::from_transcript(transcript);
+        let ok = session.transmit_bytes(&[0xDE, 0xAD]).unwrap();
+        assert_eq!(ok, vec![0x90, 0x00]);
+    }
+
+    #[test]
+    fn replay_session_reports_mismatch() {
+        let mut transcript = Transcript::new(false);
+        transcript.push_exchange(&[0x01], &[0x90, 0x00]);
+        let mut session = ReplaySession::from_transcript(transcript);
+        let err = session.transmit_bytes(&[0x02]).unwrap_err();
+        assert!(matches!(err, TranscriptError::ReplayMismatch));
+    }
+
+    #[test]
+    fn fixed_key_generator_consumes_keys() {
+        let mut transcript = Transcript::new(true);
+        transcript.set_keys(vec!["01".repeat(32)]);
+        let mut generator = transcript.fixed_key_generator().unwrap().unwrap();
+
+        let (public_key, private_key) = generator(EcCurve::BrainpoolP256r1).unwrap();
+        assert_eq!(private_key.as_bytes().len(), 32);
+        assert_eq!(public_key.curve(), &EcCurve::BrainpoolP256r1);
+
+        match generator(EcCurve::BrainpoolP256r1) {
+            Err(err) => assert!(matches!(err, CryptoError::InvalidKeyMaterial { .. })),
+            Ok(_) => panic!("expected generator exhaustion"),
+        }
+    }
+}

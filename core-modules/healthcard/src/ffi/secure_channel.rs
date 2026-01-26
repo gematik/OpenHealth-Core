@@ -296,6 +296,7 @@ mod tests {
     use super::*;
     use crate::command::apdu::CardCommandApdu;
     use crate::ffi::channel::CardChannelError;
+    use crate::exchange::ExchangeError as CoreExchangeError;
     use std::sync::Arc;
 
     struct DummyForeign;
@@ -325,5 +326,50 @@ mod tests {
         let response = CoreCardChannel::transmit(&mut adapter, &apdu).unwrap();
         assert_eq!(response.sw(), 0x9000);
         assert_eq!(response.to_data(), vec![0xDE, 0xAD]);
+    }
+
+    #[test]
+    fn card_access_number_roundtrip() {
+        let can = CardAccessNumber::from_digits("123456".to_string()).unwrap();
+        assert_eq!(can.digits(), "123456");
+    }
+
+    #[test]
+    fn card_access_number_requires_six_digits() {
+        match CardAccessNumber::from_digits("12345".to_string()) {
+            Err(err) => assert!(matches!(err, SecureChannelError::InvalidArgument { .. })),
+            Ok(_) => panic!("expected invalid argument"),
+        }
+    }
+
+    #[test]
+    fn establish_secure_channel_requires_two_keys() {
+        let session: Arc<dyn CardChannel> = Arc::new(DummyForeign);
+        let can = Arc::new(CardAccessNumber::from_digits("123456".to_string()).unwrap());
+        match establish_secure_channel_with_keys(session, can, vec!["AA".to_string()]) {
+            Err(SecureChannelError::InvalidArgument { reason }) => assert!(reason.contains("at least 2 keys required")),
+            Err(_) => panic!("expected invalid argument"),
+            Ok(_) => panic!("expected invalid argument"),
+        }
+    }
+
+    #[test]
+    fn establish_secure_channel_rejects_invalid_key_hex() {
+        let session: Arc<dyn CardChannel> = Arc::new(DummyForeign);
+        let can = Arc::new(CardAccessNumber::from_digits("123456".to_string()).unwrap());
+        match establish_secure_channel_with_keys(session, can, vec!["ZZ".to_string(), "00".to_string()]) {
+            Err(SecureChannelError::InvalidArgument { reason }) => assert!(reason.contains("invalid key hex at index 0")),
+            Err(_) => panic!("expected invalid argument"),
+            Ok(_) => panic!("expected invalid argument"),
+        }
+    }
+
+    #[test]
+    fn exchange_error_mapping() {
+        let err: SecureChannelError = CoreExchangeError::InvalidArgument("bad".to_string()).into();
+        match err {
+            SecureChannelError::InvalidArgument { reason } => assert_eq!(reason, "bad"),
+            _ => panic!("expected invalid argument"),
+        }
     }
 }

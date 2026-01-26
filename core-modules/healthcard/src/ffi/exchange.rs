@@ -259,3 +259,48 @@ pub fn retrieve_certificate_from(
 ) -> Result<Vec<u8>, ExchangeError> {
     with_channel(session, |adapter| exchange::retrieve_certificate_from(adapter, certificate))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::command::apdu::CardResponseApdu;
+    use crate::command::health_card_command::HealthCardResponse as CoreHealthCardResponse;
+    use crate::command::health_card_status::HealthCardResponseStatus;
+    use crate::exchange::ExchangeError as CoreExchangeError;
+    use crate::exchange::HealthCardVerifyPinResult as CoreVerifyPinResult;
+    use asn1::error::Asn1DecoderError;
+
+    fn response(status: HealthCardResponseStatus) -> CoreHealthCardResponse {
+        let apdu = CardResponseApdu::new(&[0x90, 0x00]).unwrap();
+        CoreHealthCardResponse::new(status, apdu)
+    }
+
+    #[test]
+    fn verify_pin_result_mapping() {
+        let success = VerifyPinResult::from_core(CoreVerifyPinResult::Success(response(HealthCardResponseStatus::Success)));
+        assert!(matches!(success.outcome, VerifyPinOutcome::Success));
+        assert_eq!(success.retries_left, None);
+
+        let warn = VerifyPinResult::from_core(CoreVerifyPinResult::WrongSecretWarning {
+            response: response(HealthCardResponseStatus::WrongSecretWarningCount02),
+            retries_left: 2,
+        });
+        assert!(matches!(warn.outcome, VerifyPinOutcome::WrongSecretWarning));
+        assert_eq!(warn.retries_left, Some(2));
+    }
+
+    #[test]
+    fn exchange_error_mapping() {
+        let err: ExchangeError = CoreExchangeError::InvalidArgument("bad".to_string()).into();
+        match err {
+            ExchangeError::InvalidArgument { reason } => assert_eq!(reason, "bad"),
+            _ => panic!("expected invalid argument"),
+        }
+
+        let err: ExchangeError = CoreExchangeError::Asn1DecoderError(Asn1DecoderError::MalformedUtf8String).into();
+        match err {
+            ExchangeError::Asn1Decode { reason } => assert!(reason.contains("Malformed UTF-8 string")),
+            _ => panic!("expected asn1 decode"),
+        }
+    }
+}

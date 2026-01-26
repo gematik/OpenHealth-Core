@@ -77,3 +77,32 @@ macro_rules! ossl_require {
 
 /// Common result type for OpenSSL operations
 pub type OsslResult<T> = Result<T, OsslError>;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn ossl_error_display() {
+        let err = OsslError("message".to_string());
+        assert_eq!(err.to_string(), "message");
+    }
+
+    #[test]
+    fn openssl_error_includes_prefix() {
+        let err = openssl_error("test");
+        assert!(err.to_string().starts_with("test"));
+    }
+
+    #[test]
+    fn ossl_check_macro_returns_error() {
+        fn fail() -> OsslResult<()> {
+            let ret = 0;
+            ossl_check!(ret, "check failed");
+            Ok(())
+        }
+
+        let err = fail().expect_err("expected error");
+        assert!(err.to_string().starts_with("check failed"));
+    }
+}

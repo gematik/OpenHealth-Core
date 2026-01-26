@@ -23,6 +23,8 @@
 target/
 **/*.rs.bk
 .cargo/
+!.cargo/config.toml
+!.cargo/config
 
 # Kotlin/KMP specific
 .gradle/**

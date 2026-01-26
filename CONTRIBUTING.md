@@ -62,6 +62,74 @@ Linting:
 cargo clippy --workspace --all-targets --all-features
 ```
 
+## Test Coverage (Rust)
+
+This project supports test coverage reporting via `cargo-llvm-cov`.
+
+Prerequisites (per Rust toolchain):
+```shell
+rustup component add llvm-tools-preview
+cargo install cargo-llvm-cov --locked
+```
+
+Generate reports:
+```shell
+cargo cov-html --workspace
+cargo cov-lcov --workspace
+cargo cov-json --workspace
+```
+
+Outputs:
+- HTML: `target/llvm-cov-html/html/index.html`
+- LCOV: `target/llvm-cov.lcov.info`
+- JSON: `target/llvm-cov.json`
+
+Optional (unstable) branch coverage:
+```shell
+cargo +nightly cov-json-branch --workspace
+```
+
+Output:
+- Branch JSON: `target/llvm-cov.branch.json`
+
+Optional (unstable) condition coverage for short-circuit logic:
+```shell
+RUSTFLAGS='-Z coverage-options=condition' cargo +nightly llvm-cov --json --output-path target/llvm-cov.condition.json --workspace --locked --all-features
+```
+
+Output:
+- Condition JSON: `target/llvm-cov.condition.json`
+
+Alternatively, use the `just` recipes:
+```shell
+just rust-cov-html
+just rust-cov-lcov
+just rust-cov-json
+```
+
+## Test Sufficiency Report (Rust)
+
+To get a quick, combined view of *coverage vs. code complexity*, generate the quality report:
+```shell
+just rust-quality-report
+```
+
+The report is written to:
+- `target/quality-report.md`
+- `target/quality-report.json`
+
+Notes:
+- The report uses `rust-code-analysis-cli` for per-function cyclomatic complexity.
+- It uses nightly branch coverage (`target/llvm-cov.branch.json`) plus stable line coverage (`target/llvm-cov.json`) to flag:
+  - Uncovered branch edges in functions with `cyclomatic >= 2` (configurable via `--min-cyclo-for-branches`)
+  - Uncovered single-line logic (comparisons, bitwise ops, iterator logic, short-circuit)
+
+Prerequisites:
+```shell
+cargo install rust-code-analysis-cli --locked
+rustup component add llvm-tools-preview --toolchain nightly-aarch64-apple-darwin
+```
+
 ## Handling TODOs
 
 **TODOs**: Always associate `TODO` comments with a ticket in the following format:
