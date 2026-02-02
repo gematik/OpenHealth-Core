@@ -351,4 +351,19 @@ mod tests {
             _ => panic!("expected apdu error"),
         }
     }
+
+    #[test]
+    fn command_apdu_with_data_and_expect_rejects_large_length() {
+        let err = CommandApdu::with_data_and_expect(
+            0,
+            0,
+            0,
+            0,
+            crate::command::apdu::LengthClass::Short,
+            vec![0x01],
+            u32::MAX,
+        )
+        .unwrap_err();
+        assert!(matches!(err, ApduError::InvalidLength(_)));
+    }
 }

@@ -295,9 +295,10 @@ impl From<secure_channel::SecureChannelError> for SecureChannelError {
 mod tests {
     use super::*;
     use crate::command::apdu::CardCommandApdu;
-    use crate::ffi::channel::CardChannelError;
     use crate::exchange::ExchangeError as CoreExchangeError;
-    use std::sync::Arc;
+    use crate::ffi::channel::CardChannelError;
+    use healthcard_apdu_base::{ReplaySession, Transcript};
+    use std::sync::{Arc, Mutex};
 
     struct DummyForeign;
 
@@ -358,7 +359,9 @@ mod tests {
         let session: Arc<dyn CardChannel> = Arc::new(DummyForeign);
         let can = Arc::new(CardAccessNumber::from_digits("123456".to_string()).unwrap());
         match establish_secure_channel_with_keys(session, can, vec!["ZZ".to_string(), "00".to_string()]) {
-            Err(SecureChannelError::InvalidArgument { reason }) => assert!(reason.contains("invalid key hex at index 0")),
+            Err(SecureChannelError::InvalidArgument { reason }) => {
+                assert!(reason.contains("invalid key hex at index 0"))
+            }
             Err(_) => panic!("expected invalid argument"),
             Ok(_) => panic!("expected invalid argument"),
         }
@@ -372,4 +375,79 @@ mod tests {
             _ => panic!("expected invalid argument"),
         }
     }
+
+    #[test]
+    fn card_access_number_rejects_non_digits() {
+        let err = CardAccessNumber::from_digits("12A456".to_string()).err().unwrap();
+        assert!(matches!(err, SecureChannelError::InvalidArgument { .. }));
+    }
+
+    #[test]
+    fn secure_channel_lock_and_transmit_paths() {
+        struct ErrorForeign;
+
+        impl CardChannel for ErrorForeign {
+            fn supports_extended_length(&self) -> bool {
+                true
+            }
+
+            fn transmit(&self, _command: Arc<CommandApdu>) -> Result<Arc<ResponseApdu>, CardChannelError> {
+                Err(CardChannelError::Transport { code: 0, reason: "no card".into() })
+            }
+        }
+
+        let inner: Arc<dyn CardChannel> = Arc::new(ErrorForeign);
+        let adapter = FfiCardChannelAdapter::new(inner);
+        let core = crate::exchange::secure_channel::test_secure_channel_with_adapter(adapter);
+        let secure = SecureChannel { inner: Mutex::new(core) };
+
+        let ok = secure.with_locked(|_channel| Ok(()));
+        assert!(ok.is_ok());
+
+        let command = Arc::new(CommandApdu::header_only(0x00, 0xA4, 0x04, 0x00).unwrap());
+        let err = secure.transmit(command).unwrap_err();
+        assert!(matches!(err, SecureChannelError::Transport { .. }));
+    }
+
+    #[test]
+    fn establish_secure_channel_with_keys_replay() {
+        struct ReplayForeign {
+            session: Mutex<ReplaySession>,
+        }
+
+        impl ReplayForeign {
+            fn from_transcript(transcript: Transcript) -> Self {
+                Self { session: Mutex::new(ReplaySession::from_transcript(transcript)) }
+            }
+        }
+
+        impl CardChannel for ReplayForeign {
+            fn supports_extended_length(&self) -> bool {
+                self.session.lock().unwrap().supports_extended_length()
+            }
+
+            fn transmit(&self, command: Arc<CommandApdu>) -> Result<Arc<ResponseApdu>, CardChannelError> {
+                let tx = command.as_core().to_bytes();
+                let rx = self
+                    .session
+                    .lock()
+                    .unwrap()
+                    .transmit_bytes(&tx)
+                    .map_err(|err| CardChannelError::Transport { code: 0, reason: err.to_string() })?;
+                let response = ResponseApdu::from_bytes(rx)?;
+                Ok(Arc::new(response))
+            }
+        }
+
+        let transcript = Transcript::from_jsonl_str(JSONL_ESTABLISH_SECURE_CHANNEL).unwrap();
+        let can = transcript.can().unwrap().to_string();
+        let keys = transcript.keys().unwrap().to_vec();
+        let session: Arc<dyn CardChannel> = Arc::new(ReplayForeign::from_transcript(transcript));
+        let can = Arc::new(CardAccessNumber::from_digits(can).unwrap());
+        let channel = establish_secure_channel_with_keys(session, can, keys).unwrap();
+        assert!(channel.supports_extended_length());
+    }
+
+    const JSONL_ESTABLISH_SECURE_CHANNEL: &str =
+        include_str!("../../../../test-vectors/apdu-replay/establish-secure-channel.jsonl");
 }

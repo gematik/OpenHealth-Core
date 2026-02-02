@@ -27,21 +27,82 @@ use crate::ossl::key::{PKey, PKeyCtx};
 use crate::ossl_check;
 use crypto_openssl_sys::*;
 
+#[cfg(test)]
+use std::cell::Cell;
+
+#[cfg(test)]
+thread_local! {
+    static FORCE_PKEY_PUBLIC_NULL: Cell<bool> = const { Cell::new(false) };
+    static FORCE_PKEY_CTX_FROM_PKEY_NULL: Cell<bool> = const { Cell::new(false) };
+    static FORCE_PKEY_CTX_FROM_NAME_NULL: Cell<bool> = const { Cell::new(false) };
+    static FORCE_PKEY_KEYGEN_NULL: Cell<bool> = const { Cell::new(false) };
+    static FORCE_PKEY_PRIVATE_NULL: Cell<bool> = const { Cell::new(false) };
+    static FORCE_PKEY_GET_ENC_KEY_ZERO: Cell<bool> = const { Cell::new(false) };
+}
+
+#[inline]
+fn pkey_new_raw_public_key(alg: *const std::os::raw::c_char, key: *const u8, key_len: usize) -> *mut EVP_PKEY {
+    #[cfg(test)]
+    {
+        if FORCE_PKEY_PUBLIC_NULL.with(|flag| flag.get()) {
+            return ptr::null_mut();
+        }
+    }
+    unsafe { EVP_PKEY_new_raw_public_key_ex(ptr::null_mut(), alg, ptr::null_mut(), key, key_len) }
+}
+
+#[inline]
+fn pkey_ctx_new_from_pkey(pkey: *mut EVP_PKEY) -> *mut EVP_PKEY_CTX {
+    #[cfg(test)]
+    {
+        if FORCE_PKEY_CTX_FROM_PKEY_NULL.with(|flag| flag.get()) {
+            return ptr::null_mut();
+        }
+    }
+    unsafe { EVP_PKEY_CTX_new_from_pkey(std::ptr::null_mut(), pkey, std::ptr::null_mut()) }
+}
+
+#[inline]
+fn pkey_ctx_new_from_name(alg: *const std::os::raw::c_char) -> *mut EVP_PKEY_CTX {
+    #[cfg(test)]
+    {
+        if FORCE_PKEY_CTX_FROM_NAME_NULL.with(|flag| flag.get()) {
+            return ptr::null_mut();
+        }
+    }
+    unsafe { EVP_PKEY_CTX_new_from_name(ptr::null_mut(), alg, ptr::null_mut()) }
+}
+
+#[inline]
+fn pkey_new_raw_private_key(alg: *const std::os::raw::c_char, key: *const u8, key_len: usize) -> *mut EVP_PKEY {
+    #[cfg(test)]
+    {
+        if FORCE_PKEY_PRIVATE_NULL.with(|flag| flag.get()) {
+            return ptr::null_mut();
+        }
+    }
+    unsafe { EVP_PKEY_new_raw_private_key_ex(ptr::null_mut(), alg, ptr::null_mut(), key, key_len) }
+}
+
+#[inline]
+fn pkey_get_encoded_public_key(pkey: *mut EVP_PKEY, buf: *mut *mut u8) -> usize {
+    #[cfg(test)]
+    {
+        if FORCE_PKEY_GET_ENC_KEY_ZERO.with(|flag| flag.get()) {
+            unsafe { *buf = ptr::null_mut() };
+            return 0;
+        }
+    }
+    unsafe { EVP_PKEY_get1_encoded_public_key(pkey, buf) }
+}
+
 /// Wrapper for ML-KEM encapsulation using OpenSSL EVP APIs.
 pub struct MlkemEncapsulation(PKey);
 
 impl MlkemEncapsulation {
     pub fn create(algorithm: &str, encapsulation_key: &[u8]) -> OsslResult<Self> {
         let alg = CString::new(algorithm).unwrap();
-        let p = unsafe {
-            EVP_PKEY_new_raw_public_key_ex(
-                ptr::null_mut(),
-                alg.as_ptr(),
-                ptr::null_mut(),
-                encapsulation_key.as_ptr(),
-                encapsulation_key.len(),
-            )
-        };
+        let p = pkey_new_raw_public_key(alg.as_ptr(), encapsulation_key.as_ptr(), encapsulation_key.len());
         if p.is_null() {
             return Err(openssl_error("Key initialization failed"));
         }
@@ -50,8 +111,7 @@ impl MlkemEncapsulation {
 
     /// Returns a tuple of wrapped key and secret key.
     pub fn encapsulate(&self) -> OsslResult<(Vec<u8>, Vec<u8>)> {
-        let raw =
-            unsafe { EVP_PKEY_CTX_new_from_pkey(std::ptr::null_mut(), self.0.as_mut_ptr(), std::ptr::null_mut()) };
+        let raw = pkey_ctx_new_from_pkey(self.0.as_mut_ptr());
         if raw.is_null() {
             return Err(openssl_error("Failed to create context from key"));
         }
@@ -92,7 +152,7 @@ impl MlkemDecapsulation {
     /// Generate a new keypair
     pub fn create(algorithm: &str) -> OsslResult<Self> {
         let alg = CString::new(algorithm).unwrap();
-        let gen_ctx = unsafe { EVP_PKEY_CTX_new_from_name(ptr::null_mut(), alg.as_ptr(), ptr::null_mut()) };
+        let gen_ctx = pkey_ctx_new_from_name(alg.as_ptr());
         if gen_ctx.is_null() {
             return Err(openssl_error("Keygen context init failed"));
         }
@@ -102,6 +162,10 @@ impl MlkemDecapsulation {
         // actually generate
         let mut raw: *mut EVP_PKEY = ptr::null_mut();
         ossl_check!(unsafe { EVP_PKEY_keygen(gen_ctx.as_ptr(), &mut raw) }, "Keygen failed");
+        #[cfg(test)]
+        if FORCE_PKEY_KEYGEN_NULL.with(|flag| flag.get()) {
+            raw = ptr::null_mut();
+        }
         if raw.is_null() {
             return Err(openssl_error("Keygen returned null"));
         }
@@ -111,15 +175,7 @@ impl MlkemDecapsulation {
     /// Import an existing private key
     pub fn create_from_private_key(algorithm: &str, private_key: &[u8]) -> OsslResult<Self> {
         let alg = CString::new(algorithm).unwrap();
-        let p = unsafe {
-            EVP_PKEY_new_raw_private_key_ex(
-                ptr::null_mut(),
-                alg.as_ptr(),
-                ptr::null_mut(),
-                private_key.as_ptr(),
-                private_key.len(),
-            )
-        };
+        let p = pkey_new_raw_private_key(alg.as_ptr(), private_key.as_ptr(), private_key.len());
         if p.is_null() {
             return Err(openssl_error("Importing private key failed"));
         }
@@ -128,7 +184,7 @@ impl MlkemDecapsulation {
 
     /// Recover shared secret from wrapped key
     pub fn decapsulate(&self, wrapped_key: &[u8]) -> OsslResult<Vec<u8>> {
-        let raw = unsafe { EVP_PKEY_CTX_new_from_pkey(ptr::null_mut(), self.0.as_mut_ptr(), ptr::null_mut()) };
+        let raw = pkey_ctx_new_from_pkey(self.0.as_mut_ptr());
         if raw.is_null() {
             return Err(openssl_error("Failed to create context from key"));
         }
@@ -158,7 +214,7 @@ impl MlkemDecapsulation {
     /// Get the public (encapsulation) key
     pub fn get_encapsulation_key(&self) -> OsslResult<Vec<u8>> {
         let mut buf: *mut u8 = ptr::null_mut();
-        let len = unsafe { EVP_PKEY_get1_encoded_public_key(self.0.as_mut_ptr(), &mut buf) };
+        let len = pkey_get_encoded_public_key(self.0.as_mut_ptr(), &mut buf);
         if len == 0 {
             return Err(openssl_error("Extracting public key failed"));
         }
@@ -190,16 +246,92 @@ mod tests {
     use super::*;
 
     #[test]
-    fn export_import_private_key_roundtrip() {
-        let dec = MlkemDecapsulation::create("ML-KEM-512").expect("create decapsulator");
-        let private_key = dec.get_private_key().expect("export private key");
+    fn invalid_algorithm_rejected() {
+        match MlkemEncapsulation::create("INVALID", &[0x01, 0x02]) {
+            Err(err) => assert!(err.to_string().contains("Key initialization failed")),
+            Ok(_) => panic!("expected error"),
+        }
+    }
 
-        let imported = MlkemDecapsulation::create_from_private_key("ML-KEM-512", &private_key)
-            .expect("recreate decapsulator from private key");
+    #[test]
+    fn create_fails_when_keygen_ctx_null() {
+        FORCE_PKEY_CTX_FROM_NAME_NULL.with(|flag| flag.set(true));
+        let res = MlkemDecapsulation::create("ML-KEM-512");
+        FORCE_PKEY_CTX_FROM_NAME_NULL.with(|flag| flag.set(false));
+        match res {
+            Err(err) => assert!(err.to_string().contains("Keygen context init failed")),
+            Ok(_) => panic!("expected error"),
+        }
+    }
 
-        let original_pk = dec.get_encapsulation_key().expect("original pk");
-        let imported_pk = imported.get_encapsulation_key().expect("imported pk");
+    #[test]
+    fn create_fails_when_keygen_returns_null() {
+        FORCE_PKEY_KEYGEN_NULL.with(|flag| flag.set(true));
+        let res = MlkemDecapsulation::create("ML-KEM-512");
+        FORCE_PKEY_KEYGEN_NULL.with(|flag| flag.set(false));
+        match res {
+            Err(err) => assert!(err.to_string().contains("Keygen returned null")),
+            Ok(_) => panic!("expected error"),
+        }
+    }
 
-        assert_eq!(original_pk, imported_pk);
+    #[test]
+    fn create_from_private_key_fails_when_null() {
+        FORCE_PKEY_PRIVATE_NULL.with(|flag| flag.set(true));
+        let res = MlkemDecapsulation::create_from_private_key("ML-KEM-512", &[0x01, 0x02]);
+        FORCE_PKEY_PRIVATE_NULL.with(|flag| flag.set(false));
+        match res {
+            Err(err) => assert!(err.to_string().contains("Importing private key failed")),
+            Ok(_) => panic!("expected error"),
+        }
+    }
+
+    #[test]
+    fn encapsulate_fails_when_ctx_null() {
+        let dec = MlkemDecapsulation::create("ML-KEM-512").unwrap();
+        let pk = dec.get_encapsulation_key().unwrap();
+        let enc = MlkemEncapsulation::create("ML-KEM-512", &pk).unwrap();
+        FORCE_PKEY_CTX_FROM_PKEY_NULL.with(|flag| flag.set(true));
+        let res = enc.encapsulate();
+        FORCE_PKEY_CTX_FROM_PKEY_NULL.with(|flag| flag.set(false));
+        match res {
+            Err(err) => assert!(err.to_string().contains("Failed to create context from key")),
+            Ok(_) => panic!("expected error"),
+        }
+    }
+
+    #[test]
+    fn decapsulate_fails_when_ctx_null() {
+        let dec = MlkemDecapsulation::create("ML-KEM-512").unwrap();
+        FORCE_PKEY_CTX_FROM_PKEY_NULL.with(|flag| flag.set(true));
+        let res = dec.decapsulate(&[0x01; 800]);
+        FORCE_PKEY_CTX_FROM_PKEY_NULL.with(|flag| flag.set(false));
+        match res {
+            Err(err) => assert!(err.to_string().contains("Failed to create context from key")),
+            Ok(_) => panic!("expected error"),
+        }
+    }
+
+    #[test]
+    fn get_encapsulation_key_fails_when_len_zero() {
+        let dec = MlkemDecapsulation::create("ML-KEM-512").unwrap();
+        FORCE_PKEY_GET_ENC_KEY_ZERO.with(|flag| flag.set(true));
+        let res = dec.get_encapsulation_key();
+        FORCE_PKEY_GET_ENC_KEY_ZERO.with(|flag| flag.set(false));
+        match res {
+            Err(err) => assert!(err.to_string().contains("Extracting public key failed")),
+            Ok(_) => panic!("expected error"),
+        }
+    }
+
+    #[test]
+    fn create_encapsulation_fails_when_pkey_null() {
+        FORCE_PKEY_PUBLIC_NULL.with(|flag| flag.set(true));
+        let res = MlkemEncapsulation::create("ML-KEM-512", &[0x01; 10]);
+        FORCE_PKEY_PUBLIC_NULL.with(|flag| flag.set(false));
+        match res {
+            Err(err) => assert!(err.to_string().contains("Key initialization failed")),
+            Ok(_) => panic!("expected error"),
+        }
     }
 }

@@ -318,4 +318,20 @@ mod tests {
             assert!(UniversalTag::try_from(b).is_err());
         }
     }
+
+    #[test]
+    fn as_universal_only_for_universal_class() {
+        let id = Asn1Id::ctx(0x01);
+        assert!(id.as_universal().is_none());
+        let id = Asn1Id::uni(0x01);
+        assert_eq!(id.as_universal(), Some(UniversalTag::Boolean));
+    }
+
+    #[test]
+    fn class_and_form_bitor() {
+        let encoded = Asn1Class::Application | Asn1Form::Constructed;
+        assert_eq!(encoded, 0x60);
+        let encoded = Asn1Form::Primitive | Asn1Class::Private;
+        assert_eq!(encoded, 0xC0);
+    }
 }

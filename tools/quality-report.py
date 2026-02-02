@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-# SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
+
+# SPDX-FileCopyrightText: Copyright 2026 gematik GmbH
 #
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -32,7 +33,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from shutil import which
-from typing import Any
+from typing import Any, Iterable
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -82,6 +83,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         help="Nightly branch coverage JSON (cargo +nightly cov-json-branch).",
     )
     p.add_argument("--include-roots", default="core-modules", help="Comma-separated roots to analyze.")
+    p.add_argument("--ignore-file", default="", help="Optional ignore file with regex lines.")
     p.add_argument(
         "--min-cyclo-for-branches",
         type=int,
@@ -103,7 +105,26 @@ def rel_to_root(path_str: str) -> str:
         return str(p)
 
 
-def load_cov(path: Path) -> dict[str, dict[str, Any]]:
+def load_ignore_patterns(ignore_file: str) -> list[re.Pattern[str]]:
+    if not ignore_file:
+        return []
+    path = (ROOT / ignore_file).resolve()
+    if not path.exists():
+        return []
+    patterns: list[re.Pattern[str]] = []
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        patterns.append(re.compile(line))
+    return patterns
+
+
+def is_ignored(path: str, patterns: Iterable[re.Pattern[str]]) -> bool:
+    return any(p.search(path) for p in patterns)
+
+
+def load_cov(path: Path, ignore_patterns: Iterable[re.Pattern[str]]) -> dict[str, dict[str, Any]]:
     if not path.exists():
         return {}
     obj = json.loads(path.read_text(encoding="utf-8"))
@@ -112,7 +133,10 @@ def load_cov(path: Path) -> dict[str, dict[str, Any]]:
     for f in data.get("files") or []:
         filename = f.get("filename")
         if filename:
-            out[rel_to_root(filename)] = {"segments": f.get("segments") or [], "branches": f.get("branches") or []}
+            rel = rel_to_root(filename)
+            if is_ignored(rel, ignore_patterns):
+                continue
+            out[rel] = {"segments": f.get("segments") or [], "branches": f.get("branches") or []}
     return out
 
 
@@ -264,6 +288,7 @@ def compute_risks(
     cov_branch: dict[str, dict[str, Any]],
     include_roots: list[str],
     min_cyclo_for_branches: int,
+    ignore_patterns: Iterable[re.Pattern[str]],
 ) -> list[Risk]:
     include = tuple(r.rstrip("/") + "/" for r in include_roots)
     source_cache: dict[str, list[str]] = {}
@@ -275,6 +300,8 @@ def compute_risks(
         return source_cache[file]
 
     for fn in fns:
+        if is_ignored(fn.file, ignore_patterns):
+            continue
         if not fn.file.startswith(include):
             continue
         normalized = fn.file.replace("\\", "/")
@@ -450,9 +477,10 @@ def write_reports(out_md: Path, out_json: Path, out_tasks: Path, risks: list[Ris
 def main(argv: list[str]) -> int:
     a = parse_args(argv)
     roots = [s.strip() for s in a.include_roots.split(",") if s.strip()]
+    ignore_patterns = load_ignore_patterns(a.ignore_file)
 
-    cov_line = load_cov((ROOT / a.coverage_json).resolve())
-    cov_branch = load_cov((ROOT / a.coverage_branch_json).resolve())
+    cov_line = load_cov((ROOT / a.coverage_json).resolve(), ignore_patterns)
+    cov_branch = load_cov((ROOT / a.coverage_branch_json).resolve(), ignore_patterns)
     fns = run_rca(roots)
     risks = compute_risks(
         fns=fns,
@@ -460,6 +488,7 @@ def main(argv: list[str]) -> int:
         cov_branch=cov_branch,
         include_roots=roots,
         min_cyclo_for_branches=a.min_cyclo_for_branches,
+        ignore_patterns=ignore_patterns,
     )
 
     out_md = ROOT / a.out_md
@@ -470,6 +499,7 @@ def main(argv: list[str]) -> int:
         "coverage_branch_json": str(Path(a.coverage_branch_json)),
         "include_roots": roots,
         "min_cyclo_for_branches": a.min_cyclo_for_branches,
+        "ignore_file": a.ignore_file or None,
     }
     write_reports(out_md, out_json, out_tasks, risks, meta)
 

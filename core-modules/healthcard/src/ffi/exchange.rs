@@ -268,7 +268,9 @@ mod tests {
     use crate::command::health_card_status::HealthCardResponseStatus;
     use crate::exchange::ExchangeError as CoreExchangeError;
     use crate::exchange::HealthCardVerifyPinResult as CoreVerifyPinResult;
+    use crate::ffi::channel;
     use asn1::error::Asn1DecoderError;
+    use std::sync::Arc;
 
     fn response(status: HealthCardResponseStatus) -> CoreHealthCardResponse {
         let apdu = CardResponseApdu::new(&[0x90, 0x00]).unwrap();
@@ -277,7 +279,8 @@ mod tests {
 
     #[test]
     fn verify_pin_result_mapping() {
-        let success = VerifyPinResult::from_core(CoreVerifyPinResult::Success(response(HealthCardResponseStatus::Success)));
+        let success =
+            VerifyPinResult::from_core(CoreVerifyPinResult::Success(response(HealthCardResponseStatus::Success)));
         assert!(matches!(success.outcome, VerifyPinOutcome::Success));
         assert_eq!(success.retries_left, None);
 
@@ -302,5 +305,36 @@ mod tests {
             ExchangeError::Asn1Decode { reason } => assert!(reason.contains("Malformed UTF-8 string")),
             _ => panic!("expected asn1 decode"),
         }
+    }
+
+    #[test]
+    fn card_pin_from_digits_errors_on_non_digit() {
+        let err = CardPin::from_digits("12a4".to_string()).err().unwrap();
+        assert!(matches!(err, ExchangeError::PinBlock { .. }));
+    }
+
+    #[test]
+    fn with_channel_maps_errors() {
+        struct DummyChannel;
+
+        impl CardChannel for DummyChannel {
+            fn supports_extended_length(&self) -> bool {
+                false
+            }
+
+            fn transmit(
+                &self,
+                _command: Arc<channel::CommandApdu>,
+            ) -> Result<Arc<channel::ResponseApdu>, channel::CardChannelError> {
+                unreachable!()
+            }
+        }
+
+        let session: Arc<dyn CardChannel> = Arc::new(DummyChannel);
+        let err = super::with_channel(session, |_adapter| -> Result<(), CoreExchangeError> {
+            Err(CoreExchangeError::InvalidArgument("boom".to_string()))
+        })
+        .unwrap_err();
+        assert!(matches!(err, ExchangeError::InvalidArgument { reason } if reason == "boom"));
     }
 }

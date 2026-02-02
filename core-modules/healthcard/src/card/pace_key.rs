@@ -152,4 +152,19 @@ mod tests {
 
         assert_eq!(pace_key_1, pace_key_2);
     }
+
+    #[test]
+    fn pace_key_inequality() {
+        let secret = hex::decode(SECRET_K).unwrap();
+        let k_enc = get_aes128_key(&secret, Mode::Enc).unwrap();
+        let k_mac = get_aes128_key(&secret, Mode::Mac).unwrap();
+        let pace_key_1 = PaceKey::new(k_enc, k_mac);
+
+        let other_secret = vec![0xAA; 32];
+        let k_enc_2 = get_aes128_key(&other_secret, Mode::Enc).unwrap();
+        let k_mac_2 = get_aes128_key(&other_secret, Mode::Mac).unwrap();
+        let pace_key_2 = PaceKey::new(k_enc_2, k_mac_2);
+
+        assert_ne!(pace_key_1, pace_key_2);
+    }
 }

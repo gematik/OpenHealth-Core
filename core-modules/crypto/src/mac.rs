@@ -134,4 +134,19 @@ mod tests {
         let tag = mac_aes128_tag(M64_HEX);
         assert_eq!(to_hex(&tag), T_M64_HEX);
     }
+
+    #[test]
+    fn hmac_sha256_matches_known_vector_via_ossl_glue() {
+        // HMAC-SHA256("The quick brown fox jumps over the lazy dog", key="key")
+        let expected = hex_to_bytes(
+            "F7 BC 83 F4 30 53 84 24 B1 32 98 E6 AA 6F B1 43 \
+             EF 4D 59 A1 49 46 17 59 97 47 9D BC 2D 1A 3C D8",
+        );
+
+        let mut mac = crate::ossl::mac::Mac::create(b"key", "HMAC", None, Some("SHA256")).unwrap();
+        mac.update(b"The quick brown fox jumps over the lazy dog").unwrap();
+        let out = mac.finalize().unwrap();
+
+        assert_eq!(out, expected);
+    }
 }

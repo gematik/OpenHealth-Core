@@ -26,6 +26,25 @@ use crate::ossl::api::{openssl_error, OsslResult};
 use crate::{ossl_check, ossl_require};
 use crypto_openssl_sys::*;
 
+#[cfg(test)]
+use std::cell::Cell;
+
+#[cfg(test)]
+thread_local! {
+    static FORCE_MD_CTX_NULL: Cell<bool> = const { Cell::new(false) };
+}
+
+#[inline]
+fn md_ctx_new() -> *mut EVP_MD_CTX {
+    #[cfg(test)]
+    {
+        if FORCE_MD_CTX_NULL.with(|flag| flag.get()) {
+            return ptr::null_mut();
+        }
+    }
+    unsafe { EVP_MD_CTX_new() }
+}
+
 /// RAII wrapper around `EVP_MD_CTX` for hashing operations.
 pub struct Digest {
     ctx: *mut EVP_MD_CTX,
@@ -44,7 +63,7 @@ impl Digest {
         let cname = CString::new(algorithm).unwrap();
         let md = unsafe { EVP_MD_fetch(ptr::null_mut(), cname.as_ptr(), ptr::null_mut()) };
         ossl_require!(!md.is_null(), &format!("Invalid hash algorithm: {algorithm}"));
-        let ctx = unsafe { EVP_MD_CTX_new() };
+        let ctx = md_ctx_new();
         if ctx.is_null() {
             unsafe { EVP_MD_free(md) };
             return Err(openssl_error("Failed to create EVP_MD_CTX"));
@@ -84,5 +103,21 @@ impl Digest {
         ossl_check!(unsafe { EVP_DigestFinal_ex(self.ctx, out.as_mut_ptr(), &mut len) }, "Failed to finalize digest");
         out.truncate(len as usize);
         Ok(out)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn create_fails_when_ctx_null() {
+        FORCE_MD_CTX_NULL.with(|flag| flag.set(true));
+        let res = Digest::create("sha256");
+        FORCE_MD_CTX_NULL.with(|flag| flag.set(false));
+        match res {
+            Err(err) => assert!(err.to_string().contains("Failed to create EVP_MD_CTX")),
+            Ok(_) => panic!("expected error"),
+        }
     }
 }

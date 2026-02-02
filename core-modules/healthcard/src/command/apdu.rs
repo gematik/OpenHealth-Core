@@ -643,14 +643,26 @@ mod tests {
 
         // expect short validation
         assert!(CardCommandApdu::with_expect(0, 0, 0, 0, LengthClass::Short, 257).is_err());
+        let expect_extended = CardCommandApdu::with_expect(0, 0, 0, 0, LengthClass::Extended, 257).unwrap();
+        assert_eq!(expect_extended.expected_length(), Some(257));
 
         // data extended validation
         let long_data = vec![0u8; EXPECTED_LENGTH_WILDCARD_SHORT];
         let case3e = CardCommandApdu::with_data(0x80, 0x10, 0, 0, LengthClass::Extended, long_data.clone()).unwrap();
         assert_eq!(case3e.as_data().unwrap().len(), long_data.len());
+        let case3s = CardCommandApdu::with_data(0x00, 0xA4, 0x04, 0x00, LengthClass::Short, vec![0x01]).unwrap();
+        assert_eq!(case3s.as_data().unwrap(), [0x01]);
 
         // data+expect short validation
         assert!(CardCommandApdu::with_data_and_expect(0, 0, 0, 0, LengthClass::Short, vec![0u8; 256], 1).is_err());
+        let short_data = vec![0xAB];
+        let case4s = CardCommandApdu::with_data_and_expect(0, 0, 0, 0, LengthClass::Short, short_data, 1).unwrap();
+        assert_eq!(case4s.expected_length(), Some(1));
+
+        let extended_data = vec![0u8; EXPECTED_LENGTH_WILDCARD_SHORT];
+        let case4e =
+            CardCommandApdu::with_data_and_expect(0, 0, 0, 0, LengthClass::Extended, extended_data, 300).unwrap();
+        assert_eq!(case4e.expected_length(), Some(300));
     }
 
     #[test]
@@ -679,5 +691,138 @@ mod tests {
         let response = CardResponseApdu::from_bytes(&response_bytes).unwrap();
         assert_eq!(response.as_data(), &[0x6F, 0x12]);
         assert_eq!(response.sw(), 0x9000);
+    }
+
+    #[test]
+    fn test_encode_length_helpers() {
+        assert!(encode_data_length_short(0).is_err());
+        assert!(encode_data_length_short(EXPECTED_LENGTH_WILDCARD_SHORT + 1).is_err());
+        assert_eq!(encode_data_length_short(1).unwrap(), [0x01]);
+
+        assert!(encode_data_length_extended(0).is_err());
+        assert!(encode_data_length_extended(EXPECTED_LENGTH_WILDCARD_EXTENDED + 1).is_err());
+        assert_eq!(encode_data_length_extended(1).unwrap(), [0x00, 0x00, 0x01]);
+
+        assert!(encode_expected_length_extended(EXPECTED_LENGTH_WILDCARD_EXTENDED + 1).is_err());
+        assert_eq!(encode_expected_length_extended(EXPECTED_LENGTH_WILDCARD_EXTENDED).unwrap(), [0x00, 0x00]);
+        assert!(encode_expected_length_short(EXPECTED_LENGTH_WILDCARD_EXTENDED + 1).is_err());
+        assert_eq!(encode_expected_length_short(1).unwrap(), [0x01]);
+        assert_eq!(encode_expected_length_short(EXPECTED_LENGTH_WILDCARD_EXTENDED).unwrap(), [0x00]);
+    }
+
+    #[test]
+    fn test_from_bytes_short_cases_and_errors() {
+        assert!(matches!(CardCommandApdu::from_bytes(&[0x00, 0xA4, 0x04]), Err(ApduError::InvalidApdu(_))));
+
+        let case1 = CardCommandApdu::from_bytes(&[0x00, 0xA4, 0x04, 0x00]).unwrap();
+        assert_eq!(case1.expected_length(), None);
+
+        let case2s = CardCommandApdu::from_bytes(&[0x00, 0xA4, 0x04, 0x00, 0x00]).unwrap();
+        assert_eq!(case2s.expected_length(), Some(EXPECTED_LENGTH_WILDCARD_SHORT));
+
+        let case3s = CardCommandApdu::from_bytes(&[0x00, 0xA4, 0x04, 0x00, 0x02, 0xAA, 0xBB]).unwrap();
+        assert_eq!(case3s.as_data(), Some(&[0xAA, 0xBB][..]));
+        assert_eq!(case3s.expected_length(), None);
+
+        let case4s = CardCommandApdu::from_bytes(&[0x00, 0xA4, 0x04, 0x00, 0x02, 0xAA, 0xBB, 0x00]).unwrap();
+        assert_eq!(case4s.expected_length(), Some(EXPECTED_LENGTH_WILDCARD_SHORT));
+
+        assert!(matches!(
+            CardCommandApdu::from_bytes(&[0x00, 0xA4, 0x04, 0x00, 0x02, 0xAA, 0xBB, 0xCC, 0xDD]),
+            Err(ApduError::InvalidApdu(_))
+        ));
+
+        let case2s_short = CardCommandApdu::from_bytes(&[0x00, 0xA4, 0x04, 0x00, 0x05]).unwrap();
+        assert_eq!(case2s_short.expected_length(), Some(5));
+
+        let case4s = CardCommandApdu::from_bytes(&[0x00, 0xA4, 0x04, 0x00, 0x01, 0xAA, 0x05]).unwrap();
+        assert_eq!(case4s.expected_length(), Some(5));
+    }
+
+    #[test]
+    fn test_from_bytes_extended_cases_and_errors() {
+        assert!(matches!(
+            CardCommandApdu::from_bytes(&[0x00, 0xA4, 0x04, 0x00, 0x00, 0x01]),
+            Err(ApduError::InvalidApdu(_))
+        ));
+
+        let case2e = CardCommandApdu::from_bytes(&[0x00, 0xA4, 0x04, 0x00, 0x00, 0x00, 0x00]).unwrap();
+        assert_eq!(case2e.expected_length(), Some(EXPECTED_LENGTH_WILDCARD_EXTENDED));
+
+        assert!(matches!(
+            CardCommandApdu::from_bytes(&[0x00, 0xA4, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00]),
+            Err(ApduError::InvalidApdu(_))
+        ));
+
+        let case3e =
+            CardCommandApdu::from_bytes(&[0x00, 0xA4, 0x04, 0x00, 0x00, 0x00, 0x03, 0xAA, 0xBB, 0xCC]).unwrap();
+        assert_eq!(case3e.as_data(), Some(&[0xAA, 0xBB, 0xCC][..]));
+        assert_eq!(case3e.expected_length(), None);
+
+        let case4e =
+            CardCommandApdu::from_bytes(&[0x00, 0xA4, 0x04, 0x00, 0x00, 0x00, 0x03, 0xAA, 0xBB, 0xCC, 0x00, 0x00])
+                .unwrap();
+        assert_eq!(case4e.expected_length(), Some(EXPECTED_LENGTH_WILDCARD_EXTENDED));
+
+        let case2e = CardCommandApdu::from_bytes(&[0x00, 0xA4, 0x04, 0x00, 0x00, 0x00, 0x01]).unwrap();
+        assert_eq!(case2e.expected_length(), Some(1));
+
+        let case4e_with_length =
+            CardCommandApdu::from_bytes(&[0x00, 0xA4, 0x04, 0x00, 0x00, 0x00, 0x01, 0xAA, 0x00, 0x05]).unwrap();
+        assert_eq!(case4e_with_length.expected_length(), Some(5));
+
+        assert!(matches!(
+            CardCommandApdu::from_bytes(&[0x00, 0xA4, 0x04, 0x00, 0x00, 0x00, 0x03, 0xAA, 0xBB, 0xCC, 0x00,]),
+            Err(ApduError::InvalidApdu(_))
+        ));
+    }
+
+    #[test]
+    fn test_command_apdu_validations() {
+        assert!(matches!(
+            CardCommandApdu::with_data(0, 0, 0, 0, LengthClass::Short, Vec::<u8>::new()),
+            Err(ApduError::InvalidLength(_))
+        ));
+        assert!(matches!(
+            CardCommandApdu::with_data(0, 0, 0, 0, LengthClass::Short, vec![0u8; 256]),
+            Err(ApduError::InvalidLength(_))
+        ));
+        assert!(matches!(
+            CardCommandApdu::with_data(0, 0, 0, 0, LengthClass::Extended, vec![0u8; 128]),
+            Err(ApduError::InvalidLength(_))
+        ));
+        assert!(matches!(
+            CardCommandApdu::with_data_and_expect(0, 0, 0, 0, LengthClass::Extended, vec![0u8; 256], 256),
+            Err(ApduError::InvalidLength(_))
+        ));
+        assert!(matches!(
+            CardCommandApdu::with_data_and_expect(0, 0, 0, 0, LengthClass::Extended, vec![0u8; 255], 257),
+            Err(ApduError::InvalidLength(_))
+        ));
+        assert!(matches!(
+            CardCommandApdu::with_data_and_expect(0, 0, 0, 0, LengthClass::Short, Vec::<u8>::new(), 1),
+            Err(ApduError::InvalidLength(_))
+        ));
+        assert!(matches!(
+            CardCommandApdu::with_data_and_expect(0, 0, 0, 0, LengthClass::Short, vec![0u8; 1], 257),
+            Err(ApduError::InvalidLength(_))
+        ));
+        assert!(matches!(
+            CardCommandApdu::with_expect(0, 0, 0, 0, LengthClass::Extended, 256),
+            Err(ApduError::InvalidLength(_))
+        ));
+        assert!(matches!(
+            CardCommandApdu::new(0, 0, 0, 0, None::<Vec<u8>>, Some(EXPECTED_LENGTH_WILDCARD_EXTENDED + 1)),
+            Err(ApduError::InvalidLength(_))
+        ));
+        assert!(matches!(
+            CardCommandApdu::new(0, 0, 0, 0, Some(vec![0u8; EXPECTED_LENGTH_WILDCARD_EXTENDED]), None::<usize>),
+            Err(ApduError::InvalidLength(_))
+        ));
+    }
+
+    #[test]
+    fn test_response_apdu_requires_status() {
+        assert!(matches!(CardResponseApdu::new(&[0x90]), Err(ApduError::InvalidApdu(_))));
     }
 }

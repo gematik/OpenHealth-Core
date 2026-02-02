@@ -60,3 +60,17 @@ impl CardChannel for MockSession {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::exchange::channel::CardChannel;
+
+    #[test]
+    fn mock_session_transmit_errors_when_empty() {
+        let mut session = MockSession::new(vec![]);
+        let apdu = CardCommandApdu::header_only(0x00, 0xA4, 0x04, 0x00).unwrap();
+        let err = CardChannel::transmit(&mut session, &apdu).unwrap_err();
+        assert!(matches!(err, ExchangeError::Transport { .. }));
+    }
+}

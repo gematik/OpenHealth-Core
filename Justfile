@@ -14,22 +14,32 @@ default:
 
 # Generate a Rust coverage report (requires `cargo-llvm-cov`).
 rust-cov *ARGS="":
+    #!/usr/bin/env bash
+    set -euo pipefail
     cargo cov --workspace {{ ARGS }}
 
 # Generate an HTML report at `target/llvm-cov-html/html` (requires `cargo-llvm-cov`).
 rust-cov-html *ARGS="":
+    #!/usr/bin/env bash
+    set -euo pipefail
     cargo cov-html --workspace {{ ARGS }}
 
 # Generate an LCOV report at `target/llvm-cov.lcov.info` (requires `cargo-llvm-cov`).
 rust-cov-lcov *ARGS="":
+    #!/usr/bin/env bash
+    set -euo pipefail
     cargo cov-lcov --workspace {{ ARGS }}
 
 # Generate a JSON report at `target/llvm-cov.json` (requires `cargo-llvm-cov`).
 rust-cov-json *ARGS="":
+    #!/usr/bin/env bash
+    set -euo pipefail
     cargo cov-json --workspace {{ ARGS }}
 
 # Generate a nightly branch coverage JSON at `target/llvm-cov.branch.json` (requires `cargo-llvm-cov` + nightly + llvm-tools-preview).
 rust-cov-json-branch *ARGS="":
+    #!/usr/bin/env bash
+    set -euo pipefail
     cargo +nightly cov-json-branch --workspace {{ ARGS }}
 
 # Generate a nightly condition coverage JSON at `target/llvm-cov.condition.json` (short-circuit logic support).
@@ -45,7 +55,7 @@ rust-cov-json-condition:
 rust-quality-report *ARGS="":
     cargo cov-json --workspace
     just rust-cov-json-branch
-    python3 tools/quality-report.py {{ ARGS }}
+    python3 tools/quality-report.py --ignore-file tools/quality-report-ignore.txt {{ ARGS }}
 
 # Clean instrumented artifacts created by `cargo llvm-cov`.
 rust-cov-clean:

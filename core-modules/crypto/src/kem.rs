@@ -246,4 +246,11 @@ mod tests {
     fn mlkem1024_roundtrip() {
         roundtrip(MlkemSpec::MlKem1024);
     }
+
+    #[test]
+    fn key_wrappers_reject_empty_bytes() {
+        assert!(matches!(MlkemPrivateKey::new(Vec::new()), Err(CryptoError::InvalidKeyMaterial { .. })));
+        assert!(matches!(MlkemWrappedKey::new(Vec::new()), Err(CryptoError::InvalidKeyMaterial { .. })));
+        assert!(matches!(MlkemEncapsulationKey::new(Vec::new()), Err(CryptoError::InvalidKeyMaterial { .. })));
+    }
 }

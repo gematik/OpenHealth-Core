@@ -24,13 +24,62 @@ use std::os::raw::{c_char, c_int};
 use crate::ossl::api::{openssl_error, OsslResult};
 use crypto_openssl_sys::{BIO_free, BIO_get_mem_data, BIO_new, BIO_new_mem_buf, BIO_s_mem, BIO};
 
+#[cfg(test)]
+use std::cell::Cell;
+
+#[cfg(test)]
+thread_local! {
+    static FORCE_BIO_NEW_NULL: Cell<bool> = const { Cell::new(false) };
+    static FORCE_BIO_NEW_MEM_BUF_NULL: Cell<bool> = const { Cell::new(false) };
+    static FORCE_BIO_GET_MEM_DATA_ZERO: Cell<bool> = const { Cell::new(false) };
+    static FORCE_BIO_GET_MEM_DATA_NULL_PTR: Cell<bool> = const { Cell::new(false) };
+}
+
+#[inline]
+fn bio_new_mem() -> *mut BIO {
+    #[cfg(test)]
+    {
+        if FORCE_BIO_NEW_NULL.with(|flag| flag.get()) {
+            return std::ptr::null_mut();
+        }
+    }
+    unsafe { BIO_new(BIO_s_mem()) }
+}
+
+#[inline]
+fn bio_new_mem_buf(data: *const u8, len: c_int) -> *mut BIO {
+    #[cfg(test)]
+    {
+        if FORCE_BIO_NEW_MEM_BUF_NULL.with(|flag| flag.get()) {
+            return std::ptr::null_mut();
+        }
+    }
+    unsafe { BIO_new_mem_buf(data as *const _, len) }
+}
+
+#[inline]
+fn bio_get_mem_data(bio: *mut BIO, data: *mut *mut c_char) -> isize {
+    #[cfg(test)]
+    {
+        if FORCE_BIO_GET_MEM_DATA_ZERO.with(|flag| flag.get()) {
+            unsafe { *data = std::ptr::null_mut() };
+            return 0;
+        }
+        if FORCE_BIO_GET_MEM_DATA_NULL_PTR.with(|flag| flag.get()) {
+            unsafe { *data = std::ptr::null_mut() };
+            return 1;
+        }
+    }
+    BIO_get_mem_data(bio, data) as isize
+}
+
 /// BIO wrapper
 pub struct Bio(*mut BIO);
 
 impl Bio {
     /// Create a new memory BIO
     pub fn new_mem() -> OsslResult<Self> {
-        let b = unsafe { BIO_new(BIO_s_mem()) };
+        let b = bio_new_mem();
         if b.is_null() {
             Err(openssl_error("Failed to create BIO"))
         } else {
@@ -40,7 +89,7 @@ impl Bio {
 
     /// Create a BIO from a byte slice
     pub fn from_slice(data: &[u8]) -> OsslResult<Self> {
-        let b = unsafe { BIO_new_mem_buf(data.as_ptr() as *const _, data.len() as c_int) };
+        let b = bio_new_mem_buf(data.as_ptr(), data.len() as c_int);
         if b.is_null() {
             Err(openssl_error("Failed to create BIO from buffer"))
         } else {
@@ -51,7 +100,7 @@ impl Bio {
     /// Read all bytes from BIO
     pub fn to_vec(&self) -> Vec<u8> {
         let mut ptr_data: *mut c_char = std::ptr::null_mut();
-        let len = BIO_get_mem_data(self.0, &mut ptr_data) as isize;
+        let len = bio_get_mem_data(self.0, &mut ptr_data);
         if len <= 0 || ptr_data.is_null() {
             return Vec::new();
         }
@@ -68,5 +117,63 @@ impl Bio {
 impl Drop for Bio {
     fn drop(&mut self) {
         unsafe { BIO_free(self.0) };
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn new_mem_to_vec_empty() {
+        let bio = Bio::new_mem().unwrap();
+        assert!(bio.to_vec().is_empty());
+    }
+
+    #[test]
+    fn from_slice_to_vec_roundtrip() {
+        let data = b"hello";
+        let bio = Bio::from_slice(data).unwrap();
+        assert_eq!(bio.to_vec(), data);
+    }
+
+    #[test]
+    fn new_mem_fails_when_null() {
+        FORCE_BIO_NEW_NULL.with(|flag| flag.set(true));
+        let res = Bio::new_mem();
+        FORCE_BIO_NEW_NULL.with(|flag| flag.set(false));
+        match res {
+            Err(err) => assert!(err.to_string().contains("Failed to create BIO")),
+            Ok(_) => panic!("expected error"),
+        }
+    }
+
+    #[test]
+    fn from_slice_fails_when_null() {
+        FORCE_BIO_NEW_MEM_BUF_NULL.with(|flag| flag.set(true));
+        let res = Bio::from_slice(b"hello");
+        FORCE_BIO_NEW_MEM_BUF_NULL.with(|flag| flag.set(false));
+        match res {
+            Err(err) => assert!(err.to_string().contains("Failed to create BIO from buffer")),
+            Ok(_) => panic!("expected error"),
+        }
+    }
+
+    #[test]
+    fn to_vec_returns_empty_when_mem_data_missing() {
+        let bio = Bio::new_mem().unwrap();
+        FORCE_BIO_GET_MEM_DATA_ZERO.with(|flag| flag.set(true));
+        let data = bio.to_vec();
+        FORCE_BIO_GET_MEM_DATA_ZERO.with(|flag| flag.set(false));
+        assert!(data.is_empty());
+    }
+
+    #[test]
+    fn to_vec_returns_empty_when_ptr_null() {
+        let bio = Bio::new_mem().unwrap();
+        FORCE_BIO_GET_MEM_DATA_NULL_PTR.with(|flag| flag.set(true));
+        let data = bio.to_vec();
+        FORCE_BIO_GET_MEM_DATA_NULL_PTR.with(|flag| flag.set(false));
+        assert!(data.is_empty());
     }
 }

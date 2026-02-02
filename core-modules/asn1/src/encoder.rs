@@ -375,6 +375,12 @@ mod tests {
     }
 
     #[test]
+    fn write_bit_string_invalid_unused_bits() {
+        let err = Asn1Encoder::write(|w| w.write_asn1_bit_string(&[0xFF], 9)).unwrap_err();
+        assert!(matches!(err, Asn1EncoderError::InvalidUnusedBitCount { .. }));
+    }
+
+    #[test]
     fn write_with_nested_tags() {
         let result = Asn1Encoder::write(|w| {
             // Universal constructed SEQUENCE (0x10 with constructed bit)

@@ -182,7 +182,8 @@ impl<'a> ParserScope<'a> {
 
         // long form
         let length_size = (length_byte & 0x7F) as usize;
-        if length_size == 0 || length_size > 4 {
+        // `length_size == 0` would be the indefinite form `0x80`, which is handled above.
+        if length_size > 4 {
             return Err(Asn1DecoderError::InvalidLength { length: length_size });
         }
         let bytes = self.read_bytes(length_size)?;
@@ -713,6 +714,125 @@ mod tests {
         let data = hex_bytes("06 02 2B 81");
         let parser = Asn1Decoder::new(&data);
         let res = parser.read(|s| s.read_object_identifier());
+        assert!(res.is_err());
+    }
+
+    #[test]
+    fn read_byte_out_of_bounds() {
+        let parser = Asn1Decoder::new(&[]);
+        let res = parser.read(|s| s.read_byte());
+        assert!(res.is_err());
+    }
+
+    #[test]
+    fn read_bytes_exceeds_length() {
+        let parser = Asn1Decoder::new(&[0x00, 0x01]);
+        let res = parser.read(|s| s.read_bytes(3));
+        assert!(res.is_err());
+    }
+
+    #[test]
+    fn read_tag_high_tag_number() {
+        let parser = Asn1Decoder::new(&[0x1F, 0x81, 0x00]);
+        let tag = parser.read(|s| s.read_tag()).unwrap();
+        assert_eq!(tag, Asn1Id::new(Asn1Class::Universal, Asn1Form::Primitive, 128));
+    }
+
+    #[test]
+    fn read_length_invalid_long_form_size() {
+        let parser = Asn1Decoder::new(&[0x85]);
+        let res = parser.read(|s| s.read_length());
+        assert!(matches!(res, Err(Asn1DecoderError::InvalidLength { .. })));
+    }
+
+    #[test]
+    fn read_length_invalid_long_form_size_six() {
+        let parser = Asn1Decoder::new(&[0x86]);
+        let res = parser.read(|s| s.read_length());
+        assert!(matches!(res, Err(Asn1DecoderError::InvalidLength { .. })));
+    }
+
+    #[test]
+    fn read_length_invalid_long_form_size_large() {
+        let parser = Asn1Decoder::new(&[0xFF]);
+        let res = parser.read(|s| s.read_length());
+        assert!(matches!(res, Err(Asn1DecoderError::InvalidLength { .. })));
+    }
+
+    #[test]
+    fn read_length_invalid_long_form_size_reports_length() {
+        let parser = Asn1Decoder::new(&[0x85]);
+        let res = parser.read(|s| s.read_length());
+        match res {
+            Err(Asn1DecoderError::InvalidLength { length }) => assert_eq!(length, 5),
+            _ => panic!("expected invalid length error"),
+        }
+    }
+
+    #[test]
+    fn read_length_long_form_two_bytes() {
+        let parser = Asn1Decoder::new(&[0x82, 0x01, 0x02]);
+        let res = parser.read(|s| s.read_length()).unwrap();
+        assert!(matches!(res, Asn1Length::Definite(0x0102)));
+    }
+
+    #[test]
+    fn read_length_indefinite() {
+        let parser = Asn1Decoder::new(&[0x80]);
+        let res = parser.read(|s| s.read_length()).unwrap();
+        assert!(matches!(res, Asn1Length::Indefinite));
+    }
+
+    #[test]
+    fn read_int_invalid_length() {
+        let parser = Asn1Decoder::new(&[0x00]);
+        let res = parser.read(|s| s.read_int(0, false));
+        assert!(matches!(res, Err(Asn1DecoderError::InvalidLength { .. })));
+    }
+
+    #[test]
+    fn read_int_unsigned_path() {
+        let parser = Asn1Decoder::new(&[0xFF]);
+        let value = parser.read(|s| s.read_int(1, false)).unwrap();
+        assert_eq!(value, 255);
+    }
+
+    #[test]
+    fn skip_exceeds_available_data() {
+        let parser = Asn1Decoder::new(&[0x00]);
+        let res = parser.read(|s| s.skip(2));
+        assert!(matches!(res, Err(Asn1DecoderError::SkipExceedsAvailableData)));
+    }
+
+    #[test]
+    fn skip_exact_length() {
+        let parser = Asn1Decoder::new(&[0x00, 0x01]);
+        let res = parser.read(|s| s.skip(2));
+        assert!(res.is_ok());
+    }
+
+    #[test]
+    fn skip_overflow() {
+        let mut scope = ParserScope { data: &[], offset: usize::MAX, end_offset: usize::MAX };
+        let res = scope.skip(1);
+        assert!(res.is_err());
+    }
+
+    #[test]
+    fn advance_with_tag_length_exceeds_scope() {
+        let data = hex_bytes("02 02 01");
+        let parser = Asn1Decoder::new(&data);
+        let res = parser.read(|s| {
+            s.advance_with_tag(UniversalTag::Integer.primitive(), |_s| -> Result<(), Asn1DecoderError> { Ok(()) })
+        });
+        assert!(res.is_err());
+    }
+
+    #[test]
+    fn read_bit_string_unused_bits_without_payload() {
+        let data = hex_bytes("03 01 01");
+        let parser = Asn1Decoder::new(&data);
+        let res = parser.read(|s| s.read_bit_string());
         assert!(res.is_err());
     }
 }

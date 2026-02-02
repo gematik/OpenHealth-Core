@@ -111,3 +111,54 @@ fn validate_parts_decoder(parts: &[u32]) -> Result<(), Asn1DecoderError> {
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::encoder::Asn1Encoder;
+
+    #[test]
+    fn display_handles_empty_components() {
+        let oid = ObjectIdentifier(Vec::new());
+        assert_eq!(oid.to_string(), "");
+    }
+
+    #[test]
+    fn validate_parts_encoder_rejects_short() {
+        let err = ObjectIdentifier::from_components_for_encoding(vec![1]).unwrap_err();
+        assert!(matches!(err, Asn1EncoderError::ObjectIdentifierMissingComponents));
+    }
+
+    #[test]
+    fn validate_parts_decoder_rejects_short() {
+        let err = ObjectIdentifier::from_components_for_decoding(vec![1]).unwrap_err();
+        assert!(matches!(err, Asn1DecoderError::EmptyObjectIdentifier));
+    }
+
+    #[test]
+    fn validate_parts_decoder_rejects_invalid_second() {
+        let err = ObjectIdentifier::from_components_for_decoding(vec![1, 40]).unwrap_err();
+        assert!(matches!(err, Asn1DecoderError::Custom { .. }));
+    }
+
+    #[test]
+    fn validate_parts_decoder_rejects_negative_first() {
+        let err = ObjectIdentifier::from_components_for_decoding(vec![u32::MAX, 1]).unwrap_err();
+        assert!(matches!(err, Asn1DecoderError::Custom { .. }));
+    }
+
+    #[test]
+    fn write_object_identifier_rejects_invalid_components() {
+        let missing = ObjectIdentifier(Vec::new());
+        let err = Asn1Encoder::write(|w| w.write_object_identifier(&missing)).unwrap_err();
+        assert!(matches!(err, Asn1EncoderError::ObjectIdentifierMissingComponents));
+
+        let invalid_first = ObjectIdentifier(vec![3, 1]);
+        let err = Asn1Encoder::write(|w| w.write_object_identifier(&invalid_first)).unwrap_err();
+        assert!(matches!(err, Asn1EncoderError::InvalidObjectIdentifierFirstComponent { .. }));
+
+        let invalid_second = ObjectIdentifier(vec![1, 40]);
+        let err = Asn1Encoder::write(|w| w.write_object_identifier(&invalid_second)).unwrap_err();
+        assert!(matches!(err, Asn1EncoderError::InvalidObjectIdentifierSecondComponent { .. }));
+    }
+}

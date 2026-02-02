@@ -210,4 +210,32 @@ mod tests {
         let err = parse_health_card_version2(&bytes).unwrap_err();
         assert!(matches!(err, HealthCardVersion2Error::MissingTag(TAG_FILLING_INSTRUCTIONS_VERSION)));
     }
+
+    #[test]
+    fn parse_health_card_version_rejects_empty() {
+        let err = parse_health_card_version2(&[]).unwrap_err();
+        assert!(matches!(err, HealthCardVersion2Error::MalformedTlv));
+    }
+
+    #[test]
+    fn parse_health_card_version_rejects_high_tag_number() {
+        let bytes = hex_to_bytes("EF 03 DF 20 00");
+        let err = parse_health_card_version2(&bytes).unwrap_err();
+        assert!(matches!(err, HealthCardVersion2Error::MalformedTlv));
+    }
+
+    #[test]
+    fn is_health_card_version_21_requires_two_bytes() {
+        let version = HealthCardVersion2 {
+            fi_version: vec![],
+            object_system_version: vec![0x04],
+            product_identification_object_system_version: vec![],
+            fi_ef_environment_settings_version: vec![],
+            fi_ef_gdo_version: vec![],
+            fi_ef_atr_version: vec![],
+            fi_ef_key_info_version: vec![],
+            fi_ef_logging_version: vec![],
+        };
+        assert!(!version.is_health_card_version_21());
+    }
 }

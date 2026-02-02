@@ -123,6 +123,7 @@ Notes:
 - It uses nightly branch coverage (`target/llvm-cov.branch.json`) plus stable line coverage (`target/llvm-cov.json`) to flag:
   - Uncovered branch edges in functions with `cyclomatic >= 2` (configurable via `--min-cyclo-for-branches`)
   - Uncovered single-line logic (comparisons, bitwise ops, iterator logic, short-circuit)
+- Coverage ignore rules for the quality report can be placed in `tools/quality-report-ignore.txt` (one regex per line). The `rust-quality-report` recipe applies them.
 
 Prerequisites:
 ```shell

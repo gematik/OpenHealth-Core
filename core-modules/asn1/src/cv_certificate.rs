@@ -389,6 +389,12 @@ mod tests {
         .expect("encoding must succeed")
     }
 
+    #[test]
+    fn parse_date_rejects_invalid_day() {
+        let err = parse_date_bytes(&[2, 5, 0, 1, 3, 2]).unwrap_err();
+        assert!(err.to_string().contains("Certificate day"));
+    }
+
     fn build_certificate_with_fields(
         profile_bytes: &[u8],
         car: &[u8],

@@ -467,4 +467,95 @@ mod tests {
         roundtrip_public(EcCurve::BrainpoolP512r1);
         roundtrip_private(EcCurve::BrainpoolP512r1);
     }
+
+    #[test]
+    fn from_uncompressed_rejects_invalid_length_and_prefix() {
+        match EcPublicKey::from_uncompressed(EcCurve::BrainpoolP256r1, vec![0x04; 10]) {
+            Err(CryptoError::InvalidEcPoint(_)) => {}
+            other => panic!("unexpected result: {:?}", other.err()),
+        }
+
+        let mut bytes = sample_pub(EcCurve::BrainpoolP256r1);
+        bytes[0] = 0x02;
+        match EcPublicKey::from_uncompressed(EcCurve::BrainpoolP256r1, bytes) {
+            Err(CryptoError::InvalidEcPoint(_)) => {}
+            other => panic!("unexpected result: {:?}", other.err()),
+        }
+    }
+
+    #[test]
+    fn decode_public_key_rejects_unused_bits() {
+        let curve = EcCurve::BrainpoolP256r1;
+        let key_bytes = sample_pub(curve.clone());
+        let der = Asn1Encoder::write::<Asn1EncoderError>(|scope| -> Result<(), Asn1EncoderError> {
+            scope.write_tagged_object(UniversalTag::Sequence.constructed(), |scope| {
+                scope.write_tagged_object::<Asn1EncoderError>(UniversalTag::Sequence.constructed(), |scope| {
+                    scope.write_object_identifier(&EcPublicKey::algorithm_oid())?;
+                    scope.write_object_identifier(&curve.oid())?;
+                    Ok(())
+                })?;
+                scope.write_asn1_bit_string(&key_bytes, 1)?;
+                Ok(())
+            })
+        })
+        .unwrap();
+        match EcPublicKey::decode_from_asn1(&der) {
+            Err(CryptoError::Asn1Decoding(Asn1DecoderError::InvalidUnusedBitCount { .. })) => {}
+            other => panic!("unexpected result: {:?}", other.err()),
+        }
+    }
+
+    #[test]
+    fn decode_public_key_rejects_wrong_algorithm_oid() {
+        let curve = EcCurve::BrainpoolP256r1;
+        let key_bytes = sample_pub(curve.clone());
+        let wrong_oid = ObjectIdentifier::parse("1.2.3.4").unwrap();
+        let der = Asn1Encoder::write::<Asn1EncoderError>(|scope| -> Result<(), Asn1EncoderError> {
+            scope.write_tagged_object(UniversalTag::Sequence.constructed(), |scope| {
+                scope.write_tagged_object::<Asn1EncoderError>(UniversalTag::Sequence.constructed(), |scope| {
+                    scope.write_object_identifier(&wrong_oid)?;
+                    scope.write_object_identifier(&curve.oid())?;
+                    Ok(())
+                })?;
+                scope.write_asn1_bit_string(&key_bytes, 0)?;
+                Ok(())
+            })
+        })
+        .unwrap();
+        match EcPublicKey::decode_from_asn1(&der) {
+            Err(CryptoError::Asn1Decoding(Asn1DecoderError::Custom { .. }))
+            | Err(CryptoError::Asn1Decoding(Asn1DecoderError::UnparsedBytesRemaining)) => {}
+            other => panic!("unexpected result: {:?}", other.err()),
+        }
+    }
+
+    #[test]
+    fn decode_private_key_rejects_version() {
+        let curve = EcCurve::BrainpoolP256r1;
+        let private = sample_priv_bytes(curve.clone());
+        let der = Asn1Encoder::write::<Asn1EncoderError>(|scope| -> Result<(), Asn1EncoderError> {
+            scope.write_tagged_object(UniversalTag::Sequence.constructed(), |scope| {
+                scope.write_asn1_int(0)?;
+                scope.write_tagged_object::<Asn1EncoderError>(UniversalTag::Sequence.constructed(), |scope| {
+                    scope.write_object_identifier(&EcPublicKey::algorithm_oid())?;
+                    scope.write_object_identifier(&curve.oid())?;
+                    Ok(())
+                })?;
+                scope.write_tagged_object::<Asn1EncoderError>(UniversalTag::OctetString.primitive(), |scope| {
+                    scope.write_tagged_object(UniversalTag::Sequence.constructed(), |scope| {
+                        scope.write_asn1_int(2)?;
+                        scope.write_asn1_octet_string(&private)?;
+                        Ok(())
+                    })
+                })?;
+                Ok(())
+            })
+        })
+        .unwrap();
+        match EcPrivateKey::decode_from_asn1(&der) {
+            Err(CryptoError::Asn1Decoding(Asn1DecoderError::Custom { .. }))
+            | Err(CryptoError::Asn1Decoding(Asn1DecoderError::UnparsedBytesRemaining)) => {}
+            other => panic!("unexpected result: {:?}", other.err()),
+        }
+    }
 }

@@ -624,4 +624,116 @@ mod tests {
         let res = dec.read(|s| s.read_generalized_time());
         assert!(res.is_err());
     }
+
+    #[test]
+    fn utc_time_validates_components() {
+        assert!(Asn1UtcTime::new(10000, 1, 1, 0, 0, None, None).is_err());
+        assert!(Asn1UtcTime::new(2024, 13, 1, 0, 0, None, None).is_err());
+        assert!(Asn1UtcTime::new(2024, 1, 32, 0, 0, None, None).is_err());
+        assert!(Asn1UtcTime::new(2024, 1, 1, 24, 0, None, None).is_err());
+        assert!(Asn1UtcTime::new(2024, 1, 1, 0, 60, None, None).is_err());
+        assert!(Asn1UtcTime::new(2024, 1, 1, 0, 0, Some(61), None).is_err());
+    }
+
+    #[test]
+    fn generalized_time_validates_components() {
+        assert!(Asn1GeneralizedTime::new(10000, 1, 1, 0, None, None, None, None).is_err());
+        assert!(Asn1GeneralizedTime::new(2024, 13, 1, 0, None, None, None, None).is_err());
+        assert!(Asn1GeneralizedTime::new(2024, 1, 32, 0, None, None, None, None).is_err());
+        assert!(Asn1GeneralizedTime::new(2024, 1, 1, 24, None, None, None, None).is_err());
+        assert!(Asn1GeneralizedTime::new(2024, 1, 1, 0, Some(60), None, None, None).is_err());
+        assert!(Asn1GeneralizedTime::new(2024, 1, 1, 0, Some(1), Some(61), None, None).is_err());
+        assert!(Asn1GeneralizedTime::new(2024, 1, 1, 0, Some(1), Some(1), Some(1000), None).is_err());
+    }
+
+    #[test]
+    fn offset_validation_and_formatting() {
+        assert!(Asn1Offset::utc_offset(0, 60).is_err());
+        assert!(Asn1Offset::utc_offset(24, 0).is_err());
+
+        let offset = Asn1Offset::generalized_offset(-1, 30).unwrap();
+        assert_eq!(format_offset(&Some(offset)), "-0130");
+
+        let offset = Asn1Offset::generalized_offset(1, 30).unwrap();
+        assert_eq!(format_offset(&Some(offset)), "+0130");
+
+        let offset = Asn1Offset::generalized_offset(1, -30).unwrap();
+        assert_eq!(format_offset(&Some(offset)), "-0130");
+    }
+
+    #[test]
+    fn parse_generalized_time_without_minutes() {
+        let payload = b"2024061512Z";
+        let mut der = Vec::with_capacity(2 + payload.len());
+        der.push(tag(UniversalTag::GeneralizedTime));
+        der.push(payload.len() as u8);
+        der.extend_from_slice(payload);
+
+        let dec = Asn1Decoder::new(&der);
+        let t = dec.read(|s| s.read_generalized_time()).unwrap();
+        let Asn1Time::Generalized(t) = t else {
+            panic!("expected GENERALIZED time");
+        };
+        assert_eq!(t.minute(), None);
+        assert_eq!(t.second(), None);
+        assert!(t.offset().is_none());
+    }
+
+    #[test]
+    fn parse_generalized_time_with_offset() {
+        let payload = b"202406151200+0130";
+        let mut der = Vec::with_capacity(2 + payload.len());
+        der.push(tag(UniversalTag::GeneralizedTime));
+        der.push(payload.len() as u8);
+        der.extend_from_slice(payload);
+
+        let dec = Asn1Decoder::new(&der);
+        let t = dec.read(|s| s.read_generalized_time()).unwrap();
+        let Asn1Time::Generalized(t) = t else {
+            panic!("expected GENERALIZED time");
+        };
+        match t.offset() {
+            Some(Asn1Offset::GeneralizedOffset { hours, minutes }) => {
+                assert_eq!(*hours, 1);
+                assert_eq!(*minutes, 30);
+            }
+            _ => panic!("expected GeneralizedOffset"),
+        }
+    }
+
+    #[test]
+    fn asn1_time_constructors() {
+        let utc = Asn1Time::utc(2024, 1, 1, 0, 0, None, None).unwrap();
+        assert!(utc.as_utc().is_some());
+
+        let gen = Asn1Time::generalized(2024, 1, 1, 0, None, None, None, None).unwrap();
+        assert!(gen.as_generalized().is_some());
+    }
+
+    #[test]
+    fn write_time_type_mismatch_errors() {
+        let utc = Asn1Time::utc(2024, 1, 1, 0, 0, None, None).unwrap();
+        let gen = Asn1Time::generalized(2024, 1, 1, 0, None, None, None, None).unwrap();
+
+        let err = crate::encoder::Asn1Encoder::write(|w| w.write_generalized_time(&utc)).unwrap_err();
+        assert!(err.to_string().contains("expected GENERALIZED TIME"));
+
+        let err = crate::encoder::Asn1Encoder::write(|w| w.write_utc_time(&gen)).unwrap_err();
+        assert!(err.to_string().contains("expected UTC time"));
+    }
+
+    #[test]
+    fn write_generalized_time_without_optional_parts() {
+        let value = Asn1Time::generalized(2024, 6, 15, 8, None, None, None, None).unwrap();
+        let out = crate::encoder::Asn1Encoder::write(|w| -> Result<(), Asn1EncoderError> {
+            w.write_generalized_time(&value)?;
+            Ok(())
+        })
+        .unwrap();
+
+        let expected_payload = b"2024061508Z".to_vec();
+        assert_eq!(out[0], tag(UniversalTag::GeneralizedTime));
+        assert_eq!(out[1] as usize, expected_payload.len());
+        assert_eq!(&out[2..], &expected_payload[..]);
+    }
 }

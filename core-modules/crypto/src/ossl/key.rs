@@ -99,3 +99,24 @@ impl Drop for PKey {
         unsafe { EVP_PKEY_free(self.0) };
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn from_der_private_rejects_invalid_data() {
+        match PKey::from_der_private(&[]) {
+            Err(err) => assert!(err.to_string().contains("Failed to load private key")),
+            Ok(_) => panic!("expected error"),
+        }
+    }
+
+    #[test]
+    fn from_der_public_rejects_invalid_data() {
+        match PKey::from_der_public(&[]) {
+            Err(err) => assert!(err.to_string().contains("Failed to load public key")),
+            Ok(_) => panic!("expected error"),
+        }
+    }
+}

@@ -20,13 +20,127 @@
 // find details in the "Readme" file.
 
 use std::ffi::CString;
-use std::os::raw::c_int;
+use std::os::raw::{c_char, c_int};
 use std::ptr;
 
 use crate::ossl::api::{openssl_error, OsslResult};
 use crate::ossl_check;
 
 use crypto_openssl_sys::*;
+
+#[cfg(test)]
+use std::cell::Cell;
+
+#[cfg(test)]
+thread_local! {
+    static FORCE_CTX_NULL: Cell<bool> = const { Cell::new(false) };
+    static FORCE_FETCH_NULL: Cell<bool> = const { Cell::new(false) };
+    static FORCE_UPDATE_FAIL: Cell<bool> = const { Cell::new(false) };
+    static FORCE_FINAL_FAIL: Cell<bool> = const { Cell::new(false) };
+    static FORCE_CIPHER_MODE: Cell<c_int> = const { Cell::new(-1) };
+    static FORCE_SET_PARAMS_FAIL: Cell<bool> = const { Cell::new(false) };
+}
+
+#[inline]
+fn cipher_ctx_new() -> *mut EVP_CIPHER_CTX {
+    #[cfg(test)]
+    {
+        if FORCE_CTX_NULL.with(|flag| flag.get()) {
+            return ptr::null_mut();
+        }
+    }
+    unsafe { EVP_CIPHER_CTX_new() }
+}
+
+#[inline]
+fn cipher_fetch(name: *const c_char) -> *mut EVP_CIPHER {
+    #[cfg(test)]
+    {
+        if FORCE_FETCH_NULL.with(|flag| flag.get()) {
+            return ptr::null_mut();
+        }
+    }
+    unsafe { EVP_CIPHER_fetch(ptr::null_mut(), name, ptr::null()) }
+}
+
+#[inline]
+fn cipher_mode(ctx: *mut EVP_CIPHER_CTX) -> c_int {
+    #[cfg(test)]
+    {
+        let forced = FORCE_CIPHER_MODE.with(|flag| flag.get());
+        if forced >= 0 {
+            return forced;
+        }
+    }
+    unsafe { EVP_CIPHER_get_mode(EVP_CIPHER_CTX_get0_cipher(ctx)) }
+}
+
+#[inline]
+fn cipher_ctx_set_params(ctx: *mut EVP_CIPHER_CTX, params: *mut OSSL_PARAM) -> c_int {
+    #[cfg(test)]
+    {
+        if FORCE_SET_PARAMS_FAIL.with(|flag| flag.get()) {
+            return 0;
+        }
+    }
+    unsafe { EVP_CIPHER_CTX_set_params(ctx, params) }
+}
+
+#[inline]
+fn encrypt_update(
+    ctx: *mut EVP_CIPHER_CTX,
+    out: *mut u8,
+    out_len: *mut c_int,
+    input: *const u8,
+    input_len: c_int,
+) -> c_int {
+    #[cfg(test)]
+    {
+        if FORCE_UPDATE_FAIL.with(|flag| flag.get()) {
+            return 0;
+        }
+    }
+    unsafe { EVP_EncryptUpdate(ctx, out as *mut _, out_len, input, input_len) }
+}
+
+#[inline]
+fn decrypt_update(
+    ctx: *mut EVP_CIPHER_CTX,
+    out: *mut u8,
+    out_len: *mut c_int,
+    input: *const u8,
+    input_len: c_int,
+) -> c_int {
+    #[cfg(test)]
+    {
+        if FORCE_UPDATE_FAIL.with(|flag| flag.get()) {
+            return 0;
+        }
+    }
+    unsafe { EVP_DecryptUpdate(ctx, out as *mut _, out_len, input, input_len) }
+}
+
+#[inline]
+fn encrypt_final(ctx: *mut EVP_CIPHER_CTX, out: *mut u8, out_len: *mut c_int) -> c_int {
+    #[cfg(test)]
+    {
+        if FORCE_FINAL_FAIL.with(|flag| flag.get()) {
+            return 0;
+        }
+    }
+    unsafe { EVP_EncryptFinal_ex(ctx, out as *mut _, out_len) }
+}
+
+#[inline]
+fn decrypt_final(ctx: *mut EVP_CIPHER_CTX, out: *mut u8, out_len: *mut c_int) -> c_int {
+    #[cfg(test)]
+    {
+        if FORCE_FINAL_FAIL.with(|flag| flag.get()) {
+            return 0;
+        }
+    }
+    unsafe { EVP_DecryptFinal_ex(ctx, out as *mut _, out_len) }
+}
 
 pub struct AesCipher {
     ctx: *mut EVP_CIPHER_CTX,
@@ -35,12 +149,12 @@ pub struct AesCipher {
 
 impl AesCipher {
     fn new(algorithm: &str) -> OsslResult<Self> {
-        let ctx = unsafe { EVP_CIPHER_CTX_new() };
+        let ctx = cipher_ctx_new();
         if ctx.is_null() {
             return Err(openssl_error("Failed to create cipher context"));
         }
         let alg = CString::new(algorithm).unwrap();
-        let cipher = unsafe { EVP_CIPHER_fetch(ptr::null_mut(), alg.as_ptr(), ptr::null()) };
+        let cipher = cipher_fetch(alg.as_ptr());
         if cipher.is_null() {
             unsafe { EVP_CIPHER_CTX_free(ctx) };
             return Err(openssl_error("Failed to fetch cipher"));
@@ -72,14 +186,14 @@ impl AesCipher {
             "Failed to initialize cipher"
         );
 
-        let mode = unsafe { EVP_CIPHER_get_mode(EVP_CIPHER_CTX_get0_cipher(aes.ctx)) };
+        let mode = cipher_mode(aes.ctx);
         if mode == EVP_CIPH_GCM_MODE || mode == EVP_CIPH_CCM_MODE {
             let mut iv_len = iv.len();
             let mut params = [
                 unsafe { OSSL_PARAM_construct_size_t(OSSL_CIPHER_PARAM_IVLEN.as_ptr() as *const _, &mut iv_len) },
                 unsafe { OSSL_PARAM_construct_end() },
             ];
-            ossl_check!(unsafe { EVP_CIPHER_CTX_set_params(aes.ctx, params.as_mut_ptr()) }, "Failed to set IV length");
+            ossl_check!(cipher_ctx_set_params(aes.ctx, params.as_mut_ptr()), "Failed to set IV length");
         } else {
             ossl_check!(
                 unsafe { init_fn(aes.ctx, aes.cipher, key.as_ptr(), iv.as_ptr(), ptr::null()) },
@@ -170,7 +284,7 @@ impl AesCipher {
         let mut out_len: c_int = 0;
         let rc = unsafe {
             if self.is_encrypting() {
-                EVP_EncryptUpdate(
+                encrypt_update(
                     self.ctx,
                     output.as_mut_ptr().add(old_output_len),
                     &mut out_len,
@@ -178,7 +292,7 @@ impl AesCipher {
                     input.len() as c_int,
                 )
             } else {
-                EVP_DecryptUpdate(
+                decrypt_update(
                     self.ctx,
                     output.as_mut_ptr().add(old_output_len),
                     &mut out_len,
@@ -206,9 +320,9 @@ impl AesCipher {
         let mut out_len: c_int = 0;
         let rc = unsafe {
             if self.is_encrypting() {
-                EVP_EncryptFinal_ex(self.ctx, output.as_mut_ptr().add(old_output_len), &mut out_len)
+                encrypt_final(self.ctx, output.as_mut_ptr().add(old_output_len), &mut out_len)
             } else {
-                EVP_DecryptFinal_ex(self.ctx, output.as_mut_ptr().add(old_output_len), &mut out_len)
+                decrypt_final(self.ctx, output.as_mut_ptr().add(old_output_len), &mut out_len)
             }
         };
         ossl_check!(
@@ -240,5 +354,157 @@ impl Drop for AesCipher {
                 EVP_CIPHER_free(self.cipher);
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::ptr;
+
+    const KEY_16: &[u8] = b"1234567890123456";
+    const IV_16: &[u8] = b"1234567890123456";
+    const IV_12: &[u8] = b"123456789012";
+
+    #[test]
+    fn create_encryptor_rejects_invalid_algorithm() {
+        match AesCipher::create_encryptor("invalid-cipher", KEY_16, IV_16) {
+            Err(err) => assert!(err.to_string().contains("Failed to fetch cipher")),
+            Ok(_) => panic!("expected error"),
+        }
+    }
+
+    #[test]
+    fn set_auth_tag_rejects_empty() {
+        let mut cipher = AesCipher::create_decryptor("aes-128-gcm", KEY_16, IV_16).unwrap();
+        match cipher.set_auth_tag(&[]) {
+            Err(err) => assert!(err.to_string().contains("Authentication tag cannot be empty")),
+            Ok(_) => panic!("expected error"),
+        }
+    }
+
+    #[test]
+    fn create_encryptor_fails_when_ctx_null() {
+        FORCE_CTX_NULL.with(|flag| flag.set(true));
+        let res = AesCipher::create_encryptor("aes-128-cbc", KEY_16, IV_16);
+        FORCE_CTX_NULL.with(|flag| flag.set(false));
+        match res {
+            Err(err) => assert!(err.to_string().contains("Failed to create cipher context")),
+            Ok(_) => panic!("expected error"),
+        }
+    }
+
+    #[test]
+    fn create_encryptor_fails_when_cipher_null() {
+        FORCE_FETCH_NULL.with(|flag| flag.set(true));
+        let res = AesCipher::create_encryptor("aes-128-cbc", KEY_16, IV_16);
+        FORCE_FETCH_NULL.with(|flag| flag.set(false));
+        match res {
+            Err(err) => assert!(err.to_string().contains("Failed to fetch cipher")),
+            Ok(_) => panic!("expected error"),
+        }
+    }
+
+    #[test]
+    fn create_encryptor_gcm_sets_iv_length() {
+        let res = AesCipher::create_encryptor("aes-128-gcm", KEY_16, IV_12);
+        assert!(res.is_ok());
+    }
+
+    #[test]
+    fn create_encryptor_gcm_sets_custom_iv_length() {
+        let iv = b"12345678";
+        let cipher = AesCipher::create_encryptor("aes-128-gcm", KEY_16, iv).unwrap();
+        let iv_len = unsafe { EVP_CIPHER_CTX_get_iv_length(cipher.ctx) };
+        assert_eq!(iv_len, iv.len() as c_int);
+    }
+
+    #[test]
+    fn create_encryptor_gcm_reports_set_iv_length_failure_when_forced_to_gcm() {
+        FORCE_CIPHER_MODE.with(|flag| flag.set(EVP_CIPH_GCM_MODE));
+        FORCE_SET_PARAMS_FAIL.with(|flag| flag.set(true));
+        let res = AesCipher::create_encryptor("aes-128-gcm", KEY_16, b"12345678");
+        FORCE_SET_PARAMS_FAIL.with(|flag| flag.set(false));
+        FORCE_CIPHER_MODE.with(|flag| flag.set(-1));
+
+        match res {
+            Err(err) => assert!(err.to_string().contains("Failed to set IV length")),
+            Ok(_) => panic!("expected error"),
+        }
+    }
+
+    #[test]
+    fn create_encryptor_gcm_reports_set_iv_length_failure_when_forced_to_ccm() {
+        FORCE_CIPHER_MODE.with(|flag| flag.set(EVP_CIPH_CCM_MODE));
+        FORCE_SET_PARAMS_FAIL.with(|flag| flag.set(true));
+        let res = AesCipher::create_encryptor("aes-128-gcm", KEY_16, b"12345678");
+        FORCE_SET_PARAMS_FAIL.with(|flag| flag.set(false));
+        FORCE_CIPHER_MODE.with(|flag| flag.set(-1));
+
+        match res {
+            Err(err) => assert!(err.to_string().contains("Failed to set IV length")),
+            Ok(_) => panic!("expected error"),
+        }
+    }
+
+    #[test]
+    fn create_decryptor_gcm_sets_custom_iv_length() {
+        let iv = b"12345678";
+        let cipher = AesCipher::create_decryptor("aes-128-gcm", KEY_16, iv).unwrap();
+        let iv_len = unsafe { EVP_CIPHER_CTX_get_iv_length(cipher.ctx) };
+        assert_eq!(iv_len, iv.len() as c_int);
+    }
+
+    #[test]
+    fn update_reports_encrypt_error() {
+        let mut cipher = AesCipher::create_encryptor("aes-128-cbc", KEY_16, IV_16).unwrap();
+        FORCE_UPDATE_FAIL.with(|flag| flag.set(true));
+        let res = cipher.update(b"hello", &mut Vec::new());
+        FORCE_UPDATE_FAIL.with(|flag| flag.set(false));
+        match res {
+            Err(err) => assert!(err.to_string().contains("Encryption failed during update")),
+            Ok(_) => panic!("expected error"),
+        }
+    }
+
+    #[test]
+    fn update_reports_decrypt_error() {
+        let mut cipher = AesCipher::create_decryptor("aes-128-cbc", KEY_16, IV_16).unwrap();
+        FORCE_UPDATE_FAIL.with(|flag| flag.set(true));
+        let res = cipher.update(b"hello", &mut Vec::new());
+        FORCE_UPDATE_FAIL.with(|flag| flag.set(false));
+        match res {
+            Err(err) => assert!(err.to_string().contains("Decryption failed during update")),
+            Ok(_) => panic!("expected error"),
+        }
+    }
+
+    #[test]
+    fn finalize_reports_encrypt_error() {
+        let mut cipher = AesCipher::create_encryptor("aes-128-cbc", KEY_16, IV_16).unwrap();
+        FORCE_FINAL_FAIL.with(|flag| flag.set(true));
+        let res = cipher.finalize(&mut Vec::new());
+        FORCE_FINAL_FAIL.with(|flag| flag.set(false));
+        match res {
+            Err(err) => assert!(err.to_string().contains("Encryption failed during finalization")),
+            Ok(_) => panic!("expected error"),
+        }
+    }
+
+    #[test]
+    fn finalize_reports_decrypt_error() {
+        let mut cipher = AesCipher::create_decryptor("aes-128-cbc", KEY_16, IV_16).unwrap();
+        FORCE_FINAL_FAIL.with(|flag| flag.set(true));
+        let res = cipher.finalize(&mut Vec::new());
+        FORCE_FINAL_FAIL.with(|flag| flag.set(false));
+        match res {
+            Err(err) => assert!(err.to_string().contains("Decryption failed during finalization")),
+            Ok(_) => panic!("expected error"),
+        }
+    }
+
+    #[test]
+    fn drop_handles_null_pointers() {
+        let _cipher = AesCipher { ctx: ptr::null_mut(), cipher: ptr::null_mut() };
     }
 }

@@ -25,6 +25,37 @@ use crate::ossl::api::{openssl_error, OsslResult};
 use crate::ossl_check;
 use crypto_openssl_sys::*;
 
+#[cfg(test)]
+use std::cell::Cell;
+
+#[cfg(test)]
+thread_local! {
+    static FORCE_MAC_FETCH_NULL: Cell<bool> = const { Cell::new(false) };
+    static FORCE_MAC_CTX_NULL: Cell<bool> = const { Cell::new(false) };
+}
+
+#[inline]
+fn mac_fetch(name: *const std::os::raw::c_char) -> *mut EVP_MAC {
+    #[cfg(test)]
+    {
+        if FORCE_MAC_FETCH_NULL.with(|flag| flag.get()) {
+            return ptr::null_mut();
+        }
+    }
+    unsafe { EVP_MAC_fetch(ptr::null_mut(), name, ptr::null_mut()) }
+}
+
+#[inline]
+fn mac_ctx_new(mac: *mut EVP_MAC) -> *mut EVP_MAC_CTX {
+    #[cfg(test)]
+    {
+        if FORCE_MAC_CTX_NULL.with(|flag| flag.get()) {
+            return ptr::null_mut();
+        }
+    }
+    unsafe { EVP_MAC_CTX_new(mac) }
+}
+
 pub struct Mac {
     mac: *mut EVP_MAC,
     ctx: *mut EVP_MAC_CTX,
@@ -43,11 +74,11 @@ impl Mac {
     /// Fetches MAC and allocates a new context.
     fn new(name: &str) -> OsslResult<Self> {
         let cname = CString::new(name).unwrap();
-        let mac = unsafe { EVP_MAC_fetch(ptr::null_mut(), cname.as_ptr(), ptr::null_mut()) };
+        let mac = mac_fetch(cname.as_ptr());
         if mac.is_null() {
             return Err(openssl_error("EVP_MAC_fetch failed"));
         }
-        let ctx = unsafe { EVP_MAC_CTX_new(mac) };
+        let ctx = mac_ctx_new(mac);
         if ctx.is_null() {
             unsafe { EVP_MAC_free(mac) };
             return Err(openssl_error("EVP_MAC_CTX_new failed"));
@@ -107,5 +138,41 @@ impl Mac {
         );
         out.truncate(outl);
         Ok(out)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn new_fails_when_fetch_null() {
+        FORCE_MAC_FETCH_NULL.with(|flag| flag.set(true));
+        let res = Mac::new("HMAC");
+        FORCE_MAC_FETCH_NULL.with(|flag| flag.set(false));
+        match res {
+            Err(err) => assert!(err.to_string().contains("EVP_MAC_fetch failed")),
+            Ok(_) => panic!("expected error"),
+        }
+    }
+
+    #[test]
+    fn new_fails_when_ctx_null() {
+        FORCE_MAC_CTX_NULL.with(|flag| flag.set(true));
+        let res = Mac::new("HMAC");
+        FORCE_MAC_CTX_NULL.with(|flag| flag.set(false));
+        match res {
+            Err(err) => assert!(err.to_string().contains("EVP_MAC_CTX_new failed")),
+            Ok(_) => panic!("expected error"),
+        }
+    }
+
+    #[test]
+    fn create_rejects_invalid_cmac_cipher() {
+        // The EVP_MAC CMAC implementation expects a valid cipher name.
+        match Mac::create(&[0u8; 16], "CMAC", Some("not-a-cipher"), None) {
+            Err(err) => assert!(err.to_string().contains("EVP_MAC_init failed")),
+            Ok(_) => panic!("expected error"),
+        }
     }
 }
