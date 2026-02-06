@@ -22,7 +22,7 @@
 use std::ffi::CString;
 use std::ptr;
 
-use crate::ossl::api::{openssl_error, OsslResult};
+use crate::ossl::api::{openssl_error, OsslErrorKind, OsslResult};
 use crate::{ossl_check, ossl_require};
 use crypto_openssl_sys::*;
 
@@ -62,16 +62,16 @@ impl Digest {
     pub fn create(algorithm: &str) -> OsslResult<Self> {
         let cname = CString::new(algorithm).unwrap();
         let md = unsafe { EVP_MD_fetch(ptr::null_mut(), cname.as_ptr(), ptr::null_mut()) };
-        ossl_require!(!md.is_null(), &format!("Invalid hash algorithm: {algorithm}"));
+        ossl_require!(!md.is_null(), OsslErrorKind::DigestInvalidAlgorithm { algorithm: algorithm.to_string() });
         let ctx = md_ctx_new();
         if ctx.is_null() {
             unsafe { EVP_MD_free(md) };
-            return Err(openssl_error("Failed to create EVP_MD_CTX"));
+            return Err(openssl_error(OsslErrorKind::DigestCtxCreateFailed));
         }
 
         let init_res = unsafe { EVP_DigestInit_ex(ctx, md, ptr::null_mut()) };
         unsafe { EVP_MD_free(md) };
-        ossl_check!(init_res, "Failed to initialize digest");
+        ossl_check!(init_res, OsslErrorKind::DigestInitFailed);
 
         Ok(Self { ctx })
     }
@@ -80,7 +80,7 @@ impl Digest {
     pub fn update(&mut self, input: &[u8]) -> OsslResult<()> {
         ossl_check!(
             unsafe { EVP_DigestUpdate(self.ctx, input.as_ptr() as *const _, input.len()) },
-            "Failed to update digest"
+            OsslErrorKind::DigestUpdateFailed
         );
         Ok(())
     }
@@ -93,14 +93,17 @@ impl Digest {
             let mut out = vec![0u8; output_length];
             ossl_check!(
                 unsafe { EVP_DigestFinalXOF(self.ctx, out.as_mut_ptr() as *mut _, output_length) },
-                "Failed to finalize XOF digest"
+                OsslErrorKind::DigestFinalizeXofFailed
             );
             return Ok(out);
         }
 
         let mut len = unsafe { EVP_MD_get_size(md) } as u32;
         let mut out = vec![0u8; len as usize];
-        ossl_check!(unsafe { EVP_DigestFinal_ex(self.ctx, out.as_mut_ptr(), &mut len) }, "Failed to finalize digest");
+        ossl_check!(
+            unsafe { EVP_DigestFinal_ex(self.ctx, out.as_mut_ptr(), &mut len) },
+            OsslErrorKind::DigestFinalizeFailed
+        );
         out.truncate(len as usize);
         Ok(out)
     }
@@ -113,10 +116,9 @@ mod tests {
 
     #[test]
     fn create_fails_when_ctx_null() {
-        let res = with_thread_local_cell(&FORCE_MD_CTX_NULL, true, || Digest::create("sha256"));
-        match res {
-            Err(err) => assert!(err.to_string().starts_with("Failed to create EVP_MD_CTX")),
-            Ok(_) => panic!("expected error"),
-        }
+        let err = with_thread_local_cell(&FORCE_MD_CTX_NULL, true, || Digest::create("sha256"))
+            .err()
+            .expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::DigestCtxCreateFailed);
     }
 }

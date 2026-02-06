@@ -21,7 +21,7 @@
 
 use std::ptr;
 
-use crate::ossl::api::{openssl_error, OsslResult};
+use crate::ossl::api::{openssl_error, OsslErrorKind, OsslResult};
 use crate::ossl::bio::Bio;
 use crate::ossl_check;
 use crypto_openssl_sys::{
@@ -56,7 +56,7 @@ impl PKey {
         let mut bio = Bio::from_slice(data)?;
         let p = unsafe { d2i_PrivateKey_bio(bio.as_mut_ptr(), ptr::null_mut()) };
         if p.is_null() {
-            Err(openssl_error("Failed to load private key from DER"))
+            Err(openssl_error(OsslErrorKind::KeyLoadPrivateDerFailed))
         } else {
             Ok(Self(p))
         }
@@ -66,7 +66,7 @@ impl PKey {
         let mut bio = Bio::from_slice(data)?;
         let p = unsafe { d2i_PUBKEY_bio(bio.as_mut_ptr(), ptr::null_mut()) };
         if p.is_null() {
-            Err(openssl_error("Failed to load public key from DER"))
+            Err(openssl_error(OsslErrorKind::KeyLoadPublicDerFailed))
         } else {
             Ok(Self(p))
         }
@@ -78,14 +78,14 @@ impl PKey {
             unsafe {
                 i2d_PKCS8PrivateKey_bio(bio.as_mut_ptr(), self.0, ptr::null(), ptr::null(), 0, None, ptr::null_mut())
             },
-            "Failed to convert private key to DER"
+            OsslErrorKind::KeyConvertPrivateToDerFailed
         );
         Ok(bio.to_vec())
     }
 
     pub fn to_der_public(&self) -> OsslResult<Vec<u8>> {
         let mut bio = Bio::new_mem()?;
-        ossl_check!(unsafe { i2d_PUBKEY_bio(bio.as_mut_ptr(), self.0) }, "Failed to convert public key to DER");
+        ossl_check!(unsafe { i2d_PUBKEY_bio(bio.as_mut_ptr(), self.0) }, OsslErrorKind::KeyConvertPublicToDerFailed);
         Ok(bio.to_vec())
     }
 
@@ -106,17 +106,13 @@ mod tests {
 
     #[test]
     fn from_der_private_rejects_invalid_data() {
-        match PKey::from_der_private(&[]) {
-            Err(err) => assert!(err.to_string().starts_with("Failed to load private key")),
-            Ok(_) => panic!("expected error"),
-        }
+        let err = PKey::from_der_private(&[]).err().expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::KeyLoadPrivateDerFailed);
     }
 
     #[test]
     fn from_der_public_rejects_invalid_data() {
-        match PKey::from_der_public(&[]) {
-            Err(err) => assert!(err.to_string().starts_with("Failed to load public key")),
-            Ok(_) => panic!("expected error"),
-        }
+        let err = PKey::from_der_public(&[]).err().expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::KeyLoadPublicDerFailed);
     }
 }

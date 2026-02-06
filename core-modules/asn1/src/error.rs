@@ -26,6 +26,12 @@ use thiserror::Error;
 pub type Asn1DecoderResult<T> = Result<T, Asn1DecoderError>;
 pub type Asn1EncoderResult<T> = Result<T, Asn1EncoderError>;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Asn1TimeType {
+    Utc,
+    Generalized,
+}
+
 #[derive(Debug, Error, Clone)]
 pub enum Asn1DecoderError {
     #[error("Expected tag `{expected}` but got `{actual}`")]
@@ -60,6 +66,12 @@ pub enum Asn1DecoderError {
     MalformedGeneralizedTimeEncoding,
     #[error("Invalid {context}: `{value}`")]
     InvalidTimeValue { context: &'static str, value: String },
+    #[error("Certificate date digit {index} must be 0..9")]
+    InvalidCertificateDateDigit { index: usize },
+    #[error("Certificate month must be 1..=12 (got {month})")]
+    InvalidCertificateMonth { month: u8 },
+    #[error("Certificate day must be 1..=31 (got {day})")]
+    InvalidCertificateDay { day: u8 },
     #[error("{message}")]
     Custom { message: Cow<'static, str> },
 }
@@ -106,6 +118,8 @@ pub enum Asn1EncoderError {
     InvalidObjectIdentifierFirstComponent { value: i32 },
     #[error("OID second part must be 0-39 for first part 0 or 1 (got {value})")]
     InvalidObjectIdentifierSecondComponent { value: i32 },
+    #[error("Expected {expected:?} time but got {actual:?} time")]
+    TimeTypeMismatch { expected: Asn1TimeType, actual: Asn1TimeType },
     #[error("{message}")]
     Custom { message: Cow<'static, str> },
 }

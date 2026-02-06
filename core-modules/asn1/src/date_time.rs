@@ -459,7 +459,10 @@ impl WriterScope {
     /// Write ASN.1 `UTC_TIME`.
     pub fn write_utc_time(&mut self, value: &Asn1Time) -> Result<(), Asn1EncoderError> {
         let Some(utc) = value.as_utc() else {
-            return Err(Asn1EncoderError::custom("expected UTC time"));
+            return Err(Asn1EncoderError::TimeTypeMismatch {
+                expected: crate::error::Asn1TimeType::Utc,
+                actual: crate::error::Asn1TimeType::Generalized,
+            });
         };
         utc.validate_for_encoding()?;
         self.write_tagged_object(UniversalTag::UtcTime.primitive(), |w| -> Result<(), Asn1EncoderError> {
@@ -481,7 +484,10 @@ impl WriterScope {
     /// Write ASN.1 `GENERALIZED_TIME`.
     pub fn write_generalized_time(&mut self, value: &Asn1Time) -> Result<(), Asn1EncoderError> {
         let Some(gen) = value.as_generalized() else {
-            return Err(Asn1EncoderError::custom("expected GENERALIZED TIME"));
+            return Err(Asn1EncoderError::TimeTypeMismatch {
+                expected: crate::error::Asn1TimeType::Generalized,
+                actual: crate::error::Asn1TimeType::Utc,
+            });
         };
         gen.validate_for_encoding()?;
         self.write_tagged_object(UniversalTag::GeneralizedTime.primitive(), |w| -> Result<(), Asn1EncoderError> {
@@ -716,10 +722,18 @@ mod tests {
         let gen = Asn1Time::generalized(2024, 1, 1, 0, None, None, None, None).unwrap();
 
         let err = crate::encoder::Asn1Encoder::write(|w| w.write_generalized_time(&utc)).unwrap_err();
-        assert!(err.to_string().contains("expected GENERALIZED TIME"));
+        assert!(matches!(
+            err,
+            Asn1EncoderError::TimeTypeMismatch { expected, actual }
+                if expected == crate::error::Asn1TimeType::Generalized && actual == crate::error::Asn1TimeType::Utc
+        ));
 
         let err = crate::encoder::Asn1Encoder::write(|w| w.write_utc_time(&gen)).unwrap_err();
-        assert!(err.to_string().contains("expected UTC time"));
+        assert!(matches!(
+            err,
+            Asn1EncoderError::TimeTypeMismatch { expected, actual }
+                if expected == crate::error::Asn1TimeType::Utc && actual == crate::error::Asn1TimeType::Generalized
+        ));
     }
 
     #[test]

@@ -565,6 +565,6 @@ mod tests {
         let mut pt = Vec::new();
         decipher.update(&ct, &mut pt).unwrap();
         let err = decipher.finalize(&mut pt).unwrap_err();
-        assert!(err.to_string().contains("finalization"));
+        assert!(matches!(err, CryptoError::Native(_)));
     }
 }

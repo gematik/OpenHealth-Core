@@ -23,7 +23,7 @@ use std::ffi::CString;
 use std::os::raw::{c_char, c_int};
 use std::ptr;
 
-use crate::ossl::api::{openssl_error, OsslResult};
+use crate::ossl::api::{openssl_error, OsslErrorKind, OsslResult};
 use crate::ossl_check;
 
 use crypto_openssl_sys::*;
@@ -151,13 +151,13 @@ impl AesCipher {
     fn new(algorithm: &str) -> OsslResult<Self> {
         let ctx = cipher_ctx_new();
         if ctx.is_null() {
-            return Err(openssl_error("Failed to create cipher context"));
+            return Err(openssl_error(OsslErrorKind::CipherCtxCreateFailed));
         }
         let alg = CString::new(algorithm).unwrap();
         let cipher = cipher_fetch(alg.as_ptr());
         if cipher.is_null() {
             unsafe { EVP_CIPHER_CTX_free(ctx) };
-            return Err(openssl_error("Failed to fetch cipher"));
+            return Err(openssl_error(OsslErrorKind::CipherFetchFailed));
         }
         Ok(Self { ctx, cipher })
     }
@@ -183,7 +183,7 @@ impl AesCipher {
 
         ossl_check!(
             unsafe { init_fn(aes.ctx, aes.cipher, ptr::null(), ptr::null(), ptr::null()) },
-            "Failed to initialize cipher"
+            OsslErrorKind::CipherInitFailed
         );
 
         let mode = cipher_mode(aes.ctx);
@@ -193,17 +193,17 @@ impl AesCipher {
                 unsafe { OSSL_PARAM_construct_size_t(OSSL_CIPHER_PARAM_IVLEN.as_ptr() as *const _, &mut iv_len) },
                 unsafe { OSSL_PARAM_construct_end() },
             ];
-            ossl_check!(cipher_ctx_set_params(aes.ctx, params.as_mut_ptr()), "Failed to set IV length");
+            ossl_check!(cipher_ctx_set_params(aes.ctx, params.as_mut_ptr()), OsslErrorKind::CipherSetIvLenFailed);
         } else {
             ossl_check!(
                 unsafe { init_fn(aes.ctx, aes.cipher, key.as_ptr(), iv.as_ptr(), ptr::null()) },
-                "Failed to initialize cipher"
+                OsslErrorKind::CipherInitFailed
             );
         }
 
         ossl_check!(
             unsafe { init_fn(aes.ctx, ptr::null(), key.as_ptr(), iv.as_ptr(), ptr::null()) },
-            "Failed to initialize cipher"
+            OsslErrorKind::CipherInitFailed
         );
 
         Ok(aes)
@@ -231,14 +231,14 @@ impl AesCipher {
                     EVP_DecryptUpdate(self.ctx, ptr::null_mut(), &mut out_len, aad.as_ptr(), aad.len() as c_int)
                 }
             },
-            "Failed to set AAD"
+            OsslErrorKind::CipherSetAadFailed
         );
         Ok(())
     }
 
     pub fn set_auth_tag(&mut self, auth_tag: &[u8]) -> OsslResult<()> {
         if auth_tag.is_empty() {
-            return Err(openssl_error("Authentication tag cannot be empty"));
+            return Err(openssl_error(OsslErrorKind::CipherAuthTagEmpty));
         }
         let mut params = [
             unsafe {
@@ -252,7 +252,7 @@ impl AesCipher {
         ];
         ossl_check!(
             unsafe { EVP_CIPHER_CTX_set_params(self.ctx, params.as_mut_ptr()) },
-            "Failed to set authentication tag"
+            OsslErrorKind::CipherSetAuthTagFailed
         );
         Ok(())
     }
@@ -271,7 +271,7 @@ impl AesCipher {
         ];
         ossl_check!(
             unsafe { EVP_CIPHER_CTX_get_params(self.ctx, params.as_mut_ptr()) },
-            "Failed to get authentication tag"
+            OsslErrorKind::CipherGetAuthTagFailed
         );
         Ok(tag)
     }
@@ -303,9 +303,9 @@ impl AesCipher {
         };
         if rc != 1 {
             return if self.is_encrypting() {
-                Err(openssl_error("Encryption failed during update"))
+                Err(openssl_error(OsslErrorKind::CipherUpdateEncryptFailed))
             } else {
-                Err(openssl_error("Decryption failed during update"))
+                Err(openssl_error(OsslErrorKind::CipherUpdateDecryptFailed))
             };
         }
         output.truncate(old_output_len + out_len as usize);
@@ -328,9 +328,9 @@ impl AesCipher {
         ossl_check!(
             rc,
             if self.is_encrypting() {
-                "Encryption failed during finalization"
+                OsslErrorKind::CipherFinalizeEncryptFailed
             } else {
-                "Decryption failed during finalization"
+                OsslErrorKind::CipherFinalizeDecryptFailed
             }
         );
         output.truncate(old_output_len + out_len as usize);
@@ -361,6 +361,7 @@ impl Drop for AesCipher {
 mod tests {
     use super::*;
     use crate::ossl::api::with_thread_local_cell;
+    use crate::ossl::api::OsslErrorKind;
     use std::ptr;
 
     const KEY_16: &[u8] = b"1234567890123456";
@@ -369,40 +370,34 @@ mod tests {
 
     #[test]
     fn create_encryptor_rejects_invalid_algorithm() {
-        match AesCipher::create_encryptor("invalid-cipher", KEY_16, IV_16) {
-            Err(err) => assert!(err.to_string().starts_with("Failed to fetch cipher")),
-            Ok(_) => panic!("expected error"),
-        }
+        let err = AesCipher::create_encryptor("invalid-cipher", KEY_16, IV_16).err().expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::CipherFetchFailed);
     }
 
     #[test]
     fn set_auth_tag_rejects_empty() {
         let mut cipher = AesCipher::create_decryptor("aes-128-gcm", KEY_16, IV_16).unwrap();
-        match cipher.set_auth_tag(&[]) {
-            Err(err) => assert!(err.to_string().starts_with("Authentication tag cannot be empty")),
-            Ok(_) => panic!("expected error"),
-        }
+        let err = cipher.set_auth_tag(&[]).err().expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::CipherAuthTagEmpty);
     }
 
     #[test]
     fn create_encryptor_fails_when_ctx_null() {
-        let res =
-            with_thread_local_cell(&FORCE_CTX_NULL, true, || AesCipher::create_encryptor("aes-128-cbc", KEY_16, IV_16));
-        match res {
-            Err(err) => assert!(err.to_string().starts_with("Failed to create cipher context")),
-            Ok(_) => panic!("expected error"),
-        }
+        let err =
+            with_thread_local_cell(&FORCE_CTX_NULL, true, || AesCipher::create_encryptor("aes-128-cbc", KEY_16, IV_16))
+                .err()
+                .expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::CipherCtxCreateFailed);
     }
 
     #[test]
     fn create_encryptor_fails_when_cipher_null() {
-        let res = with_thread_local_cell(&FORCE_FETCH_NULL, true, || {
+        let err = with_thread_local_cell(&FORCE_FETCH_NULL, true, || {
             AesCipher::create_encryptor("aes-128-cbc", KEY_16, IV_16)
-        });
-        match res {
-            Err(err) => assert!(err.to_string().starts_with("Failed to fetch cipher")),
-            Ok(_) => panic!("expected error"),
-        }
+        })
+        .err()
+        .expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::CipherFetchFailed);
     }
 
     #[test]
@@ -422,30 +417,26 @@ mod tests {
 
     #[test]
     fn create_encryptor_gcm_reports_set_iv_length_failure_when_forced_to_gcm() {
-        let res = with_thread_local_cell(&FORCE_CIPHER_MODE, EVP_CIPH_GCM_MODE, || {
+        let err = with_thread_local_cell(&FORCE_CIPHER_MODE, EVP_CIPH_GCM_MODE, || {
             with_thread_local_cell(&FORCE_SET_PARAMS_FAIL, true, || {
                 AesCipher::create_encryptor("aes-128-gcm", KEY_16, b"12345678")
             })
-        });
-
-        match res {
-            Err(err) => assert!(err.to_string().starts_with("Failed to set IV length")),
-            Ok(_) => panic!("expected error"),
-        }
+        })
+        .err()
+        .expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::CipherSetIvLenFailed);
     }
 
     #[test]
     fn create_encryptor_gcm_reports_set_iv_length_failure_when_forced_to_ccm() {
-        let res = with_thread_local_cell(&FORCE_CIPHER_MODE, EVP_CIPH_CCM_MODE, || {
+        let err = with_thread_local_cell(&FORCE_CIPHER_MODE, EVP_CIPH_CCM_MODE, || {
             with_thread_local_cell(&FORCE_SET_PARAMS_FAIL, true, || {
                 AesCipher::create_encryptor("aes-128-gcm", KEY_16, b"12345678")
             })
-        });
-
-        match res {
-            Err(err) => assert!(err.to_string().starts_with("Failed to set IV length")),
-            Ok(_) => panic!("expected error"),
-        }
+        })
+        .err()
+        .expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::CipherSetIvLenFailed);
     }
 
     #[test]
@@ -459,41 +450,37 @@ mod tests {
     #[test]
     fn update_reports_encrypt_error() {
         let mut cipher = AesCipher::create_encryptor("aes-128-cbc", KEY_16, IV_16).unwrap();
-        let res = with_thread_local_cell(&FORCE_UPDATE_FAIL, true, || cipher.update(b"hello", &mut Vec::new()));
-        match res {
-            Err(err) => assert!(err.to_string().starts_with("Encryption failed during update")),
-            Ok(_) => panic!("expected error"),
-        }
+        let err = with_thread_local_cell(&FORCE_UPDATE_FAIL, true, || cipher.update(b"hello", &mut Vec::new()))
+            .err()
+            .expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::CipherUpdateEncryptFailed);
     }
 
     #[test]
     fn update_reports_decrypt_error() {
         let mut cipher = AesCipher::create_decryptor("aes-128-cbc", KEY_16, IV_16).unwrap();
-        let res = with_thread_local_cell(&FORCE_UPDATE_FAIL, true, || cipher.update(b"hello", &mut Vec::new()));
-        match res {
-            Err(err) => assert!(err.to_string().starts_with("Decryption failed during update")),
-            Ok(_) => panic!("expected error"),
-        }
+        let err = with_thread_local_cell(&FORCE_UPDATE_FAIL, true, || cipher.update(b"hello", &mut Vec::new()))
+            .err()
+            .expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::CipherUpdateDecryptFailed);
     }
 
     #[test]
     fn finalize_reports_encrypt_error() {
         let mut cipher = AesCipher::create_encryptor("aes-128-cbc", KEY_16, IV_16).unwrap();
-        let res = with_thread_local_cell(&FORCE_FINAL_FAIL, true, || cipher.finalize(&mut Vec::new()));
-        match res {
-            Err(err) => assert!(err.to_string().starts_with("Encryption failed during finalization")),
-            Ok(_) => panic!("expected error"),
-        }
+        let err = with_thread_local_cell(&FORCE_FINAL_FAIL, true, || cipher.finalize(&mut Vec::new()))
+            .err()
+            .expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::CipherFinalizeEncryptFailed);
     }
 
     #[test]
     fn finalize_reports_decrypt_error() {
         let mut cipher = AesCipher::create_decryptor("aes-128-cbc", KEY_16, IV_16).unwrap();
-        let res = with_thread_local_cell(&FORCE_FINAL_FAIL, true, || cipher.finalize(&mut Vec::new()));
-        match res {
-            Err(err) => assert!(err.to_string().starts_with("Decryption failed during finalization")),
-            Ok(_) => panic!("expected error"),
-        }
+        let err = with_thread_local_cell(&FORCE_FINAL_FAIL, true, || cipher.finalize(&mut Vec::new()))
+            .err()
+            .expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::CipherFinalizeDecryptFailed);
     }
 
     #[test]

@@ -340,10 +340,7 @@ mod tests {
     fn apdu_error_converts_to_channel_error() {
         let err = ApduError::InvalidLength("oops".to_string());
         let converted: CardChannelError = err.clone().into();
-        match converted {
-            CardChannelError::Apdu { error } => assert_eq!(error.to_string(), err.to_string()),
-            _ => panic!("expected apdu error"),
-        }
+        assert!(matches!(converted, CardChannelError::Apdu { error: ApduError::InvalidLength(_) }));
     }
 
     #[test]

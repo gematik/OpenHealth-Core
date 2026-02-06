@@ -280,17 +280,17 @@ fn read_application_bytes(
 fn parse_date_bytes(bytes: &[u8]) -> Result<CertificateDate, Asn1DecoderError> {
     for (idx, byte) in bytes.iter().enumerate() {
         if *byte > 9 {
-            return Err(Asn1DecoderError::custom(format!("Certificate date digit {idx} must be 0..9")));
+            return Err(Asn1DecoderError::InvalidCertificateDateDigit { index: idx });
         }
     }
     let year = bytes[0] * 10 + bytes[1];
     let month = bytes[2] * 10 + bytes[3];
     let day = bytes[4] * 10 + bytes[5];
     if !(1..=12).contains(&month) {
-        return Err(Asn1DecoderError::custom("Certificate month must be 1..=12"));
+        return Err(Asn1DecoderError::InvalidCertificateMonth { month });
     }
     if !(1..=31).contains(&day) {
-        return Err(Asn1DecoderError::custom("Certificate day must be 1..=31"));
+        return Err(Asn1DecoderError::InvalidCertificateDay { day });
     }
     Ok(CertificateDate { year, month, day })
 }
@@ -392,7 +392,7 @@ mod tests {
     #[test]
     fn parse_date_rejects_invalid_day() {
         let err = parse_date_bytes(&[2, 5, 0, 1, 3, 2]).unwrap_err();
-        assert!(err.to_string().contains("Certificate day"));
+        assert!(matches!(err, Asn1DecoderError::InvalidCertificateDay { day } if day == 32));
     }
 
     fn build_certificate_with_fields(

@@ -21,7 +21,7 @@
 
 use std::os::raw::{c_char, c_int};
 
-use crate::ossl::api::{openssl_error, OsslResult};
+use crate::ossl::api::{openssl_error, OsslErrorKind, OsslResult};
 use crypto_openssl_sys::{BIO_free, BIO_get_mem_data, BIO_new, BIO_new_mem_buf, BIO_s_mem, BIO};
 
 #[cfg(test)]
@@ -81,7 +81,7 @@ impl Bio {
     pub fn new_mem() -> OsslResult<Self> {
         let b = bio_new_mem();
         if b.is_null() {
-            Err(openssl_error("Failed to create BIO"))
+            Err(openssl_error(OsslErrorKind::BioCreateFailed))
         } else {
             Ok(Bio(b))
         }
@@ -91,7 +91,7 @@ impl Bio {
     pub fn from_slice(data: &[u8]) -> OsslResult<Self> {
         let b = bio_new_mem_buf(data.as_ptr(), data.len() as c_int);
         if b.is_null() {
-            Err(openssl_error("Failed to create BIO from buffer"))
+            Err(openssl_error(OsslErrorKind::BioCreateFromBufferFailed))
         } else {
             Ok(Bio(b))
         }
@@ -124,6 +124,7 @@ impl Drop for Bio {
 mod tests {
     use super::*;
     use crate::ossl::api::with_thread_local_cell;
+    use crate::ossl::api::OsslErrorKind;
 
     #[test]
     fn new_mem_to_vec_empty() {
@@ -140,20 +141,16 @@ mod tests {
 
     #[test]
     fn new_mem_fails_when_null() {
-        let res = with_thread_local_cell(&FORCE_BIO_NEW_NULL, true, Bio::new_mem);
-        match res {
-            Err(err) => assert!(err.to_string().starts_with("Failed to create BIO")),
-            Ok(_) => panic!("expected error"),
-        }
+        let err = with_thread_local_cell(&FORCE_BIO_NEW_NULL, true, Bio::new_mem).err().expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::BioCreateFailed);
     }
 
     #[test]
     fn from_slice_fails_when_null() {
-        let res = with_thread_local_cell(&FORCE_BIO_NEW_MEM_BUF_NULL, true, || Bio::from_slice(b"hello"));
-        match res {
-            Err(err) => assert!(err.to_string().starts_with("Failed to create BIO from buffer")),
-            Ok(_) => panic!("expected error"),
-        }
+        let err = with_thread_local_cell(&FORCE_BIO_NEW_MEM_BUF_NULL, true, || Bio::from_slice(b"hello"))
+            .err()
+            .expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::BioCreateFromBufferFailed);
     }
 
     #[test]
