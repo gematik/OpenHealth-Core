@@ -61,7 +61,7 @@ rust-cov-json-branch *ARGS="":
 rust-quality-report *ARGS="":
     # Run tests once and then generate multiple report formats from the same profile data.
     cargo +nightly llvm-cov clean --workspace
-    cargo +nightly llvm-cov --workspace --locked --all-features --no-report
+    cargo +nightly llvm-cov --workspace --locked --no-default-features --features ci --no-report
     cargo +nightly llvm-cov report --json --output-path target/llvm-cov.json
     cargo +nightly llvm-cov report --branch --json --output-path target/llvm-cov.branch.json
     cargo +nightly llvm-cov report --html --output-dir target/llvm-cov-html
@@ -70,4 +70,3 @@ rust-quality-report *ARGS="":
 # Clean instrumented artifacts created by `cargo llvm-cov`.
 rust-cov-clean:
     cargo llvm-cov clean --workspace
-
