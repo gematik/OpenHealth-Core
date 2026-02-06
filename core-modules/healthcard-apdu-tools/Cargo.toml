@@ -34,5 +34,5 @@ healthcard-apdu-base = { path = "../healthcard-apdu-base" }
 healthcard = { path = "../healthcard", default-features = false }
 crypto = { path = "../crypto" }
 hex = "0.4.3"
-clap = { version = "4.5.40", features = ["derive"] }
+clap = { version = "4.5.57", features = ["derive"] }
 pcsc = { version = "2.8.2", optional = true }
