@@ -161,3 +161,17 @@ impl From<String> for Asn1EncoderError {
         Self::custom(value)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn encoder_custom_preserves_message() {
+        let err = Asn1EncoderError::custom("custom-message");
+        assert!(matches!(
+            err,
+            Asn1EncoderError::Custom { message } if message == "custom-message"
+        ));
+    }
+}

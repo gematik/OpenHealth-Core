@@ -451,9 +451,7 @@ mod tests {
         assert_eq!(private_key.as_bytes().len(), 32);
         assert_eq!(public_key.curve(), &EcCurve::BrainpoolP256r1);
 
-        match generator(EcCurve::BrainpoolP256r1) {
-            Err(err) => assert!(matches!(err, CryptoError::InvalidKeyMaterial { .. })),
-            Ok(_) => panic!("expected generator exhaustion"),
-        }
+        let err = generator(EcCurve::BrainpoolP256r1).err().expect("expected generator exhaustion");
+        assert!(matches!(err, CryptoError::InvalidKeyMaterial { .. }));
     }
 }

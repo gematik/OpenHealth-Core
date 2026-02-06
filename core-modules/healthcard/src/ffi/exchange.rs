@@ -295,16 +295,13 @@ mod tests {
     #[test]
     fn exchange_error_mapping() {
         let err: ExchangeError = CoreExchangeError::InvalidArgument("bad".to_string()).into();
-        match err {
-            ExchangeError::InvalidArgument { reason } => assert_eq!(reason, "bad"),
-            _ => panic!("expected invalid argument"),
-        }
+        assert!(matches!(err, ExchangeError::InvalidArgument { ref reason } if reason == "bad"));
 
         let err: ExchangeError = CoreExchangeError::Asn1DecoderError(Asn1DecoderError::MalformedUtf8String).into();
-        match err {
-            ExchangeError::Asn1Decode { reason } => assert!(reason.contains("Malformed UTF-8 string")),
-            _ => panic!("expected asn1 decode"),
-        }
+        assert!(matches!(
+            err,
+            ExchangeError::Asn1Decode { ref reason } if reason.contains("Malformed UTF-8 string")
+        ));
     }
 
     #[test]

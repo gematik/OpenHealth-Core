@@ -326,4 +326,10 @@ mod tests {
         let id = Asn1Id::uni(0x01);
         assert_eq!(id.as_universal(), Some(UniversalTag::Boolean));
     }
+
+    #[test]
+    fn class_form_bitor_encodes_identifier_bits() {
+        assert_eq!(Asn1Class::ContextSpecific | Asn1Form::Constructed, 0xA0);
+        assert_eq!(Asn1Form::Constructed | Asn1Class::ContextSpecific, 0xA0);
+    }
 }
