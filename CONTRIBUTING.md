@@ -62,6 +62,63 @@ Linting:
 cargo clippy --workspace --all-targets --all-features
 ```
 
+## Test Coverage (Rust)
+
+This project supports test coverage reporting via `cargo-llvm-cov`.
+
+Prerequisites (per Rust toolchain):
+```shell
+rustup component add llvm-tools-preview
+cargo install cargo-llvm-cov --locked
+```
+
+Generate reports:
+```shell
+just rust-cov-html
+just rust-cov-lcov
+just rust-cov-json
+```
+
+Outputs:
+- HTML: `target/llvm-cov-html/html/index.html`
+- LCOV: `target/llvm-cov.lcov.info`
+- JSON: `target/llvm-cov.json`
+
+Optional (unstable) branch coverage:
+```shell
+just rust-cov-json-branch
+```
+
+Output:
+- Branch JSON: `target/llvm-cov.branch.json`
+
+Output:
+- Condition JSON: `target/llvm-cov.condition.json`
+
+## Test Sufficiency Report (Rust)
+
+To get a quick, combined view of *coverage vs. code complexity*, generate the quality report:
+```shell
+just rust-quality-report
+```
+
+The report is written to:
+- `target/quality-report.md`
+- `target/quality-report.json`
+
+Notes:
+- The report uses `rust-code-analysis-cli` for per-function cyclomatic complexity.
+- It uses nightly branch coverage (`target/llvm-cov.branch.json`) plus stable line coverage (`target/llvm-cov.json`) to flag:
+  - Uncovered branch edges in functions with `cyclomatic >= 2` (configurable via `--min-cyclo-for-branches`)
+  - Uncovered single-line logic (comparisons, bitwise ops, iterator logic, short-circuit)
+- Coverage ignore rules for the quality report can be placed in `tools/quality-report-ignore.txt` (one regex per line). The `rust-quality-report` recipe applies them.
+
+Prerequisites:
+```shell
+cargo install rust-code-analysis-cli --locked
+rustup component add llvm-tools-preview --toolchain nightly-aarch64-apple-darwin
+```
+
 ## Handling TODOs
 
 **TODOs**: Always associate `TODO` comments with a ticket in the following format:

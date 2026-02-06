@@ -327,4 +327,34 @@ mod tests {
         assert_eq!(ffi_apdu.data(), vec![0xDE, 0xAD]);
         assert_eq!(ffi_apdu.to_bytes(), vec![0xDE, 0xAD, 0x90, 0x00]);
     }
+
+    #[test]
+    fn response_apdu_from_parts_roundtrip() {
+        let response = ResponseApdu::from_parts(0x9000, vec![0xDE, 0xAD]).unwrap();
+        assert_eq!(response.sw(), 0x9000);
+        assert_eq!(response.data(), vec![0xDE, 0xAD]);
+        assert_eq!(response.to_bytes(), vec![0xDE, 0xAD, 0x90, 0x00]);
+    }
+
+    #[test]
+    fn apdu_error_converts_to_channel_error() {
+        let err = ApduError::InvalidLength("oops".to_string());
+        let converted: CardChannelError = err.clone().into();
+        assert!(matches!(converted, CardChannelError::Apdu { error: ApduError::InvalidLength(_) }));
+    }
+
+    #[test]
+    fn command_apdu_with_data_and_expect_rejects_large_length() {
+        let err = CommandApdu::with_data_and_expect(
+            0,
+            0,
+            0,
+            0,
+            crate::command::apdu::LengthClass::Short,
+            vec![0x01],
+            u32::MAX,
+        )
+        .unwrap_err();
+        assert!(matches!(err, ApduError::InvalidLength(_)));
+    }
 }

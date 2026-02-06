@@ -241,6 +241,14 @@ mod tests {
     }
 
     #[test]
+    fn test_select_aid_with_default_fcp_length() {
+        let aid = ApplicationIdentifier::new(vec![0x12, 0x34, 0x56, 0x78, 0x90]).unwrap();
+        let cmd = HealthCardCommand::select_aid_with_options(&aid, false, true, 0);
+        assert_eq!(cmd.p2, RESPONSE_TYPE_FCP + FILE_OCCURRENCE_FIRST);
+        assert_eq!(cmd.ne, Some(ExpectedLength::Exact(EXPECTED_LENGTH_WILDCARD_SHORT)));
+    }
+
+    #[test]
     fn test_select_fid() {
         // Convert the vector [0xAB, 0xCD] to the u16 value 0xABCD
         let fid = FileIdentifier::new(0xABCD).unwrap();
@@ -264,5 +272,13 @@ mod tests {
         assert_eq!(cmd.p2, RESPONSE_TYPE_FCP);
         assert_eq!(cmd.data, Some(vec![0xAB, 0xCD]));
         assert_eq!(cmd.ne, Some(ExpectedLength::Exact(64)));
+    }
+
+    #[test]
+    fn test_select_fid_with_default_fcp_length() {
+        let fid = FileIdentifier::new(0xABCD).unwrap();
+        let cmd = HealthCardCommand::select_fid_with_options(&fid, true, true, -1);
+        assert_eq!(cmd.p2, RESPONSE_TYPE_FCP);
+        assert_eq!(cmd.ne, Some(ExpectedLength::Exact(EXPECTED_LENGTH_WILDCARD_SHORT)));
     }
 }

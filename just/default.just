@@ -20,12 +20,11 @@
 # For additional notes and disclaimer from gematik and in case of changes by gematik,
 # find details in the "Readme" file.
 
-set shell := ["bash", "-euo", "pipefail", "-c"]
+# -------------------------------------------------
+# Default
+# -------------------------------------------------
 
-import 'just/default.just'
-import 'just/paths.just'
-import 'just/rust.just'
-import 'just/uniffi.just'
-import 'just/kotlin.just'
-import 'just/swift.just'
+# List available recipes.
+default:
+    @just --list
 

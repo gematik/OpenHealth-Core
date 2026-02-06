@@ -261,4 +261,19 @@ mod tests {
         let status = change_pin_with_puk(&mut session, &puk, &new_pin).unwrap();
         assert_eq!(status, HealthCardResponseStatus::Success);
     }
+
+    #[test]
+    fn card_pin_validation_errors() {
+        assert!(matches!(CardPin::new("123"), Err(PinBlockError::TooShort { .. })));
+        assert!(matches!(CardPin::new("1234567890123"), Err(PinBlockError::TooLong { .. })));
+        assert!(matches!(CardPin::new("12a4"), Err(PinBlockError::NonDigit('a'))));
+    }
+
+    #[test]
+    fn map_verify_response_unexpected_status() {
+        let apdu = crate::command::apdu::CardResponseApdu::new(&[0x69, 0x82]).unwrap();
+        let response = HealthCardResponse::new(HealthCardResponseStatus::SecurityStatusNotSatisfied, apdu);
+        let err = map_verify_response(response).unwrap_err();
+        assert!(matches!(err, ExchangeError::UnexpectedStatus { .. }));
+    }
 }

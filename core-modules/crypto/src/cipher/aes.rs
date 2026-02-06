@@ -505,4 +505,66 @@ mod tests {
 
         assert_eq!(pt, msg);
     }
+
+    #[test]
+    fn cbc_iv_from_slice_invalid_length() {
+        let err = CbcIv::from_slice([0u8; 15]).unwrap_err();
+        assert!(matches!(err, CryptoError::InvalidIvLength { .. }));
+    }
+
+    #[test]
+    fn aead_tag_invalid_length() {
+        let err = AeadTag::new(vec![0u8; 8]).unwrap_err();
+        assert!(matches!(err, CryptoError::InvalidTagLength { .. }));
+    }
+
+    #[test]
+    fn gcm_invalid_iv_length_rejected() {
+        match AesCipherSpec::gcm(vec![0u8; 10], Vec::<u8>::new()) {
+            Err(CryptoError::InvalidIvLength { .. }) => {}
+            other => panic!("unexpected result: {:?}", other.err()),
+        }
+    }
+
+    #[test]
+    fn gcm_invalid_tag_length_rejected() {
+        let spec = AesCipherSpec::gcm_with_tag(IV_16, Vec::<u8>::new(), 8.bytes()).unwrap();
+        match spec.cipher(key()) {
+            Err(CryptoError::InvalidTagLength { .. }) => {}
+            other => panic!("unexpected result: {:?}", other.err()),
+        }
+    }
+
+    #[test]
+    fn decipher_auth_tag_exposed() {
+        let tag = AeadTag::new(hex_to_bytes(GCM_TAG_HEX)).unwrap();
+        let decipher = AesDecipherSpec::gcm(IV_16, Vec::<u8>::new(), tag.clone()).unwrap().cipher(key()).unwrap();
+        let auth_tag = decipher.auth_tag().unwrap().unwrap();
+        assert_eq!(auth_tag, tag);
+    }
+
+    #[test]
+    fn gcm_decrypt_with_wrong_tag_fails() {
+        let mut cipher =
+            AesCipherSpec::Gcm { iv: GcmNonce::new(IV_16).unwrap(), aad: Aad::default(), tag_length: 16.bytes() }
+                .cipher(key())
+                .unwrap();
+        let mut ct = Vec::new();
+        cipher.update(b"Hello World", &mut ct).unwrap();
+        cipher.finalize(&mut ct).unwrap();
+        let mut tag = cipher.auth_tag().unwrap().unwrap().as_ref().to_vec();
+        tag[0] ^= 0xFF;
+
+        let mut decipher = AesDecipherSpec::Gcm {
+            iv: GcmNonce::new(IV_16).unwrap(),
+            aad: Aad::default(),
+            auth_tag: AeadTag::new(tag).unwrap(),
+        }
+        .cipher(key())
+        .unwrap();
+        let mut pt = Vec::new();
+        decipher.update(&ct, &mut pt).unwrap();
+        let err = decipher.finalize(&mut pt).unwrap_err();
+        assert!(matches!(err, CryptoError::Native(_)));
+    }
 }

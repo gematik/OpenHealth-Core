@@ -23,11 +23,125 @@ use std::ffi::CString;
 use std::os::raw::c_int;
 use std::ptr;
 
-use crate::ossl::api::{openssl_error, OsslResult};
+use crate::ossl::api::{openssl_error, OsslErrorKind, OsslResult};
 use crate::ossl::key::{PKey, PKeyCtx};
 use crate::ossl_check;
 use crypto_openssl_sys::point_conversion_form_t::POINT_CONVERSION_UNCOMPRESSED;
 use crypto_openssl_sys::*;
+
+#[cfg(test)]
+use std::cell::Cell;
+
+#[cfg(test)]
+thread_local! {
+    static FORCE_GROUP_NULL: Cell<bool> = const { Cell::new(false) };
+    static FORCE_POINT_NULL: Cell<bool> = const { Cell::new(false) };
+    static FORCE_GROUP_DUP_NULL: Cell<bool> = const { Cell::new(false) };
+    static FORCE_POINT_DUP_NULL: Cell<bool> = const { Cell::new(false) };
+    static FORCE_BN_NULL: Cell<bool> = const { Cell::new(false) };
+    static FORCE_POINT2OCT_LEN_ZERO: Cell<bool> = const { Cell::new(false) };
+    static FORCE_POINT2OCT_OUT_ZERO: Cell<bool> = const { Cell::new(false) };
+    static FORCE_PKEY_CTX_NULL: Cell<bool> = const { Cell::new(false) };
+    static FORCE_ECDH_CTX_NULL: Cell<bool> = const { Cell::new(false) };
+}
+
+#[inline]
+fn ec_group_new(nid: c_int) -> *mut EC_GROUP {
+    #[cfg(test)]
+    {
+        if FORCE_GROUP_NULL.with(|flag| flag.get()) {
+            return ptr::null_mut();
+        }
+    }
+    unsafe { EC_GROUP_new_by_curve_name(nid) }
+}
+
+#[inline]
+fn ec_point_new(group: *mut EC_GROUP) -> *mut EC_POINT {
+    #[cfg(test)]
+    {
+        if FORCE_POINT_NULL.with(|flag| flag.get()) {
+            return ptr::null_mut();
+        }
+    }
+    unsafe { EC_POINT_new(group) }
+}
+
+#[inline]
+fn ec_group_dup(group: *mut EC_GROUP) -> *mut EC_GROUP {
+    #[cfg(test)]
+    {
+        if FORCE_GROUP_DUP_NULL.with(|flag| flag.get()) {
+            return ptr::null_mut();
+        }
+    }
+    unsafe { EC_GROUP_dup(group) }
+}
+
+#[inline]
+fn ec_point_dup(point: *mut EC_POINT, group: *mut EC_GROUP) -> *mut EC_POINT {
+    #[cfg(test)]
+    {
+        if FORCE_POINT_DUP_NULL.with(|flag| flag.get()) {
+            return ptr::null_mut();
+        }
+    }
+    unsafe { EC_POINT_dup(point, group) }
+}
+
+#[inline]
+fn bn_signed_bin2bn(data: *const u8, len: c_int) -> *mut BIGNUM {
+    #[cfg(test)]
+    {
+        if FORCE_BN_NULL.with(|flag| flag.get()) {
+            return ptr::null_mut();
+        }
+    }
+    unsafe { BN_signed_bin2bn(data, len, ptr::null_mut()) }
+}
+
+#[inline]
+fn ec_point2oct(
+    group: *const EC_GROUP,
+    point: *const EC_POINT,
+    form: point_conversion_form_t,
+    buf: *mut u8,
+    len: usize,
+    ctx: *mut BN_CTX,
+) -> usize {
+    #[cfg(test)]
+    {
+        if buf.is_null() && FORCE_POINT2OCT_LEN_ZERO.with(|flag| flag.get()) {
+            return 0;
+        }
+        if !buf.is_null() && FORCE_POINT2OCT_OUT_ZERO.with(|flag| flag.get()) {
+            return 0;
+        }
+    }
+    unsafe { EC_POINT_point2oct(group, point, form, buf, len, ctx) }
+}
+
+#[inline]
+fn pkey_ctx_new_id(id: c_int) -> *mut EVP_PKEY_CTX {
+    #[cfg(test)]
+    {
+        if FORCE_PKEY_CTX_NULL.with(|flag| flag.get()) {
+            return ptr::null_mut();
+        }
+    }
+    unsafe { EVP_PKEY_CTX_new_id(id, ptr::null_mut()) }
+}
+
+#[inline]
+fn pkey_ctx_new(pkey: *mut EVP_PKEY) -> *mut EVP_PKEY_CTX {
+    #[cfg(test)]
+    {
+        if FORCE_ECDH_CTX_NULL.with(|flag| flag.get()) {
+            return ptr::null_mut();
+        }
+    }
+    unsafe { EVP_PKEY_CTX_new(pkey, ptr::null_mut()) }
+}
 
 pub struct EcPoint {
     group: *mut EC_GROUP,
@@ -39,16 +153,16 @@ impl EcPoint {
         let cstr = CString::new(name).unwrap();
         let nid = unsafe { OBJ_txt2nid(cstr.as_ptr()) };
         if nid == NID_undef {
-            return Err(openssl_error(&format!("Failed to get nid for curve {name}")));
+            return Err(openssl_error(OsslErrorKind::EcNidLookupFailed { curve: name.to_string() }));
         }
-        let grp = unsafe { EC_GROUP_new_by_curve_name(nid) };
+        let grp = ec_group_new(nid);
         if grp.is_null() {
-            return Err(openssl_error("Failed to create EC_GROUP"));
+            return Err(openssl_error(OsslErrorKind::EcGroupCreateFailed));
         }
-        let pt = unsafe { EC_POINT_new(grp) };
+        let pt = ec_point_new(grp);
         if pt.is_null() {
             unsafe { EC_GROUP_free(grp) };
-            return Err(openssl_error("Failed to create EC_POINT"));
+            return Err(openssl_error(OsslErrorKind::EcPointCreateFailed));
         }
         Ok(EcPoint { group: grp, point: pt })
     }
@@ -57,20 +171,20 @@ impl EcPoint {
         let ep = EcPoint::create_from_curve(name)?;
         ossl_check!(
             unsafe { EC_POINT_oct2point(ep.group, ep.point, data.as_ptr(), data.len(), ptr::null_mut()) as c_int },
-            "Failed to create ec point from uncompressed public key"
+            OsslErrorKind::EcPointFromBytesFailed
         );
         Ok(ep)
     }
 
     pub fn clone(&self) -> OsslResult<Self> {
-        let g2 = unsafe { EC_GROUP_dup(self.group) };
+        let g2 = ec_group_dup(self.group);
         if g2.is_null() {
-            return Err(openssl_error("Failed to dup EC_GROUP"));
+            return Err(openssl_error(OsslErrorKind::EcGroupDupFailed));
         }
-        let p2 = unsafe { EC_POINT_dup(self.point, self.group) };
+        let p2 = ec_point_dup(self.point, self.group);
         if p2.is_null() {
             unsafe { EC_GROUP_free(g2) };
-            return Err(openssl_error("Failed to dup EC_POINT"));
+            return Err(openssl_error(OsslErrorKind::EcPointDupFailed));
         }
         Ok(EcPoint { group: g2, point: p2 })
     }
@@ -79,54 +193,38 @@ impl EcPoint {
         let r = self.clone()?;
         ossl_check!(
             unsafe { EC_POINT_add(self.group, r.point, self.point, other.point, ptr::null_mut(),) },
-            "EC_POINT_add failed"
+            OsslErrorKind::EcPointAddFailed
         );
         Ok(r)
     }
 
     pub fn mul(&self, scalar: &[u8]) -> OsslResult<Self> {
-        let bn = unsafe { BN_signed_bin2bn(scalar.as_ptr(), scalar.len() as c_int, ptr::null_mut()) };
+        let bn = bn_signed_bin2bn(scalar.as_ptr(), scalar.len() as c_int);
         if bn.is_null() {
-            return Err(openssl_error("Failed to convert scalar to BIGNUM"));
+            return Err(openssl_error(OsslErrorKind::EcScalarToBignumFailed));
         }
         let r = self.clone()?;
         ossl_check!(
             unsafe { EC_POINT_mul(self.group, r.point, ptr::null_mut(), self.point, bn, ptr::null_mut(),) },
-            "EC_POINT_mul failed"
+            OsslErrorKind::EcPointMulFailed
         );
         unsafe { BN_free(bn) };
         Ok(r)
     }
 
     pub fn to_bytes(&self) -> OsslResult<Vec<u8>> {
-        let len = unsafe {
-            EC_POINT_point2oct(
-                self.group,
-                self.point,
-                POINT_CONVERSION_UNCOMPRESSED,
-                ptr::null_mut(),
-                0,
-                ptr::null_mut(),
-            )
-        };
+        let len =
+            ec_point2oct(self.group, self.point, POINT_CONVERSION_UNCOMPRESSED, ptr::null_mut(), 0, ptr::null_mut());
         if len == 0 {
-            return Err(openssl_error("Failed to get public key size"));
+            return Err(openssl_error(OsslErrorKind::EcPublicKeySizeFailed));
         }
-        let mut buf = vec![0u8; len as usize];
-        let out = unsafe {
-            EC_POINT_point2oct(
-                self.group,
-                self.point,
-                POINT_CONVERSION_UNCOMPRESSED,
-                buf.as_mut_ptr(),
-                len,
-                ptr::null_mut(),
-            )
-        };
+        let mut buf = vec![0u8; len];
+        let out =
+            ec_point2oct(self.group, self.point, POINT_CONVERSION_UNCOMPRESSED, buf.as_mut_ptr(), len, ptr::null_mut());
         if out == 0 {
-            return Err(openssl_error("Error during ec point conversion"));
+            return Err(openssl_error(OsslErrorKind::EcPointConversionFailed));
         }
-        buf.truncate(out as usize);
+        buf.truncate(out);
         Ok(buf)
     }
 }
@@ -147,20 +245,20 @@ pub struct EcKeypair {
 
 impl EcKeypair {
     pub fn generate(curve: &str) -> OsslResult<Self> {
-        let ctx = unsafe { EVP_PKEY_CTX_new_id(EVP_PKEY_EC, ptr::null_mut()) };
+        let ctx = pkey_ctx_new_id(EVP_PKEY_EC);
         if ctx.is_null() {
-            return Err(openssl_error("Failed to create EVP_PKEY_CTX"));
+            return Err(openssl_error(OsslErrorKind::EvpPkeyCtxCreateFailed));
         }
         let ctx = PKeyCtx(ctx);
-        ossl_check!(unsafe { EVP_PKEY_keygen_init(ctx.0) }, "Failed to init keygen");
+        ossl_check!(unsafe { EVP_PKEY_keygen_init(ctx.0) }, OsslErrorKind::EcKeygenInitFailed);
         let cs = CString::new(curve).unwrap();
         let nid = unsafe { OBJ_sn2nid(cs.as_ptr()) };
         if nid == NID_undef {
-            return Err(openssl_error(&format!("Invalid curve name: {}", curve)));
+            return Err(openssl_error(OsslErrorKind::EcInvalidCurveName { curve: curve.to_string() }));
         }
-        ossl_check!(unsafe { EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx.0, nid) }, "Failed to set EC curve");
+        ossl_check!(unsafe { EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx.0, nid) }, OsslErrorKind::EcSetCurveFailed);
         let mut raw: *mut EVP_PKEY = ptr::null_mut();
-        ossl_check!(unsafe { EVP_PKEY_keygen(ctx.0, &mut raw) }, "Key generation failed");
+        ossl_check!(unsafe { EVP_PKEY_keygen(ctx.0, &mut raw) }, OsslErrorKind::EcKeyGenerationFailed);
         Ok(EcKeypair { pkey: PKey::new(raw) })
     }
 
@@ -181,23 +279,140 @@ pub struct Ecdh {
 impl Ecdh {
     pub fn new(priv_der: &[u8]) -> OsslResult<Self> {
         let p = PKey::from_der_private(priv_der)?;
-        let raw = unsafe { EVP_PKEY_CTX_new(p.as_mut_ptr(), ptr::null_mut()) };
+        let raw = pkey_ctx_new(p.as_mut_ptr());
         if raw.is_null() {
-            return Err(openssl_error("Failed to create ECDH context"));
+            return Err(openssl_error(OsslErrorKind::EcdhCtxCreateFailed));
         }
         let ctx = PKeyCtx(raw);
-        ossl_check!(unsafe { EVP_PKEY_derive_init(ctx.0) }, "Failed to init ECDH context");
+        ossl_check!(unsafe { EVP_PKEY_derive_init(ctx.0) }, OsslErrorKind::EcdhInitFailed);
         Ok(Ecdh { ctx, _local: p })
     }
 
     pub fn compute_secret(&self, pub_der: &[u8]) -> OsslResult<Vec<u8>> {
         let peer = PKey::from_der_public(pub_der)?;
-        ossl_check!(unsafe { EVP_PKEY_derive_set_peer(self.ctx.0, peer.as_mut_ptr()) }, "Failed to set peer");
+        ossl_check!(
+            unsafe { EVP_PKEY_derive_set_peer(self.ctx.0, peer.as_mut_ptr()) },
+            OsslErrorKind::EcdhSetPeerFailed
+        );
         let mut len: usize = 0;
-        ossl_check!(unsafe { EVP_PKEY_derive(self.ctx.0, ptr::null_mut(), &mut len) }, "Failed to compute secret");
+        ossl_check!(
+            unsafe { EVP_PKEY_derive(self.ctx.0, ptr::null_mut(), &mut len) },
+            OsslErrorKind::EcdhComputeSecretFailed
+        );
         let mut secret = vec![0u8; len];
-        ossl_check!(unsafe { EVP_PKEY_derive(self.ctx.0, secret.as_mut_ptr(), &mut len) }, "Failed to compute secret");
+        ossl_check!(
+            unsafe { EVP_PKEY_derive(self.ctx.0, secret.as_mut_ptr(), &mut len) },
+            OsslErrorKind::EcdhComputeSecretFailed
+        );
         secret.truncate(len);
         Ok(secret)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ossl::api::with_thread_local_cell;
+    use hex::decode;
+
+    #[test]
+    fn create_from_curve_rejects_invalid_name() {
+        let err = EcPoint::create_from_curve("invalid-curve").err().expect("expected error");
+        assert!(matches!(
+            err.kind(),
+            OsslErrorKind::EcNidLookupFailed { curve } if curve == "invalid-curve"
+        ));
+    }
+
+    #[test]
+    fn keypair_generate_rejects_invalid_curve() {
+        let err = EcKeypair::generate("invalid-curve").err().expect("expected error");
+        assert!(matches!(
+            err.kind(),
+            OsslErrorKind::EcInvalidCurveName { curve } if curve == "invalid-curve"
+        ));
+    }
+
+    fn prime256v1_point() -> EcPoint {
+        let bytes = prime256v1_bytes();
+        EcPoint::from_public("prime256v1", &bytes).unwrap()
+    }
+
+    fn prime256v1_bytes() -> Vec<u8> {
+        decode(
+            "046B17D1F2E12C4247F8BCE6E563A440F277037D812DEB33A0F4A13945D898C296\
+             4FE342E2FE1A7F9B8EE7EB4A7C0F9E162BCE33576B315ECECBB6406837BF51F5",
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn create_from_curve_fails_when_group_null() {
+        let err = with_thread_local_cell(&FORCE_GROUP_NULL, true, || EcPoint::create_from_curve("prime256v1"))
+            .err()
+            .expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::EcGroupCreateFailed);
+    }
+
+    #[test]
+    fn create_from_curve_fails_when_point_null() {
+        let err = with_thread_local_cell(&FORCE_POINT_NULL, true, || EcPoint::create_from_curve("prime256v1"))
+            .err()
+            .expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::EcPointCreateFailed);
+    }
+
+    #[test]
+    fn clone_fails_when_group_dup_null() {
+        let point = prime256v1_point();
+        let err = with_thread_local_cell(&FORCE_GROUP_DUP_NULL, true, || point.clone()).err().expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::EcGroupDupFailed);
+    }
+
+    #[test]
+    fn clone_fails_when_point_dup_null() {
+        let point = prime256v1_point();
+        let err = with_thread_local_cell(&FORCE_POINT_DUP_NULL, true, || point.clone()).err().expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::EcPointDupFailed);
+    }
+
+    #[test]
+    fn mul_fails_when_bn_null() {
+        let point = prime256v1_point();
+        let err = with_thread_local_cell(&FORCE_BN_NULL, true, || point.mul(&[0x01])).err().expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::EcScalarToBignumFailed);
+    }
+
+    #[test]
+    fn to_bytes_fails_when_len_zero() {
+        let point = prime256v1_point();
+        let err =
+            with_thread_local_cell(&FORCE_POINT2OCT_LEN_ZERO, true, || point.to_bytes()).err().expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::EcPublicKeySizeFailed);
+    }
+
+    #[test]
+    fn to_bytes_fails_when_output_zero() {
+        let point = prime256v1_point();
+        let err =
+            with_thread_local_cell(&FORCE_POINT2OCT_OUT_ZERO, true, || point.to_bytes()).err().expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::EcPointConversionFailed);
+    }
+
+    #[test]
+    fn keypair_generate_fails_when_ctx_null() {
+        let err = with_thread_local_cell(&FORCE_PKEY_CTX_NULL, true, || EcKeypair::generate("prime256v1"))
+            .err()
+            .expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::EvpPkeyCtxCreateFailed);
+    }
+
+    #[test]
+    fn ecdh_new_fails_when_ctx_null() {
+        let keypair = EcKeypair::generate("prime256v1").unwrap();
+        let priv_der = keypair.private_key_der().unwrap();
+        let err =
+            with_thread_local_cell(&FORCE_ECDH_CTX_NULL, true, || Ecdh::new(&priv_der)).err().expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::EcdhCtxCreateFailed);
     }
 }

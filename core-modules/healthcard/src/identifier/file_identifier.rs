@@ -179,6 +179,7 @@ mod tests {
     fn test_to_bytes() {
         let fid = 0x1234;
         let file_id = FileIdentifier::new(fid).unwrap();
+        assert_eq!(file_id.get_fid(), vec![0x12, 0x34]);
         assert_eq!(file_id.to_bytes(), [0x12, 0x34]);
         assert_eq!(file_id.into_bytes(), [0x12, 0x34]);
     }

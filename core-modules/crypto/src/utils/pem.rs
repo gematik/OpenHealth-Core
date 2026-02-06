@@ -121,12 +121,57 @@ mod tests {
         let data = vec![65u8; 100]; // 100 x 'A'
         let pem = Pem { r#type: typ.to_string(), data };
 
-        let encoded = pem.encode_to_string();
+        // Insert an internal empty line so the `filter` predicate also exercises the `is_empty()` branch.
+        let header = format!("-----BEGIN {typ}-----\n");
+        let header_with_blank = format!("-----BEGIN {typ}-----\n\n");
+        let encoded = pem.encode_to_string().replacen(&header, &header_with_blank, 1);
+        let lines: Vec<&str> = encoded.lines().collect();
+        assert!(lines.iter().any(|line| line.is_empty()));
+
+        for line in lines.iter().filter(|l| !l.is_empty() && !l.starts_with("-----")) {
+            assert!(line.len() <= 64, "Line exceeds 64 characters: {line}");
+        }
+    }
+
+    #[test]
+    fn encode_pem_ignores_empty_lines_in_length_check() {
+        let typ = "TEST";
+        let data = vec![65u8; 10];
+        let pem = Pem { r#type: typ.to_string(), data };
+
+        let mut encoded = pem.encode_to_string();
+        encoded.push('\n');
+        encoded.push('\n');
         let lines: Vec<&str> = encoded.lines().collect();
 
         for line in lines.iter().filter(|l| !l.is_empty() && !l.starts_with("-----")) {
             assert!(line.len() <= 64, "Line exceeds 64 characters: {line}");
         }
+    }
+
+    #[test]
+    fn encode_pem_length_check_handles_internal_empty_lines() {
+        let typ = "TEST";
+        let data = vec![65u8; 10];
+        let pem = Pem { r#type: typ.to_string(), data };
+
+        let encoded = pem.encode_to_string().replace('\n', "\n\n");
+        let lines: Vec<&str> = encoded.lines().collect();
+        assert!(lines.iter().any(|line| line.is_empty()));
+
+        for line in lines.iter().filter(|l| !l.is_empty() && !l.starts_with("-----")) {
+            assert!(line.len() <= 64, "Line exceeds 64 characters: {line}");
+        }
+    }
+
+    #[test]
+    fn encode_pem_empty_data_has_no_payload_lines() {
+        let pem = Pem { r#type: "TEST".to_string(), data: Vec::new() };
+        let encoded = pem.encode_to_string();
+        let lines: Vec<&str> = encoded.lines().collect();
+
+        let payload_lines: Vec<_> = lines.iter().filter(|l| !l.is_empty() && !l.starts_with("-----")).collect();
+        assert!(payload_lines.is_empty());
     }
 
     #[test]
@@ -152,5 +197,15 @@ mod tests {
         let decoded = pem_string.decode_to_pem().unwrap();
         assert_eq!(typ, decoded.r#type);
         assert_eq!(content, String::from_utf8(decoded.data).unwrap());
+    }
+
+    #[test]
+    fn encode_and_decode_empty_pem() {
+        let typ = "EMPTY";
+        let pem = Pem { r#type: typ.to_string(), data: Vec::new() };
+        let encoded = pem.encode_to_string();
+        let decoded = encoded.decode_to_pem().unwrap();
+        assert_eq!(typ, decoded.r#type);
+        assert!(decoded.data.is_empty());
     }
 }

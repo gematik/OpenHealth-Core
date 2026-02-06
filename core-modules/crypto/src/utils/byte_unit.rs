@@ -90,3 +90,33 @@ macro_rules! impl_bytes_ext_signed {
 impl_bytes_ext_unsigned!(usize);
 impl_bytes_ext_unsigned!(u32);
 impl_bytes_ext_signed!(i32);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn bytes_and_bits_conversions() {
+        assert_eq!(2usize.bytes().bytes(), 2);
+        assert_eq!(16u32.bits().bytes(), 2);
+        assert_eq!(ByteUnit(3).bits(), 24);
+    }
+
+    #[test]
+    #[should_panic(expected = "Value must be multiple of 8")]
+    fn bits_requires_multiple_of_eight() {
+        let _ = 7u32.bits();
+    }
+
+    #[test]
+    #[should_panic(expected = "value must be non-negative")]
+    fn signed_bytes_requires_non_negative() {
+        let _ = (-1i32).bytes();
+    }
+
+    #[test]
+    #[should_panic(expected = "value must be non-negative")]
+    fn signed_bits_requires_non_negative() {
+        let _ = (-8i32).bits();
+    }
+}

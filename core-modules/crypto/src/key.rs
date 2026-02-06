@@ -72,3 +72,34 @@ impl PartialEq<Self> for SecretKey {
 }
 
 impl Eq for SecretKey {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn key_length_and_size() {
+        let key = SecretKey::new_secret(vec![1, 2, 3, 4]);
+        assert_eq!(key.len(), 4);
+        assert!(!key.is_empty());
+        assert_eq!(key.size().bytes(), 4);
+    }
+
+    #[test]
+    fn key_equality_compares_contents() {
+        let key_a = SecretKey::new_secret(vec![9, 9, 9]);
+        let key_b = SecretKey::from(vec![9, 9, 9]);
+        let key_c = SecretKey::new_secret(vec![9, 9, 8]);
+        assert_eq!(key_a, key_b);
+        assert_ne!(key_a, key_c);
+    }
+
+    #[test]
+    fn debug_does_not_expose_material() {
+        let key = SecretKey::new_secret(vec![1, 2, 3]);
+        let formatted = format!("{key:?}");
+        assert!(formatted.contains("SecretKey"));
+        assert!(formatted.contains("size"));
+        assert!(!formatted.contains("1, 2, 3"));
+    }
+}

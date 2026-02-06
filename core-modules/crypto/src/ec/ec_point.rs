@@ -224,6 +224,7 @@ mod tests {
         assert!(!point.is_infinity());
         assert_eq!(Some(&x), point.x_coord());
         assert_eq!(Some(&y), point.y_coord());
+        assert!(point.as_finite().is_some());
     }
 
     #[test]
@@ -284,5 +285,38 @@ mod tests {
         let public_key = point.to_ec_public_key().unwrap();
         assert_eq!(curve, *public_key.curve());
         assert_eq!(point.uncompressed().unwrap(), public_key.as_bytes());
+    }
+
+    #[test]
+    fn as_finite_returns_none_for_infinity() {
+        let curve = EcCurve::BrainpoolP256r1;
+        let point = EcPoint::infinity(curve);
+        assert!(point.as_finite().is_none());
+    }
+
+    #[test]
+    fn add_rejects_mismatched_curves() {
+        let p1 = EcPoint::finite(EcCurve::BrainpoolP256r1, BigInt::one(), BigInt::one());
+        let p2 = EcPoint::finite(EcCurve::BrainpoolP384r1, BigInt::one(), BigInt::one());
+        let err = p1.add(&p2).unwrap_err();
+        assert!(matches!(err, CryptoError::InvalidEcPoint(_)));
+    }
+
+    #[test]
+    fn mul_by_one_is_identity_for_generator() {
+        let curve = EcCurve::BrainpoolP256r1;
+        let g = curve.g();
+        let expected = g.uncompressed().unwrap();
+        let out = g.mul(&BigInt::one()).unwrap().uncompressed().unwrap();
+        assert_eq!(out, expected);
+    }
+
+    #[test]
+    fn mul_by_two_matches_add_for_generator() {
+        let curve = EcCurve::BrainpoolP256r1;
+        let g = curve.g();
+        let mul = g.mul(&BigInt::from(2)).unwrap().uncompressed().unwrap();
+        let add = g.add(&g).unwrap().uncompressed().unwrap();
+        assert_eq!(mul, add);
     }
 }

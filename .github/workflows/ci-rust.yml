@@ -111,3 +111,47 @@ jobs:
         run: cargo build --workspace --no-default-features --features ci --locked --verbose
       - name: Run tests
         run: cargo test --workspace --no-default-features --features ci --locked --verbose
+
+  coverage:
+    name: Quality report (coverage)
+    runs-on: ubuntu-latest
+    needs: branch_naming
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: ${{ runner.os }}-rust
+      - name: Install toolchains
+        run: |
+          rustup toolchain install nightly --profile minimal
+          rustup component add llvm-tools-preview
+          rustup component add llvm-tools-preview --toolchain nightly
+      - name: Install just
+        uses: taiki-e/install-action@v2
+        with:
+          tool: just
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-llvm-cov
+      - name: Install rust-code-analysis-cli
+        uses: taiki-e/install-action@v2
+        with:
+          tool: rust-code-analysis-cli
+      - name: Run quality report (coverage + complexity)
+        run: just rust-quality-report --max-total-score 0 --max-risky-functions 0
+      - name: Upload quality report artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: rust-quality-report
+          path: |
+            target/quality-report.md
+            target/quality-report.json
+            target/quality-tasks.jsonl
+            target/llvm-cov.json
+            target/llvm-cov.branch.json
+            target/llvm-cov-html

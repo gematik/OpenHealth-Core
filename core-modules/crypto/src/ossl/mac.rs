@@ -21,9 +21,40 @@
 
 use std::{ffi::CString, ptr};
 
-use crate::ossl::api::{openssl_error, OsslResult};
+use crate::ossl::api::{openssl_error, OsslErrorKind, OsslResult};
 use crate::ossl_check;
 use crypto_openssl_sys::*;
+
+#[cfg(test)]
+use std::cell::Cell;
+
+#[cfg(test)]
+thread_local! {
+    static FORCE_MAC_FETCH_NULL: Cell<bool> = const { Cell::new(false) };
+    static FORCE_MAC_CTX_NULL: Cell<bool> = const { Cell::new(false) };
+}
+
+#[inline]
+fn mac_fetch(name: *const std::os::raw::c_char) -> *mut EVP_MAC {
+    #[cfg(test)]
+    {
+        if FORCE_MAC_FETCH_NULL.with(|flag| flag.get()) {
+            return ptr::null_mut();
+        }
+    }
+    unsafe { EVP_MAC_fetch(ptr::null_mut(), name, ptr::null_mut()) }
+}
+
+#[inline]
+fn mac_ctx_new(mac: *mut EVP_MAC) -> *mut EVP_MAC_CTX {
+    #[cfg(test)]
+    {
+        if FORCE_MAC_CTX_NULL.with(|flag| flag.get()) {
+            return ptr::null_mut();
+        }
+    }
+    unsafe { EVP_MAC_CTX_new(mac) }
+}
 
 pub struct Mac {
     mac: *mut EVP_MAC,
@@ -43,14 +74,14 @@ impl Mac {
     /// Fetches MAC and allocates a new context.
     fn new(name: &str) -> OsslResult<Self> {
         let cname = CString::new(name).unwrap();
-        let mac = unsafe { EVP_MAC_fetch(ptr::null_mut(), cname.as_ptr(), ptr::null_mut()) };
+        let mac = mac_fetch(cname.as_ptr());
         if mac.is_null() {
-            return Err(openssl_error("EVP_MAC_fetch failed"));
+            return Err(openssl_error(OsslErrorKind::MacFetchFailed));
         }
-        let ctx = unsafe { EVP_MAC_CTX_new(mac) };
+        let ctx = mac_ctx_new(mac);
         if ctx.is_null() {
             unsafe { EVP_MAC_free(mac) };
-            return Err(openssl_error("EVP_MAC_CTX_new failed"));
+            return Err(openssl_error(OsslErrorKind::MacCtxNewFailed));
         }
         Ok(Mac { mac, ctx })
     }
@@ -81,13 +112,16 @@ impl Mac {
 
         params.push(unsafe { OSSL_PARAM_construct_end() });
 
-        ossl_check!(unsafe { EVP_MAC_init(cm.ctx, key.as_ptr(), key.len(), params.as_ptr()) }, "EVP_MAC_init failed");
+        ossl_check!(
+            unsafe { EVP_MAC_init(cm.ctx, key.as_ptr(), key.len(), params.as_ptr()) },
+            OsslErrorKind::MacInitFailed
+        );
         Ok(cm)
     }
 
     /// Feeds more data into the MAC.
     pub fn update(&mut self, input: &[u8]) -> OsslResult<()> {
-        ossl_check!(unsafe { EVP_MAC_update(self.ctx, input.as_ptr(), input.len()) }, "EVP_MAC_update failed");
+        ossl_check!(unsafe { EVP_MAC_update(self.ctx, input.as_ptr(), input.len()) }, OsslErrorKind::MacUpdateFailed);
         Ok(())
     }
 
@@ -97,15 +131,41 @@ impl Mac {
         let mut outl = 0usize;
         ossl_check!(
             unsafe { EVP_MAC_final(self.ctx, ptr::null_mut(), &mut outl, 0) },
-            "EVP_MAC_final failed to get output length"
+            OsslErrorKind::MacFinalizeLenFailed
         );
 
         let mut out = vec![0u8; outl];
         ossl_check!(
             unsafe { EVP_MAC_final(self.ctx, out.as_mut_ptr(), &mut outl, outl) },
-            "EVP_MAC_final failed to finalize"
+            OsslErrorKind::MacFinalizeFailed
         );
         out.truncate(outl);
         Ok(out)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ossl::api::with_thread_local_cell;
+
+    #[test]
+    fn new_fails_when_fetch_null() {
+        let err =
+            with_thread_local_cell(&FORCE_MAC_FETCH_NULL, true, || Mac::new("HMAC")).err().expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::MacFetchFailed);
+    }
+
+    #[test]
+    fn new_fails_when_ctx_null() {
+        let err = with_thread_local_cell(&FORCE_MAC_CTX_NULL, true, || Mac::new("HMAC")).err().expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::MacCtxNewFailed);
+    }
+
+    #[test]
+    fn create_rejects_invalid_cmac_cipher() {
+        // The EVP_MAC CMAC implementation expects a valid cipher name.
+        let err = Mac::create(&[0u8; 16], "CMAC", Some("not-a-cipher"), None).err().expect("expected error");
+        assert_eq!(err.kind(), &OsslErrorKind::MacInitFailed);
     }
 }

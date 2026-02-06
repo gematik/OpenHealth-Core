@@ -156,6 +156,10 @@ pub fn establish_secure_channel(
     Ok(Arc::new(SecureChannel { inner: Mutex::new(established) }))
 }
 
+fn next_fixed_key_material(key_iter: &mut impl Iterator<Item = Vec<u8>>) -> Result<Vec<u8>, CryptoError> {
+    key_iter.next().ok_or(CryptoError::InvalidKeyMaterial { context: "missing fixed key material" })
+}
+
 /// Establishes a secure channel (PACE) using deterministic private keys.
 ///
 /// The `keys` input must contain at least two hex-encoded private keys which are used
@@ -184,8 +188,7 @@ pub fn establish_secure_channel_with_keys(
     let adapter = FfiCardChannelAdapter::new(session);
     let established =
         secure_channel::establish_secure_channel_with(adapter, card_access_number.as_core(), move |curve: EcCurve| {
-            let key_bytes =
-                key_iter.next().ok_or(CryptoError::InvalidKeyMaterial { context: "missing fixed key material" })?;
+            let key_bytes = next_fixed_key_material(&mut key_iter)?;
             let private_key = EcPrivateKey::from_bytes(curve.clone(), key_bytes);
             let scalar = BigInt::from_bytes_be(Sign::Plus, private_key.as_bytes());
             let public_key = curve.g().mul(&scalar)?.to_ec_public_key()?;
@@ -295,8 +298,9 @@ impl From<secure_channel::SecureChannelError> for SecureChannelError {
 mod tests {
     use super::*;
     use crate::command::apdu::CardCommandApdu;
+    use crate::exchange::ExchangeError as CoreExchangeError;
     use crate::ffi::channel::CardChannelError;
-    use std::sync::Arc;
+    use std::sync::{Arc, Mutex};
 
     struct DummyForeign;
 
@@ -325,5 +329,92 @@ mod tests {
         let response = CoreCardChannel::transmit(&mut adapter, &apdu).unwrap();
         assert_eq!(response.sw(), 0x9000);
         assert_eq!(response.to_data(), vec![0xDE, 0xAD]);
+    }
+
+    #[test]
+    fn card_access_number_roundtrip() {
+        let can = CardAccessNumber::from_digits("123456".to_string()).unwrap();
+        assert_eq!(can.digits(), "123456");
+    }
+
+    #[test]
+    fn card_access_number_requires_six_digits() {
+        let err = CardAccessNumber::from_digits("12345".to_string()).err().expect("expected invalid argument");
+        assert!(matches!(err, SecureChannelError::InvalidArgument { .. }));
+    }
+
+    #[test]
+    fn establish_secure_channel_requires_two_keys() {
+        let session: Arc<dyn CardChannel> = Arc::new(DummyForeign);
+        let can = Arc::new(CardAccessNumber::from_digits("123456".to_string()).unwrap());
+        let err = establish_secure_channel_with_keys(session, can, vec!["AA".to_string()])
+            .err()
+            .expect("expected invalid argument");
+        assert!(matches!(
+            err,
+            SecureChannelError::InvalidArgument { ref reason } if reason.contains("at least 2 keys required")
+        ));
+    }
+
+    #[test]
+    fn establish_secure_channel_rejects_invalid_key_hex() {
+        let session: Arc<dyn CardChannel> = Arc::new(DummyForeign);
+        let can = Arc::new(CardAccessNumber::from_digits("123456".to_string()).unwrap());
+        let err = establish_secure_channel_with_keys(session, can, vec!["ZZ".to_string(), "00".to_string()])
+            .err()
+            .expect("expected invalid argument");
+        assert!(matches!(
+            err,
+            SecureChannelError::InvalidArgument { ref reason } if reason.contains("invalid key hex at index 0")
+        ));
+    }
+
+    #[test]
+    fn exchange_error_mapping() {
+        let err: SecureChannelError = CoreExchangeError::InvalidArgument("bad".to_string()).into();
+        assert!(matches!(err, SecureChannelError::InvalidArgument { ref reason } if reason == "bad"));
+    }
+
+    #[test]
+    fn card_access_number_rejects_non_digits() {
+        let err = CardAccessNumber::from_digits("12A456".to_string()).err().unwrap();
+        assert!(matches!(err, SecureChannelError::InvalidArgument { .. }));
+    }
+
+    #[test]
+    fn secure_channel_lock_and_transmit_paths() {
+        struct ErrorForeign;
+
+        impl CardChannel for ErrorForeign {
+            fn supports_extended_length(&self) -> bool {
+                true
+            }
+
+            fn transmit(&self, _command: Arc<CommandApdu>) -> Result<Arc<ResponseApdu>, CardChannelError> {
+                Err(CardChannelError::Transport { code: 0, reason: "no card".into() })
+            }
+        }
+
+        let inner: Arc<dyn CardChannel> = Arc::new(ErrorForeign);
+        let adapter = FfiCardChannelAdapter::new(inner);
+        let core = crate::exchange::secure_channel::test_secure_channel_with_adapter(adapter);
+        let secure = SecureChannel { inner: Mutex::new(core) };
+
+        let ok = secure.with_locked(|_channel| Ok(()));
+        assert!(ok.is_ok());
+
+        let command = Arc::new(CommandApdu::header_only(0x00, 0xA4, 0x04, 0x00).unwrap());
+        let err = secure.transmit(command).unwrap_err();
+        assert!(matches!(err, SecureChannelError::Transport { .. }));
+    }
+
+    #[test]
+    fn next_fixed_key_material_reports_exhaustion() {
+        let mut key_iter = Vec::<Vec<u8>>::new().into_iter();
+        let err = next_fixed_key_material(&mut key_iter).err().expect("expected missing key material");
+        assert!(matches!(
+            err,
+            CryptoError::InvalidKeyMaterial { context } if context == "missing fixed key material"
+        ));
     }
 }

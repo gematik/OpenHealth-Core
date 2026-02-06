@@ -434,6 +434,7 @@ dependencies = [
  "lazy_static",
  "num-bigint",
  "once_cell",
+ "serde_json",
  "thiserror",
  "uniffi",
  "zeroize",
