@@ -50,15 +50,6 @@ use std::convert::{TryFrom, TryInto};
 use thiserror::Error;
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
-#[cfg(test)]
-use std::cell::Cell;
-
-#[cfg(test)]
-thread_local! {
-    static FORCE_SHORT_SHARED_SECRET: Cell<bool> = const { Cell::new(false) };
-    static FORCE_ALLOW_SHORT_RESPONSE: Cell<bool> = const { Cell::new(false) };
-}
-
 #[derive(Debug, Zeroize, ZeroizeOnDrop)]
 pub struct CardAccessNumber([u8; 6]);
 
@@ -225,31 +216,14 @@ impl<S: CardChannel> SecureChannel<S> {
 
         if response_len == 2 {
             // Card replied with status only (e.g., rejected before secure messaging); pass it through unchanged.
-            #[cfg(test)]
-            if FORCE_ALLOW_SHORT_RESPONSE.with(|flag| flag.get()) {
-                // fall through to error path for tests
-            } else {
-                return Ok(response);
-            }
-            #[cfg(not(test))]
             return Ok(response);
         }
         if response_len < 4 {
-            #[cfg(test)]
-            if FORCE_ALLOW_SHORT_RESPONSE.with(|flag| flag.get()) {
-                // fall through to error path for tests
-            } else {
-                return Err(ExchangeError::invalid_argument("response apdu too short"));
-            }
-            #[cfg(not(test))]
             return Err(ExchangeError::invalid_argument("response apdu too short"));
         }
 
         let bytes = response.into_bytes();
         let (body, sw_bytes) = bytes.split_at(bytes.len() - 2);
-        if body.is_empty() {
-            return Err(ExchangeError::invalid_argument("response apdu missing secure messaging data objects"));
-        }
 
         let response_objects = parse_response_objects(body)?;
         if response_objects.status_bytes != [sw_bytes[0], sw_bytes[1]] {
@@ -392,23 +366,9 @@ where
     )?;
 
     let shared_secret_point = picc_public_key.to_ec_point().mul(&ep_scalar)?;
-    #[cfg(test)]
-    let mut shared_secret_bytes = shared_secret_point.uncompressed()?;
-    #[cfg(not(test))]
     let shared_secret_bytes = shared_secret_point.uncompressed()?;
     let coord_len = coordinate_size(&pace_info.curve);
-    #[cfg(test)]
-    FORCE_SHORT_SHARED_SECRET.with(|flag| {
-        if flag.get() {
-            shared_secret_bytes.truncate(coord_len);
-        }
-    });
-    if shared_secret_bytes.len() < 1 + coord_len {
-        return Err(ExchangeError::Crypto(CryptoError::InvalidEcPoint(
-            "shared secret shorter than coordinate length".into(),
-        )));
-    }
-    let shared_secret_x = &shared_secret_bytes[1..1 + coord_len];
+    let shared_secret_x = extract_uncompressed_x_coordinate(&shared_secret_bytes, coord_len)?;
 
     let encryption_key = get_aes128_key(shared_secret_x, Mode::Enc)?;
     let mac_key = get_aes128_key(shared_secret_x, Mode::Mac)?;
@@ -438,6 +398,15 @@ fn coordinate_size(curve: &EcCurve) -> usize {
         EcCurve::BrainpoolP384r1 => 48,
         EcCurve::BrainpoolP512r1 => 64,
     }
+}
+
+fn extract_uncompressed_x_coordinate(uncompressed_point: &[u8], coord_len: usize) -> Result<&[u8], ExchangeError> {
+    if uncompressed_point.len() < 1 + coord_len {
+        return Err(ExchangeError::Crypto(CryptoError::InvalidEcPoint(
+            "shared secret shorter than coordinate length".into(),
+        )));
+    }
+    Ok(&uncompressed_point[1..1 + coord_len])
 }
 
 fn decrypt_nonce(key: &SecretKey, ciphertext: &[u8]) -> Result<Vec<u8>, ExchangeError> {
@@ -945,12 +914,8 @@ mod tests {
 
     #[test]
     fn decrypt_rejects_empty_body() {
-        let mut scope = make_channel();
-        let response = CardResponseApdu::new(&[0x90, 0x00]).unwrap();
-        FORCE_ALLOW_SHORT_RESPONSE.with(|flag| flag.set(true));
-        let err = scope.decrypt(response).unwrap_err();
-        FORCE_ALLOW_SHORT_RESPONSE.with(|flag| flag.set(false));
-        assert!(matches!(err, ExchangeError::InvalidArgument(_)));
+        let err = parse_response_objects(&[]).err().expect("empty response objects must fail");
+        assert!(matches!(err, ExchangeError::Asn1DecoderError(_)));
     }
 
     #[test]
@@ -1127,7 +1092,6 @@ mod tests {
         let session =
             crate::exchange::test_utils::MockSession::with_extended_support(responses, supports_extended_length);
         let mut key_queue = VecDeque::from(keys);
-        FORCE_SHORT_SHARED_SECRET.with(|flag| flag.set(false));
         let secure = establish_secure_channel_with(session, &can, |curve| {
             let key = key_queue.pop_front().expect("pcd key material");
             let private_key = EcPrivateKey::from_bytes(curve.clone(), key);
@@ -1143,123 +1107,15 @@ mod tests {
 
     #[test]
     fn establish_secure_channel_rejects_short_shared_secret() {
-        struct RxOnlyChannel {
-            responses: VecDeque<Vec<u8>>,
-            supports_extended_length: bool,
-        }
-
-        impl CardChannel for RxOnlyChannel {
-            type Error = ExchangeError;
-
-            fn supports_extended_length(&self) -> bool {
-                self.supports_extended_length
-            }
-
-            fn transmit(&mut self, _command: &CardCommandApdu) -> Result<CardResponseApdu, Self::Error> {
-                let rx = self
-                    .responses
-                    .pop_front()
-                    .ok_or_else(|| ExchangeError::Transport { code: 0, message: "no response".into() })?;
-                CardResponseApdu::new(&rx).map_err(ExchangeError::from)
-            }
-        }
-
-        let jsonl = JSONL_ESTABLISH_SECURE_CHANNEL;
-        let mut responses = VecDeque::new();
-        let mut can = None;
-        let mut supports_extended_length = false;
-        for line in jsonl.lines().filter(|line| !line.trim().is_empty()) {
-            let value: serde_json::Value = serde_json::from_str(line).unwrap();
-            match value.get("type").and_then(|t| t.as_str()) {
-                Some("header") => {
-                    can = value.get("can").and_then(|c| c.as_str()).map(str::to_string);
-                    supports_extended_length =
-                        value.get("supports_extended_length").and_then(|v| v.as_bool()).unwrap_or(false);
-                }
-                Some("exchange") => {
-                    let rx = value.get("rx").and_then(|v| v.as_str()).unwrap();
-                    responses.push_back(hex::decode(rx).unwrap());
-                }
-                _ => {}
-            }
-        }
-
-        let can = CardAccessNumber::new(&can.unwrap()).unwrap();
-        let session = RxOnlyChannel { responses, supports_extended_length };
-        FORCE_SHORT_SHARED_SECRET.with(|flag| flag.set(true));
-        let err = establish_secure_channel_with(session, &can, |curve| {
-            let scalar = vec![0x01; coordinate_size(&curve)];
-            let private_key = EcPrivateKey::from_bytes(curve.clone(), scalar);
-            let scalar = BigInt::from_bytes_be(Sign::Plus, private_key.as_bytes());
-            let public_key = curve.g().mul(&scalar)?.to_ec_public_key()?;
-            Ok((public_key, private_key))
-        })
-        .err()
-        .unwrap();
-        FORCE_SHORT_SHARED_SECRET.with(|flag| flag.set(false));
+        let err = extract_uncompressed_x_coordinate(&[0x04; 32], 32).unwrap_err();
         assert!(matches!(err, ExchangeError::Crypto(CryptoError::InvalidEcPoint(_))));
     }
 
     #[test]
-    fn establish_secure_channel_truncates_shared_secret_when_forced() {
-        struct RxOnlyChannel {
-            responses: VecDeque<Vec<u8>>,
-            supports_extended_length: bool,
-        }
-
-        impl CardChannel for RxOnlyChannel {
-            type Error = ExchangeError;
-
-            fn supports_extended_length(&self) -> bool {
-                self.supports_extended_length
-            }
-
-            fn transmit(&mut self, _command: &CardCommandApdu) -> Result<CardResponseApdu, Self::Error> {
-                let rx = self
-                    .responses
-                    .pop_front()
-                    .ok_or_else(|| ExchangeError::Transport { code: 0, message: "no response".into() })?;
-                CardResponseApdu::new(&rx).map_err(ExchangeError::from)
-            }
-        }
-
-        let jsonl = JSONL_ESTABLISH_SECURE_CHANNEL;
-        let mut responses = VecDeque::new();
-        let mut can = None;
-        let mut supports_extended_length = false;
-        for line in jsonl.lines().filter(|line| !line.trim().is_empty()) {
-            let value: serde_json::Value = serde_json::from_str(line).unwrap();
-            match value.get("type").and_then(|t| t.as_str()) {
-                Some("header") => {
-                    can = value.get("can").and_then(|c| c.as_str()).map(str::to_string);
-                    supports_extended_length =
-                        value.get("supports_extended_length").and_then(|v| v.as_bool()).unwrap_or(false);
-                }
-                Some("exchange") => {
-                    let rx = value.get("rx").and_then(|v| v.as_str()).unwrap();
-                    responses.push_back(hex::decode(rx).unwrap());
-                }
-                _ => {}
-            }
-        }
-
-        let can = CardAccessNumber::new(&can.unwrap()).unwrap();
-        let session = RxOnlyChannel { responses, supports_extended_length };
-        FORCE_SHORT_SHARED_SECRET.with(|flag| flag.set(true));
-        let err = establish_secure_channel_with(session, &can, |curve| {
-            let coord_len = coordinate_size(&curve);
-            let scalar = vec![0x01; coord_len];
-            let private_key = EcPrivateKey::from_bytes(curve.clone(), scalar);
-            let scalar = BigInt::from_bytes_be(Sign::Plus, private_key.as_bytes());
-            let public_key = curve.g().mul(&scalar)?.to_ec_public_key()?;
-            let uncompressed_len = public_key.to_ec_point().uncompressed()?.len();
-            assert!(uncompressed_len > coord_len);
-            Ok((public_key, private_key))
-        })
-        .err()
-        .unwrap();
-        FORCE_SHORT_SHARED_SECRET.with(|flag| flag.set(false));
-        assert!(matches!(err, ExchangeError::Crypto(CryptoError::InvalidEcPoint(_))));
+    fn extract_uncompressed_x_coordinate_accepts_valid_uncompressed_point() {
+        let point = [0x04, 0xAA, 0xBB, 0xCC, 0xDD];
+        let x = extract_uncompressed_x_coordinate(&point, 2).unwrap();
+        assert_eq!(x, &[0xAA, 0xBB]);
     }
 
     const JSONL_ESTABLISH_SECURE_CHANNEL: &str =

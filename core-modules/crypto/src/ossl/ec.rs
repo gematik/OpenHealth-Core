@@ -218,13 +218,13 @@ impl EcPoint {
         if len == 0 {
             return Err(openssl_error("Failed to get public key size"));
         }
-        let mut buf = vec![0u8; len as usize];
+        let mut buf = vec![0u8; len];
         let out =
             ec_point2oct(self.group, self.point, POINT_CONVERSION_UNCOMPRESSED, buf.as_mut_ptr(), len, ptr::null_mut());
         if out == 0 {
             return Err(openssl_error("Error during ec point conversion"));
         }
-        buf.truncate(out as usize);
+        buf.truncate(out);
         Ok(buf)
     }
 }
