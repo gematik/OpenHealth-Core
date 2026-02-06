@@ -144,12 +144,11 @@ impl Mac {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ossl::api::with_thread_local_cell;
 
     #[test]
     fn new_fails_when_fetch_null() {
-        FORCE_MAC_FETCH_NULL.with(|flag| flag.set(true));
-        let res = Mac::new("HMAC");
-        FORCE_MAC_FETCH_NULL.with(|flag| flag.set(false));
+        let res = with_thread_local_cell(&FORCE_MAC_FETCH_NULL, true, || Mac::new("HMAC"));
         match res {
             Err(err) => assert!(err.to_string().contains("EVP_MAC_fetch failed")),
             Ok(_) => panic!("expected error"),
@@ -158,9 +157,7 @@ mod tests {
 
     #[test]
     fn new_fails_when_ctx_null() {
-        FORCE_MAC_CTX_NULL.with(|flag| flag.set(true));
-        let res = Mac::new("HMAC");
-        FORCE_MAC_CTX_NULL.with(|flag| flag.set(false));
+        let res = with_thread_local_cell(&FORCE_MAC_CTX_NULL, true, || Mac::new("HMAC"));
         match res {
             Err(err) => assert!(err.to_string().contains("EVP_MAC_CTX_new failed")),
             Ok(_) => panic!("expected error"),

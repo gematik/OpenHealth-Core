@@ -244,6 +244,7 @@ impl MlkemDecapsulation {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ossl::api::with_thread_local_cell;
 
     #[test]
     fn invalid_algorithm_rejected() {
@@ -255,9 +256,8 @@ mod tests {
 
     #[test]
     fn create_fails_when_keygen_ctx_null() {
-        FORCE_PKEY_CTX_FROM_NAME_NULL.with(|flag| flag.set(true));
-        let res = MlkemDecapsulation::create("ML-KEM-512");
-        FORCE_PKEY_CTX_FROM_NAME_NULL.with(|flag| flag.set(false));
+        let res =
+            with_thread_local_cell(&FORCE_PKEY_CTX_FROM_NAME_NULL, true, || MlkemDecapsulation::create("ML-KEM-512"));
         match res {
             Err(err) => assert!(err.to_string().contains("Keygen context init failed")),
             Ok(_) => panic!("expected error"),
@@ -266,9 +266,7 @@ mod tests {
 
     #[test]
     fn create_fails_when_keygen_returns_null() {
-        FORCE_PKEY_KEYGEN_NULL.with(|flag| flag.set(true));
-        let res = MlkemDecapsulation::create("ML-KEM-512");
-        FORCE_PKEY_KEYGEN_NULL.with(|flag| flag.set(false));
+        let res = with_thread_local_cell(&FORCE_PKEY_KEYGEN_NULL, true, || MlkemDecapsulation::create("ML-KEM-512"));
         match res {
             Err(err) => assert!(err.to_string().contains("Keygen returned null")),
             Ok(_) => panic!("expected error"),
@@ -277,9 +275,9 @@ mod tests {
 
     #[test]
     fn create_from_private_key_fails_when_null() {
-        FORCE_PKEY_PRIVATE_NULL.with(|flag| flag.set(true));
-        let res = MlkemDecapsulation::create_from_private_key("ML-KEM-512", &[0x01, 0x02]);
-        FORCE_PKEY_PRIVATE_NULL.with(|flag| flag.set(false));
+        let res = with_thread_local_cell(&FORCE_PKEY_PRIVATE_NULL, true, || {
+            MlkemDecapsulation::create_from_private_key("ML-KEM-512", &[0x01, 0x02])
+        });
         match res {
             Err(err) => assert!(err.to_string().contains("Importing private key failed")),
             Ok(_) => panic!("expected error"),
@@ -291,9 +289,7 @@ mod tests {
         let dec = MlkemDecapsulation::create("ML-KEM-512").unwrap();
         let pk = dec.get_encapsulation_key().unwrap();
         let enc = MlkemEncapsulation::create("ML-KEM-512", &pk).unwrap();
-        FORCE_PKEY_CTX_FROM_PKEY_NULL.with(|flag| flag.set(true));
-        let res = enc.encapsulate();
-        FORCE_PKEY_CTX_FROM_PKEY_NULL.with(|flag| flag.set(false));
+        let res = with_thread_local_cell(&FORCE_PKEY_CTX_FROM_PKEY_NULL, true, || enc.encapsulate());
         match res {
             Err(err) => assert!(err.to_string().contains("Failed to create context from key")),
             Ok(_) => panic!("expected error"),
@@ -303,9 +299,7 @@ mod tests {
     #[test]
     fn decapsulate_fails_when_ctx_null() {
         let dec = MlkemDecapsulation::create("ML-KEM-512").unwrap();
-        FORCE_PKEY_CTX_FROM_PKEY_NULL.with(|flag| flag.set(true));
-        let res = dec.decapsulate(&[0x01; 800]);
-        FORCE_PKEY_CTX_FROM_PKEY_NULL.with(|flag| flag.set(false));
+        let res = with_thread_local_cell(&FORCE_PKEY_CTX_FROM_PKEY_NULL, true, || dec.decapsulate(&[0x01; 800]));
         match res {
             Err(err) => assert!(err.to_string().contains("Failed to create context from key")),
             Ok(_) => panic!("expected error"),
@@ -315,9 +309,7 @@ mod tests {
     #[test]
     fn get_encapsulation_key_fails_when_len_zero() {
         let dec = MlkemDecapsulation::create("ML-KEM-512").unwrap();
-        FORCE_PKEY_GET_ENC_KEY_ZERO.with(|flag| flag.set(true));
-        let res = dec.get_encapsulation_key();
-        FORCE_PKEY_GET_ENC_KEY_ZERO.with(|flag| flag.set(false));
+        let res = with_thread_local_cell(&FORCE_PKEY_GET_ENC_KEY_ZERO, true, || dec.get_encapsulation_key());
         match res {
             Err(err) => assert!(err.to_string().contains("Extracting public key failed")),
             Ok(_) => panic!("expected error"),
@@ -326,9 +318,9 @@ mod tests {
 
     #[test]
     fn create_encapsulation_fails_when_pkey_null() {
-        FORCE_PKEY_PUBLIC_NULL.with(|flag| flag.set(true));
-        let res = MlkemEncapsulation::create("ML-KEM-512", &[0x01; 10]);
-        FORCE_PKEY_PUBLIC_NULL.with(|flag| flag.set(false));
+        let res = with_thread_local_cell(&FORCE_PKEY_PUBLIC_NULL, true, || {
+            MlkemEncapsulation::create("ML-KEM-512", &[0x01; 10])
+        });
         match res {
             Err(err) => assert!(err.to_string().contains("Key initialization failed")),
             Ok(_) => panic!("expected error"),

@@ -69,3 +69,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .build
+
+# Python cache artifacts
+__pycache__/
+*.pyc

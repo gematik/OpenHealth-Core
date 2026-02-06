@@ -25,6 +25,11 @@ use std::{fmt, ptr};
 
 use crypto_openssl_sys::*;
 
+#[cfg(test)]
+use std::cell::Cell;
+#[cfg(test)]
+use std::thread::LocalKey;
+
 /// OpenSSL error type
 #[derive(Debug)]
 pub struct OsslError(pub String);
@@ -77,6 +82,32 @@ macro_rules! ossl_require {
 
 /// Common result type for OpenSSL operations
 pub type OsslResult<T> = Result<T, OsslError>;
+
+#[cfg(test)]
+pub(crate) fn with_thread_local_cell<T: Copy, R>(
+    key: &'static LocalKey<Cell<T>>,
+    temporary_value: T,
+    f: impl FnOnce() -> R,
+) -> R {
+    struct CellRestore<T: Copy + 'static> {
+        key: &'static LocalKey<Cell<T>>,
+        previous_value: T,
+    }
+
+    impl<T: Copy + 'static> Drop for CellRestore<T> {
+        fn drop(&mut self) {
+            self.key.with(|cell| cell.set(self.previous_value));
+        }
+    }
+
+    let previous_value = key.with(|cell| {
+        let current = cell.get();
+        cell.set(temporary_value);
+        current
+    });
+    let _restore = CellRestore { key, previous_value };
+    f()
+}
 
 #[cfg(test)]
 mod tests {

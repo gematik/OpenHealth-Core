@@ -123,6 +123,7 @@ impl Drop for Bio {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ossl::api::with_thread_local_cell;
 
     #[test]
     fn new_mem_to_vec_empty() {
@@ -139,9 +140,7 @@ mod tests {
 
     #[test]
     fn new_mem_fails_when_null() {
-        FORCE_BIO_NEW_NULL.with(|flag| flag.set(true));
-        let res = Bio::new_mem();
-        FORCE_BIO_NEW_NULL.with(|flag| flag.set(false));
+        let res = with_thread_local_cell(&FORCE_BIO_NEW_NULL, true, Bio::new_mem);
         match res {
             Err(err) => assert!(err.to_string().contains("Failed to create BIO")),
             Ok(_) => panic!("expected error"),
@@ -150,9 +149,7 @@ mod tests {
 
     #[test]
     fn from_slice_fails_when_null() {
-        FORCE_BIO_NEW_MEM_BUF_NULL.with(|flag| flag.set(true));
-        let res = Bio::from_slice(b"hello");
-        FORCE_BIO_NEW_MEM_BUF_NULL.with(|flag| flag.set(false));
+        let res = with_thread_local_cell(&FORCE_BIO_NEW_MEM_BUF_NULL, true, || Bio::from_slice(b"hello"));
         match res {
             Err(err) => assert!(err.to_string().contains("Failed to create BIO from buffer")),
             Ok(_) => panic!("expected error"),
@@ -162,18 +159,14 @@ mod tests {
     #[test]
     fn to_vec_returns_empty_when_mem_data_missing() {
         let bio = Bio::new_mem().unwrap();
-        FORCE_BIO_GET_MEM_DATA_ZERO.with(|flag| flag.set(true));
-        let data = bio.to_vec();
-        FORCE_BIO_GET_MEM_DATA_ZERO.with(|flag| flag.set(false));
+        let data = with_thread_local_cell(&FORCE_BIO_GET_MEM_DATA_ZERO, true, || bio.to_vec());
         assert!(data.is_empty());
     }
 
     #[test]
     fn to_vec_returns_empty_when_ptr_null() {
         let bio = Bio::new_mem().unwrap();
-        FORCE_BIO_GET_MEM_DATA_NULL_PTR.with(|flag| flag.set(true));
-        let data = bio.to_vec();
-        FORCE_BIO_GET_MEM_DATA_NULL_PTR.with(|flag| flag.set(false));
+        let data = with_thread_local_cell(&FORCE_BIO_GET_MEM_DATA_NULL_PTR, true, || bio.to_vec());
         assert!(data.is_empty());
     }
 }

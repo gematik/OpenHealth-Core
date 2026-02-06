@@ -109,12 +109,11 @@ impl Digest {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ossl::api::with_thread_local_cell;
 
     #[test]
     fn create_fails_when_ctx_null() {
-        FORCE_MD_CTX_NULL.with(|flag| flag.set(true));
-        let res = Digest::create("sha256");
-        FORCE_MD_CTX_NULL.with(|flag| flag.set(false));
+        let res = with_thread_local_cell(&FORCE_MD_CTX_NULL, true, || Digest::create("sha256"));
         match res {
             Err(err) => assert!(err.to_string().contains("Failed to create EVP_MD_CTX")),
             Ok(_) => panic!("expected error"),

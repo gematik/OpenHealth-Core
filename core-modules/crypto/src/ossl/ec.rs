@@ -303,6 +303,7 @@ impl Ecdh {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ossl::api::with_thread_local_cell;
     use hex::decode;
 
     #[test]
@@ -336,9 +337,7 @@ mod tests {
 
     #[test]
     fn create_from_curve_fails_when_group_null() {
-        FORCE_GROUP_NULL.with(|flag| flag.set(true));
-        let res = EcPoint::create_from_curve("prime256v1");
-        FORCE_GROUP_NULL.with(|flag| flag.set(false));
+        let res = with_thread_local_cell(&FORCE_GROUP_NULL, true, || EcPoint::create_from_curve("prime256v1"));
         match res {
             Err(err) => assert!(err.to_string().contains("Failed to create EC_GROUP")),
             Ok(_) => panic!("expected error"),
@@ -347,9 +346,7 @@ mod tests {
 
     #[test]
     fn create_from_curve_fails_when_point_null() {
-        FORCE_POINT_NULL.with(|flag| flag.set(true));
-        let res = EcPoint::create_from_curve("prime256v1");
-        FORCE_POINT_NULL.with(|flag| flag.set(false));
+        let res = with_thread_local_cell(&FORCE_POINT_NULL, true, || EcPoint::create_from_curve("prime256v1"));
         match res {
             Err(err) => assert!(err.to_string().contains("Failed to create EC_POINT")),
             Ok(_) => panic!("expected error"),
@@ -359,9 +356,7 @@ mod tests {
     #[test]
     fn clone_fails_when_group_dup_null() {
         let point = prime256v1_point();
-        FORCE_GROUP_DUP_NULL.with(|flag| flag.set(true));
-        let res = point.clone();
-        FORCE_GROUP_DUP_NULL.with(|flag| flag.set(false));
+        let res = with_thread_local_cell(&FORCE_GROUP_DUP_NULL, true, || point.clone());
         match res {
             Err(err) => assert!(err.to_string().contains("Failed to dup EC_GROUP")),
             Ok(_) => panic!("expected error"),
@@ -371,9 +366,7 @@ mod tests {
     #[test]
     fn clone_fails_when_point_dup_null() {
         let point = prime256v1_point();
-        FORCE_POINT_DUP_NULL.with(|flag| flag.set(true));
-        let res = point.clone();
-        FORCE_POINT_DUP_NULL.with(|flag| flag.set(false));
+        let res = with_thread_local_cell(&FORCE_POINT_DUP_NULL, true, || point.clone());
         match res {
             Err(err) => assert!(err.to_string().contains("Failed to dup EC_POINT")),
             Ok(_) => panic!("expected error"),
@@ -383,9 +376,7 @@ mod tests {
     #[test]
     fn mul_fails_when_bn_null() {
         let point = prime256v1_point();
-        FORCE_BN_NULL.with(|flag| flag.set(true));
-        let res = point.mul(&[0x01]);
-        FORCE_BN_NULL.with(|flag| flag.set(false));
+        let res = with_thread_local_cell(&FORCE_BN_NULL, true, || point.mul(&[0x01]));
         match res {
             Err(err) => assert!(err.to_string().contains("Failed to convert scalar")),
             Ok(_) => panic!("expected error"),
@@ -395,9 +386,7 @@ mod tests {
     #[test]
     fn to_bytes_fails_when_len_zero() {
         let point = prime256v1_point();
-        FORCE_POINT2OCT_LEN_ZERO.with(|flag| flag.set(true));
-        let res = point.to_bytes();
-        FORCE_POINT2OCT_LEN_ZERO.with(|flag| flag.set(false));
+        let res = with_thread_local_cell(&FORCE_POINT2OCT_LEN_ZERO, true, || point.to_bytes());
         match res {
             Err(err) => assert!(err.to_string().contains("Failed to get public key size")),
             Ok(_) => panic!("expected error"),
@@ -407,9 +396,7 @@ mod tests {
     #[test]
     fn to_bytes_fails_when_output_zero() {
         let point = prime256v1_point();
-        FORCE_POINT2OCT_OUT_ZERO.with(|flag| flag.set(true));
-        let res = point.to_bytes();
-        FORCE_POINT2OCT_OUT_ZERO.with(|flag| flag.set(false));
+        let res = with_thread_local_cell(&FORCE_POINT2OCT_OUT_ZERO, true, || point.to_bytes());
         match res {
             Err(err) => assert!(err.to_string().contains("Error during ec point conversion")),
             Ok(_) => panic!("expected error"),
@@ -418,9 +405,7 @@ mod tests {
 
     #[test]
     fn keypair_generate_fails_when_ctx_null() {
-        FORCE_PKEY_CTX_NULL.with(|flag| flag.set(true));
-        let res = EcKeypair::generate("prime256v1");
-        FORCE_PKEY_CTX_NULL.with(|flag| flag.set(false));
+        let res = with_thread_local_cell(&FORCE_PKEY_CTX_NULL, true, || EcKeypair::generate("prime256v1"));
         match res {
             Err(err) => assert!(err.to_string().contains("Failed to create EVP_PKEY_CTX")),
             Ok(_) => panic!("expected error"),
@@ -431,9 +416,7 @@ mod tests {
     fn ecdh_new_fails_when_ctx_null() {
         let keypair = EcKeypair::generate("prime256v1").unwrap();
         let priv_der = keypair.private_key_der().unwrap();
-        FORCE_ECDH_CTX_NULL.with(|flag| flag.set(true));
-        let res = Ecdh::new(&priv_der);
-        FORCE_ECDH_CTX_NULL.with(|flag| flag.set(false));
+        let res = with_thread_local_cell(&FORCE_ECDH_CTX_NULL, true, || Ecdh::new(&priv_der));
         match res {
             Err(err) => assert!(err.to_string().contains("Failed to create ECDH context")),
             Ok(_) => panic!("expected error"),

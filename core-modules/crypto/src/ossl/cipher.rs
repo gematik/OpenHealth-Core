@@ -360,6 +360,7 @@ impl Drop for AesCipher {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ossl::api::with_thread_local_cell;
     use std::ptr;
 
     const KEY_16: &[u8] = b"1234567890123456";
@@ -385,9 +386,8 @@ mod tests {
 
     #[test]
     fn create_encryptor_fails_when_ctx_null() {
-        FORCE_CTX_NULL.with(|flag| flag.set(true));
-        let res = AesCipher::create_encryptor("aes-128-cbc", KEY_16, IV_16);
-        FORCE_CTX_NULL.with(|flag| flag.set(false));
+        let res =
+            with_thread_local_cell(&FORCE_CTX_NULL, true, || AesCipher::create_encryptor("aes-128-cbc", KEY_16, IV_16));
         match res {
             Err(err) => assert!(err.to_string().contains("Failed to create cipher context")),
             Ok(_) => panic!("expected error"),
@@ -396,9 +396,9 @@ mod tests {
 
     #[test]
     fn create_encryptor_fails_when_cipher_null() {
-        FORCE_FETCH_NULL.with(|flag| flag.set(true));
-        let res = AesCipher::create_encryptor("aes-128-cbc", KEY_16, IV_16);
-        FORCE_FETCH_NULL.with(|flag| flag.set(false));
+        let res = with_thread_local_cell(&FORCE_FETCH_NULL, true, || {
+            AesCipher::create_encryptor("aes-128-cbc", KEY_16, IV_16)
+        });
         match res {
             Err(err) => assert!(err.to_string().contains("Failed to fetch cipher")),
             Ok(_) => panic!("expected error"),
@@ -421,11 +421,11 @@ mod tests {
 
     #[test]
     fn create_encryptor_gcm_reports_set_iv_length_failure_when_forced_to_gcm() {
-        FORCE_CIPHER_MODE.with(|flag| flag.set(EVP_CIPH_GCM_MODE));
-        FORCE_SET_PARAMS_FAIL.with(|flag| flag.set(true));
-        let res = AesCipher::create_encryptor("aes-128-gcm", KEY_16, b"12345678");
-        FORCE_SET_PARAMS_FAIL.with(|flag| flag.set(false));
-        FORCE_CIPHER_MODE.with(|flag| flag.set(-1));
+        let res = with_thread_local_cell(&FORCE_CIPHER_MODE, EVP_CIPH_GCM_MODE, || {
+            with_thread_local_cell(&FORCE_SET_PARAMS_FAIL, true, || {
+                AesCipher::create_encryptor("aes-128-gcm", KEY_16, b"12345678")
+            })
+        });
 
         match res {
             Err(err) => assert!(err.to_string().contains("Failed to set IV length")),
@@ -435,11 +435,11 @@ mod tests {
 
     #[test]
     fn create_encryptor_gcm_reports_set_iv_length_failure_when_forced_to_ccm() {
-        FORCE_CIPHER_MODE.with(|flag| flag.set(EVP_CIPH_CCM_MODE));
-        FORCE_SET_PARAMS_FAIL.with(|flag| flag.set(true));
-        let res = AesCipher::create_encryptor("aes-128-gcm", KEY_16, b"12345678");
-        FORCE_SET_PARAMS_FAIL.with(|flag| flag.set(false));
-        FORCE_CIPHER_MODE.with(|flag| flag.set(-1));
+        let res = with_thread_local_cell(&FORCE_CIPHER_MODE, EVP_CIPH_CCM_MODE, || {
+            with_thread_local_cell(&FORCE_SET_PARAMS_FAIL, true, || {
+                AesCipher::create_encryptor("aes-128-gcm", KEY_16, b"12345678")
+            })
+        });
 
         match res {
             Err(err) => assert!(err.to_string().contains("Failed to set IV length")),
@@ -458,9 +458,7 @@ mod tests {
     #[test]
     fn update_reports_encrypt_error() {
         let mut cipher = AesCipher::create_encryptor("aes-128-cbc", KEY_16, IV_16).unwrap();
-        FORCE_UPDATE_FAIL.with(|flag| flag.set(true));
-        let res = cipher.update(b"hello", &mut Vec::new());
-        FORCE_UPDATE_FAIL.with(|flag| flag.set(false));
+        let res = with_thread_local_cell(&FORCE_UPDATE_FAIL, true, || cipher.update(b"hello", &mut Vec::new()));
         match res {
             Err(err) => assert!(err.to_string().contains("Encryption failed during update")),
             Ok(_) => panic!("expected error"),
@@ -470,9 +468,7 @@ mod tests {
     #[test]
     fn update_reports_decrypt_error() {
         let mut cipher = AesCipher::create_decryptor("aes-128-cbc", KEY_16, IV_16).unwrap();
-        FORCE_UPDATE_FAIL.with(|flag| flag.set(true));
-        let res = cipher.update(b"hello", &mut Vec::new());
-        FORCE_UPDATE_FAIL.with(|flag| flag.set(false));
+        let res = with_thread_local_cell(&FORCE_UPDATE_FAIL, true, || cipher.update(b"hello", &mut Vec::new()));
         match res {
             Err(err) => assert!(err.to_string().contains("Decryption failed during update")),
             Ok(_) => panic!("expected error"),
@@ -482,9 +478,7 @@ mod tests {
     #[test]
     fn finalize_reports_encrypt_error() {
         let mut cipher = AesCipher::create_encryptor("aes-128-cbc", KEY_16, IV_16).unwrap();
-        FORCE_FINAL_FAIL.with(|flag| flag.set(true));
-        let res = cipher.finalize(&mut Vec::new());
-        FORCE_FINAL_FAIL.with(|flag| flag.set(false));
+        let res = with_thread_local_cell(&FORCE_FINAL_FAIL, true, || cipher.finalize(&mut Vec::new()));
         match res {
             Err(err) => assert!(err.to_string().contains("Encryption failed during finalization")),
             Ok(_) => panic!("expected error"),
@@ -494,9 +488,7 @@ mod tests {
     #[test]
     fn finalize_reports_decrypt_error() {
         let mut cipher = AesCipher::create_decryptor("aes-128-cbc", KEY_16, IV_16).unwrap();
-        FORCE_FINAL_FAIL.with(|flag| flag.set(true));
-        let res = cipher.finalize(&mut Vec::new());
-        FORCE_FINAL_FAIL.with(|flag| flag.set(false));
+        let res = with_thread_local_cell(&FORCE_FINAL_FAIL, true, || cipher.finalize(&mut Vec::new()));
         match res {
             Err(err) => assert!(err.to_string().contains("Decryption failed during finalization")),
             Ok(_) => panic!("expected error"),
