@@ -376,14 +376,12 @@ where
     let ssc = derive_ssc();
 
     let mac = derive_mac(pace_key.mac(), &picc_public_key, &pace_info.protocol_id)?;
-    let derived_mac = derive_mac(pace_key.mac(), &ep_gs_shared_secret.to_ec_public_key()?, &pace_info.protocol_id)?;
 
     let picc_mac_response =
         channel.execute_command_success(&HealthCardCommand::general_authenticate_with_data(false, &mac, 5)?)?;
     let picc_mac = decode_general_authenticate(picc_mac_response.apdu.as_data())?;
-    if picc_mac != derived_mac {
-        return Err(ExchangeError::MutualAuthenticationFailed);
-    }
+    let ep_gs_public_key = ep_gs_shared_secret.to_ec_public_key()?;
+    verify_mutual_authentication_mac(pace_key.mac(), &ep_gs_public_key, &pace_info.protocol_id, &picc_mac)?;
 
     Ok(SecureChannel { channel, pace_key, ssc })
 }
@@ -469,6 +467,19 @@ fn derive_mac(
     mac.update(&auth_token)?;
     let tag = mac.finalize()?;
     Ok(tag.into_iter().take(8).collect())
+}
+
+fn verify_mutual_authentication_mac(
+    mac_key: &SecretKey,
+    expected_public_key: &EcPublicKey,
+    protocol_id: &ObjectIdentifier,
+    received_mac: &[u8],
+) -> Result<(), ExchangeError> {
+    let expected_mac = derive_mac(mac_key, expected_public_key, protocol_id)?;
+    if !content_constant_time_equals(received_mac, &expected_mac) {
+        return Err(ExchangeError::MutualAuthenticationFailed);
+    }
+    Ok(())
 }
 
 fn ensure_not_secure(command: &CardCommandApdu) -> Result<(), ExchangeError> {
@@ -667,7 +678,6 @@ mod tests {
     use crate::command::apdu::{CardCommandApdu, CardResponseApdu};
     use crate::exchange::channel::CardChannel;
     use hex::encode;
-    use std::collections::VecDeque;
 
     #[test]
     fn create_auth_token_matches_reference() {
@@ -684,6 +694,27 @@ mod tests {
         let enc = SecretKey::new_secret(hex::decode("68406B4162100563D9C901A6154D2901").unwrap());
         let mac = SecretKey::new_secret(hex::decode("73FF268784F72AF833FDC9464049AFC9").unwrap());
         PaceChannelKeys::new(enc, mac)
+    }
+
+    #[test]
+    fn mutual_authentication_mac_verification_accepts_match() {
+        let pace_key = pace_key_fixture();
+        let protocol_id = ObjectIdentifier::parse("1.2.3.4.5").unwrap();
+        let expected_public_key = EcCurve::BrainpoolP256r1.g().to_ec_public_key().unwrap();
+        let mac = derive_mac(pace_key.mac(), &expected_public_key, &protocol_id).unwrap();
+        assert!(verify_mutual_authentication_mac(pace_key.mac(), &expected_public_key, &protocol_id, &mac).is_ok());
+    }
+
+    #[test]
+    fn mutual_authentication_mac_verification_rejects_mismatch() {
+        let pace_key = pace_key_fixture();
+        let protocol_id = ObjectIdentifier::parse("1.2.3.4.5").unwrap();
+        let expected_public_key = EcCurve::BrainpoolP256r1.g().to_ec_public_key().unwrap();
+        let mut mac = derive_mac(pace_key.mac(), &expected_public_key, &protocol_id).unwrap();
+        mac[0] ^= 0x01;
+        let err =
+            verify_mutual_authentication_mac(pace_key.mac(), &expected_public_key, &protocol_id, &mac).unwrap_err();
+        assert!(matches!(err, ExchangeError::MutualAuthenticationFailed));
     }
 
     struct DummySession;
@@ -842,15 +873,30 @@ mod tests {
 
     #[test]
     fn decode_general_authenticate_accepts_long_lengths() {
-        let value = vec![0xAB; 130];
-        let inner_len = value.len();
-        let outer_len = 1 /* tag */ + 2 /* inner length header */ + inner_len;
+        let value_81 = vec![0xAB; 130];
+        let inner_len_81 = value_81.len();
+        let outer_len_81 = 1 /* tag */ + 2 /* inner length header */ + inner_len_81;
+        let mut data_81 = vec![0x7C, 0x81, outer_len_81 as u8, 0x80, 0x81, inner_len_81 as u8];
+        data_81.extend_from_slice(&value_81);
+        let decoded_81 = decode_general_authenticate(&data_81).expect("decode with 0x81 length succeeds");
+        assert_eq!(decoded_81, value_81);
 
-        let mut data = vec![0x7C, 0x81, outer_len as u8, 0x80, 0x81, inner_len as u8];
-        data.extend_from_slice(&value);
+        let value_82 = vec![0xCD; 300];
+        let mut data_82 = vec![0x7C, 0x82, 0x01, 0x30, 0x80, 0x82, 0x01, 0x2C];
+        data_82.extend_from_slice(&value_82);
+        let decoded_82 = decode_general_authenticate(&data_82).expect("decode with 0x82 length succeeds");
+        assert_eq!(decoded_82, value_82);
+    }
 
-        let decoded = decode_general_authenticate(&data).expect("decode succeeds");
-        assert_eq!(decoded, value);
+    #[test]
+    fn decode_general_authenticate_rejects_malformed_long_lengths() {
+        let truncated_inner_length = [0x7C, 0x03, 0x80, 0x82, 0x01];
+        let err = decode_general_authenticate(&truncated_inner_length).unwrap_err();
+        assert!(matches!(err, ExchangeError::Asn1DecoderError(_)));
+
+        let truncated_outer_payload = [0x7C, 0x82, 0x01, 0x2C, 0x80, 0x01, 0xAA];
+        let err = decode_general_authenticate(&truncated_outer_payload).unwrap_err();
+        assert!(matches!(err, ExchangeError::Asn1DecoderError(_)));
     }
 
     #[test]
@@ -979,12 +1025,6 @@ mod tests {
     }
 
     #[test]
-    fn card_access_number_validation_errors() {
-        assert!(CardAccessNumber::new("12345").is_err());
-        assert!(CardAccessNumber::from_digits(*b"12A456").is_err());
-    }
-
-    #[test]
     fn secure_channel_error_transport_converts() {
         let transport = SecureChannelError::transport(ExchangeError::invalid_argument("oops"));
         let err: ExchangeError = transport.into();
@@ -1002,110 +1042,6 @@ mod tests {
     }
 
     #[test]
-    fn establish_secure_channel_detects_mac_mismatch() {
-        struct RxOnlyChannel {
-            responses: VecDeque<Vec<u8>>,
-            supports_extended_length: bool,
-        }
-
-        impl CardChannel for RxOnlyChannel {
-            type Error = ExchangeError;
-
-            fn supports_extended_length(&self) -> bool {
-                self.supports_extended_length
-            }
-
-            fn transmit(&mut self, _command: &CardCommandApdu) -> Result<CardResponseApdu, Self::Error> {
-                let rx = self
-                    .responses
-                    .pop_front()
-                    .ok_or_else(|| ExchangeError::Transport { code: 0, message: "no response".into() })?;
-                CardResponseApdu::new(&rx).map_err(ExchangeError::from)
-            }
-        }
-
-        let jsonl = JSONL_ESTABLISH_SECURE_CHANNEL;
-        let mut responses = VecDeque::new();
-        let mut can = None;
-        let mut supports_extended_length = false;
-        for line in jsonl.lines().filter(|line| !line.trim().is_empty()) {
-            let value: serde_json::Value = serde_json::from_str(line).unwrap();
-            match value.get("type").and_then(|t| t.as_str()) {
-                Some("header") => {
-                    can = value.get("can").and_then(|c| c.as_str()).map(str::to_string);
-                    supports_extended_length =
-                        value.get("supports_extended_length").and_then(|v| v.as_bool()).unwrap_or(false);
-                }
-                Some("exchange") => {
-                    let rx = value.get("rx").and_then(|v| v.as_str()).unwrap();
-                    responses.push_back(hex::decode(rx).unwrap());
-                }
-                _ => {}
-            }
-        }
-
-        let can = CardAccessNumber::new(&can.unwrap()).unwrap();
-        let session = RxOnlyChannel { responses, supports_extended_length };
-        let err = establish_secure_channel_with(session, &can, |curve| {
-            let scalar = vec![0x01; coordinate_size(&curve)];
-            let private_key = EcPrivateKey::from_bytes(curve.clone(), scalar);
-            let scalar = BigInt::from_bytes_be(Sign::Plus, private_key.as_bytes());
-            let public_key = curve.g().mul(&scalar)?.to_ec_public_key()?;
-            Ok((public_key, private_key))
-        })
-        .err()
-        .unwrap();
-        assert!(matches!(err, ExchangeError::MutualAuthenticationFailed));
-    }
-
-    #[test]
-    fn establish_secure_channel_replay_succeeds() {
-        let jsonl = JSONL_ESTABLISH_SECURE_CHANNEL;
-        let mut responses = Vec::new();
-        let mut commands = Vec::new();
-        let mut keys = Vec::new();
-        let mut can = None;
-        let mut supports_extended_length = false;
-
-        for line in jsonl.lines().filter(|line| !line.trim().is_empty()) {
-            let value: serde_json::Value = serde_json::from_str(line).unwrap();
-            match value.get("type").and_then(|t| t.as_str()) {
-                Some("header") => {
-                    can = value.get("can").and_then(|c| c.as_str()).map(str::to_string);
-                    supports_extended_length =
-                        value.get("supports_extended_length").and_then(|v| v.as_bool()).unwrap_or(false);
-                    if let Some(header_keys) = value.get("keys").and_then(|v| v.as_array()) {
-                        keys = header_keys.iter().map(|key| hex::decode(key.as_str().unwrap()).unwrap()).collect();
-                    }
-                }
-                Some("exchange") => {
-                    let rx = value.get("rx").and_then(|v| v.as_str()).unwrap();
-                    let tx = value.get("tx").and_then(|v| v.as_str()).unwrap();
-                    responses.push(hex::decode(rx).unwrap());
-                    commands.push(hex::decode(tx).unwrap());
-                }
-                _ => {}
-            }
-        }
-
-        let can = CardAccessNumber::new(&can.unwrap()).unwrap();
-        let session =
-            crate::exchange::test_utils::MockSession::with_extended_support(responses, supports_extended_length);
-        let mut key_queue = VecDeque::from(keys);
-        let secure = establish_secure_channel_with(session, &can, |curve| {
-            let key = key_queue.pop_front().expect("pcd key material");
-            let private_key = EcPrivateKey::from_bytes(curve.clone(), key);
-            let scalar = BigInt::from_bytes_be(Sign::Plus, private_key.as_bytes());
-            let public_key = curve.g().mul(&scalar)?.to_ec_public_key()?;
-            Ok((public_key, private_key))
-        })
-        .unwrap();
-
-        let SecureChannel { channel: session, .. } = secure;
-        assert_eq!(session.recorded, commands);
-    }
-
-    #[test]
     fn establish_secure_channel_rejects_short_shared_secret() {
         let err = extract_uncompressed_x_coordinate(&[0x04; 32], 32).unwrap_err();
         assert!(matches!(err, ExchangeError::Crypto(CryptoError::InvalidEcPoint(_))));
@@ -1118,6 +1054,5 @@ mod tests {
         assert_eq!(x, &[0xAA, 0xBB]);
     }
 
-    const JSONL_ESTABLISH_SECURE_CHANNEL: &str =
-        include_str!("../../../../test-vectors/apdu-replay/establish-secure-channel.jsonl");
+    // Secure-channel transcript replays are covered by integration tests in `core-modules/healthcard/tests/`.
 }

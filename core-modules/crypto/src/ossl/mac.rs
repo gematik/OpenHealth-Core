@@ -150,7 +150,7 @@ mod tests {
     fn new_fails_when_fetch_null() {
         let res = with_thread_local_cell(&FORCE_MAC_FETCH_NULL, true, || Mac::new("HMAC"));
         match res {
-            Err(err) => assert!(err.to_string().contains("EVP_MAC_fetch failed")),
+            Err(err) => assert!(err.to_string().starts_with("EVP_MAC_fetch failed")),
             Ok(_) => panic!("expected error"),
         }
     }
@@ -159,7 +159,7 @@ mod tests {
     fn new_fails_when_ctx_null() {
         let res = with_thread_local_cell(&FORCE_MAC_CTX_NULL, true, || Mac::new("HMAC"));
         match res {
-            Err(err) => assert!(err.to_string().contains("EVP_MAC_CTX_new failed")),
+            Err(err) => assert!(err.to_string().starts_with("EVP_MAC_CTX_new failed")),
             Ok(_) => panic!("expected error"),
         }
     }
@@ -168,7 +168,7 @@ mod tests {
     fn create_rejects_invalid_cmac_cipher() {
         // The EVP_MAC CMAC implementation expects a valid cipher name.
         match Mac::create(&[0u8; 16], "CMAC", Some("not-a-cipher"), None) {
-            Err(err) => assert!(err.to_string().contains("EVP_MAC_init failed")),
+            Err(err) => assert!(err.to_string().starts_with("EVP_MAC_init failed")),
             Ok(_) => panic!("expected error"),
         }
     }

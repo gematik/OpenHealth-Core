@@ -107,7 +107,7 @@ mod tests {
     #[test]
     fn from_der_private_rejects_invalid_data() {
         match PKey::from_der_private(&[]) {
-            Err(err) => assert!(err.to_string().contains("Failed to load private key")),
+            Err(err) => assert!(err.to_string().starts_with("Failed to load private key")),
             Ok(_) => panic!("expected error"),
         }
     }
@@ -115,7 +115,7 @@ mod tests {
     #[test]
     fn from_der_public_rejects_invalid_data() {
         match PKey::from_der_public(&[]) {
-            Err(err) => assert!(err.to_string().contains("Failed to load public key")),
+            Err(err) => assert!(err.to_string().starts_with("Failed to load public key")),
             Ok(_) => panic!("expected error"),
         }
     }

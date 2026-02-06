@@ -297,7 +297,6 @@ mod tests {
     use crate::command::apdu::CardCommandApdu;
     use crate::exchange::ExchangeError as CoreExchangeError;
     use crate::ffi::channel::CardChannelError;
-    use healthcard_apdu_base::{ReplaySession, Transcript};
     use std::sync::{Arc, Mutex};
 
     struct DummyForeign;
@@ -408,46 +407,4 @@ mod tests {
         let err = secure.transmit(command).unwrap_err();
         assert!(matches!(err, SecureChannelError::Transport { .. }));
     }
-
-    #[test]
-    fn establish_secure_channel_with_keys_replay() {
-        struct ReplayForeign {
-            session: Mutex<ReplaySession>,
-        }
-
-        impl ReplayForeign {
-            fn from_transcript(transcript: Transcript) -> Self {
-                Self { session: Mutex::new(ReplaySession::from_transcript(transcript)) }
-            }
-        }
-
-        impl CardChannel for ReplayForeign {
-            fn supports_extended_length(&self) -> bool {
-                self.session.lock().unwrap().supports_extended_length()
-            }
-
-            fn transmit(&self, command: Arc<CommandApdu>) -> Result<Arc<ResponseApdu>, CardChannelError> {
-                let tx = command.as_core().to_bytes();
-                let rx = self
-                    .session
-                    .lock()
-                    .unwrap()
-                    .transmit_bytes(&tx)
-                    .map_err(|err| CardChannelError::Transport { code: 0, reason: err.to_string() })?;
-                let response = ResponseApdu::from_bytes(rx)?;
-                Ok(Arc::new(response))
-            }
-        }
-
-        let transcript = Transcript::from_jsonl_str(JSONL_ESTABLISH_SECURE_CHANNEL).unwrap();
-        let can = transcript.can().unwrap().to_string();
-        let keys = transcript.keys().unwrap().to_vec();
-        let session: Arc<dyn CardChannel> = Arc::new(ReplayForeign::from_transcript(transcript));
-        let can = Arc::new(CardAccessNumber::from_digits(can).unwrap());
-        let channel = establish_secure_channel_with_keys(session, can, keys).unwrap();
-        assert!(channel.supports_extended_length());
-    }
-
-    const JSONL_ESTABLISH_SECURE_CHANNEL: &str =
-        include_str!("../../../../test-vectors/apdu-replay/establish-secure-channel.jsonl");
 }

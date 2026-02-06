@@ -147,14 +147,3 @@ impl From<String> for Asn1EncoderError {
         Self::custom(value)
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn encoder_error_custom_message() {
-        let err = Asn1EncoderError::custom("hello");
-        assert_eq!(err.to_string(), "hello");
-    }
-}

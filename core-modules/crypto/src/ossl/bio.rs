@@ -142,7 +142,7 @@ mod tests {
     fn new_mem_fails_when_null() {
         let res = with_thread_local_cell(&FORCE_BIO_NEW_NULL, true, Bio::new_mem);
         match res {
-            Err(err) => assert!(err.to_string().contains("Failed to create BIO")),
+            Err(err) => assert!(err.to_string().starts_with("Failed to create BIO")),
             Ok(_) => panic!("expected error"),
         }
     }
@@ -151,7 +151,7 @@ mod tests {
     fn from_slice_fails_when_null() {
         let res = with_thread_local_cell(&FORCE_BIO_NEW_MEM_BUF_NULL, true, || Bio::from_slice(b"hello"));
         match res {
-            Err(err) => assert!(err.to_string().contains("Failed to create BIO from buffer")),
+            Err(err) => assert!(err.to_string().starts_with("Failed to create BIO from buffer")),
             Ok(_) => panic!("expected error"),
         }
     }

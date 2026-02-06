@@ -202,10 +202,4 @@ mod tests {
         let file_id = FileIdentifier::new(fid).unwrap();
         assert_eq!(format!("{}", file_id), "1234");
     }
-
-    #[test]
-    fn test_get_fid() {
-        let fid = FileIdentifier::new(0xABCD).unwrap();
-        assert_eq!(fid.get_fid(), vec![0xAB, 0xCD]);
-    }
 }

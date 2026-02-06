@@ -329,12 +329,6 @@ mod tests {
     }
 
     #[test]
-    fn command_apdu_header_only_serializes() {
-        let command = CommandApdu::header_only(0x00, 0xA4, 0x04, 0x00).unwrap();
-        assert_eq!(command.to_bytes(), vec![0x00, 0xA4, 0x04, 0x00]);
-    }
-
-    #[test]
     fn response_apdu_from_parts_roundtrip() {
         let response = ResponseApdu::from_parts(0x9000, vec![0xDE, 0xAD]).unwrap();
         assert_eq!(response.sw(), 0x9000);

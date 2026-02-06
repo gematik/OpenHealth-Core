@@ -43,6 +43,8 @@ find details in the "Readme" file.
 ## Testing Guidelines
 - Prefer Rust unit tests close to the code (inline `#[cfg(test)] mod tests`).
 - For cryptography and parsing, use known-good test vectors where possible.
+- Replay tests under `core-modules/*/tests/` (e.g. `core-modules/healthcard/tests/exchange_replay.rs`) are integration-style
+  transcript replays and do not replace unit tests in the corresponding modules.
 - JVM code uses Kotlin test/JUnit; run with `./gradlew test` (or module-specific tasks such as `:sample-app:test`).
 - Aim to keep or improve test coverage for modified modules and cover edge cases relevant to healthcard flows.
 

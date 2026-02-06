@@ -115,7 +115,7 @@ mod tests {
     fn create_fails_when_ctx_null() {
         let res = with_thread_local_cell(&FORCE_MD_CTX_NULL, true, || Digest::create("sha256"));
         match res {
-            Err(err) => assert!(err.to_string().contains("Failed to create EVP_MD_CTX")),
+            Err(err) => assert!(err.to_string().starts_with("Failed to create EVP_MD_CTX")),
             Ok(_) => panic!("expected error"),
         }
     }

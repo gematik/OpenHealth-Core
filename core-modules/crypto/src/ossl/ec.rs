@@ -309,7 +309,7 @@ mod tests {
     #[test]
     fn create_from_curve_rejects_invalid_name() {
         match EcPoint::create_from_curve("invalid-curve") {
-            Err(err) => assert!(err.to_string().contains("Failed to get nid")),
+            Err(err) => assert!(err.to_string().starts_with("Failed to get nid")),
             Ok(_) => panic!("expected error"),
         }
     }
@@ -317,7 +317,7 @@ mod tests {
     #[test]
     fn keypair_generate_rejects_invalid_curve() {
         match EcKeypair::generate("invalid-curve") {
-            Err(err) => assert!(err.to_string().contains("Invalid curve name")),
+            Err(err) => assert!(err.to_string().starts_with("Invalid curve name")),
             Ok(_) => panic!("expected error"),
         }
     }
@@ -339,7 +339,7 @@ mod tests {
     fn create_from_curve_fails_when_group_null() {
         let res = with_thread_local_cell(&FORCE_GROUP_NULL, true, || EcPoint::create_from_curve("prime256v1"));
         match res {
-            Err(err) => assert!(err.to_string().contains("Failed to create EC_GROUP")),
+            Err(err) => assert!(err.to_string().starts_with("Failed to create EC_GROUP")),
             Ok(_) => panic!("expected error"),
         }
     }
@@ -348,7 +348,7 @@ mod tests {
     fn create_from_curve_fails_when_point_null() {
         let res = with_thread_local_cell(&FORCE_POINT_NULL, true, || EcPoint::create_from_curve("prime256v1"));
         match res {
-            Err(err) => assert!(err.to_string().contains("Failed to create EC_POINT")),
+            Err(err) => assert!(err.to_string().starts_with("Failed to create EC_POINT")),
             Ok(_) => panic!("expected error"),
         }
     }
@@ -358,7 +358,7 @@ mod tests {
         let point = prime256v1_point();
         let res = with_thread_local_cell(&FORCE_GROUP_DUP_NULL, true, || point.clone());
         match res {
-            Err(err) => assert!(err.to_string().contains("Failed to dup EC_GROUP")),
+            Err(err) => assert!(err.to_string().starts_with("Failed to dup EC_GROUP")),
             Ok(_) => panic!("expected error"),
         }
     }
@@ -368,7 +368,7 @@ mod tests {
         let point = prime256v1_point();
         let res = with_thread_local_cell(&FORCE_POINT_DUP_NULL, true, || point.clone());
         match res {
-            Err(err) => assert!(err.to_string().contains("Failed to dup EC_POINT")),
+            Err(err) => assert!(err.to_string().starts_with("Failed to dup EC_POINT")),
             Ok(_) => panic!("expected error"),
         }
     }
@@ -378,7 +378,7 @@ mod tests {
         let point = prime256v1_point();
         let res = with_thread_local_cell(&FORCE_BN_NULL, true, || point.mul(&[0x01]));
         match res {
-            Err(err) => assert!(err.to_string().contains("Failed to convert scalar")),
+            Err(err) => assert!(err.to_string().starts_with("Failed to convert scalar")),
             Ok(_) => panic!("expected error"),
         }
     }
@@ -388,7 +388,7 @@ mod tests {
         let point = prime256v1_point();
         let res = with_thread_local_cell(&FORCE_POINT2OCT_LEN_ZERO, true, || point.to_bytes());
         match res {
-            Err(err) => assert!(err.to_string().contains("Failed to get public key size")),
+            Err(err) => assert!(err.to_string().starts_with("Failed to get public key size")),
             Ok(_) => panic!("expected error"),
         }
     }
@@ -398,7 +398,7 @@ mod tests {
         let point = prime256v1_point();
         let res = with_thread_local_cell(&FORCE_POINT2OCT_OUT_ZERO, true, || point.to_bytes());
         match res {
-            Err(err) => assert!(err.to_string().contains("Error during ec point conversion")),
+            Err(err) => assert!(err.to_string().starts_with("Error during ec point conversion")),
             Ok(_) => panic!("expected error"),
         }
     }
@@ -407,7 +407,7 @@ mod tests {
     fn keypair_generate_fails_when_ctx_null() {
         let res = with_thread_local_cell(&FORCE_PKEY_CTX_NULL, true, || EcKeypair::generate("prime256v1"));
         match res {
-            Err(err) => assert!(err.to_string().contains("Failed to create EVP_PKEY_CTX")),
+            Err(err) => assert!(err.to_string().starts_with("Failed to create EVP_PKEY_CTX")),
             Ok(_) => panic!("expected error"),
         }
     }
@@ -418,7 +418,7 @@ mod tests {
         let priv_der = keypair.private_key_der().unwrap();
         let res = with_thread_local_cell(&FORCE_ECDH_CTX_NULL, true, || Ecdh::new(&priv_der));
         match res {
-            Err(err) => assert!(err.to_string().contains("Failed to create ECDH context")),
+            Err(err) => assert!(err.to_string().starts_with("Failed to create ECDH context")),
             Ok(_) => panic!("expected error"),
         }
     }

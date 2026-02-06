@@ -370,7 +370,7 @@ mod tests {
     #[test]
     fn create_encryptor_rejects_invalid_algorithm() {
         match AesCipher::create_encryptor("invalid-cipher", KEY_16, IV_16) {
-            Err(err) => assert!(err.to_string().contains("Failed to fetch cipher")),
+            Err(err) => assert!(err.to_string().starts_with("Failed to fetch cipher")),
             Ok(_) => panic!("expected error"),
         }
     }
@@ -379,7 +379,7 @@ mod tests {
     fn set_auth_tag_rejects_empty() {
         let mut cipher = AesCipher::create_decryptor("aes-128-gcm", KEY_16, IV_16).unwrap();
         match cipher.set_auth_tag(&[]) {
-            Err(err) => assert!(err.to_string().contains("Authentication tag cannot be empty")),
+            Err(err) => assert!(err.to_string().starts_with("Authentication tag cannot be empty")),
             Ok(_) => panic!("expected error"),
         }
     }
@@ -389,7 +389,7 @@ mod tests {
         let res =
             with_thread_local_cell(&FORCE_CTX_NULL, true, || AesCipher::create_encryptor("aes-128-cbc", KEY_16, IV_16));
         match res {
-            Err(err) => assert!(err.to_string().contains("Failed to create cipher context")),
+            Err(err) => assert!(err.to_string().starts_with("Failed to create cipher context")),
             Ok(_) => panic!("expected error"),
         }
     }
@@ -400,15 +400,16 @@ mod tests {
             AesCipher::create_encryptor("aes-128-cbc", KEY_16, IV_16)
         });
         match res {
-            Err(err) => assert!(err.to_string().contains("Failed to fetch cipher")),
+            Err(err) => assert!(err.to_string().starts_with("Failed to fetch cipher")),
             Ok(_) => panic!("expected error"),
         }
     }
 
     #[test]
     fn create_encryptor_gcm_sets_iv_length() {
-        let res = AesCipher::create_encryptor("aes-128-gcm", KEY_16, IV_12);
-        assert!(res.is_ok());
+        let cipher = AesCipher::create_encryptor("aes-128-gcm", KEY_16, IV_12).unwrap();
+        let iv_len = unsafe { EVP_CIPHER_CTX_get_iv_length(cipher.ctx) };
+        assert_eq!(iv_len, IV_12.len() as c_int);
     }
 
     #[test]
@@ -428,7 +429,7 @@ mod tests {
         });
 
         match res {
-            Err(err) => assert!(err.to_string().contains("Failed to set IV length")),
+            Err(err) => assert!(err.to_string().starts_with("Failed to set IV length")),
             Ok(_) => panic!("expected error"),
         }
     }
@@ -442,7 +443,7 @@ mod tests {
         });
 
         match res {
-            Err(err) => assert!(err.to_string().contains("Failed to set IV length")),
+            Err(err) => assert!(err.to_string().starts_with("Failed to set IV length")),
             Ok(_) => panic!("expected error"),
         }
     }
@@ -460,7 +461,7 @@ mod tests {
         let mut cipher = AesCipher::create_encryptor("aes-128-cbc", KEY_16, IV_16).unwrap();
         let res = with_thread_local_cell(&FORCE_UPDATE_FAIL, true, || cipher.update(b"hello", &mut Vec::new()));
         match res {
-            Err(err) => assert!(err.to_string().contains("Encryption failed during update")),
+            Err(err) => assert!(err.to_string().starts_with("Encryption failed during update")),
             Ok(_) => panic!("expected error"),
         }
     }
@@ -470,7 +471,7 @@ mod tests {
         let mut cipher = AesCipher::create_decryptor("aes-128-cbc", KEY_16, IV_16).unwrap();
         let res = with_thread_local_cell(&FORCE_UPDATE_FAIL, true, || cipher.update(b"hello", &mut Vec::new()));
         match res {
-            Err(err) => assert!(err.to_string().contains("Decryption failed during update")),
+            Err(err) => assert!(err.to_string().starts_with("Decryption failed during update")),
             Ok(_) => panic!("expected error"),
         }
     }
@@ -480,7 +481,7 @@ mod tests {
         let mut cipher = AesCipher::create_encryptor("aes-128-cbc", KEY_16, IV_16).unwrap();
         let res = with_thread_local_cell(&FORCE_FINAL_FAIL, true, || cipher.finalize(&mut Vec::new()));
         match res {
-            Err(err) => assert!(err.to_string().contains("Encryption failed during finalization")),
+            Err(err) => assert!(err.to_string().starts_with("Encryption failed during finalization")),
             Ok(_) => panic!("expected error"),
         }
     }
@@ -490,7 +491,7 @@ mod tests {
         let mut cipher = AesCipher::create_decryptor("aes-128-cbc", KEY_16, IV_16).unwrap();
         let res = with_thread_local_cell(&FORCE_FINAL_FAIL, true, || cipher.finalize(&mut Vec::new()));
         match res {
-            Err(err) => assert!(err.to_string().contains("Decryption failed during finalization")),
+            Err(err) => assert!(err.to_string().starts_with("Decryption failed during finalization")),
             Ok(_) => panic!("expected error"),
         }
     }
