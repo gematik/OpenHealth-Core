@@ -74,9 +74,9 @@ cargo install cargo-llvm-cov --locked
 
 Generate reports:
 ```shell
-cargo cov-html --workspace
-cargo cov-lcov --workspace
-cargo cov-json --workspace
+just rust-cov-html
+just rust-cov-lcov
+just rust-cov-json
 ```
 
 Outputs:
@@ -86,26 +86,14 @@ Outputs:
 
 Optional (unstable) branch coverage:
 ```shell
-cargo +nightly cov-json-branch --workspace
+just rust-cov-json-branch
 ```
 
 Output:
 - Branch JSON: `target/llvm-cov.branch.json`
 
-Optional (unstable) condition coverage for short-circuit logic:
-```shell
-RUSTFLAGS='-Z coverage-options=condition' cargo +nightly llvm-cov --json --output-path target/llvm-cov.condition.json --workspace --locked --all-features
-```
-
 Output:
 - Condition JSON: `target/llvm-cov.condition.json`
-
-Alternatively, use the `just` recipes:
-```shell
-just rust-cov-html
-just rust-cov-lcov
-just rust-cov-json
-```
 
 ## Test Sufficiency Report (Rust)
 

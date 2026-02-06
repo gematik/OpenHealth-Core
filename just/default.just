@@ -1,3 +1,4 @@
+#
 # SPDX-FileCopyrightText: Copyright 2026 gematik GmbH
 #
 # SPDX-License-Identifier: Apache-2.0
@@ -19,40 +20,11 @@
 # For additional notes and disclaimer from gematik and in case of changes by gematik,
 # find details in the "Readme" file.
 
-[alias]
-# Requires `cargo-llvm-cov` and the Rust component `llvm-tools-preview`.
-cov = ["llvm-cov", "--locked", "--all-features"]
-cov-clean = ["llvm-cov", "clean"]
-cov-html = [
-    "llvm-cov",
-    "--locked",
-    "--all-features",
-    "--html",
-    "--output-dir",
-    "target/llvm-cov-html",
-]
-cov-lcov = [
-    "llvm-cov",
-    "--locked",
-    "--all-features",
-    "--lcov",
-    "--output-path",
-    "target/llvm-cov.lcov.info",
-]
-cov-json = [
-    "llvm-cov",
-    "--locked",
-    "--all-features",
-    "--json",
-    "--output-path",
-    "target/llvm-cov.json",
-]
-cov-json-branch = [
-    "llvm-cov",
-    "--locked",
-    "--all-features",
-    "--json",
-    "--branch",
-    "--output-path",
-    "target/llvm-cov.branch.json",
-]
+# -------------------------------------------------
+# Default
+# -------------------------------------------------
+
+# List available recipes.
+default:
+    @just --list
+

@@ -80,7 +80,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     p.add_argument(
         "--coverage-branch-json",
         default="target/llvm-cov.branch.json",
-        help="Nightly branch coverage JSON (cargo +nightly cov-json-branch).",
+        help="Nightly branch coverage JSON (just rust-cov-json-branch).",
     )
     p.add_argument("--include-roots", default="core-modules", help="Comma-separated roots to analyze.")
     p.add_argument("--ignore-file", default="", help="Optional ignore file with regex lines.")
@@ -94,6 +94,18 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     p.add_argument("--out-json", default="target/quality-report.json")
     p.add_argument("--out-tasks", default="target/quality-tasks.jsonl", help="AI-consumable tasks (JSONL).")
     p.add_argument("--fail-under", action="store_true", help="Exit with code 1 if any risks are found.")
+    p.add_argument(
+        "--max-total-score",
+        type=int,
+        default=-1,
+        help="Quality gate: exit with code 1 if the sum of all risk scores exceeds this value. Use -1 to disable.",
+    )
+    p.add_argument(
+        "--max-risky-functions",
+        type=int,
+        default=-1,
+        help="Quality gate: exit with code 1 if the number of risky functions exceeds this value. Use -1 to disable.",
+    )
     return p.parse_args(argv)
 
 
@@ -441,9 +453,21 @@ def write_reports(out_md: Path, out_json: Path, out_tasks: Path, risks: list[Ris
         "",
         f"- Overall: `{overall}`",
         f"- Risky functions: `{len(risks)}`",
+        f"- Total score: `{meta.get('total_score', 0)}`",
         f"- Tasks (JSONL): `{out_tasks}`",
         "",
     ]
+    md += ["## Quality Gate", ""]
+    max_total_score = meta.get("max_total_score", -1)
+    max_risky_functions = meta.get("max_risky_functions", -1)
+    md.append(f"- max_total_score: `{max_total_score}`" if max_total_score != -1 else "- max_total_score: `(disabled)`")
+    md.append(
+        f"- max_risky_functions: `{max_risky_functions}`"
+        if max_risky_functions != -1
+        else "- max_risky_functions: `(disabled)`"
+    )
+    md.append(f"- Gate: `{meta.get('gate', 'PASS')}`")
+    md.append("")
     md += ["## Risky Files (by score)", ""]
     if file_scores:
         md += ["| File | Total score | Risky functions |", "|---|---:|---:|"]
@@ -501,9 +525,25 @@ def main(argv: list[str]) -> int:
         "min_cyclo_for_branches": a.min_cyclo_for_branches,
         "ignore_file": a.ignore_file or None,
     }
+    total_score = sum(r.score for r in risks)
+    meta |= {
+        "total_score": total_score,
+        "risky_functions": len(risks),
+        "max_total_score": a.max_total_score,
+        "max_risky_functions": a.max_risky_functions,
+    }
+
+    gate_fail = False
+    if a.max_total_score != -1 and total_score > a.max_total_score:
+        gate_fail = True
+    if a.max_risky_functions != -1 and len(risks) > a.max_risky_functions:
+        gate_fail = True
+    meta["gate"] = "FAIL" if gate_fail else "PASS"
     write_reports(out_md, out_json, out_tasks, risks, meta)
 
     print(f"overall: {'ENOUGH' if not risks else 'NOT ENOUGH'}")
+    print(f"gate: {'PASS' if not gate_fail else 'FAIL'}")
+    print(f"total_score: {total_score}")
     print(f"report: {out_md}")
     if risks:
         print("top_risks:")
@@ -511,6 +551,8 @@ def main(argv: list[str]) -> int:
             print(f"- {r.file}:{r.start} {r.name}: branches={r.branches_uncovered} logic_lines={r.logic_lines_uncovered}")
 
     if a.fail_under and risks:
+        return 1
+    if gate_fail:
         return 1
     return 0
 
