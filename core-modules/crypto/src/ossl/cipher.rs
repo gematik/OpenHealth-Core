@@ -384,15 +384,18 @@ mod tests {
 
     #[test]
     fn create_encryptor_fails_when_ctx_null() {
-        let err = with_thread_local_cell(&FORCE_CTX_NULL, true, || AesCipher::create_encryptor("aes-128-cbc", KEY_16, IV_16))
-            .expect_err_no_debug("expected error");
+        let err =
+            with_thread_local_cell(&FORCE_CTX_NULL, true, || AesCipher::create_encryptor("aes-128-cbc", KEY_16, IV_16))
+                .expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::CipherCtxCreateFailed);
     }
 
     #[test]
     fn create_encryptor_fails_when_cipher_null() {
-        let err = with_thread_local_cell(&FORCE_FETCH_NULL, true, || AesCipher::create_encryptor("aes-128-cbc", KEY_16, IV_16))
-            .expect_err_no_debug("expected error");
+        let err = with_thread_local_cell(&FORCE_FETCH_NULL, true, || {
+            AesCipher::create_encryptor("aes-128-cbc", KEY_16, IV_16)
+        })
+        .expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::CipherFetchFailed);
     }
 

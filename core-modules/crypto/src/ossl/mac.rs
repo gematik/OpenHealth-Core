@@ -152,14 +152,15 @@ mod tests {
 
     #[test]
     fn new_fails_when_fetch_null() {
-        let err =
-            with_thread_local_cell(&FORCE_MAC_FETCH_NULL, true, || Mac::new("HMAC")).expect_err_no_debug("expected error");
+        let err = with_thread_local_cell(&FORCE_MAC_FETCH_NULL, true, || Mac::new("HMAC"))
+            .expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::MacFetchFailed);
     }
 
     #[test]
     fn new_fails_when_ctx_null() {
-        let err = with_thread_local_cell(&FORCE_MAC_CTX_NULL, true, || Mac::new("HMAC")).expect_err_no_debug("expected error");
+        let err = with_thread_local_cell(&FORCE_MAC_CTX_NULL, true, || Mac::new("HMAC"))
+            .expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::MacCtxNewFailed);
     }
 

@@ -258,8 +258,9 @@ mod tests {
 
     #[test]
     fn create_fails_when_keygen_ctx_null() {
-        let err = with_thread_local_cell(&FORCE_PKEY_CTX_FROM_NAME_NULL, true, || MlkemDecapsulation::create("ML-KEM-512"))
-            .expect_err_no_debug("expected error");
+        let err =
+            with_thread_local_cell(&FORCE_PKEY_CTX_FROM_NAME_NULL, true, || MlkemDecapsulation::create("ML-KEM-512"))
+                .expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::MlkemKeygenCtxInitFailed);
     }
 

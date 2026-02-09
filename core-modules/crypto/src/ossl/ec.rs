@@ -364,37 +364,40 @@ mod tests {
     #[test]
     fn clone_fails_when_group_dup_null() {
         let point = prime256v1_point();
-        let err = with_thread_local_cell(&FORCE_GROUP_DUP_NULL, true, || point.clone()).expect_err_no_debug("expected error");
+        let err =
+            with_thread_local_cell(&FORCE_GROUP_DUP_NULL, true, || point.clone()).expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::EcGroupDupFailed);
     }
 
     #[test]
     fn clone_fails_when_point_dup_null() {
         let point = prime256v1_point();
-        let err = with_thread_local_cell(&FORCE_POINT_DUP_NULL, true, || point.clone()).expect_err_no_debug("expected error");
+        let err =
+            with_thread_local_cell(&FORCE_POINT_DUP_NULL, true, || point.clone()).expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::EcPointDupFailed);
     }
 
     #[test]
     fn mul_fails_when_bn_null() {
         let point = prime256v1_point();
-        let err = with_thread_local_cell(&FORCE_BN_NULL, true, || point.mul(&[0x01])).expect_err_no_debug("expected error");
+        let err =
+            with_thread_local_cell(&FORCE_BN_NULL, true, || point.mul(&[0x01])).expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::EcScalarToBignumFailed);
     }
 
     #[test]
     fn to_bytes_fails_when_len_zero() {
         let point = prime256v1_point();
-        let err =
-            with_thread_local_cell(&FORCE_POINT2OCT_LEN_ZERO, true, || point.to_bytes()).expect_err_no_debug("expected error");
+        let err = with_thread_local_cell(&FORCE_POINT2OCT_LEN_ZERO, true, || point.to_bytes())
+            .expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::EcPublicKeySizeFailed);
     }
 
     #[test]
     fn to_bytes_fails_when_output_zero() {
         let point = prime256v1_point();
-        let err =
-            with_thread_local_cell(&FORCE_POINT2OCT_OUT_ZERO, true, || point.to_bytes()).expect_err_no_debug("expected error");
+        let err = with_thread_local_cell(&FORCE_POINT2OCT_OUT_ZERO, true, || point.to_bytes())
+            .expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::EcPointConversionFailed);
     }
 
@@ -409,8 +412,8 @@ mod tests {
     fn ecdh_new_fails_when_ctx_null() {
         let keypair = EcKeypair::generate("prime256v1").unwrap();
         let priv_der = keypair.private_key_der().unwrap();
-        let err =
-            with_thread_local_cell(&FORCE_ECDH_CTX_NULL, true, || Ecdh::new(&priv_der)).expect_err_no_debug("expected error");
+        let err = with_thread_local_cell(&FORCE_ECDH_CTX_NULL, true, || Ecdh::new(&priv_der))
+            .expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::EcdhCtxCreateFailed);
     }
 }
