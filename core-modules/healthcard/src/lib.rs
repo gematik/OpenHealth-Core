@@ -26,6 +26,8 @@ pub mod identifier;
 pub mod exchange;
 #[cfg(feature = "uniffi")]
 pub mod ffi;
+#[cfg(test)]
+pub(crate) mod test_utils;
 
 #[cfg(feature = "uniffi")]
 uniffi::setup_scaffolding!();

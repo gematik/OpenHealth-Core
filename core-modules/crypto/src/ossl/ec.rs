@@ -313,11 +313,12 @@ impl Ecdh {
 mod tests {
     use super::*;
     use crate::ossl::api::with_thread_local_cell;
+    use crate::utils::test_utils::ResultTestExt;
     use hex::decode;
 
     #[test]
     fn create_from_curve_rejects_invalid_name() {
-        let err = EcPoint::create_from_curve("invalid-curve").err().expect("expected error");
+        let err = EcPoint::create_from_curve("invalid-curve").expect_err_no_debug("expected error");
         assert!(matches!(
             err.kind(),
             OsslErrorKind::EcNidLookupFailed { curve } if curve == "invalid-curve"
@@ -326,7 +327,7 @@ mod tests {
 
     #[test]
     fn keypair_generate_rejects_invalid_curve() {
-        let err = EcKeypair::generate("invalid-curve").err().expect("expected error");
+        let err = EcKeypair::generate("invalid-curve").expect_err_no_debug("expected error");
         assert!(matches!(
             err.kind(),
             OsslErrorKind::EcInvalidCurveName { curve } if curve == "invalid-curve"
@@ -349,37 +350,35 @@ mod tests {
     #[test]
     fn create_from_curve_fails_when_group_null() {
         let err = with_thread_local_cell(&FORCE_GROUP_NULL, true, || EcPoint::create_from_curve("prime256v1"))
-            .err()
-            .expect("expected error");
+            .expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::EcGroupCreateFailed);
     }
 
     #[test]
     fn create_from_curve_fails_when_point_null() {
         let err = with_thread_local_cell(&FORCE_POINT_NULL, true, || EcPoint::create_from_curve("prime256v1"))
-            .err()
-            .expect("expected error");
+            .expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::EcPointCreateFailed);
     }
 
     #[test]
     fn clone_fails_when_group_dup_null() {
         let point = prime256v1_point();
-        let err = with_thread_local_cell(&FORCE_GROUP_DUP_NULL, true, || point.clone()).err().expect("expected error");
+        let err = with_thread_local_cell(&FORCE_GROUP_DUP_NULL, true, || point.clone()).expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::EcGroupDupFailed);
     }
 
     #[test]
     fn clone_fails_when_point_dup_null() {
         let point = prime256v1_point();
-        let err = with_thread_local_cell(&FORCE_POINT_DUP_NULL, true, || point.clone()).err().expect("expected error");
+        let err = with_thread_local_cell(&FORCE_POINT_DUP_NULL, true, || point.clone()).expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::EcPointDupFailed);
     }
 
     #[test]
     fn mul_fails_when_bn_null() {
         let point = prime256v1_point();
-        let err = with_thread_local_cell(&FORCE_BN_NULL, true, || point.mul(&[0x01])).err().expect("expected error");
+        let err = with_thread_local_cell(&FORCE_BN_NULL, true, || point.mul(&[0x01])).expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::EcScalarToBignumFailed);
     }
 
@@ -387,7 +386,7 @@ mod tests {
     fn to_bytes_fails_when_len_zero() {
         let point = prime256v1_point();
         let err =
-            with_thread_local_cell(&FORCE_POINT2OCT_LEN_ZERO, true, || point.to_bytes()).err().expect("expected error");
+            with_thread_local_cell(&FORCE_POINT2OCT_LEN_ZERO, true, || point.to_bytes()).expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::EcPublicKeySizeFailed);
     }
 
@@ -395,15 +394,14 @@ mod tests {
     fn to_bytes_fails_when_output_zero() {
         let point = prime256v1_point();
         let err =
-            with_thread_local_cell(&FORCE_POINT2OCT_OUT_ZERO, true, || point.to_bytes()).err().expect("expected error");
+            with_thread_local_cell(&FORCE_POINT2OCT_OUT_ZERO, true, || point.to_bytes()).expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::EcPointConversionFailed);
     }
 
     #[test]
     fn keypair_generate_fails_when_ctx_null() {
         let err = with_thread_local_cell(&FORCE_PKEY_CTX_NULL, true, || EcKeypair::generate("prime256v1"))
-            .err()
-            .expect("expected error");
+            .expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::EvpPkeyCtxCreateFailed);
     }
 
@@ -412,7 +410,7 @@ mod tests {
         let keypair = EcKeypair::generate("prime256v1").unwrap();
         let priv_der = keypair.private_key_der().unwrap();
         let err =
-            with_thread_local_cell(&FORCE_ECDH_CTX_NULL, true, || Ecdh::new(&priv_der)).err().expect("expected error");
+            with_thread_local_cell(&FORCE_ECDH_CTX_NULL, true, || Ecdh::new(&priv_der)).expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::EcdhCtxCreateFailed);
     }
 }

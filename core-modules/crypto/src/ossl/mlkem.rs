@@ -248,27 +248,25 @@ impl MlkemDecapsulation {
 mod tests {
     use super::*;
     use crate::ossl::api::with_thread_local_cell;
+    use crate::utils::test_utils::ResultTestExt;
 
     #[test]
     fn invalid_algorithm_rejected() {
-        let err = MlkemEncapsulation::create("INVALID", &[0x01, 0x02]).err().expect("expected error");
+        let err = MlkemEncapsulation::create("INVALID", &[0x01, 0x02]).expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::MlkemKeyInitFailed);
     }
 
     #[test]
     fn create_fails_when_keygen_ctx_null() {
-        let err =
-            with_thread_local_cell(&FORCE_PKEY_CTX_FROM_NAME_NULL, true, || MlkemDecapsulation::create("ML-KEM-512"))
-                .err()
-                .expect("expected error");
+        let err = with_thread_local_cell(&FORCE_PKEY_CTX_FROM_NAME_NULL, true, || MlkemDecapsulation::create("ML-KEM-512"))
+            .expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::MlkemKeygenCtxInitFailed);
     }
 
     #[test]
     fn create_fails_when_keygen_returns_null() {
         let err = with_thread_local_cell(&FORCE_PKEY_KEYGEN_NULL, true, || MlkemDecapsulation::create("ML-KEM-512"))
-            .err()
-            .expect("expected error");
+            .expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::MlkemKeygenNull);
     }
 
@@ -277,8 +275,7 @@ mod tests {
         let err = with_thread_local_cell(&FORCE_PKEY_PRIVATE_NULL, true, || {
             MlkemDecapsulation::create_from_private_key("ML-KEM-512", &[0x01, 0x02])
         })
-        .err()
-        .expect("expected error");
+        .expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::MlkemImportPrivateKeyFailed);
     }
 
@@ -288,8 +285,7 @@ mod tests {
         let pk = dec.get_encapsulation_key().unwrap();
         let enc = MlkemEncapsulation::create("ML-KEM-512", &pk).unwrap();
         let err = with_thread_local_cell(&FORCE_PKEY_CTX_FROM_PKEY_NULL, true, || enc.encapsulate())
-            .err()
-            .expect("expected error");
+            .expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::MlkemCtxFromKeyFailed);
     }
 
@@ -297,8 +293,7 @@ mod tests {
     fn decapsulate_fails_when_ctx_null() {
         let dec = MlkemDecapsulation::create("ML-KEM-512").unwrap();
         let err = with_thread_local_cell(&FORCE_PKEY_CTX_FROM_PKEY_NULL, true, || dec.decapsulate(&[0x01; 800]))
-            .err()
-            .expect("expected error");
+            .expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::MlkemCtxFromKeyFailed);
     }
 
@@ -306,8 +301,7 @@ mod tests {
     fn get_encapsulation_key_fails_when_len_zero() {
         let dec = MlkemDecapsulation::create("ML-KEM-512").unwrap();
         let err = with_thread_local_cell(&FORCE_PKEY_GET_ENC_KEY_ZERO, true, || dec.get_encapsulation_key())
-            .err()
-            .expect("expected error");
+            .expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::MlkemExtractPublicKeyFailed);
     }
 
@@ -316,8 +310,7 @@ mod tests {
         let err = with_thread_local_cell(&FORCE_PKEY_PUBLIC_NULL, true, || {
             MlkemEncapsulation::create("ML-KEM-512", &[0x01; 10])
         })
-        .err()
-        .expect("expected error");
+        .expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::MlkemKeyInitFailed);
     }
 }

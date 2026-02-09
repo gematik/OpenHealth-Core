@@ -300,6 +300,7 @@ mod tests {
     use crate::command::apdu::CardCommandApdu;
     use crate::exchange::ExchangeError as CoreExchangeError;
     use crate::ffi::channel::CardChannelError;
+    use crate::test_utils::ResultTestExt;
     use std::sync::{Arc, Mutex};
 
     struct DummyForeign;
@@ -339,7 +340,7 @@ mod tests {
 
     #[test]
     fn card_access_number_requires_six_digits() {
-        let err = CardAccessNumber::from_digits("12345".to_string()).err().expect("expected invalid argument");
+        let err = CardAccessNumber::from_digits("12345".to_string()).expect_err_no_debug("expected invalid argument");
         assert!(matches!(err, SecureChannelError::InvalidArgument { .. }));
     }
 
@@ -348,8 +349,7 @@ mod tests {
         let session: Arc<dyn CardChannel> = Arc::new(DummyForeign);
         let can = Arc::new(CardAccessNumber::from_digits("123456".to_string()).unwrap());
         let err = establish_secure_channel_with_keys(session, can, vec!["AA".to_string()])
-            .err()
-            .expect("expected invalid argument");
+            .expect_err_no_debug("expected invalid argument");
         assert!(matches!(
             err,
             SecureChannelError::InvalidArgument { ref reason } if reason.contains("at least 2 keys required")
@@ -361,8 +361,7 @@ mod tests {
         let session: Arc<dyn CardChannel> = Arc::new(DummyForeign);
         let can = Arc::new(CardAccessNumber::from_digits("123456".to_string()).unwrap());
         let err = establish_secure_channel_with_keys(session, can, vec!["ZZ".to_string(), "00".to_string()])
-            .err()
-            .expect("expected invalid argument");
+            .expect_err_no_debug("expected invalid argument");
         assert!(matches!(
             err,
             SecureChannelError::InvalidArgument { ref reason } if reason.contains("invalid key hex at index 0")
@@ -377,7 +376,7 @@ mod tests {
 
     #[test]
     fn card_access_number_rejects_non_digits() {
-        let err = CardAccessNumber::from_digits("12A456".to_string()).err().unwrap();
+        let err = CardAccessNumber::from_digits("12A456".to_string()).expect_err_no_debug("expected invalid argument");
         assert!(matches!(err, SecureChannelError::InvalidArgument { .. }));
     }
 
@@ -411,7 +410,7 @@ mod tests {
     #[test]
     fn next_fixed_key_material_reports_exhaustion() {
         let mut key_iter = Vec::<Vec<u8>>::new().into_iter();
-        let err = next_fixed_key_material(&mut key_iter).err().expect("expected missing key material");
+        let err = next_fixed_key_material(&mut key_iter).expect_err_no_debug("expected missing key material");
         assert!(matches!(
             err,
             CryptoError::InvalidKeyMaterial { context } if context == "missing fixed key material"

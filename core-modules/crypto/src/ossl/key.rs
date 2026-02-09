@@ -103,16 +103,17 @@ impl Drop for PKey {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::utils::test_utils::ResultTestExt;
 
     #[test]
     fn from_der_private_rejects_invalid_data() {
-        let err = PKey::from_der_private(&[]).err().expect("expected error");
+        let err = PKey::from_der_private(&[]).expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::KeyLoadPrivateDerFailed);
     }
 
     #[test]
     fn from_der_public_rejects_invalid_data() {
-        let err = PKey::from_der_public(&[]).err().expect("expected error");
+        let err = PKey::from_der_public(&[]).expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::KeyLoadPublicDerFailed);
     }
 }

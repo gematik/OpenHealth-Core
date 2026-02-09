@@ -148,24 +148,25 @@ impl Mac {
 mod tests {
     use super::*;
     use crate::ossl::api::with_thread_local_cell;
+    use crate::utils::test_utils::ResultTestExt;
 
     #[test]
     fn new_fails_when_fetch_null() {
         let err =
-            with_thread_local_cell(&FORCE_MAC_FETCH_NULL, true, || Mac::new("HMAC")).err().expect("expected error");
+            with_thread_local_cell(&FORCE_MAC_FETCH_NULL, true, || Mac::new("HMAC")).expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::MacFetchFailed);
     }
 
     #[test]
     fn new_fails_when_ctx_null() {
-        let err = with_thread_local_cell(&FORCE_MAC_CTX_NULL, true, || Mac::new("HMAC")).err().expect("expected error");
+        let err = with_thread_local_cell(&FORCE_MAC_CTX_NULL, true, || Mac::new("HMAC")).expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::MacCtxNewFailed);
     }
 
     #[test]
     fn create_rejects_invalid_cmac_cipher() {
         // The EVP_MAC CMAC implementation expects a valid cipher name.
-        let err = Mac::create(&[0u8; 16], "CMAC", Some("not-a-cipher"), None).err().expect("expected error");
+        let err = Mac::create(&[0u8; 16], "CMAC", Some("not-a-cipher"), None).expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::MacInitFailed);
     }
 }

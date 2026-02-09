@@ -125,6 +125,7 @@ mod tests {
     use super::*;
     use crate::ossl::api::with_thread_local_cell;
     use crate::ossl::api::OsslErrorKind;
+    use crate::utils::test_utils::ResultTestExt;
 
     #[test]
     fn new_mem_to_vec_empty() {
@@ -141,15 +142,14 @@ mod tests {
 
     #[test]
     fn new_mem_fails_when_null() {
-        let err = with_thread_local_cell(&FORCE_BIO_NEW_NULL, true, Bio::new_mem).err().expect("expected error");
+        let err = with_thread_local_cell(&FORCE_BIO_NEW_NULL, true, Bio::new_mem).expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::BioCreateFailed);
     }
 
     #[test]
     fn from_slice_fails_when_null() {
         let err = with_thread_local_cell(&FORCE_BIO_NEW_MEM_BUF_NULL, true, || Bio::from_slice(b"hello"))
-            .err()
-            .expect("expected error");
+            .expect_err_no_debug("expected error");
         assert_eq!(err.kind(), &OsslErrorKind::BioCreateFromBufferFailed);
     }
 

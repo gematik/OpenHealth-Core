@@ -284,6 +284,7 @@ pub(crate) fn with_thread_local_cell<T: Copy, R>(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::utils::test_utils::ResultTestExt;
 
     #[test]
     fn ossl_error_kind_is_preserved() {
@@ -306,7 +307,7 @@ mod tests {
             Ok(())
         }
 
-        let err = fail().err().expect("expected error");
+        let err = fail().expect_err_no_debug("expected error");
         assert!(matches!(err.kind(), OsslErrorKind::CheckFailed));
     }
 }
