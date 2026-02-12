@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2025 gematik GmbH
+// SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -372,6 +372,12 @@ mod tests {
     fn write_boolean_false() {
         let result = Asn1Encoder::write(|w| w.write_asn1_boolean(false)).unwrap();
         assert_eq!(hex(&result), "01 01 00");
+    }
+
+    #[test]
+    fn write_bit_string_invalid_unused_bits() {
+        let err = Asn1Encoder::write(|w| w.write_asn1_bit_string(&[0xFF], 9)).unwrap_err();
+        assert!(matches!(err, Asn1EncoderError::InvalidUnusedBitCount { .. }));
     }
 
     #[test]

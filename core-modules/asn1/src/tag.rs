@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2025 gematik GmbH
+// SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -317,5 +317,19 @@ mod tests {
         for b in [0x00u8, 0x0F, 0x23, 0xFE, 0xFF] {
             assert!(UniversalTag::try_from(b).is_err());
         }
+    }
+
+    #[test]
+    fn as_universal_only_for_universal_class() {
+        let id = Asn1Id::ctx(0x01);
+        assert!(id.as_universal().is_none());
+        let id = Asn1Id::uni(0x01);
+        assert_eq!(id.as_universal(), Some(UniversalTag::Boolean));
+    }
+
+    #[test]
+    fn class_form_bitor_encodes_identifier_bits() {
+        assert_eq!(Asn1Class::ContextSpecific | Asn1Form::Constructed, 0xA0);
+        assert_eq!(Asn1Form::Constructed | Asn1Class::ContextSpecific, 0xA0);
     }
 }

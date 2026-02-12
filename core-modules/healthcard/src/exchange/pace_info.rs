@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2025 gematik GmbH
+// SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -175,5 +175,20 @@ mod tests {
             Err(PaceInfoError::UnsupportedParameterId(id)) => assert_eq!(id, 42),
             _ => panic!("Expected UnsupportedParameterId error"),
         }
+    }
+
+    #[test]
+    fn protocol_id_bytes_handles_long_form_length() {
+        let mut arcs = Vec::new();
+        arcs.push("1".to_string());
+        arcs.push("2".to_string());
+        for _ in 0..130 {
+            arcs.push("1".to_string());
+        }
+        let oid = ObjectIdentifier::parse(&arcs.join(".")).unwrap();
+        let pace_info = PaceInfo::new(oid, EcCurve::BrainpoolP256r1);
+        let bytes = pace_info.protocol_id_bytes();
+        assert!(bytes.len() > 127);
+        assert_eq!(bytes[0], 0x2A);
     }
 }

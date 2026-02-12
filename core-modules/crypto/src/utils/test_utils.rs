@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2025 gematik GmbH
+// SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -27,6 +27,19 @@ pub fn to_hex_string(bytes: &[u8]) -> String {
     bytes.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(" ")
 }
 
+pub(crate) trait ResultTestExt<E> {
+    fn expect_err_no_debug(self, msg: &str) -> E;
+}
+
+impl<T, E> ResultTestExt<E> for Result<T, E> {
+    fn expect_err_no_debug(self, msg: &str) -> E {
+        match self {
+            Ok(_) => panic!("{msg}"),
+            Err(err) => err,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -37,5 +50,11 @@ mod tests {
         let bytes = hex_to_bytes(hex);
         assert_eq!(bytes, vec![0x0A, 0x0B, 0x0C]);
         assert_eq!(to_hex_string(&bytes), hex);
+    }
+
+    #[test]
+    fn expect_err_no_debug_returns_err() {
+        let result: Result<(), u32> = Err(7);
+        assert_eq!(result.expect_err_no_debug("expected err"), 7);
     }
 }

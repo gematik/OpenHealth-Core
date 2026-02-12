@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
+// SPDX-FileCopyrightText: Copyright 2026 gematik GmbH
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -19,15 +19,26 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-pub mod card;
-pub mod command;
-pub mod identifier;
+pub(crate) trait ResultTestExt<E> {
+    fn expect_err_no_debug(self, msg: &str) -> E;
+}
 
-pub mod exchange;
-#[cfg(feature = "uniffi")]
-pub mod ffi;
+impl<T, E> ResultTestExt<E> for Result<T, E> {
+    fn expect_err_no_debug(self, msg: &str) -> E {
+        match self {
+            Ok(_) => panic!("{msg}"),
+            Err(err) => err,
+        }
+    }
+}
+
 #[cfg(test)]
-pub(crate) mod test_utils;
+mod tests {
+    use super::ResultTestExt;
 
-#[cfg(feature = "uniffi")]
-uniffi::setup_scaffolding!();
+    #[test]
+    fn expect_err_no_debug_returns_err() {
+        let result: Result<(), &'static str> = Err("x");
+        assert_eq!(result.expect_err_no_debug("expected err"), "x");
+    }
+}

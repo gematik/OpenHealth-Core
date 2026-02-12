@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2025 gematik GmbH
+// SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -58,5 +58,19 @@ impl CardChannel for MockSession {
         } else {
             Ok(self.responses.remove(0))
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::exchange::channel::CardChannel;
+
+    #[test]
+    fn mock_session_transmit_errors_when_empty() {
+        let mut session = MockSession::new(vec![]);
+        let apdu = CardCommandApdu::header_only(0x00, 0xA4, 0x04, 0x00).unwrap();
+        let err = CardChannel::transmit(&mut session, &apdu).unwrap_err();
+        assert!(matches!(err, ExchangeError::Transport { .. }));
     }
 }

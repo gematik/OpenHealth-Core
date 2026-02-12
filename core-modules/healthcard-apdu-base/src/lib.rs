@@ -282,3 +282,176 @@ fn derive_keypair_from_scalar(
     let public_key = public_point.to_ec_public_key()?;
     Ok((public_key, private_key))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crypto::error::CryptoError;
+    use std::path::PathBuf;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    fn temp_path(name: &str) -> PathBuf {
+        let nanos = SystemTime::now().duration_since(UNIX_EPOCH).expect("time").as_nanos();
+        let pid = std::process::id();
+        std::env::temp_dir().join(format!("healthcard-apdu-base-{name}-{pid}-{nanos}.jsonl"))
+    }
+
+    #[test]
+    fn transcript_roundtrip_jsonl() {
+        let mut transcript = Transcript::new(true);
+        transcript.set_keys(vec!["A1B2C3".to_string()]);
+        transcript.set_can("123456");
+        transcript.push_exchange(&[0x00], &[0x90, 0x00]);
+        transcript.push_error(&[0x01], "failure");
+
+        let jsonl = transcript.to_jsonl_string().unwrap();
+        let parsed = Transcript::from_jsonl_str(&format!("\n{jsonl}\n")).unwrap();
+
+        assert!(parsed.supports_extended_length());
+        assert_eq!(parsed.keys().unwrap()[0], "A1B2C3");
+        assert_eq!(parsed.can(), Some("123456"));
+        assert_eq!(parsed.entries.len(), 2);
+        match &parsed.entries[0] {
+            TranscriptEntry::Exchange { tx, rx } => {
+                assert_eq!(tx, "00");
+                assert_eq!(rx, "9000");
+            }
+            _ => panic!("expected exchange entry"),
+        }
+        match &parsed.entries[1] {
+            TranscriptEntry::Error { tx, error } => {
+                assert_eq!(tx, "01");
+                assert_eq!(error, "failure");
+            }
+            _ => panic!("expected error entry"),
+        }
+    }
+
+    #[test]
+    fn transcript_requires_header() {
+        let input = r#"{"type":"exchange","tx":"00","rx":"9000"}"#;
+        let err = Transcript::from_jsonl_str(input).unwrap_err();
+        assert!(matches!(err, TranscriptError::InvalidHeader));
+    }
+
+    #[test]
+    fn transcript_from_jsonl_skips_empty_lines() {
+        let mut transcript = Transcript::new(false);
+        transcript.push_exchange(&[0x00], &[0x90, 0x00]);
+        let jsonl = transcript.to_jsonl_string().unwrap();
+        let path = temp_path("skip-empty");
+        std::fs::write(&path, format!("\n\n{jsonl}\n\n")).unwrap();
+
+        let parsed = Transcript::from_jsonl(&path).unwrap();
+        assert_eq!(parsed.entries.len(), 1);
+        std::fs::remove_file(path).unwrap();
+    }
+
+    #[test]
+    fn transcript_from_jsonl_invalid_header_entry() {
+        let path = temp_path("invalid-header");
+        let content = r#"
+{"type":"exchange","tx":"00","rx":"9000"}
+"#;
+        std::fs::write(&path, content).unwrap();
+        let err = Transcript::from_jsonl(&path).unwrap_err();
+        assert!(matches!(err, TranscriptError::InvalidHeader));
+        std::fs::remove_file(path).unwrap();
+    }
+
+    #[test]
+    fn transcript_write_jsonl_roundtrip() {
+        let mut transcript = Transcript::new(true);
+        transcript.push_exchange(&[0xAA], &[0x90, 0x00]);
+        let path = temp_path("write-jsonl");
+        transcript.write_jsonl(&path).unwrap();
+        let parsed = Transcript::from_jsonl(&path).unwrap();
+        assert_eq!(parsed.entries.len(), 1);
+        std::fs::remove_file(path).unwrap();
+    }
+
+    #[test]
+    fn replay_session_matches_transcript_entries() {
+        let mut transcript = Transcript::new(false);
+        transcript.push_exchange(&[0xDE, 0xAD], &[0x90, 0x00]);
+        let mut session = ReplaySession::from_transcript(transcript);
+        let ok = session.transmit_bytes(&[0xDE, 0xAD]).unwrap();
+        assert_eq!(ok, vec![0x90, 0x00]);
+    }
+
+    #[test]
+    fn replay_session_reports_mismatch() {
+        let mut transcript = Transcript::new(false);
+        transcript.push_exchange(&[0x01], &[0x90, 0x00]);
+        let mut session = ReplaySession::from_transcript(transcript);
+        let err = session.transmit_bytes(&[0x02]).unwrap_err();
+        assert!(matches!(err, TranscriptError::ReplayMismatch));
+    }
+
+    #[test]
+    fn replay_session_exhausted() {
+        let transcript = Transcript::new(false);
+        let mut session = ReplaySession::from_transcript(transcript);
+        let err = session.transmit_bytes(&[0x00]).unwrap_err();
+        assert!(matches!(err, TranscriptError::ReplayExhausted));
+    }
+
+    #[test]
+    fn replay_session_invalid_tx_hex() {
+        let transcript = Transcript {
+            header: TranscriptHeader { version: 1, supports_extended_length: false, keys: None, can: None },
+            entries: vec![TranscriptEntry::Exchange { tx: "ZZ".to_string(), rx: "9000".to_string() }],
+        };
+        let mut session = ReplaySession::from_transcript(transcript);
+        let err = session.transmit_bytes(&[0x00]).unwrap_err();
+        assert!(matches!(err, TranscriptError::InvalidTxHex(_)));
+    }
+
+    #[test]
+    fn replay_session_error_entry_returns_error() {
+        let transcript = Transcript {
+            header: TranscriptHeader { version: 1, supports_extended_length: false, keys: None, can: None },
+            entries: vec![TranscriptEntry::Error { tx: "AA".to_string(), error: "boom".to_string() }],
+        };
+        let mut session = ReplaySession::from_transcript(transcript);
+        let err = session.transmit_bytes(&[0xAA]).unwrap_err();
+        assert!(matches!(err, TranscriptError::ReplayEntryError(_)));
+    }
+
+    #[test]
+    fn replay_session_error_entry_mismatch() {
+        let transcript = Transcript {
+            header: TranscriptHeader { version: 1, supports_extended_length: false, keys: None, can: None },
+            entries: vec![TranscriptEntry::Error { tx: "AA".to_string(), error: "boom".to_string() }],
+        };
+        let mut session = ReplaySession::from_transcript(transcript);
+        let err = session.transmit_bytes(&[0xAB]).unwrap_err();
+        assert!(matches!(err, TranscriptError::ReplayMismatch));
+    }
+
+    #[test]
+    fn replay_session_from_jsonl() {
+        let mut transcript = Transcript::new(false);
+        transcript.push_exchange(&[0x11], &[0x90, 0x00]);
+        let path = temp_path("replay-from-jsonl");
+        transcript.write_jsonl(&path).unwrap();
+        let mut session = ReplaySession::from_jsonl(&path).unwrap();
+        let response = session.transmit_bytes(&[0x11]).unwrap();
+        assert_eq!(response, vec![0x90, 0x00]);
+        std::fs::remove_file(path).unwrap();
+    }
+
+    #[test]
+    fn fixed_key_generator_consumes_keys() {
+        let mut transcript = Transcript::new(true);
+        transcript.set_keys(vec!["01".repeat(32)]);
+        let mut generator = transcript.fixed_key_generator().unwrap().unwrap();
+
+        let (public_key, private_key) = generator(EcCurve::BrainpoolP256r1).unwrap();
+        assert_eq!(private_key.as_bytes().len(), 32);
+        assert_eq!(public_key.curve(), &EcCurve::BrainpoolP256r1);
+
+        let err = generator(EcCurve::BrainpoolP256r1).err().expect("expected generator exhaustion");
+        assert!(matches!(err, CryptoError::InvalidKeyMaterial { .. }));
+    }
+}

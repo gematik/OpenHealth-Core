@@ -259,3 +259,79 @@ pub fn retrieve_certificate_from(
 ) -> Result<Vec<u8>, ExchangeError> {
     with_channel(session, |adapter| exchange::retrieve_certificate_from(adapter, certificate))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::command::apdu::CardResponseApdu;
+    use crate::command::health_card_command::HealthCardResponse as CoreHealthCardResponse;
+    use crate::command::health_card_status::HealthCardResponseStatus;
+    use crate::exchange::ExchangeError as CoreExchangeError;
+    use crate::exchange::HealthCardVerifyPinResult as CoreVerifyPinResult;
+    use crate::ffi::channel;
+    use asn1::error::Asn1DecoderError;
+    use std::sync::Arc;
+
+    fn response(status: HealthCardResponseStatus) -> CoreHealthCardResponse {
+        let apdu = CardResponseApdu::new(&[0x90, 0x00]).unwrap();
+        CoreHealthCardResponse::new(status, apdu)
+    }
+
+    #[test]
+    fn verify_pin_result_mapping() {
+        let success =
+            VerifyPinResult::from_core(CoreVerifyPinResult::Success(response(HealthCardResponseStatus::Success)));
+        assert!(matches!(success.outcome, VerifyPinOutcome::Success));
+        assert_eq!(success.retries_left, None);
+
+        let warn = VerifyPinResult::from_core(CoreVerifyPinResult::WrongSecretWarning {
+            response: response(HealthCardResponseStatus::WrongSecretWarningCount02),
+            retries_left: 2,
+        });
+        assert!(matches!(warn.outcome, VerifyPinOutcome::WrongSecretWarning));
+        assert_eq!(warn.retries_left, Some(2));
+    }
+
+    #[test]
+    fn exchange_error_mapping() {
+        let err: ExchangeError = CoreExchangeError::InvalidArgument("bad".to_string()).into();
+        assert!(matches!(err, ExchangeError::InvalidArgument { ref reason } if reason == "bad"));
+
+        let err: ExchangeError = CoreExchangeError::Asn1DecoderError(Asn1DecoderError::MalformedUtf8String).into();
+        assert!(matches!(
+            err,
+            ExchangeError::Asn1Decode { ref reason } if reason.contains("Malformed UTF-8 string")
+        ));
+    }
+
+    #[test]
+    fn card_pin_from_digits_errors_on_non_digit() {
+        let err = CardPin::from_digits("12a4".to_string()).err().unwrap();
+        assert!(matches!(err, ExchangeError::PinBlock { .. }));
+    }
+
+    #[test]
+    fn with_channel_maps_errors() {
+        struct DummyChannel;
+
+        impl CardChannel for DummyChannel {
+            fn supports_extended_length(&self) -> bool {
+                false
+            }
+
+            fn transmit(
+                &self,
+                _command: Arc<channel::CommandApdu>,
+            ) -> Result<Arc<channel::ResponseApdu>, channel::CardChannelError> {
+                unreachable!()
+            }
+        }
+
+        let session: Arc<dyn CardChannel> = Arc::new(DummyChannel);
+        let err = super::with_channel(session, |_adapter| -> Result<(), CoreExchangeError> {
+            Err(CoreExchangeError::InvalidArgument("boom".to_string()))
+        })
+        .unwrap_err();
+        assert!(matches!(err, ExchangeError::InvalidArgument { reason } if reason == "boom"));
+    }
+}

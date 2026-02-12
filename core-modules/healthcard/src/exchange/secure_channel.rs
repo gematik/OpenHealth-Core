@@ -224,9 +224,6 @@ impl<S: CardChannel> SecureChannel<S> {
 
         let bytes = response.into_bytes();
         let (body, sw_bytes) = bytes.split_at(bytes.len() - 2);
-        if body.is_empty() {
-            return Err(ExchangeError::invalid_argument("response apdu missing secure messaging data objects"));
-        }
 
         let response_objects = parse_response_objects(body)?;
         if response_objects.status_bytes != [sw_bytes[0], sw_bytes[1]] {
@@ -371,12 +368,7 @@ where
     let shared_secret_point = picc_public_key.to_ec_point().mul(&ep_scalar)?;
     let shared_secret_bytes = shared_secret_point.uncompressed()?;
     let coord_len = coordinate_size(&pace_info.curve);
-    if shared_secret_bytes.len() < 1 + coord_len {
-        return Err(ExchangeError::Crypto(CryptoError::InvalidEcPoint(
-            "shared secret shorter than coordinate length".into(),
-        )));
-    }
-    let shared_secret_x = &shared_secret_bytes[1..1 + coord_len];
+    let shared_secret_x = extract_uncompressed_x_coordinate(&shared_secret_bytes, coord_len)?;
 
     let encryption_key = get_aes128_key(shared_secret_x, Mode::Enc)?;
     let mac_key = get_aes128_key(shared_secret_x, Mode::Mac)?;
@@ -384,14 +376,12 @@ where
     let ssc = derive_ssc();
 
     let mac = derive_mac(pace_key.mac(), &picc_public_key, &pace_info.protocol_id)?;
-    let derived_mac = derive_mac(pace_key.mac(), &ep_gs_shared_secret.to_ec_public_key()?, &pace_info.protocol_id)?;
 
     let picc_mac_response =
         channel.execute_command_success(&HealthCardCommand::general_authenticate_with_data(false, &mac, 5)?)?;
     let picc_mac = decode_general_authenticate(picc_mac_response.apdu.as_data())?;
-    if picc_mac != derived_mac {
-        return Err(ExchangeError::MutualAuthenticationFailed);
-    }
+    let ep_gs_public_key = ep_gs_shared_secret.to_ec_public_key()?;
+    verify_mutual_authentication_mac(pace_key.mac(), &ep_gs_public_key, &pace_info.protocol_id, &picc_mac)?;
 
     Ok(SecureChannel { channel, pace_key, ssc })
 }
@@ -406,6 +396,15 @@ fn coordinate_size(curve: &EcCurve) -> usize {
         EcCurve::BrainpoolP384r1 => 48,
         EcCurve::BrainpoolP512r1 => 64,
     }
+}
+
+fn extract_uncompressed_x_coordinate(uncompressed_point: &[u8], coord_len: usize) -> Result<&[u8], ExchangeError> {
+    if uncompressed_point.len() < 1 + coord_len {
+        return Err(ExchangeError::Crypto(CryptoError::InvalidEcPoint(
+            "shared secret shorter than coordinate length".into(),
+        )));
+    }
+    Ok(&uncompressed_point[1..1 + coord_len])
 }
 
 fn decrypt_nonce(key: &SecretKey, ciphertext: &[u8]) -> Result<Vec<u8>, ExchangeError> {
@@ -470,6 +469,19 @@ fn derive_mac(
     Ok(tag.into_iter().take(8).collect())
 }
 
+fn verify_mutual_authentication_mac(
+    mac_key: &SecretKey,
+    expected_public_key: &EcPublicKey,
+    protocol_id: &ObjectIdentifier,
+    received_mac: &[u8],
+) -> Result<(), ExchangeError> {
+    let expected_mac = derive_mac(mac_key, expected_public_key, protocol_id)?;
+    if !content_constant_time_equals(received_mac, &expected_mac) {
+        return Err(ExchangeError::MutualAuthenticationFailed);
+    }
+    Ok(())
+}
+
 fn ensure_not_secure(command: &CardCommandApdu) -> Result<(), ExchangeError> {
     if command.cla() & 0x0C == 0x0C {
         return Err(ExchangeError::invalid_argument("command already secured"));
@@ -515,6 +527,14 @@ fn derive_ssc() -> SendSequenceCounter {
     // eGK secure messaging starts with an all-zero SSC that is incremented before use.
     // The shared secret is used only for key derivation, not as an SSC seed.
     SendSequenceCounter::new([0u8; 16])
+}
+
+#[cfg(test)]
+pub(crate) fn test_secure_channel_with_adapter<S: CardChannel>(adapter: S) -> SecureChannel<S> {
+    let enc = SecretKey::new_secret(hex::decode("68406B4162100563D9C901A6154D2901").unwrap());
+    let mac = SecretKey::new_secret(hex::decode("73FF268784F72AF833FDC9464049AFC9").unwrap());
+    let pace_key = PaceChannelKeys::new(enc, mac);
+    SecureChannel { channel: adapter, pace_key, ssc: SendSequenceCounter::new([0u8; 16]) }
 }
 
 fn iso9797_1_pad(data: &[u8]) -> Vec<u8> {
@@ -676,6 +696,27 @@ mod tests {
         PaceChannelKeys::new(enc, mac)
     }
 
+    #[test]
+    fn mutual_authentication_mac_verification_accepts_match() {
+        let pace_key = pace_key_fixture();
+        let protocol_id = ObjectIdentifier::parse("1.2.3.4.5").unwrap();
+        let expected_public_key = EcCurve::BrainpoolP256r1.g().to_ec_public_key().unwrap();
+        let mac = derive_mac(pace_key.mac(), &expected_public_key, &protocol_id).unwrap();
+        assert!(verify_mutual_authentication_mac(pace_key.mac(), &expected_public_key, &protocol_id, &mac).is_ok());
+    }
+
+    #[test]
+    fn mutual_authentication_mac_verification_rejects_mismatch() {
+        let pace_key = pace_key_fixture();
+        let protocol_id = ObjectIdentifier::parse("1.2.3.4.5").unwrap();
+        let expected_public_key = EcCurve::BrainpoolP256r1.g().to_ec_public_key().unwrap();
+        let mut mac = derive_mac(pace_key.mac(), &expected_public_key, &protocol_id).unwrap();
+        mac[0] ^= 0x01;
+        let err =
+            verify_mutual_authentication_mac(pace_key.mac(), &expected_public_key, &protocol_id, &mac).unwrap_err();
+        assert!(matches!(err, ExchangeError::MutualAuthenticationFailed));
+    }
+
     struct DummySession;
 
     impl CardChannel for DummySession {
@@ -798,6 +839,31 @@ mod tests {
     }
 
     #[test]
+    fn decrypt_do85_plaintext() {
+        let mut scope = make_channel();
+        let ssc = SendSequenceCounter::new([0u8; 16]).increment();
+
+        let do85 = encode_context_specific(0x01, &[0xCA, 0xFE]).unwrap();
+        let do99 = encode_context_specific(0x19, &[0x90, 0x00]).unwrap();
+        let mut mac_payload = Vec::new();
+        mac_payload.extend_from_slice(&do85);
+        mac_payload.extend_from_slice(&do99);
+        let mac = compute_mac(scope.pace_key.mac(), &ssc, &[], &mac_payload).unwrap();
+        let do8e = encode_context_specific(0x0E, &mac).unwrap();
+
+        let mut body = Vec::new();
+        body.extend_from_slice(&do85);
+        body.extend_from_slice(&do99);
+        body.extend_from_slice(&do8e);
+
+        let mut apdu = body;
+        apdu.extend_from_slice(&[0x90, 0x00]);
+        let response = CardResponseApdu::new(&apdu).unwrap();
+        let plain = scope.decrypt(response).unwrap();
+        assert_eq!(hex::encode_upper(plain.to_bytes()), "CAFE9000");
+    }
+
+    #[test]
     fn card_access_number_validation() {
         let ok = CardAccessNumber::new("123456").unwrap();
         assert_eq!(ok.as_bytes(), b"123456");
@@ -807,14 +873,186 @@ mod tests {
 
     #[test]
     fn decode_general_authenticate_accepts_long_lengths() {
-        let value = vec![0xAB; 130];
-        let inner_len = value.len();
-        let outer_len = 1 /* tag */ + 2 /* inner length header */ + inner_len;
+        let value_81 = vec![0xAB; 130];
+        let inner_len_81 = value_81.len();
+        let outer_len_81 = 1 /* tag */ + 2 /* inner length header */ + inner_len_81;
+        let mut data_81 = vec![0x7C, 0x81, outer_len_81 as u8, 0x80, 0x81, inner_len_81 as u8];
+        data_81.extend_from_slice(&value_81);
+        let decoded_81 = decode_general_authenticate(&data_81).expect("decode with 0x81 length succeeds");
+        assert_eq!(decoded_81, value_81);
 
-        let mut data = vec![0x7C, 0x81, outer_len as u8, 0x80, 0x81, inner_len as u8];
-        data.extend_from_slice(&value);
-
-        let decoded = decode_general_authenticate(&data).expect("decode succeeds");
-        assert_eq!(decoded, value);
+        let value_82 = vec![0xCD; 300];
+        let mut data_82 = vec![0x7C, 0x82, 0x01, 0x30, 0x80, 0x82, 0x01, 0x2C];
+        data_82.extend_from_slice(&value_82);
+        let decoded_82 = decode_general_authenticate(&data_82).expect("decode with 0x82 length succeeds");
+        assert_eq!(decoded_82, value_82);
     }
+
+    #[test]
+    fn decode_general_authenticate_rejects_malformed_long_lengths() {
+        let truncated_inner_length = [0x7C, 0x03, 0x80, 0x82, 0x01];
+        let err = decode_general_authenticate(&truncated_inner_length).unwrap_err();
+        assert!(matches!(err, ExchangeError::Asn1DecoderError(_)));
+
+        let truncated_outer_payload = [0x7C, 0x82, 0x01, 0x2C, 0x80, 0x01, 0xAA];
+        let err = decode_general_authenticate(&truncated_outer_payload).unwrap_err();
+        assert!(matches!(err, ExchangeError::Asn1DecoderError(_)));
+    }
+
+    #[test]
+    fn decrypt_rejects_short_response() {
+        let response = CardResponseApdu::new(&[0x90, 0x00, 0x01]).unwrap();
+        let mut scope = make_channel();
+        let err = scope.decrypt(response).unwrap_err();
+        assert!(matches!(err, ExchangeError::InvalidArgument(_)));
+    }
+
+    #[test]
+    fn decrypt_rejects_status_mismatch() {
+        let do99 = encode_context_specific(0x19, &[0x90, 0x00]).unwrap();
+        let do8e = encode_context_specific(0x0E, &[0x00; 8]).unwrap();
+        let mut body = Vec::new();
+        body.extend_from_slice(&do99);
+        body.extend_from_slice(&do8e);
+        let mut apdu = body;
+        apdu.extend_from_slice(&[0x6F, 0x00]);
+        let response = CardResponseApdu::new(&apdu).unwrap();
+        let mut scope = make_channel();
+        let err = scope.decrypt(response).unwrap_err();
+        assert!(matches!(err, ExchangeError::InvalidArgument(_)));
+    }
+
+    #[test]
+    fn decrypt_rejects_mac_mismatch() {
+        let mut bytes = hex::decode("990290008E08087631D746F872729000").unwrap();
+        let last = bytes.len() - 3;
+        bytes[last] ^= 0xFF;
+        let response = CardResponseApdu::new(&bytes).unwrap();
+        let mut scope = make_channel();
+        let err = scope.decrypt(response).unwrap_err();
+        assert!(matches!(err, ExchangeError::MutualAuthenticationFailed));
+    }
+
+    #[test]
+    fn decrypt_rejects_invalid_do87_value() {
+        let mut scope = make_channel();
+        let ssc = SendSequenceCounter::new([0u8; 16]).increment();
+
+        let do87 = encode_context_specific(0x07, &[0x00]).unwrap();
+        let do99 = encode_context_specific(0x19, &[0x90, 0x00]).unwrap();
+        let mut mac_payload = Vec::new();
+        mac_payload.extend_from_slice(&do87);
+        mac_payload.extend_from_slice(&do99);
+        let mac = compute_mac(scope.pace_key.mac(), &ssc, &[], &mac_payload).unwrap();
+        let do8e = encode_context_specific(0x0E, &mac).unwrap();
+
+        let mut body = Vec::new();
+        body.extend_from_slice(&do87);
+        body.extend_from_slice(&do99);
+        body.extend_from_slice(&do8e);
+
+        let mut apdu = body;
+        apdu.extend_from_slice(&[0x90, 0x00]);
+        let response = CardResponseApdu::new(&apdu).unwrap();
+        let err = scope.decrypt(response).unwrap_err();
+        assert!(matches!(err, ExchangeError::InvalidArgument(_)));
+    }
+
+    #[test]
+    fn decrypt_rejects_empty_body() {
+        let err = parse_response_objects(&[]).err().expect("empty response objects must fail");
+        assert!(matches!(err, ExchangeError::Asn1DecoderError(_)));
+    }
+
+    #[test]
+    fn decrypt_rejects_empty_do87_value() {
+        let mut scope = make_channel();
+        let ssc = SendSequenceCounter::new([0u8; 16]).increment();
+
+        let do87 = encode_context_specific(0x07, &[]).unwrap();
+        let do99 = encode_context_specific(0x19, &[0x90, 0x00]).unwrap();
+        let mut mac_payload = Vec::new();
+        mac_payload.extend_from_slice(&do87);
+        mac_payload.extend_from_slice(&do99);
+        let mac = compute_mac(scope.pace_key.mac(), &ssc, &[], &mac_payload).unwrap();
+        let do8e = encode_context_specific(0x0E, &mac).unwrap();
+
+        let mut body = Vec::new();
+        body.extend_from_slice(&do87);
+        body.extend_from_slice(&do99);
+        body.extend_from_slice(&do8e);
+
+        let mut apdu = body;
+        apdu.extend_from_slice(&[0x90, 0x00]);
+        let response = CardResponseApdu::new(&apdu).unwrap();
+        let err = scope.decrypt(response).unwrap_err();
+        assert!(matches!(err, ExchangeError::InvalidArgument(_)));
+    }
+
+    #[test]
+    fn decode_general_authenticate_rejects_empty() {
+        let err = decode_general_authenticate(&[0x7C, 0x00]).unwrap_err();
+        assert!(matches!(err, ExchangeError::Asn1DecoderError(_)));
+    }
+
+    #[test]
+    fn decode_general_authenticate_rejects_non_context_specific() {
+        let data = [0x7C, 0x03, 0x04, 0x01, 0x00];
+        let err = decode_general_authenticate(&data).unwrap_err();
+        assert!(matches!(err, ExchangeError::Asn1DecoderError(_)));
+    }
+
+    #[test]
+    fn parse_response_objects_rejects_wrong_tag_class() {
+        let err = parse_response_objects(&[0x04, 0x00]).err().unwrap();
+        assert!(matches!(err, ExchangeError::Asn1DecoderError(_)));
+    }
+
+    #[test]
+    fn parse_response_objects_rejects_multiple_data_objects() {
+        let first = encode_context_specific(0x07, &[0x01, 0x02]).unwrap();
+        let second = encode_context_specific(0x07, &[0x03]).unwrap();
+        let mut data = Vec::new();
+        data.extend_from_slice(&first);
+        data.extend_from_slice(&second);
+        let err = parse_response_objects(&data).err().unwrap();
+        assert!(matches!(err, ExchangeError::Asn1DecoderError(_)));
+    }
+
+    #[test]
+    fn encode_length_object_handles_wildcard() {
+        assert_eq!(encode_length_object(EXPECTED_LENGTH_WILDCARD_SHORT), vec![0x00]);
+    }
+
+    #[test]
+    fn secure_channel_error_transport_converts() {
+        let transport = SecureChannelError::transport(ExchangeError::invalid_argument("oops"));
+        let err: ExchangeError = transport.into();
+        assert!(matches!(err, ExchangeError::InvalidArgument(_)));
+    }
+
+    #[test]
+    fn establish_secure_channel_rejects_old_version() {
+        let version_bytes = [0xEF, 0x0A, 0xC0, 0x01, 0x00, 0xC1, 0x02, 0x01, 0x00, 0xC2, 0x01, 0x00];
+        let responses = vec![vec![0x90, 0x00], [version_bytes.as_slice(), &[0x90, 0x00]].concat()];
+        let session = crate::exchange::test_utils::MockSession::new(responses);
+        let can = CardAccessNumber::new("123456").unwrap();
+        let err = establish_secure_channel_with(session, &can, |_curve| unreachable!()).err().unwrap();
+        assert!(matches!(err, ExchangeError::InvalidCardVersion));
+    }
+
+    #[test]
+    fn establish_secure_channel_rejects_short_shared_secret() {
+        let err = extract_uncompressed_x_coordinate(&[0x04; 32], 32).unwrap_err();
+        assert!(matches!(err, ExchangeError::Crypto(CryptoError::InvalidEcPoint(_))));
+    }
+
+    #[test]
+    fn extract_uncompressed_x_coordinate_accepts_valid_uncompressed_point() {
+        let point = [0x04, 0xAA, 0xBB, 0xCC, 0xDD];
+        let x = extract_uncompressed_x_coordinate(&point, 2).unwrap();
+        assert_eq!(x, &[0xAA, 0xBB]);
+    }
+
+    // Secure-channel transcript replays are covered by integration tests in `core-modules/healthcard/tests/`.
 }

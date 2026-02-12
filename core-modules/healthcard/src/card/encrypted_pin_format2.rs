@@ -179,4 +179,18 @@ mod tests {
         assert_eq!(encrypted.as_bytes()[6], 0xFF);
         assert_eq!(encrypted.as_bytes()[7], 0xFF);
     }
+
+    #[test]
+    fn test_encrypted_pin_format2_from_encrypted_bytes_length_validation() {
+        let err = EncryptedPinFormat2::from_encrypted_bytes(vec![0x00; 7]).unwrap_err();
+        assert!(matches!(err, PinBlockError::InvalidBlockLength { expected: FORMAT2_PIN_SIZE, actual: 7 }));
+    }
+
+    #[test]
+    fn test_encrypted_pin_format2_into_zeroizing_bytes() {
+        let encrypted = EncryptedPinFormat2::new_from_digits(b"1234").unwrap();
+        let bytes = encrypted.into_zeroizing_bytes();
+        assert_eq!(bytes.len(), FORMAT2_PIN_SIZE);
+        assert_eq!(bytes[0], 0x24);
+    }
 }

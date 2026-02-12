@@ -1,4 +1,3 @@
-#
 # SPDX-FileCopyrightText: Copyright 2026 gematik GmbH
 #
 # SPDX-License-Identifier: Apache-2.0
@@ -20,12 +19,6 @@
 # For additional notes and disclaimer from gematik and in case of changes by gematik,
 # find details in the "Readme" file.
 
-set shell := ["bash", "-euo", "pipefail", "-c"]
-
-import 'just/default.just'
-import 'just/paths.just'
-import 'just/rust.just'
-import 'just/uniffi.just'
-import 'just/kotlin.just'
-import 'just/swift.just'
-
+# Ignore patterns for tools/quality-report.py.
+# One regex per line; empty lines and comments are ignored.
+core-modules/healthcard-apdu-tools/
