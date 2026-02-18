@@ -57,7 +57,7 @@ impl PaceInfo {
     pub fn protocol_id_bytes(&self) -> Vec<u8> {
         // Encode full TLV first
         let encoded =
-            Asn1Encoder::write(|w| w.write_object_identifier(&self.protocol_id)).expect("OID encoding must not fail");
+            Asn1Encoder::write_nonzeroizing(|w| w.write_object_identifier(&self.protocol_id)).expect("OID encoding must not fail");
         // Strip tag (1+ bytes) + length (1+ bytes) in a DER-compliant way
         // Tag is at least 1 byte; for UNIVERSAL OBJECT IDENTIFIER it's one byte (0x06),
         // but we still parse length generically.

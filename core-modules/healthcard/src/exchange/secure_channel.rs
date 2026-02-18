@@ -443,7 +443,7 @@ fn decode_general_authenticate(data: &[u8]) -> Result<Vec<u8>, ExchangeError> {
 }
 
 fn create_asn1_auth_token(public_key: &EcPublicKey, protocol_id: &ObjectIdentifier) -> Result<Vec<u8>, ExchangeError> {
-    Asn1Encoder::write::<Asn1EncoderError>(|writer| {
+    Asn1Encoder::write_nonzeroizing::<Asn1EncoderError>(|writer| {
         writer.write_tagged_object(Asn1Id::app(0x49).constructed(), |outer| {
             outer.write_object_identifier(protocol_id)?;
             outer.write_tagged_object(Asn1Id::ctx(0x06).primitive(), |inner| -> Result<(), Asn1EncoderError> {
@@ -568,7 +568,7 @@ fn encode_length_object(le: usize) -> Vec<u8> {
 }
 
 fn encode_context_specific(tag_number: u32, value: &[u8]) -> Result<Vec<u8>, ExchangeError> {
-    Asn1Encoder::write::<Asn1EncoderError>(|writer| {
+    Asn1Encoder::write_nonzeroizing::<Asn1EncoderError>(|writer| {
         writer.write_tagged_object(Asn1Id::ctx(tag_number).primitive(), |scope| {
             scope.write_bytes(value);
             Ok(())
