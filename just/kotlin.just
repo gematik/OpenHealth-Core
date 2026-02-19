@@ -109,3 +109,55 @@ kotlin-publish-local:
     cd "{{ repo_root }}/core-modules-kotlin" \
       && ./gradlew --no-daemon :healthcard:publishToMavenLocal
 
+# -------------------------------------------------
+# Kotlin (asn1)
+# -------------------------------------------------
+
+# Args:
+# - `platform`: `linux|windows|darwin`
+# - `arch`: `x86_64|aarch64`
+# - `library_file`: e.g. `libasn1.so`, `libasn1.dylib`, `asn1.dll`
+# - `profile`: `release|debug`
+#
+# Uses (override via env):
+# - `OUT_ROOT` (default: `core-modules-kotlin/asn1/build/generated/uniffi`)
+# - `CARGO_TARGET_DIR` (default: `core-modules-kotlin/asn1/build/cargo`)
+#
+# Generate Kotlin bindings for a host target (Kotlin module defaults).
+[arg('platform', pattern='linux|windows|darwin')]
+[arg('arch', pattern='x86_64|aarch64')]
+[arg('library_file')]
+[arg('profile', pattern='release|debug')]
+kotlin-asn1-bindings-generate platform arch library_file profile="release":
+    #!/usr/bin/env bash
+    set -euxo pipefail
+
+    OUT_ROOT="{{ kotlin_asn1_out_root }}" \
+    CARGO_TARGET_DIR="{{ kotlin_asn1_cargo_target_dir }}" \
+    just uniffi-bindings-generate-crate "{{ platform }}" "{{ arch }}" kotlin "{{ library_file }}" "{{ asn1_rust_crate }}" "{{ asn1_rust_manifest }}" "{{ profile }}"
+
+# Required env:
+# - `ANDROID_NDK_HOME` or `ANDROID_NDK_ROOT`
+#
+# Build Android Rust libraries via `cargo ndk` and stage them as `android-jni/`.
+kotlin-asn1-bindings-generate-android:
+    #!/usr/bin/env bash
+    set -euxo pipefail
+
+    ANDROID_NDK_HOME="${ANDROID_NDK_HOME:-${ANDROID_NDK_ROOT:-}}"
+    : "${ANDROID_NDK_HOME:?ANDROID_NDK_HOME or ANDROID_NDK_ROOT must be set}"
+    export ANDROID_NDK_HOME
+
+    cargo ndk \
+      -t arm64-v8a -t x86_64 \
+      -o "{{ kotlin_asn1_cargo_target_dir }}/android" \
+      --manifest-path "{{ asn1_rust_manifest }}" \
+      -- build --locked --release --features uniffi
+
+    rm -rf "{{ kotlin_asn1_android_jni_root }}"
+    cp -r "{{ kotlin_asn1_cargo_target_dir }}/android" "{{ kotlin_asn1_android_jni_root }}"
+
+# Publish the Kotlin `asn1` module to the local Maven repository.
+kotlin-asn1-publish-local:
+    cd "{{ repo_root }}/core-modules-kotlin" \
+      && ./gradlew --no-daemon :asn1:publishToMavenLocal

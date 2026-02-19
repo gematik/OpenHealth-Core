@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
+SPDX-FileCopyrightText: Copyright 2026 gematik GmbH
 
 SPDX-License-Identifier: Apache-2.0
 
@@ -20,10 +20,7 @@ limitations under the License.
 For additional notes and disclaimer from gematik and in case of changes by gematik,
 find details in the "Readme" file.
 -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="de.gematik.openhealth.asn1">
+</manifest>
 
-# Swift bindings
-
-This directory contains Swift/iOS interoperability artifacts built on top of the Rust `healthcard` crate via UniFFI.
-
-- `healthcard/`: Swift Package scaffold + scripts to generate UniFFI Swift bindings and build an Apple `xcframework`.
-- `asn1/`: Swift Package artifacts for the Rust `asn1` crate via UniFFI.

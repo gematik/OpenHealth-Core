@@ -87,3 +87,59 @@ uniffi-bindings-generate platform arch language library_file profile="release":
 
     cp "${library_path}" "${resources_dir}/"
 
+# Generate UniFFI bindings and stage the built library for an explicit crate/manifest.
+[arg('platform', pattern='linux|windows|darwin')]
+[arg('arch', pattern='x86_64|aarch64')]
+[arg('language', pattern='kotlin|swift')]
+[arg('library_file', pattern='(lib.+\.(so|dylib|a))|(.+\.dll)')]
+[arg('rust_crate_dir')]
+[arg('rust_manifest_path')]
+[arg('profile', pattern='release|debug')]
+uniffi-bindings-generate-crate platform arch language library_file rust_crate_dir rust_manifest_path profile="release":
+    #!/usr/bin/env bash
+    set -euxo pipefail
+
+    : "${OUT_ROOT:?OUT_ROOT must be set}"
+    : "${CARGO_TARGET_DIR:?CARGO_TARGET_DIR must be set}"
+
+    resource_platform="{{ platform }}"
+    resource_arch="{{ arch }}"
+
+    # Align with JNA's `Platform.RESOURCE_PREFIX` (examples: `darwin-aarch64`, `linux-x86-64`, `win32-x86-64`).
+    if [ "${resource_platform}" = "windows" ]; then
+        resource_platform="win32"
+    fi
+    if [ "${resource_arch}" = "x86_64" ]; then
+        resource_arch="x86-64"
+    fi
+
+    resource_id="${resource_platform}-${resource_arch}"
+
+    language_dir="${OUT_ROOT}/{{ language }}"
+    resources_dir="${OUT_ROOT}/resources/${resource_id}"
+
+    rm -rf "${language_dir}" "${resources_dir}"
+    mkdir -p "${language_dir}" "${resources_dir}"
+
+    cargo build \
+      --manifest-path "{{ rust_manifest_path }}" \
+      --locked \
+      --profile "{{ profile }}" \
+      --features uniffi
+
+    library_path="${CARGO_TARGET_DIR}/{{ profile }}/{{ library_file }}"
+    test -f "${library_path}"
+
+    cargo run \
+      --manifest-path "{{ uniffi_cli }}" \
+      --locked \
+      --quiet \
+      --bin uniffi-bindgen -- \
+        generate \
+        --config "{{ rust_crate_dir }}/uniffi.toml" \
+        --library "${library_path}" \
+        --language "{{ language }}" \
+        --out-dir "${language_dir}" \
+        --no-format
+
+    cp "${library_path}" "${resources_dir}/"

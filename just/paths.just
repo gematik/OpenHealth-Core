@@ -30,6 +30,9 @@ rust_crate := repo_root + "/core-modules/healthcard"
 rust_manifest := rust_crate + "/Cargo.toml"
 uniffi_cli := repo_root + "/tools/uniffi-cli/Cargo.toml"
 
+asn1_rust_crate := repo_root + "/core-modules/asn1"
+asn1_rust_manifest := asn1_rust_crate + "/Cargo.toml"
+
 # -------------------------------------------------
 # Kotlin paths
 # -------------------------------------------------
@@ -42,6 +45,15 @@ kotlin_cargo_target_dir := env_var_or_default("CARGO_TARGET_DIR", kotlin_cargo_t
 kotlin_out_root := env_var_or_default("OUT_ROOT", kotlin_out_root_default)
 
 android_jni_root := kotlin_out_root + "/android-jni"
+
+kotlin_asn1_module := repo_root + "/core-modules-kotlin/asn1"
+kotlin_asn1_cargo_target_dir_default := kotlin_asn1_module + "/build/cargo"
+kotlin_asn1_out_root_default := kotlin_asn1_module + "/build/generated/uniffi"
+
+kotlin_asn1_cargo_target_dir := env_var_or_default("CARGO_TARGET_DIR", kotlin_asn1_cargo_target_dir_default)
+kotlin_asn1_out_root := env_var_or_default("OUT_ROOT", kotlin_asn1_out_root_default)
+
+kotlin_asn1_android_jni_root := kotlin_asn1_out_root + "/android-jni"
 
 # -------------------------------------------------
 # Swift paths
@@ -57,3 +69,12 @@ swift_out_root_default := swift_module + "/build/generated/uniffi"
 swift_cargo_target_dir := env_var_or_default("CARGO_TARGET_DIR", swift_cargo_target_dir_default)
 swift_out_root := env_var_or_default("OUT_ROOT", swift_out_root_default)
 
+swift_asn1_module := repo_root + "/core-modules-swift/asn1"
+swift_asn1_module_name := "OpenHealthAsn1"
+swift_asn1_ffi_module_name := "OpenHealthAsn1FFI"
+
+swift_asn1_cargo_target_dir_default := swift_asn1_module + "/build/cargo"
+swift_asn1_out_root_default := swift_asn1_module + "/build/generated/uniffi"
+
+swift_asn1_cargo_target_dir := env_var_or_default("CARGO_TARGET_DIR", swift_asn1_cargo_target_dir_default)
+swift_asn1_out_root := env_var_or_default("OUT_ROOT", swift_asn1_out_root_default)

@@ -1,5 +1,5 @@
 // swift-tools-version: 5.9
-// SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
+// SPDX-FileCopyrightText: Copyright 2026 gematik GmbH
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -23,38 +23,29 @@
 import PackageDescription
 
 let package = Package(
-    name: "OpenHealthHealthcard",
+    name: "OpenHealthAsn1",
     platforms: [
         .iOS(.v13),
         .macOS(.v11),
     ],
     products: [
-        .library(name: "OpenHealthHealthcard", targets: ["OpenHealthHealthcard"]),
         .library(name: "OpenHealthAsn1", targets: ["OpenHealthAsn1"]),
     ],
     targets: [
         .binaryTarget(
-            name: "OpenHealthHealthcardFFI",
-            path: "core-modules-swift/healthcard/OpenHealthHealthcardFFI.xcframework"
-        ),
-        .target(
-            name: "OpenHealthHealthcard",
-            dependencies: ["OpenHealthHealthcardFFI"],
-            path: "core-modules-swift/healthcard/Sources/OpenHealthHealthcard"
-        ),
-        .testTarget(
-            name: "OpenHealthHealthcardTests",
-            dependencies: ["OpenHealthHealthcard"],
-            path: "core-modules-swift/healthcard/Tests/OpenHealthHealthcardTests"
-        ),
-        .binaryTarget(
             name: "OpenHealthAsn1FFI",
-            path: "core-modules-swift/asn1/OpenHealthAsn1FFI.xcframework"
+            path: "OpenHealthAsn1FFI.xcframework"
         ),
         .target(
             name: "OpenHealthAsn1",
             dependencies: ["OpenHealthAsn1FFI"],
-            path: "core-modules-swift/asn1/Sources/OpenHealthAsn1"
+            path: "Sources/OpenHealthAsn1"
+        ),
+        .testTarget(
+            name: "OpenHealthAsn1Tests",
+            dependencies: ["OpenHealthAsn1"],
+            path: "Tests/OpenHealthAsn1Tests"
         ),
     ]
 )
+
