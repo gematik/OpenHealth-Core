@@ -52,7 +52,7 @@ impl CardChannel for MockSession {
     }
 
     fn transmit(&mut self, command: &CardCommandApdu) -> Result<CardResponseApdu, Self::Error> {
-        self.recorded.push(command.to_bytes());
+        self.recorded.push(command.to_bytes().as_ref().to_vec());
         if self.responses.is_empty() {
             Err(ExchangeError::Transport { code: 0, message: "mock session ran out of responses".to_string() })
         } else {

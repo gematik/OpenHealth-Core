@@ -32,5 +32,3 @@ default = []
 regex = "1.12.2"
 thiserror = "2.0"
 zeroize = { version = "1.8.1", features = ["zeroize_derive"] }
-either = "1.15.0"
-

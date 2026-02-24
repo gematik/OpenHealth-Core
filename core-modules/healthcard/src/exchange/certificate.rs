@@ -116,6 +116,7 @@ mod tests {
     use crate::command::health_card_status::HealthCardResponseStatus;
     use crate::command::select_command::SelectCommand;
     use crate::exchange::test_utils::MockSession;
+    use asn1::maybe_zeroing_vec::VecOfU8;
 
     #[test]
     fn certificate_read_until_eof() {
@@ -150,11 +151,11 @@ mod tests {
         let cert = retrieve_certificate_from(&mut session, CertificateFile::EgkAutCvcE256).unwrap();
         assert_eq!(cert, vec![0xDE, 0xAD, 0xBE, 0xEF]);
         assert_eq!(
-            session.recorded[0],
+            VecOfU8::new_nonzeroizing(session.recorded[0].clone()),
             HealthCardCommand::select(false, false).command_apdu(false).unwrap().to_bytes()
         );
         assert_eq!(
-            session.recorded[1],
+            VecOfU8::new_nonzeroizing(session.recorded[1].clone()),
             HealthCardCommand::select_fid_with_options(
                 &ids::ef_c_egk_aut_cvc_e256_fid(),
                 false,

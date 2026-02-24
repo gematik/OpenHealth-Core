@@ -21,6 +21,7 @@
 
 use crate::command::health_card_command::{ExpectedLength, HealthCardCommand};
 use crate::command::health_card_status::PSO_COMPUTE_DIGITAL_SIGNATURE_STATUS;
+use asn1::maybe_zeroing_vec::VecOfU8;
 
 /// CLA byte for the PSO COMPUTE DIGITAL SIGNATURE command
 const CLA: u8 = 0x00;
@@ -52,7 +53,7 @@ impl PsoComputeDigitalSignatureCommand for HealthCardCommand {
             INS,
             P1,
             P2,
-            Some(data_to_be_signed.to_vec()),
+            Some(VecOfU8::new_nonzeroizing(data_to_be_signed.to_vec())),
             Some(ExpectedLength::Any),
         )
     }
@@ -72,7 +73,7 @@ mod tests {
         assert_eq!(cmd.ins, INS);
         assert_eq!(cmd.p1, P1);
         assert_eq!(cmd.p2, P2);
-        assert_eq!(cmd.data, Some(data.to_vec()));
+        assert_eq!(cmd.data, Some(VecOfU8::new_nonzeroizing(data.to_vec())));
         assert_eq!(cmd.ne, Some(ExpectedLength::Any));
 
         // Test with empty data
@@ -83,7 +84,7 @@ mod tests {
         assert_eq!(cmd.ins, INS);
         assert_eq!(cmd.p1, P1);
         assert_eq!(cmd.p2, P2);
-        assert_eq!(cmd.data, Some(vec![]));
+        assert_eq!(cmd.data, Some(VecOfU8::new_nonzeroizing(vec![])));
         assert_eq!(cmd.ne, Some(ExpectedLength::Any));
 
         // Test with longer data
@@ -94,7 +95,7 @@ mod tests {
         assert_eq!(cmd.ins, INS);
         assert_eq!(cmd.p1, P1);
         assert_eq!(cmd.p2, P2);
-        assert_eq!(cmd.data, Some(long_data.clone()));
+        assert_eq!(cmd.data, Some(VecOfU8::new_nonzeroizing(long_data.clone())));
         assert_eq!(cmd.ne, Some(ExpectedLength::Any));
     }
 }

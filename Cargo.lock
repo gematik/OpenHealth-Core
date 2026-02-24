@@ -122,7 +122,6 @@ dependencies = [
 name = "asn1"
 version = "0.1.0"
 dependencies = [
- "either",
  "regex",
  "thiserror",
  "zeroize",

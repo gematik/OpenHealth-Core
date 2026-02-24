@@ -24,6 +24,7 @@ use crate::card::encrypted_pin_format2::EncryptedPinFormat2;
 use crate::card::password_reference::PasswordReference;
 use crate::command::health_card_command::HealthCardCommand;
 use crate::command::health_card_status::UNLOCK_EGK_STATUS;
+use asn1::maybe_zeroing_vec::VecOfU8;
 
 /// CLA byte for the UNLOCK eGK command
 const CLA: u8 = 0x00;
@@ -67,7 +68,7 @@ impl ResetRetryCounterCommand for HealthCardCommand {
             UNLOCK_EGK_INS,
             MODE_VERIFICATION_DATA,
             password_reference.calculate_key_reference(df_specific),
-            Some(puk.as_bytes().to_vec()),
+            Some(VecOfU8::new_zeroizing(puk.as_bytes().to_vec())),
             None,
         )
     }
@@ -91,7 +92,7 @@ mod tests {
         assert_eq!(cmd.ins, UNLOCK_EGK_INS);
         assert_eq!(cmd.p1, MODE_VERIFICATION_DATA);
         assert_eq!(cmd.p2, password_ref.calculate_key_reference(false));
-        assert_eq!(cmd.data, Some(puk_data.clone()));
+        assert_eq!(cmd.data, Some(VecOfU8::new_zeroizing(puk_data.clone())));
         assert_eq!(cmd.ne, None);
 
         // Test with df_specific = true
@@ -101,7 +102,7 @@ mod tests {
         assert_eq!(cmd.ins, UNLOCK_EGK_INS);
         assert_eq!(cmd.p1, MODE_VERIFICATION_DATA);
         assert_eq!(cmd.p2, password_ref.calculate_key_reference(true));
-        assert_eq!(cmd.data, Some(puk_data));
+        assert_eq!(cmd.data, Some(VecOfU8::new_zeroizing(puk_data)));
         assert_eq!(cmd.ne, None);
     }
 }

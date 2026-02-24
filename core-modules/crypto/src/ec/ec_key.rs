@@ -26,6 +26,7 @@ use crate::ossl;
 use asn1::decoder::Asn1Decoder;
 use asn1::encoder::Asn1Encoder;
 use asn1::error::{Asn1DecoderError, Asn1EncoderError};
+use asn1::maybe_zeroing_vec::VecOfU8;
 use asn1::oid::ObjectIdentifier;
 use asn1::tag::UniversalTag;
 use num_bigint::BigInt;
@@ -208,7 +209,7 @@ impl EcPublicKey {
     ///   algorithm         AlgorithmIdentifier,
     ///   subjectPublicKey  BIT STRING
     /// }
-    pub fn encode_to_asn1(&self) -> CryptoResult<Vec<u8>> {
+    pub fn encode_to_asn1(&self) -> CryptoResult<VecOfU8> {
         Asn1Encoder::write_nonzeroizing(|scope| {
             // SEQUENCE (SubjectPublicKeyInfo)
             scope.write_tagged_object(UniversalTag::Sequence.constructed(), |scope| {
@@ -285,7 +286,7 @@ impl EcPrivateKey {
     ///   privateKey PrivateKey,
     ///   attributes [0] IMPLICIT Attributes OPTIONAL
     /// }
-    pub fn encode_to_asn1(&self) -> CryptoResult<Vec<u8>> {
+    pub fn encode_to_asn1(&self) -> CryptoResult<VecOfU8> {
         Asn1Encoder::write_nonzeroizing(|scope| {
             // SEQUENCE (PrivateKeyInfo)
             scope.write_tagged_object(UniversalTag::Sequence.constructed(), |scope| {

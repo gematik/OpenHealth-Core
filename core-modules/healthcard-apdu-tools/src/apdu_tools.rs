@@ -247,7 +247,7 @@ mod tests {
         let replay = Transcript::from_jsonl_str(&jsonl).unwrap();
         let mut channel = ReplayChannel::from_transcript(replay);
         let response = channel.transmit(&command).unwrap();
-        assert_eq!(response.to_bytes(), vec![0x90, 0x00]);
+        assert_eq!(response.to_bytes().as_ref(), &vec![0x90, 0x00]);
     }
 
     #[test]

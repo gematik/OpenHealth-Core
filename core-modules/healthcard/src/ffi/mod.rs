@@ -29,4 +29,5 @@
 
 mod channel;
 mod exchange;
+pub mod maybe_zeroing_vec;
 mod secure_channel;

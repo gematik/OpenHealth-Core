@@ -19,99 +19,26 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use std::ops::{Deref, DerefMut};
-use either::Either;
 use crate::error::Asn1EncoderError;
+use crate::maybe_zeroing_vec::{VecOfU8, ZeroingOption};
 use crate::oid::ObjectIdentifier;
 use crate::tag::{Asn1Class, Asn1Form, Asn1Id, UniversalTag};
-use zeroize::ZeroizeOnDrop;
 
 /// ASN.1 encoder for encoding data in ASN.1 format.
 pub struct Asn1Encoder;
 
-#[derive(ZeroizeOnDrop, Default)]
-pub struct ZeroizingVecOfU8 {
-    vec: Vec<u8>,
-}
-
-pub trait MaybeZeroizingBuffer: Deref<Target = [u8]> + DerefMut {
-    fn is_zeroizing(&self) -> bool;
-    fn push(&mut self, byte: u8);
-    fn extend_from_slice(&mut self, bytes: &[u8]);
-    fn as_slice(&self) -> &[u8];
-    fn to_concrete_type(self: Box<Self>) -> Either<Vec<u8>, ZeroizingVecOfU8>;
-}
-
-impl Deref for ZeroizingVecOfU8 {
-    type Target = [u8];
-    fn deref(&self) -> &Self::Target {
-        &self.vec
-    }
-}
-
-impl DerefMut for ZeroizingVecOfU8 {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.vec
-    }
-}
-
-impl MaybeZeroizingBuffer for ZeroizingVecOfU8 {
-    fn is_zeroizing(&self) -> bool {
-        true
-    }
-
-    fn push(&mut self, byte: u8) {
-        self.vec.push(byte);
-    }
-
-    fn extend_from_slice(&mut self, bytes: &[u8]) {
-        self.vec.extend_from_slice(bytes);
-    }
-
-    fn as_slice(&self) -> &[u8] {
-        &self
-    }
-
-    fn to_concrete_type(self: Box<Self>) -> Either<Vec<u8>, ZeroizingVecOfU8> {
-        Either::Right(*self)
-    }
-}
-
-impl MaybeZeroizingBuffer for Vec<u8> {
-    fn is_zeroizing(&self) -> bool {
-        false
-    }
-
-    fn push(&mut self, byte: u8) {
-        self.push(byte);
-    }
-
-    fn extend_from_slice(&mut self, bytes: &[u8]) {
-        self.extend_from_slice(bytes);
-    }
-
-    fn as_slice(&self) -> &[u8] {
-        &self
-    }
-
-    fn to_concrete_type(self: Box<Self>) -> Either<Vec<u8>, ZeroizingVecOfU8> {
-        Either::Left(*self)
-    }
-}
-
 /// Scope for writing ASN.1 encoded data. (Top-level, not nested)
-pub struct WriterScope
-{
-    buffer: Box<dyn MaybeZeroizingBuffer>,
+pub struct WriterScope {
+    buffer: VecOfU8,
 }
 
 impl WriterScope {
     pub fn new_with_nonzeroizing_buffer() -> Self {
-        Self { buffer: Box::new(Vec::<u8>::new()) }
+        Self { buffer: VecOfU8::new_nonzeroizing(Vec::<u8>::new()) }
     }
 
     pub fn new_with_zeroizing_buffer() -> Self {
-        Self { buffer: Box::new(ZeroizingVecOfU8::default()) }
+        Self { buffer: VecOfU8::new_zeroizing(Vec::<u8>::new()) }
     }
 
     pub fn buffer(&self) -> &[u8] {
@@ -121,13 +48,13 @@ impl WriterScope {
     /// Appends a byte to the buffer.
     #[inline]
     pub fn write_byte(&mut self, byte: u8) {
-        self.buffer.as_mut().push(byte);
+        self.buffer.push(byte);
     }
 
     /// Appends a byte array to the buffer.
     #[inline]
     pub fn write_bytes(&mut self, bytes: &[u8]) {
-        self.buffer.as_mut().extend_from_slice(bytes);
+        self.buffer.extend_from_slice(bytes);
     }
 
     /// Writes an integer in big-endian format, using a variable-length encoding.
@@ -214,10 +141,9 @@ impl WriterScope {
         // tag
         self.write_tag(id.number, id.class, id.form);
         // scope
-        let mut scope = if self.buffer.is_zeroizing() {
-            WriterScope::new_with_zeroizing_buffer()
-        } else {
-            WriterScope::new_with_nonzeroizing_buffer()
+        let mut scope = match self.buffer.get_zeroing_option() {
+            ZeroingOption::None => WriterScope::new_with_nonzeroizing_buffer(),
+            ZeroingOption::Zeroes => WriterScope::new_with_zeroizing_buffer(),
         };
         block(&mut scope)?;
         // length + value
@@ -322,31 +248,31 @@ impl WriterScope {
 }
 
 impl Asn1Encoder {
-    /// Encodes the given block of code and returns the resulting byte array.
-    pub fn write_nonzeroizing<E>(
-        block: impl FnOnce(&mut WriterScope) -> Result<(), E>
-    ) -> Result<Vec<u8>, E>
+    /// Encodes the given block of code and returns the resulting VecOfU8::NonZeroizing.
+    pub fn write_nonzeroizing<E>(block: impl FnOnce(&mut WriterScope) -> Result<(), E>) -> Result<VecOfU8, E>
     where
         E: From<Asn1EncoderError>,
     {
-        let mut scope = WriterScope::new_with_nonzeroizing_buffer();
-        block(&mut scope)?;
-        Ok(scope.buffer.to_concrete_type().left().expect("since a nonzeroizing buffer is used, to_concrete_type was expected to provide a Vec<u8>"))
+        Asn1Encoder::write(WriterScope::new_with_nonzeroizing_buffer(), block)
     }
 
-    /// Encodes the given block of code and returns the resulting ZeroizingVecOfU8.
-    pub fn write_zeroizing<E>(
-        block: impl FnOnce(&mut WriterScope) -> Result<(), E>
-    ) -> Result<ZeroizingVecOfU8, E>
+    /// Encodes the given block of code and returns the resulting VecOfU8::Zeroizing.
+    pub fn write_zeroizing<E>(block: impl FnOnce(&mut WriterScope) -> Result<(), E>) -> Result<VecOfU8, E>
     where
         E: From<Asn1EncoderError>,
     {
-        let mut scope = WriterScope::new_with_zeroizing_buffer();
+        Asn1Encoder::write(WriterScope::new_with_zeroizing_buffer(), block)
+    }
+
+    /// Encodes the given block of code and returns the resulting VecOfU8.
+    fn write<E>(mut scope: WriterScope, block: impl FnOnce(&mut WriterScope) -> Result<(), E>) -> Result<VecOfU8, E>
+    where
+        E: From<Asn1EncoderError>,
+    {
         block(&mut scope)?;
-        Ok(scope.buffer.to_concrete_type().right().expect("since a zeroizing buffer is used, to_concrete_type was expected to provide a ZeroizingVecOfU8"))
+        Ok(scope.buffer)
     }
 }
-
 
 #[cfg(test)]
 mod tests {

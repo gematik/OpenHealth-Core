@@ -24,6 +24,7 @@ use crate::card::encrypted_pin_format2::EncryptedPinFormat2;
 use crate::card::password_reference::PasswordReference;
 use crate::command::health_card_command::HealthCardCommand;
 use crate::command::health_card_status::CHANGE_REFERENCE_DATA_STATUS;
+use asn1::maybe_zeroing_vec::VecOfU8;
 
 /// CLA byte for the CHANGE REFERENCE DATA command
 const CLA: u8 = 0x00;
@@ -74,7 +75,7 @@ impl ChangeReferenceDataCommand for HealthCardCommand {
             INS,
             MODE_VERIFICATION_DATA,
             password_reference.calculate_key_reference(df_specific),
-            Some(combined_data),
+            Some(VecOfU8::new_zeroizing(combined_data)),
             None,
         )
     }
@@ -83,6 +84,7 @@ impl ChangeReferenceDataCommand for HealthCardCommand {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use asn1::maybe_zeroing_vec::VecOfU8;
 
     #[test]
     fn test_change_reference_data_command() {
@@ -104,7 +106,7 @@ mod tests {
         expected_data.extend_from_slice(&old_pin_data);
         expected_data.extend_from_slice(&new_pin_data);
 
-        assert_eq!(command.data, Some(expected_data));
+        assert_eq!(command.data, Some(VecOfU8::new_zeroizing(expected_data)));
         assert_eq!(command.ne, None);
 
         let command = HealthCardCommand::change_reference_data(&password_reference, true, &old_secret, &new_secret);

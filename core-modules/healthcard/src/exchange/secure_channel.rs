@@ -37,6 +37,7 @@ use asn1::decoder::{Asn1Decoder, Asn1Length};
 use asn1::encoder::Asn1Encoder;
 use asn1::error::Asn1DecoderError;
 use asn1::error::Asn1EncoderError;
+use asn1::maybe_zeroing_vec::VecOfU8;
 use asn1::oid::ObjectIdentifier;
 use asn1::tag::{Asn1Class, Asn1Id};
 use crypto::cipher::aes::{AesCipherSpec, AesDecipherSpec, Cipher, Iv, Padding};
@@ -205,8 +206,15 @@ impl<S: CardChannel> SecureChannel<S> {
         let ne =
             if expected_length.is_some() { EXPECTED_LENGTH_WILDCARD_EXTENDED } else { EXPECTED_LENGTH_WILDCARD_SHORT };
 
-        CardCommandApdu::new(header[0], header[1], header[2], header[3], Some(command_body), Some(ne))
-            .map_err(ExchangeError::Apdu)
+        CardCommandApdu::new(
+            header[0],
+            header[1],
+            header[2],
+            header[3],
+            Some(VecOfU8::new_zeroizing(command_body)),
+            Some(ne),
+        )
+        .map_err(ExchangeError::Apdu)
     }
 
     /// Decrypt and verify a secure messaging response.
@@ -442,7 +450,7 @@ fn decode_general_authenticate(data: &[u8]) -> Result<Vec<u8>, ExchangeError> {
         .map_err(ExchangeError::from)
 }
 
-fn create_asn1_auth_token(public_key: &EcPublicKey, protocol_id: &ObjectIdentifier) -> Result<Vec<u8>, ExchangeError> {
+fn create_asn1_auth_token(public_key: &EcPublicKey, protocol_id: &ObjectIdentifier) -> Result<VecOfU8, ExchangeError> {
     Asn1Encoder::write_nonzeroizing::<Asn1EncoderError>(|writer| {
         writer.write_tagged_object(Asn1Id::app(0x49).constructed(), |outer| {
             outer.write_object_identifier(protocol_id)?;
@@ -567,7 +575,7 @@ fn encode_length_object(le: usize) -> Vec<u8> {
     }
 }
 
-fn encode_context_specific(tag_number: u32, value: &[u8]) -> Result<Vec<u8>, ExchangeError> {
+fn encode_context_specific(tag_number: u32, value: &[u8]) -> Result<VecOfU8, ExchangeError> {
     Asn1Encoder::write_nonzeroizing::<Asn1EncoderError>(|writer| {
         writer.write_tagged_object(Asn1Id::ctx(tag_number).primitive(), |scope| {
             scope.write_bytes(value);
@@ -653,7 +661,7 @@ struct SecureDataObject {
 }
 
 impl SecureDataObject {
-    fn encoded(&self) -> Result<Vec<u8>, ExchangeError> {
+    fn encoded(&self) -> Result<VecOfU8, ExchangeError> {
         encode_context_specific(self.tag_number, &self.value)
     }
 
@@ -780,7 +788,7 @@ mod tests {
     #[test]
     fn encrypt_case3_short_data() {
         let data = vec![0x05, 0x06, 0x07, 0x08, 0x09, 0x0A];
-        let command = CardCommandApdu::new(0x01, 0x02, 0x03, 0x04, Some(data), None).unwrap();
+        let command = CardCommandApdu::new(0x01, 0x02, 0x03, 0x04, Some(VecOfU8::new_zeroizing(data)), None).unwrap();
         let mut scope = make_channel();
         let secured = scope.encrypt(&command).unwrap();
         assert_eq!(to_hex(&secured), "0D0203041D871101496C26D36306679609665A385C54DB378E08E7AAD918F260D8EF00");
@@ -789,7 +797,8 @@ mod tests {
     #[test]
     fn encrypt_case4_short_data_with_le() {
         let data = vec![0x05, 0x06, 0x07, 0x08, 0x09, 0x0A];
-        let command = CardCommandApdu::new(0x01, 0x02, 0x03, 0x04, Some(data), Some(127)).unwrap();
+        let command =
+            CardCommandApdu::new(0x01, 0x02, 0x03, 0x04, Some(VecOfU8::new_zeroizing(data)), Some(127)).unwrap();
         let mut scope = make_channel();
         let secured = scope.encrypt(&command).unwrap();
         assert_eq!(
@@ -801,7 +810,8 @@ mod tests {
     #[test]
     fn encrypt_case4_extended_data_with_le() {
         let data = vec![0u8; 256];
-        let command = CardCommandApdu::new(0x01, 0x02, 0x03, 0x04, Some(data), Some(127)).unwrap();
+        let command =
+            CardCommandApdu::new(0x01, 0x02, 0x03, 0x04, Some(VecOfU8::new_zeroizing(data)), Some(127)).unwrap();
         let mut scope = make_channel();
         let secured = scope.encrypt(&command).unwrap();
         assert_eq!(
