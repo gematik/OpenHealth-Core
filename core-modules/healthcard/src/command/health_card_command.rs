@@ -197,7 +197,7 @@ mod tests {
     #[test]
     fn test_health_card_response() {
         let apdu_data = vec![0x90, 0x00];
-        let response_apdu = CardResponseApdu::new(&apdu_data).unwrap();
+        let response_apdu = CardResponseApdu::new_nonzeroing(&apdu_data).unwrap();
         let response = HealthCardResponse::new(HealthCardResponseStatus::Success, response_apdu.clone());
 
         assert!(response.require_success().is_ok());

@@ -152,7 +152,7 @@ mod tests {
         assert_eq!(cert, vec![0xDE, 0xAD, 0xBE, 0xEF]);
         assert_eq!(
             VecOfU8::new_nonzeroizing(session.recorded[0].clone()),
-            HealthCardCommand::select(false, false).command_apdu(false).unwrap().to_bytes()
+            HealthCardCommand::select(false, false).command_apdu(false).unwrap().to_vec()
         );
         assert_eq!(
             VecOfU8::new_nonzeroizing(session.recorded[1].clone()),
@@ -164,7 +164,7 @@ mod tests {
             )
             .command_apdu(false)
             .unwrap()
-            .to_bytes()
+            .to_vec()
         );
     }
 }

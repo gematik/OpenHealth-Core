@@ -61,7 +61,7 @@ mod tests {
         assert_eq!(session.recorded.len(), 2);
         assert_eq!(
             VecOfU8::new_nonzeroizing(session.recorded[0].clone()),
-            HealthCardCommand::select(false, false).command_apdu(false).unwrap().to_bytes()
+            HealthCardCommand::select(false, false).command_apdu(false).unwrap().to_vec()
         );
     }
 }

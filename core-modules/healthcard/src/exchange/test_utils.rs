@@ -38,8 +38,10 @@ impl MockSession {
 
     /// Create a mock session with an explicit extended-length capability flag.
     pub(crate) fn with_extended_support(responses: Vec<Vec<u8>>, supports_extended_length: bool) -> Self {
-        let responses =
-            responses.into_iter().map(|raw| CardResponseApdu::new(&raw).expect("valid response APDU")).collect();
+        let responses = responses
+            .into_iter()
+            .map(|raw| CardResponseApdu::new_nonzeroing(&raw).expect("valid response APDU"))
+            .collect();
         Self { responses, recorded: Vec::new(), supports_extended_length }
     }
 }
@@ -52,7 +54,7 @@ impl CardChannel for MockSession {
     }
 
     fn transmit(&mut self, command: &CardCommandApdu) -> Result<CardResponseApdu, Self::Error> {
-        self.recorded.push(command.to_bytes().as_ref().to_vec());
+        self.recorded.push(command.to_vec().as_ref().to_vec());
         if self.responses.is_empty() {
             Err(ExchangeError::Transport { code: 0, message: "mock session ran out of responses".to_string() })
         } else {

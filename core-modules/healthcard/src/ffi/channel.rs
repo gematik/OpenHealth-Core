@@ -136,7 +136,7 @@ impl CommandApdu {
 
     /// Serializes the command APDU to raw bytes.
     pub fn to_bytes(&self) -> Arc<FfiVecOfU8> {
-        FfiVecOfU8::from_core(self.inner.to_bytes())
+        FfiVecOfU8::from_core(self.inner.to_vec())
     }
 }
 
@@ -189,7 +189,7 @@ impl ResponseApdu {
         let mut full = data;
         full.push((sw >> 8) as u8);
         full.push(sw as u8);
-        Ok(ResponseApdu { inner: CardResponseApdu::new(&full)? })
+        Ok(ResponseApdu { inner: CardResponseApdu::new_nonzeroing(&full)? })
     }
 
     /// Returns the status word (SW1SW2) as `0xSW1SW2` (big-endian).
@@ -204,7 +204,7 @@ impl ResponseApdu {
 
     /// Serializes the response APDU to raw bytes (`data || SW1 || SW2`).
     pub fn to_bytes(&self) -> Arc<FfiVecOfU8> {
-        FfiVecOfU8::from_core(self.inner.to_bytes())
+        FfiVecOfU8::from_core(self.inner.to_vec())
     }
 }
 
@@ -307,7 +307,7 @@ mod tests {
     fn command_apdu_roundtrip() {
         let ffi_apdu = CommandApdu::header_only(0x00, 0xA4, 0x04, 0x00).unwrap();
         let rebuilt = ffi_apdu.to_core();
-        assert_eq!(rebuilt.to_bytes(), CardCommandApdu::header_only(0x00, 0xA4, 0x04, 0x00).unwrap().to_bytes());
+        assert_eq!(rebuilt.to_vec(), CardCommandApdu::header_only(0x00, 0xA4, 0x04, 0x00).unwrap().to_vec());
     }
 
     #[test]
@@ -326,10 +326,10 @@ mod tests {
 
     #[test]
     fn response_apdu_conversion_preserves_bytes() {
-        let response = CardResponseApdu::new(&[0xDE, 0xAD, 0x90, 0x00]).unwrap();
+        let response = CardResponseApdu::new_nonzeroing(&[0xDE, 0xAD, 0x90, 0x00]).unwrap();
         let ffi_apdu = ResponseApdu::from_core(response.clone());
         let rebuilt = CardResponseApdu::try_from(ffi_apdu.as_ref()).unwrap();
-        assert_eq!(rebuilt.to_bytes(), response.to_bytes());
+        assert_eq!(rebuilt.to_vec(), response.to_vec());
         assert_eq!(ffi_apdu.sw(), 0x9000);
     }
 

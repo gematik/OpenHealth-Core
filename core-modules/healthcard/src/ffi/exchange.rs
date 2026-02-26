@@ -273,7 +273,7 @@ mod tests {
     use std::sync::Arc;
 
     fn response(status: HealthCardResponseStatus) -> CoreHealthCardResponse {
-        let apdu = CardResponseApdu::new(&[0x90, 0x00]).unwrap();
+        let apdu = CardResponseApdu::new_nonzeroing(&[0x90, 0x00]).unwrap();
         CoreHealthCardResponse::new(status, apdu)
     }
 
