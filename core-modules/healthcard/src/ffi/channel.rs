@@ -134,8 +134,7 @@ impl CommandApdu {
         })
     }
 
-    /// Serializes the command APDU to raw bytes.
-    pub fn to_bytes(&self) -> Arc<FfiVecOfU8> {
+    pub fn to_vec(&self) -> Arc<FfiVecOfU8> {
         FfiVecOfU8::from_core(self.inner.to_vec())
     }
 }
@@ -145,7 +144,7 @@ impl CommandApdu {
 /// This object represents a response APDU and exposes:
 /// - `sw()`: status word (SW1SW2)
 /// - `data()`: response data without the status word
-/// - `to_bytes()`: raw APDU bytes (`data || SW1 || SW2`)
+/// - `to_vec()`: raw APDU bytes (`data || SW1 || SW2`)
 #[derive(Debug, uniffi::Object)]
 pub struct ResponseApdu {
     inner: CardResponseApdu,
@@ -203,7 +202,7 @@ impl ResponseApdu {
     }
 
     /// Serializes the response APDU to raw bytes (`data || SW1 || SW2`).
-    pub fn to_bytes(&self) -> Arc<FfiVecOfU8> {
+    pub fn to_vec(&self) -> Arc<FfiVecOfU8> {
         FfiVecOfU8::from_core(self.inner.to_vec())
     }
 }
@@ -338,7 +337,7 @@ mod tests {
         let ffi_apdu = ResponseApdu::from_bytes(vec![0xDE, 0xAD, 0x90, 0x00]).unwrap();
         assert_eq!(ffi_apdu.sw(), 0x9000);
         assert_eq!(ffi_apdu.data(), vec![0xDE, 0xAD]);
-        assert_eq!(ffi_apdu.to_bytes(), FfiVecOfU8::from_nonzeroing_bytes(vec![0xDE, 0xAD, 0x90, 0x00]));
+        assert_eq!(ffi_apdu.to_vec(), FfiVecOfU8::from_nonzeroing_bytes(vec![0xDE, 0xAD, 0x90, 0x00]));
     }
 
     #[test]
@@ -346,7 +345,7 @@ mod tests {
         let response = ResponseApdu::from_parts(0x9000, vec![0xDE, 0xAD]).unwrap();
         assert_eq!(response.sw(), 0x9000);
         assert_eq!(response.data(), vec![0xDE, 0xAD]);
-        assert_eq!(response.to_bytes(), FfiVecOfU8::from_nonzeroing_bytes(vec![0xDE, 0xAD, 0x90, 0x00]));
+        assert_eq!(response.to_vec(), FfiVecOfU8::from_nonzeroing_bytes(vec![0xDE, 0xAD, 0x90, 0x00]));
     }
 
     #[test]
