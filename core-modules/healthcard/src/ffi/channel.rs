@@ -22,8 +22,8 @@
 use crate::command::apdu::{ApduError, CardCommandApdu, CardResponseApdu};
 use crate::exchange::channel::CardChannel as CoreCardChannel;
 use crate::exchange::ExchangeError;
-use crate::ffi::maybe_zeroing_vec::VecOfU8 as FfiVecOfU8;
-use asn1::maybe_zeroing_vec::VecOfU8 as Asn1VecOfU8;
+use crate::ffi::maybe_zeroizing_vec::VecOfU8 as FfiVecOfU8;
+use asn1::maybe_zeroizing_vec::VecOfU8 as Asn1VecOfU8;
 use std::sync::{Arc, Mutex};
 use thiserror::Error;
 
@@ -188,7 +188,7 @@ impl ResponseApdu {
         let mut full = data;
         full.push((sw >> 8) as u8);
         full.push(sw as u8);
-        Ok(ResponseApdu { inner: CardResponseApdu::new_nonzeroing(&full)? })
+        Ok(ResponseApdu { inner: CardResponseApdu::new_nonzeroizing(&full)? })
     }
 
     /// Returns the status word (SW1SW2) as `0xSW1SW2` (big-endian).
@@ -300,7 +300,7 @@ impl From<CardChannelError> for ExchangeError {
 mod tests {
     use super::*;
     use crate::command::apdu::{CardCommandApdu, EXPECTED_LENGTH_WILDCARD_EXTENDED};
-    use crate::ffi::maybe_zeroing_vec::VecOfU8 as FfiVecOfU8;
+    use crate::ffi::maybe_zeroizing_vec::VecOfU8 as FfiVecOfU8;
 
     #[test]
     fn command_apdu_roundtrip() {
@@ -325,7 +325,7 @@ mod tests {
 
     #[test]
     fn response_apdu_conversion_preserves_bytes() {
-        let response = CardResponseApdu::new_nonzeroing(&[0xDE, 0xAD, 0x90, 0x00]).unwrap();
+        let response = CardResponseApdu::new_nonzeroizing(&[0xDE, 0xAD, 0x90, 0x00]).unwrap();
         let ffi_apdu = ResponseApdu::from_core(response.clone());
         let rebuilt = CardResponseApdu::try_from(ffi_apdu.as_ref()).unwrap();
         assert_eq!(rebuilt.to_vec(), response.to_vec());
@@ -337,7 +337,7 @@ mod tests {
         let ffi_apdu = ResponseApdu::from_bytes(vec![0xDE, 0xAD, 0x90, 0x00]).unwrap();
         assert_eq!(ffi_apdu.sw(), 0x9000);
         assert_eq!(ffi_apdu.data(), vec![0xDE, 0xAD]);
-        assert_eq!(ffi_apdu.to_vec(), FfiVecOfU8::from_nonzeroing_bytes(vec![0xDE, 0xAD, 0x90, 0x00]));
+        assert_eq!(ffi_apdu.to_vec(), FfiVecOfU8::from_nonzeroizing_bytes(vec![0xDE, 0xAD, 0x90, 0x00]));
     }
 
     #[test]
@@ -345,7 +345,7 @@ mod tests {
         let response = ResponseApdu::from_parts(0x9000, vec![0xDE, 0xAD]).unwrap();
         assert_eq!(response.sw(), 0x9000);
         assert_eq!(response.data(), vec![0xDE, 0xAD]);
-        assert_eq!(response.to_vec(), FfiVecOfU8::from_nonzeroing_bytes(vec![0xDE, 0xAD, 0x90, 0x00]));
+        assert_eq!(response.to_vec(), FfiVecOfU8::from_nonzeroizing_bytes(vec![0xDE, 0xAD, 0x90, 0x00]));
     }
 
     #[test]

@@ -20,7 +20,7 @@
 // find details in the "Readme" file.
 
 use crate::error::Asn1EncoderError;
-use crate::maybe_zeroing_vec::{VecOfU8, ZeroingOption};
+use crate::maybe_zeroizing_vec::{VecOfU8, ZeroizingOption};
 use crate::oid::ObjectIdentifier;
 use crate::tag::{Asn1Class, Asn1Form, Asn1Id, UniversalTag};
 
@@ -141,9 +141,9 @@ impl WriterScope {
         // tag
         self.write_tag(id.number, id.class, id.form);
         // scope
-        let mut scope = match self.buffer.get_zeroing_option() {
-            ZeroingOption::None => WriterScope::new_with_nonzeroizing_buffer(),
-            ZeroingOption::Zeroes => WriterScope::new_with_zeroizing_buffer(),
+        let mut scope = match self.buffer.get_zeroizing_option() {
+            ZeroizingOption::None => WriterScope::new_with_nonzeroizing_buffer(),
+            ZeroizingOption::Zeroes => WriterScope::new_with_zeroizing_buffer(),
         };
         block(&mut scope)?;
         // length + value

@@ -24,7 +24,7 @@ use crate::card::encrypted_pin_format2::EncryptedPinFormat2;
 use crate::card::password_reference::PasswordReference;
 use crate::command::health_card_command::HealthCardCommand;
 use crate::command::health_card_status::UNLOCK_EGK_STATUS;
-use asn1::maybe_zeroing_vec::VecOfU8;
+use asn1::maybe_zeroizing_vec::VecOfU8;
 
 /// CLA byte for the UNLOCK eGK command
 const CLA: u8 = 0x00;

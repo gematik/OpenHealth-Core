@@ -23,7 +23,7 @@ use std::ops::Deref;
 use zeroize::Zeroize;
 
 #[derive(Zeroize, Clone, Debug, PartialEq, Eq)]
-pub enum ZeroingOption {
+pub enum ZeroizingOption {
     None,
     Zeroes,
 }
@@ -31,12 +31,12 @@ pub enum ZeroingOption {
 #[derive(Zeroize, Clone, Debug, PartialEq, Eq)]
 pub struct VecOfU8 {
     vec: Vec<u8>,
-    zeroing_option: ZeroingOption,
+    zeroizing_option: ZeroizingOption,
 }
 
 impl Drop for VecOfU8 {
     fn drop(&mut self) {
-        if self.zeroing_option == ZeroingOption::Zeroes {
+        if self.zeroizing_option == ZeroizingOption::Zeroes {
             self.zeroize();
         };
     }
@@ -44,15 +44,15 @@ impl Drop for VecOfU8 {
 
 impl VecOfU8 {
     pub fn new_nonzeroizing<V: Into<Vec<u8>>>(vec: V) -> Self {
-        VecOfU8 { vec: vec.into(), zeroing_option: ZeroingOption::None }
+        VecOfU8 { vec: vec.into(), zeroizing_option: ZeroizingOption::None }
     }
 
     pub fn new_zeroizing<V: Into<Vec<u8>>>(vec: V) -> Self {
-        VecOfU8 { vec: vec.into(), zeroing_option: ZeroingOption::Zeroes }
+        VecOfU8 { vec: vec.into(), zeroizing_option: ZeroizingOption::Zeroes }
     }
 
-    pub fn new<V: Into<Vec<u8>>>(vec: V, opt: ZeroingOption) -> Self {
-        VecOfU8 { vec: vec.into(), zeroing_option: opt }
+    pub fn new<V: Into<Vec<u8>>>(vec: V, opt: ZeroizingOption) -> Self {
+        VecOfU8 { vec: vec.into(), zeroizing_option: opt }
     }
 
     pub fn push(&mut self, byte: u8) {
@@ -71,12 +71,12 @@ impl VecOfU8 {
         self.vec.is_empty()
     }
 
-    pub fn get_zeroing_option(&self) -> ZeroingOption {
-        self.zeroing_option.clone()
+    pub fn get_zeroizing_option(&self) -> ZeroizingOption {
+        self.zeroizing_option.clone()
     }
 
-    pub fn set_zeroing(&mut self) {
-        self.zeroing_option = ZeroingOption::Zeroes;
+    pub fn set_zeroizing(&mut self) {
+        self.zeroizing_option = ZeroizingOption::Zeroes;
     }
 }
 
@@ -95,7 +95,7 @@ impl Deref for VecOfU8 {
 
 #[cfg(test)]
 mod tests {
-    use crate::maybe_zeroing_vec::{VecOfU8, ZeroingOption};
+    use crate::maybe_zeroizing_vec::{VecOfU8, ZeroizingOption};
 
     #[test]
     fn test_new_zeroizing() {
@@ -103,7 +103,7 @@ mod tests {
         let vec_of_u8 = VecOfU8::new_zeroizing(vec.clone());
 
         assert_eq!(vec_of_u8.as_ref(), vec.as_slice());
-        assert_eq!(vec_of_u8.zeroing_option, ZeroingOption::Zeroes);
+        assert_eq!(vec_of_u8.zeroizing_option, ZeroizingOption::Zeroes);
     }
 
     #[test]
@@ -112,16 +112,16 @@ mod tests {
         let vec_of_u8 = VecOfU8::new_nonzeroizing(vec.clone());
 
         assert_eq!(vec_of_u8.as_ref(), vec.as_slice());
-        assert_eq!(vec_of_u8.zeroing_option, ZeroingOption::None);
+        assert_eq!(vec_of_u8.zeroizing_option, ZeroizingOption::None);
     }
 
     #[test]
-    fn test_set_zeroing() {
+    fn test_set_zeroizing() {
         let vec = vec![0xA0, 0x01, 0x02];
         let mut vec_of_u8 = VecOfU8::new_nonzeroizing(vec.clone());
-        vec_of_u8.set_zeroing();
+        vec_of_u8.set_zeroizing();
 
-        assert_eq!(vec_of_u8.zeroing_option, ZeroingOption::Zeroes);
+        assert_eq!(vec_of_u8.zeroizing_option, ZeroizingOption::Zeroes);
     }
 
     #[test]

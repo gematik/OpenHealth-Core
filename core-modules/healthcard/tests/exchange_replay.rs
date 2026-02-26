@@ -52,7 +52,7 @@ impl CardChannel for ReplayChannel {
             .session
             .transmit_bytes(&tx)
             .map_err(|err| ExchangeError::Transport { code: 0, message: err.to_string() })?;
-        CardResponseApdu::new_nonzeroing(&rx).map_err(ExchangeError::from)
+        CardResponseApdu::new_nonzeroizing(&rx).map_err(ExchangeError::from)
     }
 }
 

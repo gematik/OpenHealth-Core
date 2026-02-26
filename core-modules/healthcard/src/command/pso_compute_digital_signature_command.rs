@@ -21,7 +21,7 @@
 
 use crate::command::health_card_command::{ExpectedLength, HealthCardCommand};
 use crate::command::health_card_status::PSO_COMPUTE_DIGITAL_SIGNATURE_STATUS;
-use asn1::maybe_zeroing_vec::VecOfU8;
+use asn1::maybe_zeroizing_vec::VecOfU8;
 
 /// CLA byte for the PSO COMPUTE DIGITAL SIGNATURE command
 const CLA: u8 = 0x00;

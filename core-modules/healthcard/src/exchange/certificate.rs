@@ -116,7 +116,7 @@ mod tests {
     use crate::command::health_card_status::HealthCardResponseStatus;
     use crate::command::select_command::SelectCommand;
     use crate::exchange::test_utils::MockSession;
-    use asn1::maybe_zeroing_vec::VecOfU8;
+    use asn1::maybe_zeroizing_vec::VecOfU8;
 
     #[test]
     fn certificate_read_until_eof() {

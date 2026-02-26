@@ -19,7 +19,7 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use asn1::maybe_zeroing_vec::{VecOfU8, ZeroingOption};
+use asn1::maybe_zeroizing_vec::{VecOfU8, ZeroizingOption};
 use std::fmt;
 use thiserror::Error;
 
@@ -375,8 +375,9 @@ impl CardCommandApdu {
         };
 
         let apdu: VecOfU8 = {
-            let apdu_zeroing_opt = if let Some(d) = &data_vec { d.get_zeroing_option() } else { ZeroingOption::None };
-            VecOfU8::new(apdu, apdu_zeroing_opt)
+            let apdu_zeroizing_opt =
+                if let Some(d) = &data_vec { d.get_zeroizing_option() } else { ZeroizingOption::None };
+            VecOfU8::new(apdu, apdu_zeroizing_opt)
         };
 
         Ok(CardCommandApdu { apdu, cla, ins, p1, p2, data: data_vec, ne })
@@ -523,43 +524,43 @@ impl CardResponseApdu {
     ///
     /// # Arguments
     /// * `apdu` - The raw byte array of the received APDU.
-    pub fn new_nonzeroing(apdu: &[u8]) -> Result<Self, ApduError> {
-        Self::new(apdu, ZeroingOption::None)
+    pub fn new_nonzeroizing(apdu: &[u8]) -> Result<Self, ApduError> {
+        Self::new(apdu, ZeroizingOption::None)
     }
 
     /// Creates a new CardResponseApdu from a byte array.
     ///
     /// # Arguments
     /// * `apdu` - The raw byte array of the received APDU.
-    /// * `zeroing_option` - Whether the bytes should be zeroed out after use.
-    pub fn new(apdu: &[u8], zeroing_option: ZeroingOption) -> Result<Self, ApduError> {
+    /// * `zeroizing_option` - Whether the bytes should be zeroed out after use.
+    pub fn new(apdu: &[u8], zeroizing_option: ZeroizingOption) -> Result<Self, ApduError> {
         if apdu.len() < 2 {
             return Err(ApduError::InvalidApdu(
                 "Response APDU must contain at least 2 bytes (status bytes SW1, SW2)".to_string(),
             ));
         }
 
-        Ok(CardResponseApdu { bytes: VecOfU8::new(apdu.to_vec(), zeroing_option) })
+        Ok(CardResponseApdu { bytes: VecOfU8::new(apdu.to_vec(), zeroizing_option) })
     }
 
     /// Creates a new CardResponseApdu from a Vec<u8>.
     ///
     /// # Arguments
     /// * `apdu` - A Vec<u8> containing the raw byte array of the received APDU.
-    /// * `zeroing_option` - Whether the bytes should be zeroed out after use.
-    pub fn new_from_vec(apdu: Vec<u8>, zeroing_option: ZeroingOption) -> Result<Self, ApduError> {
+    /// * `zeroizing_option` - Whether the bytes should be zeroed out after use.
+    pub fn new_from_vec(apdu: Vec<u8>, zeroizing_option: ZeroizingOption) -> Result<Self, ApduError> {
         if apdu.len() < 2 {
             return Err(ApduError::InvalidApdu(
                 "Response APDU must contain at least 2 bytes (status bytes SW1, SW2)".to_string(),
             ));
         }
 
-        Ok(CardResponseApdu { bytes: VecOfU8::new(apdu, zeroing_option) })
+        Ok(CardResponseApdu { bytes: VecOfU8::new(apdu, zeroizing_option) })
     }
 
     /// Convenience constructor mirroring `new`.
     pub fn from_bytes(bytes: &[u8]) -> Result<Self, ApduError> {
-        Self::new_nonzeroing(bytes)
+        Self::new_nonzeroizing(bytes)
     }
 
     /// The data bytes of the response.
@@ -725,7 +726,7 @@ mod tests {
     #[test]
     fn test_card_response_apdu() {
         // Test response APDU with status 9000 (success)
-        let response = CardResponseApdu::new_nonzeroing(&[0x01, 0x02, 0x90, 0x00]).unwrap();
+        let response = CardResponseApdu::new_nonzeroizing(&[0x01, 0x02, 0x90, 0x00]).unwrap();
         assert_eq!(response.to_data(), vec![0x01, 0x02]);
         assert_eq!(response.sw1(), 0x90);
         assert_eq!(response.sw2(), 0x00);
@@ -919,6 +920,6 @@ mod tests {
 
     #[test]
     fn test_response_apdu_requires_status() {
-        assert!(matches!(CardResponseApdu::new_nonzeroing(&[0x90]), Err(ApduError::InvalidApdu(_))));
+        assert!(matches!(CardResponseApdu::new_nonzeroizing(&[0x90]), Err(ApduError::InvalidApdu(_))));
     }
 }

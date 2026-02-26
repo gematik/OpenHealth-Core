@@ -25,7 +25,7 @@ use std::fmt;
 use crate::command::apdu::{ApduError, CardCommandApdu, CardResponseApdu};
 use crate::command::apdu::{EXPECTED_LENGTH_WILDCARD_EXTENDED, EXPECTED_LENGTH_WILDCARD_SHORT};
 use crate::command::health_card_status::HealthCardResponseStatus;
-use asn1::maybe_zeroing_vec::VecOfU8;
+use asn1::maybe_zeroizing_vec::VecOfU8;
 use thiserror::Error;
 
 /// Expected length for a command response.
@@ -197,7 +197,7 @@ mod tests {
     #[test]
     fn test_health_card_response() {
         let apdu_data = vec![0x90, 0x00];
-        let response_apdu = CardResponseApdu::new_nonzeroing(&apdu_data).unwrap();
+        let response_apdu = CardResponseApdu::new_nonzeroizing(&apdu_data).unwrap();
         let response = HealthCardResponse::new(HealthCardResponseStatus::Success, response_apdu.clone());
 
         assert!(response.require_success().is_ok());

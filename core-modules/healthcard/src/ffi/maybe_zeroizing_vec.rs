@@ -19,7 +19,7 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use asn1::maybe_zeroing_vec::VecOfU8 as Asn1VecOfU8;
+use asn1::maybe_zeroizing_vec::VecOfU8 as Asn1VecOfU8;
 use std::sync::Arc;
 
 /// a wrapped Vec<u8> that might be zeroized (depending on it's configuration)
@@ -34,7 +34,7 @@ impl VecOfU8 {
     }
 
     #[allow(dead_code)]
-    pub(crate) fn from_nonzeroing_bytes(bytes: Vec<u8>) -> Arc<Self> {
+    pub(crate) fn from_nonzeroizing_bytes(bytes: Vec<u8>) -> Arc<Self> {
         Arc::new(Self { inner: Asn1VecOfU8::new_nonzeroizing(bytes) })
     }
 }

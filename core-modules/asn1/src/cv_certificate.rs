@@ -299,7 +299,7 @@ fn parse_date_bytes(bytes: &[u8]) -> Result<CertificateDate, Asn1DecoderError> {
 mod tests {
     use super::*;
     use crate::encoder::Asn1Encoder;
-    use crate::maybe_zeroing_vec::VecOfU8;
+    use crate::maybe_zeroizing_vec::VecOfU8;
     use crate::tag::TagNumberExt;
 
     type EncResult = Result<(), crate::error::Asn1EncoderError>;

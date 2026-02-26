@@ -23,6 +23,6 @@ pub mod date_time;
 pub mod decoder;
 pub mod encoder;
 pub mod error;
-pub mod maybe_zeroing_vec;
+pub mod maybe_zeroizing_vec;
 pub mod oid;
 pub mod tag;

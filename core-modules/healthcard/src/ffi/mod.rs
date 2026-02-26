@@ -29,5 +29,5 @@
 
 mod channel;
 mod exchange;
-pub mod maybe_zeroing_vec;
+pub mod maybe_zeroizing_vec;
 mod secure_channel;
