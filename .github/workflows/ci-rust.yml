@@ -145,7 +145,7 @@ jobs:
       - name: Run quality report (coverage + complexity)
         run: just rust-quality-report --max-total-score 0 --max-risky-functions 0
       - name: Upload quality report artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: rust-quality-report
           path: |
