@@ -37,6 +37,7 @@ use asn1::decoder::{Asn1Decoder, Asn1Length};
 use asn1::encoder::Asn1Encoder;
 use asn1::error::Asn1DecoderError;
 use asn1::error::Asn1EncoderError;
+use asn1::maybe_zeroizing_vec::{VecOfU8, ZeroizingOption};
 use asn1::oid::ObjectIdentifier;
 use asn1::tag::{Asn1Class, Asn1Id};
 use crypto::cipher::aes::{AesCipherSpec, AesDecipherSpec, Cipher, Iv, Padding};
@@ -205,8 +206,15 @@ impl<S: CardChannel> SecureChannel<S> {
         let ne =
             if expected_length.is_some() { EXPECTED_LENGTH_WILDCARD_EXTENDED } else { EXPECTED_LENGTH_WILDCARD_SHORT };
 
-        CardCommandApdu::new(header[0], header[1], header[2], header[3], Some(command_body), Some(ne))
-            .map_err(ExchangeError::Apdu)
+        CardCommandApdu::new(
+            header[0],
+            header[1],
+            header[2],
+            header[3],
+            Some(VecOfU8::new_zeroizing(command_body)),
+            Some(ne),
+        )
+        .map_err(ExchangeError::Apdu)
     }
 
     /// Decrypt and verify a secure messaging response.
@@ -222,7 +230,7 @@ impl<S: CardChannel> SecureChannel<S> {
             return Err(ExchangeError::invalid_argument("response apdu too short"));
         }
 
-        let bytes = response.into_bytes();
+        let bytes = response.into_vec();
         let (body, sw_bytes) = bytes.split_at(bytes.len() - 2);
 
         let response_objects = parse_response_objects(body)?;
@@ -261,7 +269,7 @@ impl<S: CardChannel> SecureChannel<S> {
         }
 
         plaintext.extend_from_slice(&status_bytes);
-        CardResponseApdu::new(&plaintext).map_err(ExchangeError::Apdu)
+        CardResponseApdu::new_from_vec(plaintext, ZeroizingOption::Zeroes).map_err(ExchangeError::Apdu)
     }
 
     fn increment_ssc(&mut self) -> [u8; 16] {
@@ -442,8 +450,8 @@ fn decode_general_authenticate(data: &[u8]) -> Result<Vec<u8>, ExchangeError> {
         .map_err(ExchangeError::from)
 }
 
-fn create_asn1_auth_token(public_key: &EcPublicKey, protocol_id: &ObjectIdentifier) -> Result<Vec<u8>, ExchangeError> {
-    Asn1Encoder::write::<Asn1EncoderError>(|writer| {
+fn create_asn1_auth_token(public_key: &EcPublicKey, protocol_id: &ObjectIdentifier) -> Result<VecOfU8, ExchangeError> {
+    Asn1Encoder::write_nonzeroizing::<Asn1EncoderError>(|writer| {
         writer.write_tagged_object(Asn1Id::app(0x49).constructed(), |outer| {
             outer.write_object_identifier(protocol_id)?;
             outer.write_tagged_object(Asn1Id::ctx(0x06).primitive(), |inner| -> Result<(), Asn1EncoderError> {
@@ -567,8 +575,8 @@ fn encode_length_object(le: usize) -> Vec<u8> {
     }
 }
 
-fn encode_context_specific(tag_number: u32, value: &[u8]) -> Result<Vec<u8>, ExchangeError> {
-    Asn1Encoder::write::<Asn1EncoderError>(|writer| {
+fn encode_context_specific(tag_number: u32, value: &[u8]) -> Result<VecOfU8, ExchangeError> {
+    Asn1Encoder::write_nonzeroizing::<Asn1EncoderError>(|writer| {
         writer.write_tagged_object(Asn1Id::ctx(tag_number).primitive(), |scope| {
             scope.write_bytes(value);
             Ok(())
@@ -653,7 +661,7 @@ struct SecureDataObject {
 }
 
 impl SecureDataObject {
-    fn encoded(&self) -> Result<Vec<u8>, ExchangeError> {
+    fn encoded(&self) -> Result<VecOfU8, ExchangeError> {
         encode_context_specific(self.tag_number, &self.value)
     }
 
@@ -748,7 +756,7 @@ mod tests {
     }
 
     fn to_hex(apdu: &CardCommandApdu) -> String {
-        hex::encode_upper(apdu.to_bytes())
+        hex::encode_upper(apdu.to_vec())
     }
 
     #[test]
@@ -780,7 +788,7 @@ mod tests {
     #[test]
     fn encrypt_case3_short_data() {
         let data = vec![0x05, 0x06, 0x07, 0x08, 0x09, 0x0A];
-        let command = CardCommandApdu::new(0x01, 0x02, 0x03, 0x04, Some(data), None).unwrap();
+        let command = CardCommandApdu::new(0x01, 0x02, 0x03, 0x04, Some(VecOfU8::new_zeroizing(data)), None).unwrap();
         let mut scope = make_channel();
         let secured = scope.encrypt(&command).unwrap();
         assert_eq!(to_hex(&secured), "0D0203041D871101496C26D36306679609665A385C54DB378E08E7AAD918F260D8EF00");
@@ -789,7 +797,8 @@ mod tests {
     #[test]
     fn encrypt_case4_short_data_with_le() {
         let data = vec![0x05, 0x06, 0x07, 0x08, 0x09, 0x0A];
-        let command = CardCommandApdu::new(0x01, 0x02, 0x03, 0x04, Some(data), Some(127)).unwrap();
+        let command =
+            CardCommandApdu::new(0x01, 0x02, 0x03, 0x04, Some(VecOfU8::new_zeroizing(data)), Some(127)).unwrap();
         let mut scope = make_channel();
         let secured = scope.encrypt(&command).unwrap();
         assert_eq!(
@@ -801,7 +810,8 @@ mod tests {
     #[test]
     fn encrypt_case4_extended_data_with_le() {
         let data = vec![0u8; 256];
-        let command = CardCommandApdu::new(0x01, 0x02, 0x03, 0x04, Some(data), Some(127)).unwrap();
+        let command =
+            CardCommandApdu::new(0x01, 0x02, 0x03, 0x04, Some(VecOfU8::new_zeroizing(data)), Some(127)).unwrap();
         let mut scope = make_channel();
         let secured = scope.encrypt(&command).unwrap();
         assert_eq!(
@@ -812,15 +822,16 @@ mod tests {
 
     #[test]
     fn decrypt_do99_only() {
-        let response = CardResponseApdu::new(&hex::decode("990290008E08087631D746F872729000").unwrap()).unwrap();
+        let response =
+            CardResponseApdu::new_nonzeroizing(&hex::decode("990290008E08087631D746F872729000").unwrap()).unwrap();
         let mut scope = make_channel();
         let plain = scope.decrypt(response).unwrap();
-        assert_eq!(hex::encode_upper(plain.to_bytes()), "9000");
+        assert_eq!(hex::encode_upper(plain.to_vec()), "9000");
     }
 
     #[test]
     fn decrypt_status_only_passthrough() {
-        let response = CardResponseApdu::new(&[0x63, 0xC0]).unwrap();
+        let response = CardResponseApdu::new_nonzeroizing(&[0x63, 0xC0]).unwrap();
         let mut scope = make_channel();
         let plain = scope.decrypt(response).unwrap();
         assert_eq!(plain.sw(), 0x63C0);
@@ -829,13 +840,13 @@ mod tests {
 
     #[test]
     fn decrypt_do87_and_do99() {
-        let response = CardResponseApdu::new(
+        let response = CardResponseApdu::new_nonzeroizing(
             &hex::decode("871101496C26D36306679609665A385C54DB37990290008E08B7E9ED2A0C89FB3A9000").unwrap(),
         )
         .unwrap();
         let mut scope = make_channel();
         let plain = scope.decrypt(response).unwrap();
-        assert_eq!(hex::encode_upper(plain.to_bytes()), "05060708090A9000");
+        assert_eq!(hex::encode_upper(plain.to_vec()), "05060708090A9000");
     }
 
     #[test]
@@ -858,9 +869,9 @@ mod tests {
 
         let mut apdu = body;
         apdu.extend_from_slice(&[0x90, 0x00]);
-        let response = CardResponseApdu::new(&apdu).unwrap();
+        let response = CardResponseApdu::new_nonzeroizing(&apdu).unwrap();
         let plain = scope.decrypt(response).unwrap();
-        assert_eq!(hex::encode_upper(plain.to_bytes()), "CAFE9000");
+        assert_eq!(hex::encode_upper(plain.to_vec()), "CAFE9000");
     }
 
     #[test]
@@ -901,7 +912,7 @@ mod tests {
 
     #[test]
     fn decrypt_rejects_short_response() {
-        let response = CardResponseApdu::new(&[0x90, 0x00, 0x01]).unwrap();
+        let response = CardResponseApdu::new_nonzeroizing(&[0x90, 0x00, 0x01]).unwrap();
         let mut scope = make_channel();
         let err = scope.decrypt(response).unwrap_err();
         assert!(matches!(err, ExchangeError::InvalidArgument(_)));
@@ -916,7 +927,7 @@ mod tests {
         body.extend_from_slice(&do8e);
         let mut apdu = body;
         apdu.extend_from_slice(&[0x6F, 0x00]);
-        let response = CardResponseApdu::new(&apdu).unwrap();
+        let response = CardResponseApdu::new_nonzeroizing(&apdu).unwrap();
         let mut scope = make_channel();
         let err = scope.decrypt(response).unwrap_err();
         assert!(matches!(err, ExchangeError::InvalidArgument(_)));
@@ -927,7 +938,7 @@ mod tests {
         let mut bytes = hex::decode("990290008E08087631D746F872729000").unwrap();
         let last = bytes.len() - 3;
         bytes[last] ^= 0xFF;
-        let response = CardResponseApdu::new(&bytes).unwrap();
+        let response = CardResponseApdu::new_nonzeroizing(&bytes).unwrap();
         let mut scope = make_channel();
         let err = scope.decrypt(response).unwrap_err();
         assert!(matches!(err, ExchangeError::MutualAuthenticationFailed));
@@ -953,7 +964,7 @@ mod tests {
 
         let mut apdu = body;
         apdu.extend_from_slice(&[0x90, 0x00]);
-        let response = CardResponseApdu::new(&apdu).unwrap();
+        let response = CardResponseApdu::new_nonzeroizing(&apdu).unwrap();
         let err = scope.decrypt(response).unwrap_err();
         assert!(matches!(err, ExchangeError::InvalidArgument(_)));
     }
@@ -984,7 +995,7 @@ mod tests {
 
         let mut apdu = body;
         apdu.extend_from_slice(&[0x90, 0x00]);
-        let response = CardResponseApdu::new(&apdu).unwrap();
+        let response = CardResponseApdu::new_nonzeroizing(&apdu).unwrap();
         let err = scope.decrypt(response).unwrap_err();
         assert!(matches!(err, ExchangeError::InvalidArgument(_)));
     }

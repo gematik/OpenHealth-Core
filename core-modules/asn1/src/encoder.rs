@@ -20,6 +20,7 @@
 // find details in the "Readme" file.
 
 use crate::error::Asn1EncoderError;
+use crate::maybe_zeroizing_vec::{VecOfU8, ZeroizingOption};
 use crate::oid::ObjectIdentifier;
 use crate::tag::{Asn1Class, Asn1Form, Asn1Id, UniversalTag};
 
@@ -28,19 +29,16 @@ pub struct Asn1Encoder;
 
 /// Scope for writing ASN.1 encoded data. (Top-level, not nested)
 pub struct WriterScope {
-    // TODO: support zeroizing vec
-    buffer: Vec<u8>,
-}
-
-impl Default for WriterScope {
-    fn default() -> Self {
-        Self::new()
-    }
+    buffer: VecOfU8,
 }
 
 impl WriterScope {
-    pub fn new() -> Self {
-        Self { buffer: Vec::new() }
+    pub fn new_with_nonzeroizing_buffer() -> Self {
+        Self { buffer: VecOfU8::new_nonzeroizing(Vec::<u8>::new()) }
+    }
+
+    pub fn new_with_zeroizing_buffer() -> Self {
+        Self { buffer: VecOfU8::new_zeroizing(Vec::<u8>::new()) }
     }
 
     pub fn buffer(&self) -> &[u8] {
@@ -143,7 +141,10 @@ impl WriterScope {
         // tag
         self.write_tag(id.number, id.class, id.form);
         // scope
-        let mut scope = WriterScope::new();
+        let mut scope = match self.buffer.get_zeroizing_option() {
+            ZeroizingOption::None => WriterScope::new_with_nonzeroizing_buffer(),
+            ZeroizingOption::Zeroes => WriterScope::new_with_zeroizing_buffer(),
+        };
         block(&mut scope)?;
         // length + value
         self.write_scope(&scope);
@@ -247,12 +248,27 @@ impl WriterScope {
 }
 
 impl Asn1Encoder {
-    /// Encodes the given block of code and returns the resulting byte array.
-    pub fn write<E>(block: impl FnOnce(&mut WriterScope) -> Result<(), E>) -> Result<Vec<u8>, E>
+    /// Encodes the given block of code and returns the resulting VecOfU8::NonZeroizing.
+    pub fn write_nonzeroizing<E>(block: impl FnOnce(&mut WriterScope) -> Result<(), E>) -> Result<VecOfU8, E>
     where
         E: From<Asn1EncoderError>,
     {
-        let mut scope = WriterScope::new();
+        Asn1Encoder::write(WriterScope::new_with_nonzeroizing_buffer(), block)
+    }
+
+    /// Encodes the given block of code and returns the resulting VecOfU8::Zeroizing.
+    pub fn write_zeroizing<E>(block: impl FnOnce(&mut WriterScope) -> Result<(), E>) -> Result<VecOfU8, E>
+    where
+        E: From<Asn1EncoderError>,
+    {
+        Asn1Encoder::write(WriterScope::new_with_zeroizing_buffer(), block)
+    }
+
+    /// Encodes the given block of code and returns the resulting VecOfU8.
+    fn write<E>(mut scope: WriterScope, block: impl FnOnce(&mut WriterScope) -> Result<(), E>) -> Result<VecOfU8, E>
+    where
+        E: From<Asn1EncoderError>,
+    {
         block(&mut scope)?;
         Ok(scope.buffer)
     }
@@ -277,7 +293,7 @@ mod tests {
 
     #[test]
     fn write_multi_byte_tag_small_value() {
-        let result = Asn1Encoder::write(|w| {
+        let result = Asn1Encoder::write_nonzeroizing(|w| {
             w.write_tagged_object(33u8.application_tag(), |inner| -> Result<(), Asn1EncoderError> {
                 inner.write_byte(0x05);
                 Ok(())
@@ -289,7 +305,7 @@ mod tests {
 
     #[test]
     fn write_multi_byte_tag_larger_value() {
-        let result = Asn1Encoder::write(|w| {
+        let result = Asn1Encoder::write_nonzeroizing(|w| {
             w.write_tagged_object(128u32.application_tag(), |inner| -> Result<(), Asn1EncoderError> {
                 inner.write_byte(0x05);
                 Ok(())
@@ -301,7 +317,7 @@ mod tests {
 
     #[test]
     fn write_multi_byte_tag_max_single_byte() {
-        let result = Asn1Encoder::write::<Asn1EncoderError>(|w| {
+        let result = Asn1Encoder::write_nonzeroizing::<Asn1EncoderError>(|w| {
             w.write_tagged_object(30u8.application_tag(), |inner| {
                 inner.write_byte(0x05);
                 Ok(())
@@ -313,7 +329,7 @@ mod tests {
 
     #[test]
     fn write_multi_byte_length() {
-        let result = Asn1Encoder::write::<Asn1EncoderError>(|w| {
+        let result = Asn1Encoder::write_nonzeroizing::<Asn1EncoderError>(|w| {
             w.write_length(123_456_789u64);
             Ok(())
         })
@@ -323,66 +339,66 @@ mod tests {
 
     #[test]
     fn write_base128_encodes_expected() {
-        let mut single = WriterScope::new();
+        let mut single = WriterScope::new_with_nonzeroizing_buffer();
         single.write_base128(0x7F);
         assert_eq!(single.buffer(), &[0x7F]);
 
-        let mut multi = WriterScope::new();
+        let mut multi = WriterScope::new_with_nonzeroizing_buffer();
         multi.write_base128(0x80);
         assert_eq!(multi.buffer(), &[0x81, 0x00]);
     }
 
     #[test]
     fn write_int_expected() {
-        let result = Asn1Encoder::write(|w| w.write_asn1_int(123_456)).unwrap();
+        let result = Asn1Encoder::write_nonzeroizing(|w| w.write_asn1_int(123_456)).unwrap();
         assert_eq!(hex(&result), "02 03 01 E2 40");
     }
 
     #[test]
     fn write_int_zero() {
-        let result = Asn1Encoder::write(|w| w.write_asn1_int(0)).unwrap();
+        let result = Asn1Encoder::write_nonzeroizing(|w| w.write_asn1_int(0)).unwrap();
         assert_eq!(hex(&result), "02 01 00");
     }
 
     #[test]
     fn write_int_negative() {
-        let result = Asn1Encoder::write(|w| w.write_asn1_int(-123)).unwrap();
+        let result = Asn1Encoder::write_nonzeroizing(|w| w.write_asn1_int(-123)).unwrap();
         assert_eq!(hex(&result), "02 01 85");
     }
 
     #[test]
     fn write_utf8_string_expected() {
-        let result = Asn1Encoder::write(|w| w.write_asn1_utf8_string("hello")).unwrap();
+        let result = Asn1Encoder::write_nonzeroizing(|w| w.write_asn1_utf8_string("hello")).unwrap();
         assert_eq!(hex(&result), "0C 05 68 65 6C 6C 6F");
     }
 
     #[test]
     fn write_utf8_string_empty() {
-        let result = Asn1Encoder::write(|w| w.write_asn1_utf8_string("")).unwrap();
+        let result = Asn1Encoder::write_nonzeroizing(|w| w.write_asn1_utf8_string("")).unwrap();
         assert_eq!(hex(&result), "0C 00");
     }
 
     #[test]
     fn write_boolean_true() {
-        let result = Asn1Encoder::write(|w| w.write_asn1_boolean(true)).unwrap();
+        let result = Asn1Encoder::write_nonzeroizing(|w| w.write_asn1_boolean(true)).unwrap();
         assert_eq!(hex(&result), "01 01 FF");
     }
 
     #[test]
     fn write_boolean_false() {
-        let result = Asn1Encoder::write(|w| w.write_asn1_boolean(false)).unwrap();
+        let result = Asn1Encoder::write_nonzeroizing(|w| w.write_asn1_boolean(false)).unwrap();
         assert_eq!(hex(&result), "01 01 00");
     }
 
     #[test]
     fn write_bit_string_invalid_unused_bits() {
-        let err = Asn1Encoder::write(|w| w.write_asn1_bit_string(&[0xFF], 9)).unwrap_err();
+        let err = Asn1Encoder::write_nonzeroizing(|w| w.write_asn1_bit_string(&[0xFF], 9)).unwrap_err();
         assert!(matches!(err, Asn1EncoderError::InvalidUnusedBitCount { .. }));
     }
 
     #[test]
     fn write_with_nested_tags() {
-        let result = Asn1Encoder::write(|w| {
+        let result = Asn1Encoder::write_nonzeroizing(|w| {
             // Universal constructed SEQUENCE (0x10 with constructed bit)
             w.write_tagged_object(0x10u8.universal_tag().constructed(), |inner| {
                 inner.write_asn1_int(42)?;
@@ -396,28 +412,28 @@ mod tests {
     #[test]
     fn write_oid_simple() {
         let oid = ObjectIdentifier::parse("1.2.840.113549").unwrap();
-        let result = Asn1Encoder::write(|w| w.write_object_identifier(&oid)).unwrap();
+        let result = Asn1Encoder::write_nonzeroizing(|w| w.write_object_identifier(&oid)).unwrap();
         assert_eq!(hex(&result), "06 06 2A 86 48 86 F7 0D");
     }
 
     #[test]
     fn write_oid_single_part_beyond_40() {
         let oid = ObjectIdentifier::parse("2.100.3").unwrap();
-        let result = Asn1Encoder::write(|w| w.write_object_identifier(&oid)).unwrap();
+        let result = Asn1Encoder::write_nonzeroizing(|w| w.write_object_identifier(&oid)).unwrap();
         assert_eq!(hex(&result), "06 03 81 34 03");
     }
 
     #[test]
     fn write_oid_long_identifier() {
         let oid = ObjectIdentifier::parse("1.2.3.4.5.265566").unwrap();
-        let result = Asn1Encoder::write(|w| w.write_object_identifier(&oid)).unwrap();
+        let result = Asn1Encoder::write_nonzeroizing(|w| w.write_object_identifier(&oid)).unwrap();
         assert_eq!(hex(&result), "06 07 2A 03 04 05 90 9A 5E");
     }
 
     #[test]
     fn write_oid_large_first_component() {
         let oid = ObjectIdentifier::parse("2.999.1").unwrap();
-        let result = Asn1Encoder::write(|w| w.write_object_identifier(&oid)).unwrap();
+        let result = Asn1Encoder::write_nonzeroizing(|w| w.write_object_identifier(&oid)).unwrap();
         assert_eq!(hex(&result), "06 03 88 37 01");
     }
 

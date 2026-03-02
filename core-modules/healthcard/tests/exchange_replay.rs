@@ -47,12 +47,12 @@ impl CardChannel for ReplayChannel {
     }
 
     fn transmit(&mut self, command: &CardCommandApdu) -> Result<CardResponseApdu, Self::Error> {
-        let tx = command.to_bytes();
+        let tx = command.to_vec();
         let rx = self
             .session
             .transmit_bytes(&tx)
             .map_err(|err| ExchangeError::Transport { code: 0, message: err.to_string() })?;
-        CardResponseApdu::new(&rx).map_err(ExchangeError::from)
+        CardResponseApdu::new_nonzeroizing(&rx).map_err(ExchangeError::from)
     }
 }
 

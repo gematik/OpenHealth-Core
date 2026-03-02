@@ -26,6 +26,7 @@ use crate::ossl;
 use asn1::decoder::Asn1Decoder;
 use asn1::encoder::Asn1Encoder;
 use asn1::error::{Asn1DecoderError, Asn1EncoderError};
+use asn1::maybe_zeroizing_vec::VecOfU8;
 use asn1::oid::ObjectIdentifier;
 use asn1::tag::UniversalTag;
 use num_bigint::BigInt;
@@ -208,8 +209,8 @@ impl EcPublicKey {
     ///   algorithm         AlgorithmIdentifier,
     ///   subjectPublicKey  BIT STRING
     /// }
-    pub fn encode_to_asn1(&self) -> CryptoResult<Vec<u8>> {
-        Asn1Encoder::write(|scope| {
+    pub fn encode_to_asn1(&self) -> CryptoResult<VecOfU8> {
+        Asn1Encoder::write_nonzeroizing(|scope| {
             // SEQUENCE (SubjectPublicKeyInfo)
             scope.write_tagged_object(UniversalTag::Sequence.constructed(), |scope| {
                 // SEQUENCE (AlgorithmIdentifier)
@@ -285,8 +286,8 @@ impl EcPrivateKey {
     ///   privateKey PrivateKey,
     ///   attributes [0] IMPLICIT Attributes OPTIONAL
     /// }
-    pub fn encode_to_asn1(&self) -> CryptoResult<Vec<u8>> {
-        Asn1Encoder::write(|scope| {
+    pub fn encode_to_asn1(&self) -> CryptoResult<VecOfU8> {
+        Asn1Encoder::write_nonzeroizing(|scope| {
             // SEQUENCE (PrivateKeyInfo)
             scope.write_tagged_object(UniversalTag::Sequence.constructed(), |scope| {
                 // version (INTEGER 0)
@@ -487,7 +488,7 @@ mod tests {
     fn decode_public_key_rejects_unused_bits() {
         let curve = EcCurve::BrainpoolP256r1;
         let key_bytes = sample_pub(curve.clone());
-        let der = Asn1Encoder::write::<Asn1EncoderError>(|scope| -> Result<(), Asn1EncoderError> {
+        let der = Asn1Encoder::write_nonzeroizing::<Asn1EncoderError>(|scope| -> Result<(), Asn1EncoderError> {
             scope.write_tagged_object(UniversalTag::Sequence.constructed(), |scope| {
                 scope.write_tagged_object::<Asn1EncoderError>(UniversalTag::Sequence.constructed(), |scope| {
                     scope.write_object_identifier(&EcPublicKey::algorithm_oid())?;
@@ -510,7 +511,7 @@ mod tests {
         let curve = EcCurve::BrainpoolP256r1;
         let key_bytes = sample_pub(curve.clone());
         let wrong_oid = ObjectIdentifier::parse("1.2.3.4").unwrap();
-        let der = Asn1Encoder::write::<Asn1EncoderError>(|scope| -> Result<(), Asn1EncoderError> {
+        let der = Asn1Encoder::write_nonzeroizing::<Asn1EncoderError>(|scope| -> Result<(), Asn1EncoderError> {
             scope.write_tagged_object(UniversalTag::Sequence.constructed(), |scope| {
                 scope.write_tagged_object::<Asn1EncoderError>(UniversalTag::Sequence.constructed(), |scope| {
                     scope.write_object_identifier(&wrong_oid)?;
@@ -533,7 +534,7 @@ mod tests {
     fn decode_private_key_rejects_version() {
         let curve = EcCurve::BrainpoolP256r1;
         let private = sample_priv_bytes(curve.clone());
-        let der = Asn1Encoder::write::<Asn1EncoderError>(|scope| -> Result<(), Asn1EncoderError> {
+        let der = Asn1Encoder::write_nonzeroizing::<Asn1EncoderError>(|scope| -> Result<(), Asn1EncoderError> {
             scope.write_tagged_object(UniversalTag::Sequence.constructed(), |scope| {
                 scope.write_asn1_int(0)?;
                 scope.write_tagged_object::<Asn1EncoderError>(UniversalTag::Sequence.constructed(), |scope| {

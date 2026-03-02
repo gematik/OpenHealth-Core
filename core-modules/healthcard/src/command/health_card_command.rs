@@ -22,11 +22,11 @@
 use std::collections::HashMap;
 use std::fmt;
 
-use thiserror::Error;
-
 use crate::command::apdu::{ApduError, CardCommandApdu, CardResponseApdu};
 use crate::command::apdu::{EXPECTED_LENGTH_WILDCARD_EXTENDED, EXPECTED_LENGTH_WILDCARD_SHORT};
 use crate::command::health_card_status::HealthCardResponseStatus;
+use asn1::maybe_zeroizing_vec::VecOfU8;
+use thiserror::Error;
 
 /// Expected length for a command response.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -66,7 +66,7 @@ pub struct HealthCardCommand {
     /// The parameter 2 byte (P2)
     pub(crate) p2: u8,
     /// The command data
-    pub(crate) data: Option<Vec<u8>>,
+    pub(crate) data: Option<VecOfU8>,
     /// The expected response length
     pub(crate) ne: Option<ExpectedLength>,
 }
@@ -88,7 +88,7 @@ impl HealthCardCommand {
         ins: u8,
         p1: u8,
         p2: u8,
-        data: Option<Vec<u8>>,
+        data: Option<VecOfU8>,
         ne: Option<ExpectedLength>,
     ) -> Self {
         HealthCardCommand { expected_status, cla, ins, p1, p2, data, ne }
@@ -182,7 +182,7 @@ mod tests {
             0xA4,
             0x04,
             0x00,
-            Some(vec![0x3F, 0x00]),
+            Some(VecOfU8::new_nonzeroizing(vec![0x3F, 0x00])),
             Some(ExpectedLength::Exact(256)),
         );
 
@@ -190,14 +190,14 @@ mod tests {
         assert_eq!(command.ins, 0xA4);
         assert_eq!(command.p1, 0x04);
         assert_eq!(command.p2, 0x00);
-        assert_eq!(command.data, Some(vec![0x3F, 0x00]));
+        assert_eq!(command.data, Some(VecOfU8::new_nonzeroizing(vec![0x3F, 0x00])));
         assert_eq!(command.ne, Some(ExpectedLength::Exact(256)));
     }
 
     #[test]
     fn test_health_card_response() {
         let apdu_data = vec![0x90, 0x00];
-        let response_apdu = CardResponseApdu::new(&apdu_data).unwrap();
+        let response_apdu = CardResponseApdu::new_nonzeroizing(&apdu_data).unwrap();
         let response = HealthCardResponse::new(HealthCardResponseStatus::Success, response_apdu.clone());
 
         assert!(response.require_success().is_ok());

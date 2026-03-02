@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
+// SPDX-FileCopyrightText: Copyright 2026 gematik GmbH
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -18,11 +18,30 @@
 //
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
-pub mod cv_certificate;
-pub mod date_time;
-pub mod decoder;
-pub mod encoder;
-pub mod error;
-pub mod maybe_zeroizing_vec;
-pub mod oid;
-pub mod tag;
+
+use asn1::maybe_zeroizing_vec::VecOfU8 as Asn1VecOfU8;
+use std::sync::Arc;
+
+/// a wrapped Vec<u8> that might be zeroized (depending on it's configuration)
+#[derive(uniffi::Object, Debug, PartialEq, Eq)]
+pub struct VecOfU8 {
+    inner: Asn1VecOfU8,
+}
+
+impl VecOfU8 {
+    pub(crate) fn from_core(inner: Asn1VecOfU8) -> Arc<Self> {
+        Arc::new(Self { inner })
+    }
+
+    #[allow(dead_code)]
+    pub(crate) fn from_nonzeroizing_bytes(bytes: Vec<u8>) -> Arc<Self> {
+        Arc::new(Self { inner: Asn1VecOfU8::new_nonzeroizing(bytes) })
+    }
+}
+
+#[uniffi::export]
+impl VecOfU8 {
+    pub fn clone_as_nonzeroizing_vec(&self) -> Vec<u8> {
+        self.inner.as_ref().to_vec()
+    }
+}

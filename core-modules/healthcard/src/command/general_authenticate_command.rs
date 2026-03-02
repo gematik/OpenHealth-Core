@@ -73,7 +73,7 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
     fn general_authenticate(command_chaining: bool) -> GeneralAuthenticateResult<HealthCardCommand> {
         let cla = if command_chaining { CLA_COMMAND_CHAINING } else { CLA_NO_COMMAND_CHAINING };
 
-        let data = Asn1Encoder::write(|w| -> Result<(), Asn1EncoderError> {
+        let data = Asn1Encoder::write_nonzeroizing(|w| -> Result<(), Asn1EncoderError> {
             w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |_inner| Ok(()))
         })?;
 
@@ -96,7 +96,7 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
         let cla = if command_chaining { CLA_COMMAND_CHAINING } else { CLA_NO_COMMAND_CHAINING };
 
         let data_to_write = data.to_vec();
-        let encoded_data = Asn1Encoder::write(|w| {
+        let encoded_data = Asn1Encoder::write_zeroizing(|w| {
             w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |inner| {
                 inner.write_tagged_object(tag_no.context_tag(), |innermost| -> Result<(), Asn1EncoderError> {
                     innermost.write_bytes(&data_to_write);

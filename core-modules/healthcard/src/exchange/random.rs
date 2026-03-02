@@ -51,6 +51,7 @@ mod tests {
     use super::*;
     use crate::command::select_command::SelectCommand;
     use crate::exchange::test_utils::MockSession;
+    use asn1::maybe_zeroizing_vec::VecOfU8;
 
     #[test]
     fn random_success() {
@@ -59,8 +60,8 @@ mod tests {
         assert_eq!(values, vec![0xDE, 0xAD]);
         assert_eq!(session.recorded.len(), 2);
         assert_eq!(
-            session.recorded[0],
-            HealthCardCommand::select(false, false).command_apdu(false).unwrap().to_bytes()
+            VecOfU8::new_nonzeroizing(session.recorded[0].clone()),
+            HealthCardCommand::select(false, false).command_apdu(false).unwrap().to_vec()
         );
     }
 }

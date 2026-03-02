@@ -95,6 +95,12 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     sourceSets["main"].jniLibs.srcDir(generatedJniLibsDir)
+    lint {
+        // UniFFI generates Android/JVM shared sources under build/, which may legitimately use
+        // APIs that lint can't safely reason about for all Android API levels.
+        checkGeneratedSources = false
+        disable += "NewApi"
+    }
     publishing {
         singleVariant("release") {
             withSourcesJar()

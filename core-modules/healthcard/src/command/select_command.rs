@@ -23,6 +23,7 @@ use crate::command::apdu::EXPECTED_LENGTH_WILDCARD_SHORT;
 use crate::command::health_card_command::{ExpectedLength, HealthCardCommand};
 use crate::command::health_card_status::SELECT_STATUS;
 use crate::identifier::{ApplicationIdentifier, FileIdentifier};
+use asn1::maybe_zeroizing_vec::VecOfU8;
 
 const CLA: u8 = 0x00;
 const INS: u8 = 0xA4;
@@ -144,7 +145,7 @@ impl SelectCommand for HealthCardCommand {
             INS,
             SELECTION_MODE_AID,
             p2,
-            Some(aid.as_bytes().to_vec()),
+            Some(VecOfU8::new_nonzeroizing(aid.as_bytes().to_vec())),
             ne,
         )
     }
@@ -173,7 +174,15 @@ impl SelectCommand for HealthCardCommand {
             None
         };
 
-        HealthCardCommand::new(SELECT_STATUS.clone(), CLA, INS, p1, p2, Some(fid.to_bytes().to_vec()), ne)
+        HealthCardCommand::new(
+            SELECT_STATUS.clone(),
+            CLA,
+            INS,
+            p1,
+            p2,
+            Some(VecOfU8::new_nonzeroizing(fid.to_bytes())),
+            ne,
+        )
     }
 }
 
@@ -224,7 +233,7 @@ mod tests {
         assert_eq!(cmd.ins, INS);
         assert_eq!(cmd.p1, SELECTION_MODE_AID);
         assert_eq!(cmd.p2, RESPONSE_TYPE_NO_RESPONSE);
-        assert_eq!(cmd.data, Some(vec![0x12, 0x34, 0x56, 0x78, 0x90]));
+        assert_eq!(cmd.data, Some(VecOfU8::new_nonzeroizing(vec![0x12, 0x34, 0x56, 0x78, 0x90])));
         assert_eq!(cmd.ne, None);
     }
 
@@ -236,7 +245,7 @@ mod tests {
         assert_eq!(cmd.ins, INS);
         assert_eq!(cmd.p1, SELECTION_MODE_AID);
         assert_eq!(cmd.p2, RESPONSE_TYPE_FCP + FILE_OCCURRENCE_NEXT);
-        assert_eq!(cmd.data, Some(vec![0x12, 0x34, 0x56, 0x78, 0x90]));
+        assert_eq!(cmd.data, Some(VecOfU8::new_nonzeroizing(vec![0x12, 0x34, 0x56, 0x78, 0x90])));
         assert_eq!(cmd.ne, Some(ExpectedLength::Exact(128)));
     }
 
@@ -257,7 +266,7 @@ mod tests {
         assert_eq!(cmd.ins, INS);
         assert_eq!(cmd.p1, SELECTION_MODE_DF_BY_FID);
         assert_eq!(cmd.p2, RESPONSE_TYPE_NO_RESPONSE);
-        assert_eq!(cmd.data, Some(vec![0xAB, 0xCD]));
+        assert_eq!(cmd.data, Some(VecOfU8::new_nonzeroizing(vec![0xAB, 0xCD])));
         assert_eq!(cmd.ne, None);
     }
 
@@ -270,7 +279,7 @@ mod tests {
         assert_eq!(cmd.ins, INS);
         assert_eq!(cmd.p1, SELECTION_MODE_EF_BY_FID);
         assert_eq!(cmd.p2, RESPONSE_TYPE_FCP);
-        assert_eq!(cmd.data, Some(vec![0xAB, 0xCD]));
+        assert_eq!(cmd.data, Some(VecOfU8::new_nonzeroizing(vec![0xAB, 0xCD])));
         assert_eq!(cmd.ne, Some(ExpectedLength::Exact(64)));
     }
 
