@@ -153,7 +153,7 @@ jobs:
 
       - name: Upload OpenSSL Configure logs (on failure)
         if: failure()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: openssl-configure-logs-${{ matrix.display_name }}
           path: |
@@ -162,7 +162,7 @@ jobs:
           if-no-files-found: warn
 
       - name: Upload Resources
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: kotlin-bindings-${{ matrix.display_name }}
           path: |
@@ -206,7 +206,7 @@ jobs:
         run: cp core-modules-swift/healthcard/Sources/OpenHealthHealthcard/OpenHealthHealthcard.swift OpenHealthHealthcard.swift
 
       - name: Upload Swift wrapper
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: swift-wrapper
           path: OpenHealthHealthcard.swift
@@ -214,7 +214,7 @@ jobs:
 
       - name: Upload OpenSSL Configure logs (Swift - on failure)
         if: failure()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: openssl-configure-logs-swift
           path: |
@@ -232,13 +232,13 @@ jobs:
           swift package compute-checksum OpenHealthHealthcardFFI.xcframework.zip > OpenHealthHealthcardFFI.xcframework.sha256
 
       - name: Upload XCFramework Zip
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: swift-xcframework
           path: core-modules-swift/healthcard/OpenHealthHealthcardFFI.xcframework.zip
 
       - name: Upload XCFramework checksum
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: swift-xcframework-checksum
           path: core-modules-swift/healthcard/OpenHealthHealthcardFFI.xcframework.sha256
@@ -273,7 +273,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
 
       - name: Download platform artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           pattern: "kotlin-bindings-*"
           path: assembly/input
@@ -283,7 +283,7 @@ jobs:
           just kotlin-bindings-assemble assembly/input assembly/dist/generated/uniffi
 
       - name: Upload Kotlin bindings bundle
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: kotlin-bindings-bundle
           path: |
@@ -308,7 +308,7 @@ jobs:
           cp -a "${src_root}" "${upload_root}/de/gematik/"
 
       - name: Upload Maven local artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: kotlin-bindings-maven-local
           path: assembly/maven-repo
@@ -328,25 +328,25 @@ jobs:
           fetch-depth: 0
 
       - name: Download Swift Artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: swift-xcframework
           path: artifacts/swift
 
       - name: Download Swift wrapper
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: swift-wrapper
           path: artifacts/swift-wrapper
       
       - name: Download Swift checksum
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: swift-xcframework-checksum
           path: artifacts/swift-checksum
 
       - name: Download Kotlin Artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: kotlin-bindings-maven-local
           path: artifacts/kotlin
