@@ -33,6 +33,7 @@
 name: "CodeQL Nightly"
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: '22 10 * * 4'
 
