@@ -37,12 +37,18 @@ From the repository root:
 ```bash
 # platform: linux | windows | darwin
 # arch: x86_64 | aarch64
-just kotlin-asn1-bindings-generate darwin aarch64 libasn1.dylib
+just kotlin-bindings-generate asn1 darwin aarch64 libasn1.dylib
 ```
 
 Android native libraries (Linux only):
 
 ```bash
-just kotlin-asn1-bindings-generate-android
+just kotlin-bindings-generate-android asn1
 ```
 
+Legacy wrappers still exist:
+
+```bash
+just kotlin-asn1-bindings-generate darwin aarch64 libasn1.dylib
+just kotlin-asn1-bindings-generate-android
+```

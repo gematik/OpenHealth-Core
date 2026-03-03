@@ -23,22 +23,29 @@ find details in the "Readme" file.
 
 # Healthcard Kotlin bindings (KMP)
 
-- This module is a Kotlin Multiplatform project with a JVM target (Java-friendly via `withJava()`).
+- This module is a Kotlin Multiplatform project with a JVM and Android target.
 - UniFFI bindings and native libraries are expected to be provided by the shared pipeline and placed under:
-  - Kotlin/Java sources: `src/jvmMain/kotlin` (and optionally `src/jvmMain/java` for wrappers).
-  - Native artifacts and scaffolding: `src/jvmMain/resources/<platform-id>/`.
-- Gradle no longer builds Rust or runs UniFFI; it consumes the pre-generated artifacts from the locations above.
+  - Kotlin/Java sources: `${OUT_ROOT}/kotlin`
+  - Native artifacts and scaffolding: `${OUT_ROOT}/resources/<platform-id>/`
+  - Android JNI libs (optional): `${OUT_ROOT}/android-jni/`
+- Gradle does not build Rust or run UniFFI; it consumes the pre-generated artifacts from the locations above.
 - The `:sample-app` consumes the JVM variant of this module.
 
 ## Using `just` for bindings generation
 
 - The repository `Justfile` provides repeatable commands for both CI and local development.
-- Generate Kotlin/JVM bindings for a platform/arch (writes to `src/jvmMain` by default). The native library is staged under the JNA resource id (e.g. `darwin-aarch64`, `linux-x86-64`, `win32-x86-64`):
+- Generate Kotlin bindings for a platform/arch (writes under `${OUT_ROOT}`, defaulting to `build/generated/uniffi`). The native library is staged under the JNA resource id (e.g. `darwin-aarch64`, `linux-x86-64`, `win32-x86-64`):
 
 ```bash
 # platform: linux | windows | darwin
 # arch: x86_64 | aarch64
 just kotlin-bindings-generate darwin aarch64 libhealthcard.dylib
+```
+
+- Module-driven variant (explicit module name):
+
+```bash
+just kotlin-bindings-generate healthcard darwin aarch64 libhealthcard.dylib
 ```
 
 - Override output paths (e.g., to keep the working tree clean) and cargo target dir:

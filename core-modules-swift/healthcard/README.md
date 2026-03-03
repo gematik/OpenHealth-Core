@@ -33,6 +33,12 @@ From the repository root:
 just swift-xcframework
 ```
 
+Or explicitly:
+
+```bash
+just swift-xcframework healthcard
+```
+
 This generates:
 
 - `core-modules-swift/healthcard/OpenHealthHealthcardFFI.xcframework` (Rust static library + UniFFI C module)

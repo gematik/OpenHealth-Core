@@ -33,6 +33,12 @@ From the repository root:
 just swift-asn1-xcframework
 ```
 
+Or:
+
+```bash
+just swift-xcframework asn1
+```
+
 This generates:
 
 - `core-modules-swift/asn1/OpenHealthAsn1FFI.xcframework` (Rust static library + UniFFI C module)
