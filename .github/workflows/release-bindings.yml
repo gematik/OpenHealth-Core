@@ -154,15 +154,13 @@ jobs:
       - name: Run Kotlin binding tests (Linux or macOS)
         if: runner.os == 'Linux' || runner.os == 'macOS'
         run: |
-          cd ${{ env.OUT_ROOT }}/kotlin
-          ../../../../core-modules-kotlin/gradlew test --no-daemon
+          ./core-modules-kotlin/gradlew test --no-daemon
 
       - name: Run Kotlin binding tests (Windows only)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          cd $env:OUT_ROOT\kotlin
-          ..\..\..\..\core-modules-kotlin\gradlew.bat test --no-daemon
+          .\core-modules-kotlin\gradlew.bat test --no-daemon
 
       - name: Upload OpenSSL Configure logs (on failure)
         if: failure()
@@ -217,8 +215,7 @@ jobs:
 
       - name: Run Swift binding tests
         run: |
-          cd core-modules-swift/healthcard
-          xcodebuild test -scheme OpenHealthHealthcardFFI -destination 'platform=macOS'
+          swift test
 
       - name: Stage Swift wrapper for release
         run: cp core-modules-swift/healthcard/Sources/OpenHealthHealthcard/OpenHealthHealthcard.swift OpenHealthHealthcard.swift
