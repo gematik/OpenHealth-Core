@@ -133,7 +133,7 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
         let cla = if command_chaining { CLA_COMMAND_CHAINING } else { CLA_NO_COMMAND_CHAINING };
 
         let data_to_write = data.to_vec();
-        let encoded_data = Asn1Encoder::write_zeroizing(|w| {
+        let encoded_data = Asn1Encoder::write_nonzeroizing(|w| {
             w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |inner| {
                 inner.write_tagged_object(tag_no.context_tag(), |innermost| -> Result<(), Asn1EncoderError> {
                     innermost.write_bytes(&data_to_write);
@@ -156,7 +156,7 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
     fn general_authenticate_mutual_authentication_step1(
         key_ref: &[u8; 12],
     ) -> GeneralAuthenticateResult<HealthCardCommand> {
-        let data = Asn1Encoder::write(|w| {
+        let data = Asn1Encoder::write_nonzeroizing(|w| {
             w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |inner| {
                 inner.write_tagged_object(
                     MUTUAL_AUTHENTICATION_KEY_REF_TAG.private_tag(),
@@ -180,7 +180,7 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
     }
 
     fn general_authenticate_pace_end_user_step1() -> GeneralAuthenticateResult<HealthCardCommand> {
-        let data = Asn1Encoder::write(|w| -> Result<(), Asn1EncoderError> {
+        let data = Asn1Encoder::write_nonzeroizing(|w| -> Result<(), Asn1EncoderError> {
             w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |_inner| Ok(()))
         })?;
 
@@ -196,7 +196,7 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
     }
 
     fn general_authenticate_pace_end_user_step2(pk1_pcd: &[u8]) -> GeneralAuthenticateResult<HealthCardCommand> {
-        let data = Asn1Encoder::write(|w| {
+        let data = Asn1Encoder::write_nonzeroizing(|w| {
             w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |inner| {
                 inner.write_tagged_object(
                     PACE_KEY_AGREEMENT_TAG.context_tag(),
@@ -220,7 +220,7 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
     }
 
     fn general_authenticate_pace_end_user_step3(pk2_pcd: &[u8]) -> GeneralAuthenticateResult<HealthCardCommand> {
-        let data = Asn1Encoder::write(|w| {
+        let data = Asn1Encoder::write_nonzeroizing(|w| {
             w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |inner| {
                 inner.write_tagged_object(
                     PACE_EPHEMERAL_KEY2_TAG.context_tag(),
@@ -244,7 +244,7 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
     }
 
     fn general_authenticate_pace_end_user_step4(tpcd: &[u8; 8]) -> GeneralAuthenticateResult<HealthCardCommand> {
-        let data = Asn1Encoder::write(|w| {
+        let data = Asn1Encoder::write_nonzeroizing(|w| {
             w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |inner| {
                 inner.write_tagged_object(
                     PACE_MUTUAL_KEY1_TAG.context_tag(),
@@ -268,7 +268,7 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
     }
 
     fn general_authenticate_elc_step2(ephemeral_pk_opponent: &[u8]) -> GeneralAuthenticateResult<HealthCardCommand> {
-        let data = Asn1Encoder::write(|w| {
+        let data = Asn1Encoder::write_nonzeroizing(|w| {
             w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |inner| {
                 inner.write_tagged_object(
                     PACE_MUTUAL_KEY1_TAG.context_tag(),
@@ -389,7 +389,7 @@ mod tests {
         let expected = vec![
             0x00, 0x86, 0x00, 0x00, 0x0C, 0x7C, 0x0A, 0x85, 0x08, 0xDE, 0xAD, 0xBE, 0xEF, 0xCA, 0xFE, 0xBA, 0xBE, 0x00,
         ];
-        assert_eq!(apdu.to_bytes(), expected);
+        assert_eq!(apdu.as_bytes(), expected);
     }
 
     #[test]
@@ -453,7 +453,7 @@ mod tests {
         assert_eq!(command.ne, Some(ExpectedLength::Any));
 
         let data = command.data.unwrap();
-        assert_eq!(data, vec![0x7C, 0x00]);
+        assert_eq!(data.as_ref(), &[0x7C, 0x00]);
     }
 
     #[test]

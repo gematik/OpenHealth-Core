@@ -179,7 +179,7 @@ impl ManageSecurityEnvironmentCommand for HealthCardCommand {
         key_ref: u8,
         algorithm_id: u8,
     ) -> ManageSecurityEnvironmentResult<HealthCardCommand> {
-        let data = Asn1Encoder::write(|w| {
+        let data = Asn1Encoder::write_nonzeroizing(|w| {
             w.write_tagged_object(4u8.context_tag(), |inner| -> Result<(), Asn1EncoderError> {
                 inner.write_byte(key_ref);
                 Ok(())
@@ -204,7 +204,7 @@ impl ManageSecurityEnvironmentCommand for HealthCardCommand {
     fn manage_sec_env_set_signature_key_reference(
         key_ref: &[u8],
     ) -> ManageSecurityEnvironmentResult<HealthCardCommand> {
-        let data = Asn1Encoder::write(|w| {
+        let data = Asn1Encoder::write_nonzeroizing(|w| {
             w.write_tagged_object(3u8.context_tag(), |inner| -> Result<(), Asn1EncoderError> {
                 inner.write_bytes(key_ref);
                 Ok(())

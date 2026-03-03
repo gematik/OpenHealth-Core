@@ -179,7 +179,8 @@ where
                     end_entity_chr: end_entity_chr.clone(),
                     trace: trace.clone(),
                 })?
-                .to_bytes(),
+                .as_bytes()
+                .to_vec(),
             sw: response.apdu.sw(),
         });
     }
@@ -301,7 +302,8 @@ where
                     end_entity_chr: end_entity_chr.clone(),
                     trace: trace.clone(),
                 })?
-                .to_bytes(),
+                .as_bytes()
+                .to_vec(),
             sw: response.apdu.sw(),
         });
     }
@@ -347,7 +349,8 @@ where
                     end_entity_chr: end_entity_chr.clone(),
                     trace: trace.clone(),
                 })?
-                .to_bytes(),
+                .as_bytes()
+                .to_vec(),
             sw: response.apdu.sw(),
         });
     }
@@ -504,7 +507,7 @@ where
     let response = session.execute_command(command)?;
     let sw = response.apdu.sw();
     if let Some(trace) = trace {
-        trace.push(TrustedChannelStep { label: label.to_string(), apdu: apdu.to_bytes(), sw });
+        trace.push(TrustedChannelStep { label: label.to_string(), apdu: apdu.as_bytes().to_vec(), sw });
     }
     if response.status.is_success() {
         Ok(())

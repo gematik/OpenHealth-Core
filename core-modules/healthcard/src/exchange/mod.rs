@@ -32,7 +32,8 @@ pub mod secure_channel;
 pub mod sign_challenge;
 #[cfg(test)]
 pub(crate) mod test_utils;
-pub(crate) mod trusted_channel;
+#[cfg(any(test, feature = "trusted-channel", feature = "trusted-channel-ffi"))]
+pub mod trusted_channel;
 
 pub use certificate::{retrieve_certificate, retrieve_certificate_from, CertificateFile};
 pub use elc::generate_elc_ephemeral_public_key_from_cvc;

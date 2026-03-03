@@ -28,12 +28,15 @@ fn main() {
 fn main() {
     use clap::Parser;
     use crypto::ec::ec_key::{EcCurve, EcKeyPairSpec};
+    #[cfg(feature = "trusted-channel")]
     use healthcard::command::apdu::{
         CardCommandApdu, LengthClass, EXPECTED_LENGTH_WILDCARD_EXTENDED, EXPECTED_LENGTH_WILDCARD_SHORT,
     };
-    use healthcard::exchange::certificate::{retrieve_certificate_from, CertificateFile};
+    #[cfg(feature = "trusted-channel")]
     use healthcard::exchange::channel::CardChannel;
+    use healthcard::exchange::certificate::{retrieve_certificate_from, CertificateFile};
     use healthcard::exchange::secure_channel::{establish_secure_channel_with, CardAccessNumber};
+    #[cfg(feature = "trusted-channel")]
     use healthcard::exchange::trusted_channel::{
         establish_trusted_channel, establish_trusted_channel_with_cvcs,
         establish_trusted_channel_with_cvcs_and_options_detailed, load_cvc_chain_from_dir,
@@ -94,18 +97,23 @@ fn main() {
         #[arg(long)]
         read_vsd: bool,
         /// Run the contact-based trusted channel flow (ELC mutual authentication)
+        #[cfg(feature = "trusted-channel")]
         #[arg(long)]
         trusted_channel: bool,
         /// CVC file(s) to use for trusted channel (repeatable)
+        #[cfg(feature = "trusted-channel")]
         #[arg(long, value_name = "PATH")]
         cvc: Vec<String>,
         /// Directory containing PKI_CVC input CVCs (will resolve chain automatically)
+        #[cfg(feature = "trusted-channel")]
         #[arg(long, value_name = "DIR", default_value = "test-vectors/cvc-chain/pki_cvc_g2_input")]
         cvc_dir: Option<String>,
         /// Select private key before trusted channel (MSE Set)
+        #[cfg(feature = "trusted-channel")]
         #[arg(long)]
         select_private_key: bool,
         /// Print detailed trusted channel steps (APDU + SW)
+        #[cfg(feature = "trusted-channel")]
         #[arg(long)]
         trusted_channel_verbose: bool,
     }
@@ -125,68 +133,92 @@ fn main() {
         let channel = PcscChannel::connect(&reader, supports_extended_length)
             .map_err(|err| format!("pcsc connect failed: {err}"))?;
         let mut recorder = RecordingChannel::new(channel);
-        if args.trusted_channel {
-            if args.can.is_some()
-                || args.read_certificates
-                || args.verify_pin.is_some()
-                || args.unlock_egk_with_puk.is_some()
-                || args.change_pin_with_puk.is_some()
-                || args.change_pin.is_some()
-                || args.sign_challenge.is_some()
-                || args.get_random.is_some()
-                || args.read_vsd
+        #[cfg(feature = "trusted-channel")]
+        let use_trusted_channel = args.trusted_channel;
+        #[cfg(not(feature = "trusted-channel"))]
+        let use_trusted_channel = false;
+
+        if use_trusted_channel {
+            #[cfg(feature = "trusted-channel")]
             {
-                return Err("trusted-channel mode is exclusive and does not use PACE options".to_string());
-            }
-            let mut cvcs = Vec::new();
-            let use_options = args.select_private_key || args.trusted_channel_verbose;
-            let mut options = TrustedChannelOptions {
-                select_private_key: args.select_private_key,
-                collect_trace: args.trusted_channel_verbose,
-                key_ref_override: None,
-            };
-
-            let (available_cars, key_refs) =
-                match read_public_key_identifiers(&mut recorder, args.trusted_channel_verbose) {
-                    Ok((cars, refs)) => (cars, refs),
-                    Err(err) => {
-                        println!("TrustedChannel: retrieve public key identifiers failed: {err}");
-                        (Vec::new(), Vec::new())
-                    }
+                if args.can.is_some()
+                    || args.read_certificates
+                    || args.verify_pin.is_some()
+                    || args.unlock_egk_with_puk.is_some()
+                    || args.change_pin_with_puk.is_some()
+                    || args.change_pin.is_some()
+                    || args.sign_challenge.is_some()
+                    || args.get_random.is_some()
+                    || args.read_vsd
+                {
+                    return Err("trusted-channel mode is exclusive and does not use PACE options".to_string());
+                }
+                let mut cvcs = Vec::new();
+                let use_options = args.select_private_key || args.trusted_channel_verbose;
+                let mut options = TrustedChannelOptions {
+                    select_private_key: args.select_private_key,
+                    collect_trace: args.trusted_channel_verbose,
+                    key_ref_override: None,
                 };
-            if let Some(key_ref) = key_refs.first() {
-                options.key_ref_override = Some(*key_ref);
-                if args.trusted_channel_verbose {
-                    println!("TrustedChannel: selected GA keyRef={}", hex::encode_upper(key_ref));
-                }
-            } else if use_options {
-                return Err(
-                    "trusted channel failed: no 12-byte key reference found in GET DATA (0x80CA0100)".to_string()
-                );
-            }
 
-            if let Some(dir) = args.cvc_dir.as_deref() {
-                if !available_cars.is_empty() {
-                    cvcs = load_cvc_chain_from_dir_for_cars(&available_cars, std::path::Path::new(dir))
-                        .map_err(|err| format!("load CVC chain for CARs failed: {err}"))?;
-                } else {
-                    let end_entity = retrieve_certificate_from(&mut recorder, CertificateFile::EgkAutCvcE256)
-                        .map_err(|err| format!("read MF/EF.C.eGK.AUT_CVC.E256 failed: {err}"))?;
-                    cvcs = load_cvc_chain_from_dir(&end_entity, std::path::Path::new(dir))
-                        .map_err(|err| format!("load CVC chain failed: {err}"))?;
+                let (available_cars, key_refs) =
+                    match read_public_key_identifiers(&mut recorder, args.trusted_channel_verbose) {
+                        Ok((cars, refs)) => (cars, refs),
+                        Err(err) => {
+                            println!("TrustedChannel: retrieve public key identifiers failed: {err}");
+                            (Vec::new(), Vec::new())
+                        }
+                    };
+                if let Some(key_ref) = key_refs.first() {
+                    options.key_ref_override = Some(*key_ref);
+                    if args.trusted_channel_verbose {
+                        println!("TrustedChannel: selected GA keyRef={}", hex::encode_upper(key_ref));
+                    }
+                } else if use_options {
+                    return Err(
+                        "trusted channel failed: no 12-byte key reference found in GET DATA (0x80CA0100)".to_string()
+                    );
                 }
-            } else if !args.cvc.is_empty() {
-                for path in &args.cvc {
-                    let bytes = std::fs::read(path).map_err(|err| format!("read CVC {path}: {err}"))?;
-                    cvcs.push(bytes);
-                }
-            }
 
-            let result = if cvcs.is_empty() {
-                if use_options {
-                    let end_entity = retrieve_certificate_from(&mut recorder, CertificateFile::EgkAutCvcE256)
-                        .map_err(|err| format!("read MF/EF.C.eGK.AUT_CVC.E256 failed: {err}"))?;
-                    cvcs.push(end_entity);
+                if let Some(dir) = args.cvc_dir.as_deref() {
+                    if !available_cars.is_empty() {
+                        cvcs = load_cvc_chain_from_dir_for_cars(&available_cars, std::path::Path::new(dir))
+                            .map_err(|err| format!("load CVC chain for CARs failed: {err}"))?;
+                    } else {
+                        let end_entity = retrieve_certificate_from(&mut recorder, CertificateFile::EgkAutCvcE256)
+                            .map_err(|err| format!("read MF/EF.C.eGK.AUT_CVC.E256 failed: {err}"))?;
+                        cvcs = load_cvc_chain_from_dir(&end_entity, std::path::Path::new(dir))
+                            .map_err(|err| format!("load CVC chain failed: {err}"))?;
+                    }
+                } else if !args.cvc.is_empty() {
+                    for path in &args.cvc {
+                        let bytes = std::fs::read(path).map_err(|err| format!("read CVC {path}: {err}"))?;
+                        cvcs.push(bytes);
+                    }
+                }
+
+                let result = if cvcs.is_empty() {
+                    if use_options {
+                        let end_entity = retrieve_certificate_from(&mut recorder, CertificateFile::EgkAutCvcE256)
+                            .map_err(|err| format!("read MF/EF.C.eGK.AUT_CVC.E256 failed: {err}"))?;
+                        cvcs.push(end_entity);
+                        match establish_trusted_channel_with_cvcs_and_options_detailed(&mut recorder, &cvcs, options) {
+                            Ok(result) => result,
+                            Err(err) => {
+                                print_trusted_channel_info(&TrustedChannelResult {
+                                    step1_response_data: Vec::new(),
+                                    cvcs: err.cvcs,
+                                    end_entity_chr: err.end_entity_chr,
+                                    trace: err.trace,
+                                });
+                                return Err(format!("trusted channel failed: {}", err.error));
+                            }
+                        }
+                    } else {
+                        establish_trusted_channel(&mut recorder)
+                            .map_err(|err| format!("trusted channel failed: {err}"))?
+                    }
+                } else if use_options {
                     match establish_trusted_channel_with_cvcs_and_options_detailed(&mut recorder, &cvcs, options) {
                         Ok(result) => result,
                         Err(err) => {
@@ -200,26 +232,11 @@ fn main() {
                         }
                     }
                 } else {
-                    establish_trusted_channel(&mut recorder).map_err(|err| format!("trusted channel failed: {err}"))?
-                }
-            } else if use_options {
-                match establish_trusted_channel_with_cvcs_and_options_detailed(&mut recorder, &cvcs, options) {
-                    Ok(result) => result,
-                    Err(err) => {
-                        print_trusted_channel_info(&TrustedChannelResult {
-                            step1_response_data: Vec::new(),
-                            cvcs: err.cvcs,
-                            end_entity_chr: err.end_entity_chr,
-                            trace: err.trace,
-                        });
-                        return Err(format!("trusted channel failed: {}", err.error));
-                    }
-                }
-            } else {
-                establish_trusted_channel_with_cvcs(&mut recorder, &cvcs)
-                    .map_err(|err| format!("trusted channel failed: {err}"))?
-            };
-            print_trusted_channel_info(&result);
+                    establish_trusted_channel_with_cvcs(&mut recorder, &cvcs)
+                        .map_err(|err| format!("trusted channel failed: {err}"))?
+                };
+                print_trusted_channel_info(&result);
+            }
         } else {
             let can = args.can.ok_or_else(|| "missing --can".to_string())?;
             let card_access_number = CardAccessNumber::new(&can).map_err(|err| err.to_string())?;
@@ -338,6 +355,7 @@ fn main() {
         }
     }
 
+    #[cfg(feature = "trusted-channel")]
     fn print_trusted_channel_info(result: &healthcard::exchange::trusted_channel::TrustedChannelResult) {
         println!("TrustedChannel: CVCs used");
         for (idx, info) in result.cvcs.iter().enumerate() {
@@ -352,6 +370,7 @@ fn main() {
         }
     }
 
+    #[cfg(feature = "trusted-channel")]
     fn read_public_key_identifiers(
         channel: &mut RecordingChannel<PcscChannel>,
         verbose: bool,
@@ -400,6 +419,7 @@ fn main() {
         Ok((cars, key_refs))
     }
 
+    #[cfg(feature = "trusted-channel")]
     fn extract_tagged_values(data: &[u8], tag: u8, expected_len: usize) -> Vec<Vec<u8>> {
         let mut values = Vec::new();
         let mut idx = 0;

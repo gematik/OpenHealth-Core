@@ -21,6 +21,7 @@
 
 use crate::command::health_card_command::{ExpectedLength, HealthCardCommand};
 use crate::command::health_card_status::INTERNAL_AUTHENTICATE_STATUS;
+use asn1::maybe_zeroizing_vec::VecOfU8;
 
 /// CLA byte for INTERNAL AUTHENTICATE (ISO/IEC 7816-4).
 const CLA: u8 = 0x00;
@@ -50,7 +51,7 @@ impl InternalAuthenticateCommand for HealthCardCommand {
             INS,
             P1,
             P2,
-            Some(challenge.to_vec()),
+            Some(VecOfU8::new_nonzeroizing(challenge.to_vec())),
             Some(ExpectedLength::Any),
         )
     }
@@ -69,7 +70,7 @@ mod tests {
         assert_eq!(cmd.ins, INS);
         assert_eq!(cmd.p1, P1);
         assert_eq!(cmd.p2, P2);
-        assert_eq!(cmd.data, Some(challenge));
+        assert_eq!(cmd.data, Some(VecOfU8::new_nonzeroizing(challenge)));
         assert_eq!(cmd.ne, Some(ExpectedLength::Any));
     }
 }

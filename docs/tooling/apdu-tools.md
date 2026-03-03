@@ -33,10 +33,13 @@ Source locations:
 
 ## Feature flag
 
-The PC/SC transport is gated behind the `pcsc` feature on the `healthcard-apdu-tools` crate.
+The PC/SC transport is gated behind the `pcsc` feature on the `healthcard-apdu-tools` crate. The contact-based
+trusted channel flow additionally requires the `trusted-channel` feature (propagates to `healthcard`).
 
-- Build/run tools: add `--features pcsc` to your `cargo` command.
+- Build/run tools: add `--features pcsc` to your `cargo` command (`--features "pcsc trusted-channel"` when using
+  `--trusted-channel`).
 - Use in another crate: `healthcard-apdu-tools = { path = "../core-modules/healthcard-apdu-tools", features = ["pcsc"] }`
+  (add `trusted-channel` if you need the contact-based flow).
 
 ## `apdu_record` (PC/SC recorder)
 
@@ -72,9 +75,10 @@ cargo run -p healthcard-apdu-tools --bin apdu_record --features pcsc -- \
 ### Record a trusted channel transcript (contact-based)
 
 The trusted channel flow uses contact-based mutual ELC authentication and does **not** require a CAN.
+Enable it with `--features "pcsc trusted-channel"` when running `apdu_record`.
 
 ```sh
-cargo run -p healthcard-apdu-tools --bin apdu_record --features pcsc -- \
+cargo run -p healthcard-apdu-tools --bin apdu_record --features "pcsc trusted-channel" -- \
   --reader "<PCSC reader name>" \
   --out ./trusted-channel.jsonl \
   --trusted-channel \
@@ -88,6 +92,22 @@ Notes:
 - The key reference for GA step 1 is derived from GET DATA (0x80 CA 0x01 0x00).
 - `--select-private-key` sends the key selection MSE step before the trusted channel flow (recommended).
 - The default `--cvc-dir` points to `test-vectors/cvc-chain/pki_cvc_g2_input` and can be overridden.
+
+### Helper script (conservative default)
+
+If you want a minimal helper that auto-picks the first detected reader and runs either contactless (PACE) or
+contact-based (trusted channel), use:
+
+```sh
+./tools/run_apdu.sh contactless
+./tools/run_apdu.sh contact-based
+```
+
+To force a specific reader:
+
+```sh
+READER="Identiv uTrust 3700 F CL Reader" ./tools/run_apdu.sh contactless
+```
 
 For secure-channel transcripts, you can additionally read the certificates and print them to the console:
 

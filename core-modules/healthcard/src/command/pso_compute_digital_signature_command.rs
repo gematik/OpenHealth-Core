@@ -76,7 +76,7 @@ impl PsoComputeDigitalSignatureCommand for HealthCardCommand {
             INS,
             P1_CVC,
             P2_CVC,
-            Some(data_to_be_signed.to_vec()),
+            Some(VecOfU8::new_nonzeroizing(data_to_be_signed.to_vec())),
             None,
         )
     }
@@ -130,7 +130,7 @@ mod tests {
         assert_eq!(cmd.ins, INS);
         assert_eq!(cmd.p1, P1_CVC);
         assert_eq!(cmd.p2, P2_CVC);
-        assert_eq!(cmd.data, Some(data.to_vec()));
+        assert_eq!(cmd.data, Some(VecOfU8::new_nonzeroizing(data.to_vec())));
         assert_eq!(cmd.ne, None);
     }
 }
