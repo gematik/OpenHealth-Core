@@ -32,6 +32,7 @@ name = "healthcard"
 [features]
 default = ["uniffi"]
 ci = ["uniffi"]
+trusted-channel-ffi = ["uniffi"]
 
 [dependencies]
 lazy_static = "1.5.0"

@@ -43,6 +43,9 @@ const MODE_AFFECTED_LIST_ELEMENT_IS_EXT_AUTH_P2: u8 = 0xA4;
 /// Mode for setting private key (P1)
 const MODE_SET_PRIVATE_KEY_P1: u8 = 0x41;
 
+/// Mode for setting signature key reference (P1)
+const MODE_SET_SIGNATURE_KEY_REFERENCE_P1: u8 = 0x81;
+
 /// Mode where the affected list element is signature creation (P2)
 const MODE_AFFECTED_LIST_ELEMENT_IS_SIGNATURE_CREATION: u8 = 0xB6;
 
@@ -86,6 +89,23 @@ pub trait ManageSecurityEnvironmentCommand {
         key: &K,
         df_specific: bool,
     ) -> ManageSecurityEnvironmentResult<HealthCardCommand>;
+
+    /// Creates a HealthCardCommand for selecting a private key and algorithm for trusted channel.
+    ///
+    /// This corresponds to MSE (P1=0x41, P2=0xA4) with:
+    /// - tag 0x84 (key reference)
+    /// - tag 0x80 (algorithm identifier)
+    fn manage_sec_env_select_private_key(
+        key_ref: u8,
+        algorithm_id: u8,
+    ) -> ManageSecurityEnvironmentResult<HealthCardCommand>;
+
+    /// Creates a HealthCardCommand for setting the key reference used for signature creation.
+    ///
+    /// This corresponds to MSE (P1=0x81, P2=0xB6) with:
+    /// - tag 0x83 containing the key reference (CAR)
+    fn manage_sec_env_set_signature_key_reference(key_ref: &[u8])
+        -> ManageSecurityEnvironmentResult<HealthCardCommand>;
 }
 
 impl ManageSecurityEnvironmentCommand for HealthCardCommand {
@@ -149,6 +169,53 @@ impl ManageSecurityEnvironmentCommand for HealthCardCommand {
             CLA,
             INS,
             MODE_SET_PRIVATE_KEY_P1,
+            MODE_AFFECTED_LIST_ELEMENT_IS_SIGNATURE_CREATION,
+            Some(data),
+            None,
+        ))
+    }
+
+    fn manage_sec_env_select_private_key(
+        key_ref: u8,
+        algorithm_id: u8,
+    ) -> ManageSecurityEnvironmentResult<HealthCardCommand> {
+        let data = Asn1Encoder::write(|w| {
+            w.write_tagged_object(4u8.context_tag(), |inner| -> Result<(), Asn1EncoderError> {
+                inner.write_byte(key_ref);
+                Ok(())
+            })?;
+            w.write_tagged_object(0u8.context_tag(), |inner| -> Result<(), Asn1EncoderError> {
+                inner.write_byte(algorithm_id);
+                Ok(())
+            })
+        })?;
+
+        Ok(HealthCardCommand::new(
+            MANAGE_SECURITY_ENVIRONMENT_STATUS.clone(),
+            CLA,
+            INS,
+            MODE_SET_PRIVATE_KEY_P1,
+            MODE_AFFECTED_LIST_ELEMENT_IS_EXT_AUTH_P2,
+            Some(data),
+            None,
+        ))
+    }
+
+    fn manage_sec_env_set_signature_key_reference(
+        key_ref: &[u8],
+    ) -> ManageSecurityEnvironmentResult<HealthCardCommand> {
+        let data = Asn1Encoder::write(|w| {
+            w.write_tagged_object(3u8.context_tag(), |inner| -> Result<(), Asn1EncoderError> {
+                inner.write_bytes(key_ref);
+                Ok(())
+            })
+        })?;
+
+        Ok(HealthCardCommand::new(
+            MANAGE_SECURITY_ENVIRONMENT_STATUS.clone(),
+            CLA,
+            INS,
+            MODE_SET_SIGNATURE_KEY_REFERENCE_P1,
             MODE_AFFECTED_LIST_ELEMENT_IS_SIGNATURE_CREATION,
             Some(data),
             None,

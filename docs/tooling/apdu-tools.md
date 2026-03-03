@@ -40,7 +40,8 @@ The PC/SC transport is gated behind the `pcsc` feature on the `healthcard-apdu-t
 
 ## `apdu_record` (PC/SC recorder)
 
-Records APDU input/output while establishing a secure channel (PACE) and writes a transcript as JSON Lines (JSONL).
+Records APDU input/output while establishing a secure channel (PACE) or trusted channel (contact-based mutual ELC
+authentication) and writes a transcript as JSON Lines (JSONL).
 
 Prerequisites:
 
@@ -68,7 +69,27 @@ cargo run -p healthcard-apdu-tools --bin apdu_record --features pcsc -- \
   --out ./transcript.jsonl
 ```
 
-To additionally read the certificates and print them to the console:
+### Record a trusted channel transcript (contact-based)
+
+The trusted channel flow uses contact-based mutual ELC authentication and does **not** require a CAN.
+
+```sh
+cargo run -p healthcard-apdu-tools --bin apdu_record --features pcsc -- \
+  --reader "<PCSC reader name>" \
+  --out ./trusted-channel.jsonl \
+  --trusted-channel \
+  --select-private-key \
+  --trusted-channel-verbose
+```
+
+Notes:
+
+- `--trusted-channel-verbose` prints APDUs, status words, and the selected key reference.
+- The key reference for GA step 1 is derived from GET DATA (0x80 CA 0x01 0x00).
+- `--select-private-key` sends the key selection MSE step before the trusted channel flow (recommended).
+- The default `--cvc-dir` points to `test-vectors/cvc-chain/pki_cvc_g2_input` and can be overridden.
+
+For secure-channel transcripts, you can additionally read the certificates and print them to the console:
 
 ```sh
 cargo run -p healthcard-apdu-tools --bin apdu_record --features pcsc -- \
