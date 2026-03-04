@@ -74,8 +74,7 @@ pub struct TrustedChannelError {
 }
 
 /// Options for the trusted channel flow.
-#[derive(Debug, Clone, Copy)]
-#[derive(Default)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct TrustedChannelOptions {
     pub select_private_key: bool,
     pub collect_trace: bool,
