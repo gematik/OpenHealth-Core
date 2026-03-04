@@ -22,3 +22,4 @@
 # Ignore patterns for tools/quality-report.py.
 # One regex per line; empty lines and comments are ignored.
 core-modules/healthcard-apdu-tools/
+core-modules/healthcard/src/exchange/trusted_channel\.rs

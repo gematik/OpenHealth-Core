@@ -28,6 +28,7 @@ license = "Apache-2.0"
 [features]
 default = []
 pcsc = ["dep:pcsc"]
+trusted-channel = ["healthcard/trusted-channel"]
 
 [dependencies]
 healthcard-apdu-base = { path = "../healthcard-apdu-base" }

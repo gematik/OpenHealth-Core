@@ -156,6 +156,11 @@ impl HealthCardResponseStatus {
         GENERAL_AUTHENTICATE_STATUS.get(&sw).copied().unwrap_or(HealthCardResponseStatus::UnknownStatus)
     }
 
+    /// Gets the status from a status word (SW) for an internal authenticate command.
+    pub fn from_internal_authenticate_status(sw: u16) -> Self {
+        INTERNAL_AUTHENTICATE_STATUS.get(&sw).copied().unwrap_or(HealthCardResponseStatus::UnknownStatus)
+    }
+
     /// Gets the status from a status word (SW) for a PIN-related command.
     pub fn from_pin_status(sw: u16) -> Self {
         PIN_STATUS.get(&sw).copied().unwrap_or(HealthCardResponseStatus::UnknownStatus)
@@ -201,6 +206,11 @@ impl HealthCardResponseStatus {
         GET_RANDOM_VALUES_STATUS.get(&sw).copied().unwrap_or(HealthCardResponseStatus::UnknownStatus)
     }
 
+    /// Gets the status from a status word (SW) for a list public key command.
+    pub fn from_list_public_key_status(sw: u16) -> Self {
+        LIST_PUBLIC_KEY_STATUS.get(&sw).copied().unwrap_or(HealthCardResponseStatus::UnknownStatus)
+    }
+
     /// Check if the status indicates success.
     pub fn is_success(&self) -> bool {
         *self == HealthCardResponseStatus::Success
@@ -209,6 +219,21 @@ impl HealthCardResponseStatus {
 
 lazy_static! {
     pub static ref GENERAL_AUTHENTICATE_STATUS: HashMap<u16, HealthCardResponseStatus> = {
+        let mut map = HashMap::new();
+        map.insert(0x0000, HealthCardResponseStatus::UnknownStatus);
+        map.insert(0x9000, HealthCardResponseStatus::Success);
+        map.insert(0x6300, HealthCardResponseStatus::AuthenticationFailure);
+        map.insert(0x6400, HealthCardResponseStatus::ParameterMismatch);
+        map.insert(0x6982, HealthCardResponseStatus::SecurityStatusNotSatisfied);
+        map.insert(0x6983, HealthCardResponseStatus::KeyExpired);
+        map.insert(0x6985, HealthCardResponseStatus::NoKeyReference);
+        map.insert(0x6A80, HealthCardResponseStatus::NumberPreconditionWrong);
+        map.insert(0x6A81, HealthCardResponseStatus::UnsupportedFunction);
+        map.insert(0x6A88, HealthCardResponseStatus::KeyNotFound);
+        map
+    };
+
+    pub static ref INTERNAL_AUTHENTICATE_STATUS: HashMap<u16, HealthCardResponseStatus> = {
         let mut map = HashMap::new();
         map.insert(0x0000, HealthCardResponseStatus::UnknownStatus);
         map.insert(0x9000, HealthCardResponseStatus::Success);
@@ -337,6 +362,13 @@ lazy_static! {
         map.insert(0x6982, HealthCardResponseStatus::SecurityStatusNotSatisfied);
         map
     };
+
+    pub static ref LIST_PUBLIC_KEY_STATUS: HashMap<u16, HealthCardResponseStatus> = {
+        let mut map = HashMap::new();
+        map.insert(0x9000, HealthCardResponseStatus::Success);
+        map.insert(0x6A88, HealthCardResponseStatus::KeyNotFound);
+        map
+    };
 }
 
 /// Extension trait to get the HealthCardResponseStatus from a status word
@@ -370,6 +402,9 @@ pub trait StatusWordExt {
 
     /// Get the HealthCardResponseStatus for a get random values command
     fn to_get_random_values_status(&self) -> HealthCardResponseStatus;
+
+    /// Get the HealthCardResponseStatus for a list public key command
+    fn to_list_public_key_status(&self) -> HealthCardResponseStatus;
 }
 
 impl StatusWordExt for u16 {
@@ -411,6 +446,10 @@ impl StatusWordExt for u16 {
 
     fn to_get_random_values_status(&self) -> HealthCardResponseStatus {
         HealthCardResponseStatus::from_get_random_values_status(*self)
+    }
+
+    fn to_list_public_key_status(&self) -> HealthCardResponseStatus {
+        HealthCardResponseStatus::from_list_public_key_status(*self)
     }
 }
 

@@ -35,6 +35,12 @@ const P1: u8 = 0x9E;
 /// P2 parameter for the PSO COMPUTE DIGITAL SIGNATURE command
 const P2: u8 = 0x9A;
 
+/// P1 parameter for PSO COMPUTE DIGITAL SIGNATURE with CVC value field
+const P1_CVC: u8 = 0x00;
+
+/// P2 parameter for PSO COMPUTE DIGITAL SIGNATURE with CVC value field
+const P2_CVC: u8 = 0xBE;
+
 /// Extension trait for HealthCardCommand to provide PSO COMPUTE DIGITAL SIGNATURE command
 pub trait PsoComputeDigitalSignatureCommand {
     /// Creates a HealthCardCommand for the PSO COMPUTE DIGITAL SIGNATURE command.
@@ -43,6 +49,11 @@ pub trait PsoComputeDigitalSignatureCommand {
     /// # Arguments
     /// * `data_to_be_signed` - The data to be signed.
     fn pso_compute_digital_signature(data_to_be_signed: &[u8]) -> HealthCardCommand;
+
+    /// Creates a HealthCardCommand for PSO COMPUTE DIGITAL SIGNATURE with CVC value field.
+    ///
+    /// This corresponds to P1=0x00, P2=0xBE for trusted channel CVC upload.
+    fn pso_compute_digital_signature_cvc(data_to_be_signed: &[u8]) -> HealthCardCommand;
 }
 
 impl PsoComputeDigitalSignatureCommand for HealthCardCommand {
@@ -55,6 +66,18 @@ impl PsoComputeDigitalSignatureCommand for HealthCardCommand {
             P2,
             Some(VecOfU8::new_nonzeroizing(data_to_be_signed.to_vec())),
             Some(ExpectedLength::Any),
+        )
+    }
+
+    fn pso_compute_digital_signature_cvc(data_to_be_signed: &[u8]) -> HealthCardCommand {
+        HealthCardCommand::new(
+            PSO_COMPUTE_DIGITAL_SIGNATURE_STATUS.clone(),
+            CLA,
+            INS,
+            P1_CVC,
+            P2_CVC,
+            Some(VecOfU8::new_nonzeroizing(data_to_be_signed.to_vec())),
+            None,
         )
     }
 }
@@ -97,5 +120,17 @@ mod tests {
         assert_eq!(cmd.p2, P2);
         assert_eq!(cmd.data, Some(VecOfU8::new_nonzeroizing(long_data.clone())));
         assert_eq!(cmd.ne, Some(ExpectedLength::Any));
+    }
+
+    #[test]
+    fn test_pso_compute_digital_signature_cvc() {
+        let data = [0xAA, 0xBB];
+        let cmd = HealthCardCommand::pso_compute_digital_signature_cvc(&data);
+        assert_eq!(cmd.cla, CLA);
+        assert_eq!(cmd.ins, INS);
+        assert_eq!(cmd.p1, P1_CVC);
+        assert_eq!(cmd.p2, P2_CVC);
+        assert_eq!(cmd.data, Some(VecOfU8::new_nonzeroizing(data.to_vec())));
+        assert_eq!(cmd.ne, None);
     }
 }

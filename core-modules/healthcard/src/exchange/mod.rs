@@ -21,6 +21,7 @@
 
 pub mod certificate;
 pub mod channel;
+pub mod elc;
 pub mod error;
 pub mod ids;
 pub mod pace_info;
@@ -31,8 +32,11 @@ pub mod secure_channel;
 pub mod sign_challenge;
 #[cfg(test)]
 pub(crate) mod test_utils;
+#[cfg(any(test, feature = "trusted-channel", feature = "trusted-channel-ffi"))]
+pub mod trusted_channel;
 
 pub use certificate::{retrieve_certificate, retrieve_certificate_from, CertificateFile};
+pub use elc::generate_elc_ephemeral_public_key_from_cvc;
 pub use error::ExchangeError;
 pub use pin::{change_pin, change_pin_with_puk, unlock_egk_with_puk, verify_pin, CardPin, HealthCardVerifyPinResult};
 pub use random::get_random;

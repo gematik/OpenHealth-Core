@@ -27,6 +27,8 @@ pub mod get_pin_status_command;
 pub mod get_random_command;
 pub mod health_card_command;
 pub mod health_card_status;
+pub mod internal_authenticate_command;
+pub mod list_public_key_command;
 pub mod manage_security_environment_command;
 pub mod pso_compute_digital_signature_command;
 pub mod read_command;
