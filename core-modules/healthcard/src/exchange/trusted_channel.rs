@@ -63,6 +63,8 @@ pub struct TrustedChannelStep {
     pub sw: u16,
 }
 
+type PublicKeyIdentifiers = (Vec<Vec<u8>>, Vec<[u8; 12]>);
+
 #[derive(Debug)]
 pub struct TrustedChannelError {
     pub error: ExchangeError,
@@ -73,16 +75,11 @@ pub struct TrustedChannelError {
 
 /// Options for the trusted channel flow.
 #[derive(Debug, Clone, Copy)]
+#[derive(Default)]
 pub struct TrustedChannelOptions {
     pub select_private_key: bool,
     pub collect_trace: bool,
     pub key_ref_override: Option<[u8; 12]>,
-}
-
-impl Default for TrustedChannelOptions {
-    fn default() -> Self {
-        Self { select_private_key: false, collect_trace: false, key_ref_override: None }
-    }
 }
 
 /// Establish a trusted channel using the CVC read from the card (end-entity).
@@ -131,6 +128,7 @@ where
 }
 
 /// Same as `establish_trusted_channel_with_cvcs_and_options`, but returns trace on error.
+#[allow(clippy::result_large_err)]
 pub fn establish_trusted_channel_with_cvcs_and_options_detailed<S>(
     session: &mut S,
     cvcs: &[Vec<u8>],
@@ -319,7 +317,7 @@ where
 
     let ephemeral_pk = elc::generate_elc_ephemeral_public_key_from_cvc_from_parsed(end_entity).map_err(|error| {
         TrustedChannelError {
-            error: error.into(),
+            error,
             cvcs: cvc_infos.clone(),
             end_entity_chr: end_entity_chr.clone(),
             trace: trace.clone(),
@@ -472,7 +470,7 @@ where
     establish_trusted_channel_with_cvcs_and_options(session, &cvcs, options)
 }
 
-fn read_public_key_identifiers<S>(session: &mut S) -> Result<(Vec<Vec<u8>>, Vec<[u8; 12]>), ExchangeError>
+fn read_public_key_identifiers<S>(session: &mut S) -> Result<PublicKeyIdentifiers, ExchangeError>
 where
     S: CardChannelExt,
 {

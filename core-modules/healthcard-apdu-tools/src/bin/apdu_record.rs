@@ -371,10 +371,13 @@ fn main() {
     }
 
     #[cfg(feature = "trusted-channel")]
+    type PublicKeyIdentifiers = (Vec<Vec<u8>>, Vec<[u8; 12]>);
+
+    #[cfg(feature = "trusted-channel")]
     fn read_public_key_identifiers(
         channel: &mut RecordingChannel<PcscChannel>,
         verbose: bool,
-    ) -> Result<(Vec<Vec<u8>>, Vec<[u8; 12]>), String> {
+    ) -> Result<PublicKeyIdentifiers, String> {
         let length_class = if channel.supports_extended_length() { LengthClass::Extended } else { LengthClass::Short };
         let ne = if length_class == LengthClass::Extended {
             EXPECTED_LENGTH_WILDCARD_EXTENDED
