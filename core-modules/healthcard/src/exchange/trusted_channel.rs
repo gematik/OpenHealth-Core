@@ -426,7 +426,7 @@ pub fn load_cvc_chain_from_dir_for_cars(available_cars: &[Vec<u8>], dir: &Path) 
         certs.iter().filter(|(car, _, _)| available_cars.iter().any(|allowed| allowed == car)).cloned().collect();
     candidates.sort_by(|a, b| a.1.cmp(&b.1));
 
-    for (_car, chr, bytes) in candidates {
+    if let Some((_car, chr, bytes)) = candidates.into_iter().next() {
         let mut chain = vec![bytes];
         let mut current_chr = chr;
         let mut visited = std::collections::HashSet::new();

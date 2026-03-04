@@ -23,7 +23,8 @@ use super::channel::{CardChannel, CardChannelError, CommandApdu, FfiCardChannelA
 use crate::command::apdu::ApduError;
 use crate::command::health_card_status::HealthCardResponseStatus;
 use crate::exchange::channel::CardChannel as CoreCardChannel;
-use crate::exchange::{self, ExchangeError};
+use crate::exchange::trusted_channel::establish_trusted_channel_with_cvc_dir;
+use crate::exchange::ExchangeError;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 use thiserror::Error;
@@ -120,7 +121,7 @@ pub fn establish_trusted_channel(
     options: TrustedChannelOptions,
 ) -> Result<Arc<TrustedChannel>, TrustedChannelError> {
     let mut adapter = FfiCardChannelAdapter::new(session);
-    exchange::establish_trusted_channel_with_cvc_dir(&mut adapter, Path::new(&options.cvc_dir))?;
+    establish_trusted_channel_with_cvc_dir(&mut adapter, Path::new(&options.cvc_dir))?;
     Ok(Arc::new(TrustedChannel { inner: Mutex::new(adapter) }))
 }
 

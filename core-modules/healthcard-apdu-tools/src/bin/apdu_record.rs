@@ -32,9 +32,9 @@ fn main() {
     use healthcard::command::apdu::{
         CardCommandApdu, LengthClass, EXPECTED_LENGTH_WILDCARD_EXTENDED, EXPECTED_LENGTH_WILDCARD_SHORT,
     };
+    use healthcard::exchange::certificate::{retrieve_certificate_from, CertificateFile};
     #[cfg(feature = "trusted-channel")]
     use healthcard::exchange::channel::CardChannel;
-    use healthcard::exchange::certificate::{retrieve_certificate_from, CertificateFile};
     use healthcard::exchange::secure_channel::{establish_secure_channel_with, CardAccessNumber};
     #[cfg(feature = "trusted-channel")]
     use healthcard::exchange::trusted_channel::{
