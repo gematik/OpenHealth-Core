@@ -128,7 +128,7 @@ fn key_ref_from_bytes(bytes: Vec<u8>) -> Result<[u8; 12], CommandBuilderError> {
         .try_into()
         .map_err(|_| CommandBuilderError::InvalidArgument { reason: "key_ref must be exactly 12 bytes".into() })
 }
-
+extern crate asn1;
 fn encrypted_pin_from_bytes(bytes: Vec<u8>) -> Result<EncryptedPinFormat2, CommandBuilderError> {
     Ok(EncryptedPinFormat2::from_encrypted_bytes(bytes)?)
 }
@@ -432,4 +432,74 @@ impl HealthCardCommand {
 #[uniffi::export]
 pub fn generate_elc_ephemeral_public_key(cvc: Vec<u8>) -> Result<Vec<u8>, ExchangeError> {
     crate::exchange::generate_elc_ephemeral_public_key_from_cvc(&cvc).map_err(ExchangeError::from)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use asn1::cv_certificate::CVCertificate;
+    use asn1::decoder::extract_context_values;
+    use std::fs;
+    use std::path::PathBuf;
+
+    fn load_fixture(name: &str) -> Vec<u8> {
+        let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        path.pop();
+        path.pop();
+        path.push("test-vectors");
+        path.push("cvc-chain");
+        path.push("pki_cvc_g2_input");
+        path.push("Atos_CVC-Root-CA");
+        path.push(name);
+        fs::read(&path).expect("fixture should be readable")
+    }
+
+    fn expected_point_len(cvc: &CVCertificate) -> usize {
+        let key_data = &cvc.body.public_key.key_data;
+        let mut values = extract_context_values(key_data, 6).expect("context tag 6 present");
+        values.pop().expect("public key point").len()
+    }
+
+    #[test]
+    fn car_from_bytes_accepts_exact_len() {
+        let bytes = vec![0xA5; 8];
+        let car = car_from_bytes(bytes.clone()).expect("CAR should be accepted");
+        assert_eq!(car, [0xA5; 8]);
+    }
+
+    #[test]
+    fn car_from_bytes_rejects_wrong_len() {
+        let result = car_from_bytes(vec![0x00; 7]);
+        assert!(matches!(result, Err(CommandBuilderError::InvalidArgument { .. })));
+    }
+
+    #[test]
+    fn key_ref_from_bytes_accepts_exact_len() {
+        let bytes = vec![0x5A; 12];
+        let key_ref = key_ref_from_bytes(bytes.clone()).expect("key_ref should be accepted");
+        assert_eq!(key_ref, [0x5A; 12]);
+    }
+
+    #[test]
+    fn key_ref_from_bytes_rejects_wrong_len() {
+        let result = key_ref_from_bytes(vec![0x00; 11]);
+        assert!(matches!(result, Err(CommandBuilderError::InvalidArgument { .. })));
+    }
+
+    #[test]
+    fn generate_elc_ephemeral_public_key_matches_curve_length() {
+        let cvc_bytes = load_fixture("DEGXX820214.cvc");
+        let certificate = CVCertificate::parse(&cvc_bytes).expect("valid CVC");
+
+        let expected_len = expected_point_len(&certificate);
+        let pk = generate_elc_ephemeral_public_key(cvc_bytes).expect("key generation succeeds");
+
+        assert_eq!(pk.len(), expected_len);
+    }
+
+    #[test]
+    fn generate_elc_ephemeral_public_key_rejects_invalid_cvc() {
+        let result = generate_elc_ephemeral_public_key(Vec::new());
+        assert!(result.is_err());
+    }
 }
