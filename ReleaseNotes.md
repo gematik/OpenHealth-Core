@@ -31,6 +31,8 @@ This document summarizes the publicly released versions of OpenHealth Core.
 
 - Expose exchange-layer card operations (PIN verify/unlock, random/VSD/cert/sign) via FFI ([#47](https://github.com/gematik/OpenHealth-Core/pull/47)).
 - Document FFI exported APIs ([#47](https://github.com/gematik/OpenHealth-Core/pull/47)).
+- Add missing healthcard command builders (including INTERNAL AUTHENTICATE, MSE helpers, LIST PUBLIC KEYS, GA ELC step 2).
+- Add ELC epSind alle hemeral public key generation and wire it through FFI/JVM bindings.
 
 ### 0.0.1-alpha5 (Latest)
 
