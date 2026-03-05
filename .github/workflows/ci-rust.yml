@@ -88,7 +88,7 @@ jobs:
 
   build:
     name: Build & Test
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     needs: branch_naming
     timeout-minutes: 30
     steps:
@@ -111,26 +111,31 @@ jobs:
         run: cargo build --workspace --no-default-features --features ci --locked --verbose
       - name: Run tests
         run: cargo test --workspace --no-default-features --features ci --locked --verbose
-      - name: Ensure Android SDK platforms (Linux only)
-        if: runner.os == 'Linux'
-        env:
-          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+      - name: Ensure Android SDK platforms
         run: |
           yes | "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="${ANDROID_SDK_ROOT}" --licenses >/dev/null || true
           "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="${ANDROID_SDK_ROOT}" "platforms;android-34" "build-tools;34.0.0"
       - name: Install cargo-ndk (Linux only)
-        if: runner.os == 'Linux'
         uses: taiki-e/install-action@v2
         with:
           tool: cargo-ndk
       - name: Add Rust Android targets (Linux only)
-        if: runner.os == 'Linux'
         run: rustup target add aarch64-linux-android x86_64-linux-android
-      - name: Run Kotlin binding tests
-        if: runner.os == 'Linux'
+      - name: Build Kotlin bindings
         run: |
-          cd core-modules-kotlin
-          ./gradlew test --no-daemon
+          if [ -n "${{ matrix.just_shell }}" ]; then
+            just --shell="${{ matrix.just_shell }}" kotlin-bindings-generate ${{ matrix.platform }} ${{ matrix.arch }} ${{ matrix.library_file }} release
+          else
+            just kotlin-bindings-generate ${{ matrix.platform }} ${{ matrix.arch }} ${{ matrix.library_file }} release
+          fi
+
+      - name: Build Android native libraries (Linux only - arm64-v8a, x86_64)
+        run: |
+          just kotlin-bindings-generate-android
+
+      - name: Run Kotlin binding tests (Linux or macOS)
+        run: |
+          ./core-modules-kotlin/gradlew test --no-daemon
 
   coverage:
     name: Quality report (coverage)
