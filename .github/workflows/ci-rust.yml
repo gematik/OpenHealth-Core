@@ -88,29 +88,73 @@ jobs:
 
   build:
     name: Build & Test
-    runs-on: ubuntu-latest
+    runs-on: macos-26
     needs: branch_naming
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 1
+
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: ${{ runner.os }}-rust
+
       - name: Install toolchains
         run: |
           rustup component add clippy
           rustup toolchain install nightly --profile minimal --component rustfmt
+
       - name: Check formatting
         run: cargo +nightly fmt --all -- --check
+
       - name: Lint with clippy
         run: cargo clippy --workspace --all-targets --no-default-features --features ci -- -D warnings
+
       - name: Build
         run: cargo build --workspace --no-default-features --features ci --locked --verbose
+
       - name: Run tests
         run: cargo test --workspace --no-default-features --features ci --locked --verbose
+
+      - name: Ensure Android SDK platforms
+        run: |
+          yes | "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="${ANDROID_SDK_ROOT}" --licenses >/dev/null || true
+          "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="${ANDROID_SDK_ROOT}" "platforms;android-34" "build-tools;34.0.0"
+
+      - name: Install cargo-ndk
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-ndk
+
+      - name: Add Rust Android targets
+        run: rustup target add aarch64-linux-android aarch64-apple-darwin x86_64-linux-android aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios x86_64-apple-darwin
+
+      - name: Install just
+        uses: taiki-e/install-action@v2
+        with:
+          tool: just
+
+      - name: Build Kotlin bindings
+        run: |
+          just kotlin-bindings-generate darwin aarch64 libhealthcard.dylib release
+
+      - name: Build Android native libraries
+        run: |
+          just kotlin-bindings-generate-android
+
+      - name: Run Kotlin binding tests
+        run: |
+          cd ./core-modules-kotlin/
+          ./gradlew test --no-daemon
+
+      - name: Build XCFramework
+        run: just swift-xcframework
+
+      - name: Run Swift binding tests
+        run: |
+          swift test
 
   coverage:
     name: Quality report (coverage)
