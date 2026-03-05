@@ -121,6 +121,10 @@ jobs:
           tool: cargo-ndk
       - name: Add Rust Android targets (Linux only)
         run: rustup target add aarch64-linux-android x86_64-linux-android
+      - name: Install just
+        uses: taiki-e/install-action@v2
+        with:
+          tool: just
       - name: Build Kotlin bindings
         run: |
           if [ -n "${{ matrix.just_shell }}" ]; then
