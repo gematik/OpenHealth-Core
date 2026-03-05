@@ -120,7 +120,7 @@ jobs:
         with:
           tool: cargo-ndk
       - name: Add Rust Android targets
-        run: rustup target add aarch64-linux-android aarch64-apple-darwin
+        run: rustup target add aarch64-linux-android aarch64-apple-darwin x86_64-linux-android
       - name: Install just
         uses: taiki-e/install-action@v2
         with:
