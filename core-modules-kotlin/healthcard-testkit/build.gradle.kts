@@ -85,7 +85,7 @@ kotlin {
             kotlin.srcDir(replayFixturesDir)
             dependencies {
                 implementation(project(":healthcard"))
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
             }
         }
         val jvmMain by getting
