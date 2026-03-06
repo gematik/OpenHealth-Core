@@ -69,8 +69,8 @@ kotlin {
             dependencies {
                 implementation(project(":healthcard-testkit"))
                 implementation(kotlin("test"))
-                implementation("androidx.test.ext:junit:1.2.1")
-                implementation("androidx.test:runner:1.6.2")
+                implementation("androidx.test.ext:junit:1.3.0")
+                implementation("androidx.test:runner:1.7.0")
             }
         }
         val jvmTest by getting {
