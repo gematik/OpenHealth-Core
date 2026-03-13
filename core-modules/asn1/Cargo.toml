@@ -29,6 +29,6 @@ license = "Apache-2.0"
 default = []
 
 [dependencies]
-regex = "1.12.2"
+regex = "1.12.3"
 thiserror = "2.0"
 zeroize = { version = "1.8.1", features = ["zeroize_derive"] }
