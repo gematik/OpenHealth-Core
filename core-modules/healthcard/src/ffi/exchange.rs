@@ -340,4 +340,26 @@ mod tests {
         .unwrap_err();
         assert!(matches!(err, ExchangeError::InvalidArgument { reason } if reason == "boom"));
     }
+
+    #[test]
+    fn get_random_rejects_negative_length() {
+        struct DummyChannel;
+
+        impl CardChannel for DummyChannel {
+            fn supports_extended_length(&self) -> bool {
+                false
+            }
+
+            fn transmit(
+                &self,
+                _command: Arc<channel::CommandApdu>,
+            ) -> Result<Arc<channel::ResponseApdu>, channel::CardChannelError> {
+                unreachable!()
+            }
+        }
+
+        let session: Arc<dyn CardChannel> = Arc::new(DummyChannel);
+        let err = super::get_random(session, -1).unwrap_err();
+        assert!(matches!(err, ExchangeError::InvalidArgument { .. }));
+    }
 }

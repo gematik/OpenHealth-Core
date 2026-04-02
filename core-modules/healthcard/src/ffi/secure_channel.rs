@@ -422,4 +422,15 @@ mod tests {
             CryptoError::InvalidKeyMaterial { context } if context == "missing fixed key material"
         ));
     }
+
+    #[test]
+    fn secure_channel_get_random_rejects_negative_length() {
+        let inner: Arc<dyn CardChannel> = Arc::new(DummyForeign);
+        let adapter = FfiCardChannelAdapter::new(inner);
+        let core = crate::exchange::secure_channel::test_secure_channel_with_adapter(adapter);
+        let secure = SecureChannel { inner: Mutex::new(core) };
+
+        let err = secure.get_random(-1).expect_err_no_debug("expected invalid argument");
+        assert!(matches!(err, SecureChannelError::InvalidArgument { .. }));
+    }
 }
