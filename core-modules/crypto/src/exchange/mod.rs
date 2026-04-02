@@ -20,3 +20,4 @@
 // find details in the "Readme" file.
 
 pub mod ecdh;
+pub mod elc;

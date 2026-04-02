@@ -35,7 +35,7 @@
 //! Notes
 //! - The internal `ossl` module contains the low-level FFI bindings and is not
 //!   part of the public API.
-//! - When the `uniffi` feature is enabled, `interop` exports a UniFFI-compatible
+//! - When the `uniffi` feature is enabled, `ffi` exports a UniFFI-compatible
 //!   interface for use from other languages.
 
 pub mod digest;
@@ -43,12 +43,16 @@ pub mod kem;
 mod ossl;
 
 pub mod exchange;
+#[cfg(feature = "uniffi")]
+pub mod ffi;
 
 pub mod cipher;
 pub mod error;
 pub mod key;
 pub mod mac;
 pub mod utils;
-// mod exchange;
 
 pub mod ec;
+
+#[cfg(feature = "uniffi")]
+uniffi::setup_scaffolding!();

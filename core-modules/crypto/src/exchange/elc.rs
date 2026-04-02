@@ -19,22 +19,15 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
+use crate::ec::ec_key::{EcCurve, EcKeyPairSpec};
+use crate::error::CryptoResult;
 use asn1::cv_certificate::CVCertificate;
 use asn1::decoder::extract_context_values;
-use crypto::ec::ec_key::{EcCurve, EcKeyPairSpec};
 
-use crate::exchange::error::ExchangeError;
-
-/// Generate the host-side ephemeral public key for GA step 2 (ELC), derived from the curve in the CVC.
-pub fn generate_elc_ephemeral_public_key_from_cvc(cvc: &[u8]) -> Result<Vec<u8>, ExchangeError> {
+/// Generates the host-side ephemeral public key for ELC GA step 2, derived from the curve in the CVC.
+pub fn generate_elc_ephemeral_public_key_from_cvc(cvc: &[u8]) -> CryptoResult<Vec<u8>> {
     let certificate = CVCertificate::parse(cvc)?;
-    generate_elc_ephemeral_public_key_from_cvc_from_parsed(&certificate)
-}
-
-pub(crate) fn generate_elc_ephemeral_public_key_from_cvc_from_parsed(
-    cvc: &CVCertificate,
-) -> Result<Vec<u8>, ExchangeError> {
-    let curve = infer_curve_from_cvc(cvc).unwrap_or(EcCurve::BrainpoolP256r1);
+    let curve = infer_curve_from_cvc(&certificate).unwrap_or(EcCurve::BrainpoolP256r1);
     let (ephemeral_pk, _ephemeral_sk) = EcKeyPairSpec { curve }.generate_keypair()?;
     Ok(ephemeral_pk.as_bytes().to_vec())
 }

@@ -31,8 +31,8 @@ use crate::command::pso_compute_digital_signature_command::PsoComputeDigitalSign
 use crate::command::select_command::SelectCommand;
 use crate::exchange::certificate::{retrieve_certificate_from, CertificateFile};
 use crate::exchange::channel::{CardChannel, CardChannelExt};
-use crate::exchange::elc;
 use crate::exchange::error::ExchangeError;
+use crypto::exchange::elc::generate_elc_ephemeral_public_key_from_cvc;
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -314,14 +314,14 @@ where
     }
     let step1_data = response.apdu.to_data();
 
-    let ephemeral_pk = elc::generate_elc_ephemeral_public_key_from_cvc_from_parsed(end_entity).map_err(|error| {
-        TrustedChannelError {
-            error,
+    let end_entity_raw = cvcs.last().expect("non-empty");
+    let ephemeral_pk =
+        generate_elc_ephemeral_public_key_from_cvc(end_entity_raw).map_err(|error| TrustedChannelError {
+            error: error.into(),
             cvcs: cvc_infos.clone(),
             end_entity_chr: end_entity_chr.clone(),
             trace: trace.clone(),
-        }
-    })?;
+        })?;
     let step2 =
         HealthCardCommand::general_authenticate_elc_step2(&ephemeral_pk).map_err(|error| TrustedChannelError {
             error: error.into(),

@@ -142,6 +142,11 @@ impl From<ExchangeError> for SecureChannelError {
     }
 }
 
+fn usize_from_i32(name: &str, value: i32) -> Result<usize, SecureChannelError> {
+    usize::try_from(value)
+        .map_err(|_| SecureChannelError::InvalidArgument { reason: format!("{name} must not be negative: {value}") })
+}
+
 /// Establishes a secure channel (PACE) over the given card session.
 ///
 /// The returned `SecureChannel` can be used to transmit protected APDUs and to call higher-level
@@ -260,8 +265,9 @@ impl SecureChannel {
     }
 
     /// Returns `length` bytes of random data from the card.
-    pub fn get_random(&self, length: u32) -> Result<Vec<u8>, SecureChannelError> {
-        self.with_locked(|channel| crate::exchange::get_random(channel, length as usize))
+    pub fn get_random(&self, length: i32) -> Result<Vec<u8>, SecureChannelError> {
+        let length = usize_from_i32("length", length)?;
+        self.with_locked(|channel| crate::exchange::get_random(channel, length))
     }
 
     /// Reads the VSD container from the card (if available).

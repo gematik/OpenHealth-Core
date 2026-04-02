@@ -47,6 +47,21 @@ kotlin-bindings-generate platform arch library_file profile="release":
     CARGO_TARGET_DIR="{{ kotlin_cargo_target_dir }}" \
     just uniffi-bindings-generate "{{ platform }}" "{{ arch }}" kotlin "{{ library_file }}" "{{ profile }}"
 
+# Generate Kotlin bindings for the `crypto` crate.
+[arg('platform', pattern='linux|windows|darwin')]
+[arg('arch', pattern='x86_64|aarch64')]
+[arg('library_file')]
+[arg('profile', pattern='release|debug')]
+kotlin-bindings-generate-crypto platform arch library_file profile="release":
+    #!/usr/bin/env bash
+    set -euxo pipefail
+
+    OUT_ROOT="{{ kotlin_crypto_out_root }}" \
+    CARGO_TARGET_DIR="{{ kotlin_crypto_cargo_target_dir }}" \
+    just --set rust_crate "{{ crypto_rust_crate }}" \
+         --set rust_manifest "{{ crypto_rust_manifest }}" \
+         uniffi-bindings-generate "{{ platform }}" "{{ arch }}" kotlin "{{ library_file }}" "{{ profile }}"
+
 # Required env:
 # - `ANDROID_NDK_HOME` or `ANDROID_NDK_ROOT`
 #
@@ -67,6 +82,24 @@ kotlin-bindings-generate-android:
 
     rm -rf "{{ android_jni_root }}"
     cp -r "{{ kotlin_cargo_target_dir }}/android" "{{ android_jni_root }}"
+
+# Build Android Rust libraries for the `crypto` crate and stage them as `android-jni/`.
+kotlin-bindings-generate-android-crypto:
+    #!/usr/bin/env bash
+    set -euxo pipefail
+
+    ANDROID_NDK_HOME="${ANDROID_NDK_HOME:-${ANDROID_NDK_ROOT:-}}"
+    : "${ANDROID_NDK_HOME:?ANDROID_NDK_HOME or ANDROID_NDK_ROOT must be set}"
+    export ANDROID_NDK_HOME
+
+    cargo ndk \
+      -t arm64-v8a -t x86_64 \
+      -o "{{ kotlin_crypto_cargo_target_dir }}/android" \
+      --manifest-path "{{ crypto_rust_manifest }}" \
+      -- build --locked --release
+
+    rm -rf "{{ android_crypto_jni_root }}"
+    cp -r "{{ kotlin_crypto_cargo_target_dir }}/android" "{{ android_crypto_jni_root }}"
 
 # Useful when you generated bindings for multiple `platform/arch` pairs into separate directories and want one combined
 # layout containing:
@@ -109,3 +142,7 @@ kotlin-publish-local:
     cd "{{ repo_root }}/core-modules-kotlin" \
       && ./gradlew --no-daemon :healthcard:publishToMavenLocal
 
+# Publish the Kotlin `crypto` module to the local Maven repository.
+kotlin-publish-local-crypto:
+    cd "{{ repo_root }}/core-modules-kotlin" \
+      && ./gradlew --no-daemon :crypto:publishToMavenLocal

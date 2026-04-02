@@ -119,6 +119,23 @@ impl From<GeneralAuthenticateCommandError> for CommandBuilderError {
     }
 }
 
+fn u8_from_i32(name: &str, value: i32) -> Result<u8, CommandBuilderError> {
+    u8::try_from(value).map_err(|_| CommandBuilderError::InvalidArgument {
+        reason: format!("{name} must be in range [0, {}]: {value}", u8::MAX),
+    })
+}
+
+fn u16_from_i32(name: &str, value: i32) -> Result<u16, CommandBuilderError> {
+    u16::try_from(value).map_err(|_| CommandBuilderError::InvalidArgument {
+        reason: format!("{name} must be in range [0, {}]: {value}", u16::MAX),
+    })
+}
+
+fn usize_from_i32(name: &str, value: i32) -> Result<usize, CommandBuilderError> {
+    usize::try_from(value)
+        .map_err(|_| CommandBuilderError::InvalidArgument { reason: format!("{name} must not be negative: {value}") })
+}
+
 fn car_from_bytes(bytes: Vec<u8>) -> Result<[u8; 8], CommandBuilderError> {
     bytes.try_into().map_err(|_| CommandBuilderError::InvalidArgument { reason: "CAR must be exactly 8 bytes".into() })
 }
@@ -154,8 +171,9 @@ impl HealthCardCommand {
     }
 
     /// Maps a status word to the expected response status for this command.
-    pub fn map_status(&self, sw: u16) -> HealthCardResponseStatus {
-        self.inner.expected_status.get(&sw).copied().unwrap_or(HealthCardResponseStatus::UnknownStatus)
+    pub fn map_status(&self, sw: i32) -> Result<HealthCardResponseStatus, CommandBuilderError> {
+        let sw = u16_from_i32("sw", sw)?;
+        Ok(self.inner.expected_status.get(&sw).copied().unwrap_or(HealthCardResponseStatus::UnknownStatus))
     }
 
     /// Executes the command on the given card channel and returns the mapped response.
@@ -197,7 +215,8 @@ impl HealthCardCommand {
 
     /// Creates a SELECT command for a FID.
     #[uniffi::constructor]
-    pub fn select_fid(fid: u16, select_df_else_ef: bool) -> Result<Self, CommandBuilderError> {
+    pub fn select_fid(fid: i32, select_df_else_ef: bool) -> Result<Self, CommandBuilderError> {
+        let fid = u16_from_i32("fid", fid)?;
         let fid = FileIdentifier::new(fid)?;
         Ok(Self::new(CoreHealthCardCommand::select_fid(&fid, select_df_else_ef)))
     }
@@ -205,11 +224,12 @@ impl HealthCardCommand {
     /// Creates a SELECT command for a FID with options.
     #[uniffi::constructor]
     pub fn select_fid_with_options(
-        fid: u16,
+        fid: i32,
         select_df_else_ef: bool,
         request_fcp: bool,
         fcp_length: i32,
     ) -> Result<Self, CommandBuilderError> {
+        let fid = u16_from_i32("fid", fid)?;
         let fid = FileIdentifier::new(fid)?;
         Ok(Self::new(CoreHealthCardCommand::select_fid_with_options(&fid, select_df_else_ef, request_fcp, fcp_length)))
     }
@@ -228,8 +248,8 @@ impl HealthCardCommand {
 
     /// Creates a READ BINARY command with offset and exact expected length.
     #[uniffi::constructor]
-    pub fn read_with_offset_and_length(offset: i32, expected_length: u32) -> Result<Self, CommandBuilderError> {
-        let expected_length = expected_length as usize;
+    pub fn read_with_offset_and_length(offset: i32, expected_length: i32) -> Result<Self, CommandBuilderError> {
+        let expected_length = usize_from_i32("expected_length", expected_length)?;
         Ok(Self::new(CoreHealthCardCommand::read_with_offset_and_length(
             offset,
             ExpectedLength::Exact(expected_length),
@@ -238,14 +258,16 @@ impl HealthCardCommand {
 
     /// Creates a READ BINARY command for an SFI (offset 0, any length).
     #[uniffi::constructor]
-    pub fn read_sfi(sfi: u8) -> Result<Self, CommandBuilderError> {
+    pub fn read_sfi(sfi: i32) -> Result<Self, CommandBuilderError> {
+        let sfi = u8_from_i32("sfi", sfi)?;
         let sfi = ShortFileIdentifier::new(sfi)?;
         Ok(Self::new(CoreHealthCardCommand::read_sfi(sfi)?))
     }
 
     /// Creates a READ BINARY command for an SFI with offset.
     #[uniffi::constructor]
-    pub fn read_sfi_with_offset(sfi: u8, offset: i32) -> Result<Self, CommandBuilderError> {
+    pub fn read_sfi_with_offset(sfi: i32, offset: i32) -> Result<Self, CommandBuilderError> {
+        let sfi = u8_from_i32("sfi", sfi)?;
         let sfi = ShortFileIdentifier::new(sfi)?;
         Ok(Self::new(CoreHealthCardCommand::read_sfi_with_offset(sfi, offset)?))
     }
@@ -253,12 +275,13 @@ impl HealthCardCommand {
     /// Creates a READ BINARY command for an SFI with offset and exact expected length.
     #[uniffi::constructor]
     pub fn read_sfi_with_offset_and_length(
-        sfi: u8,
+        sfi: i32,
         offset: i32,
-        expected_length: u32,
+        expected_length: i32,
     ) -> Result<Self, CommandBuilderError> {
+        let sfi = u8_from_i32("sfi", sfi)?;
         let sfi = ShortFileIdentifier::new(sfi)?;
-        let expected_length = expected_length as usize;
+        let expected_length = usize_from_i32("expected_length", expected_length)?;
         Ok(Self::new(CoreHealthCardCommand::read_sfi_with_offset_and_length(
             sfi,
             offset,
@@ -268,14 +291,16 @@ impl HealthCardCommand {
 
     /// Creates a GET PIN STATUS command.
     #[uniffi::constructor]
-    pub fn get_pin_status(password_id: u8, df_specific: bool) -> Result<Self, CommandBuilderError> {
+    pub fn get_pin_status(password_id: i32, df_specific: bool) -> Result<Self, CommandBuilderError> {
+        let password_id = u8_from_i32("password_id", password_id)?;
         let password_reference = PasswordReference::new(password_id)?;
         Ok(Self::new(CoreHealthCardCommand::get_pin_status(&password_reference, df_specific)))
     }
 
     /// Creates a VERIFY PIN command with an encrypted PIN block (format 2).
     #[uniffi::constructor]
-    pub fn verify_pin(password_id: u8, df_specific: bool, encrypted_pin: Vec<u8>) -> Result<Self, CommandBuilderError> {
+    pub fn verify_pin(password_id: i32, df_specific: bool, encrypted_pin: Vec<u8>) -> Result<Self, CommandBuilderError> {
+        let password_id = u8_from_i32("password_id", password_id)?;
         let password_reference = PasswordReference::new(password_id)?;
         let encrypted_pin = encrypted_pin_from_bytes(encrypted_pin)?;
         Ok(Self::new(CoreHealthCardCommand::verify_pin(&password_reference, df_specific, &encrypted_pin)))
@@ -284,11 +309,12 @@ impl HealthCardCommand {
     /// Creates a CHANGE REFERENCE DATA command with encrypted secrets (format 2).
     #[uniffi::constructor]
     pub fn change_reference_data(
-        password_id: u8,
+        password_id: i32,
         df_specific: bool,
         old_secret: Vec<u8>,
         new_secret: Vec<u8>,
     ) -> Result<Self, CommandBuilderError> {
+        let password_id = u8_from_i32("password_id", password_id)?;
         let password_reference = PasswordReference::new(password_id)?;
         let old_secret = encrypted_pin_from_bytes(old_secret)?;
         let new_secret = encrypted_pin_from_bytes(new_secret)?;
@@ -302,7 +328,8 @@ impl HealthCardCommand {
 
     /// Creates a RESET RETRY COUNTER command with encrypted PUK (format 2).
     #[uniffi::constructor]
-    pub fn reset_retry_counter(password_id: u8, df_specific: bool, puk: Vec<u8>) -> Result<Self, CommandBuilderError> {
+    pub fn reset_retry_counter(password_id: i32, df_specific: bool, puk: Vec<u8>) -> Result<Self, CommandBuilderError> {
+        let password_id = u8_from_i32("password_id", password_id)?;
         let password_reference = PasswordReference::new(password_id)?;
         let puk = encrypted_pin_from_bytes(puk)?;
         Ok(Self::new(CoreHealthCardCommand::reset_retry_counter(&password_reference, df_specific, &puk)))
@@ -311,11 +338,12 @@ impl HealthCardCommand {
     /// Creates a RESET RETRY COUNTER WITH NEW SECRET command with encrypted PUK and new secret.
     #[uniffi::constructor]
     pub fn reset_retry_counter_with_new_secret(
-        password_id: u8,
+        password_id: i32,
         df_specific: bool,
         puk: Vec<u8>,
         new_secret: Vec<u8>,
     ) -> Result<Self, CommandBuilderError> {
+        let password_id = u8_from_i32("password_id", password_id)?;
         let password_reference = PasswordReference::new(password_id)?;
         let puk = encrypted_pin_from_bytes(puk)?;
         let new_secret = encrypted_pin_from_bytes(new_secret)?;
@@ -329,8 +357,9 @@ impl HealthCardCommand {
 
     /// Creates a GET RANDOM VALUES command.
     #[uniffi::constructor]
-    pub fn get_random_values(length: u32) -> Self {
-        Self::new(CoreHealthCardCommand::get_random_values(length as usize))
+    pub fn get_random_values(length: i32) -> Result<Self, CommandBuilderError> {
+        let length = usize_from_i32("length", length)?;
+        Ok(Self::new(CoreHealthCardCommand::get_random_values(length)))
     }
 
     /// Creates a LIST PUBLIC KEY command (proprietary GET DATA variant).
@@ -354,10 +383,11 @@ impl HealthCardCommand {
     /// Creates a MANAGE SECURITY ENVIRONMENT command for external authentication without curves.
     #[uniffi::constructor]
     pub fn manage_sec_env_without_curves(
-        password_id: u8,
+        password_id: i32,
         df_specific: bool,
         oid: Vec<u8>,
     ) -> Result<Self, CommandBuilderError> {
+        let password_id = u8_from_i32("password_id", password_id)?;
         let password_reference = PasswordReference::new(password_id)?;
         Ok(Self::new(CoreHealthCardCommand::manage_sec_env_without_curves(&password_reference, df_specific, &oid)?))
     }
@@ -366,16 +396,19 @@ impl HealthCardCommand {
     #[uniffi::constructor]
     pub fn manage_sec_env_for_signing(
         pso_algorithm: PsoAlgorithm,
-        key_id: u8,
+        key_id: i32,
         df_specific: bool,
     ) -> Result<Self, CommandBuilderError> {
+        let key_id = u8_from_i32("key_id", key_id)?;
         let key = CardKey::new(key_id)?;
         Ok(Self::new(CoreHealthCardCommand::manage_sec_env_for_signing(pso_algorithm, &key, df_specific)?))
     }
 
     /// Creates a MANAGE SECURITY ENVIRONMENT command for selecting a private key + algorithm.
     #[uniffi::constructor]
-    pub fn manage_sec_env_select_private_key(key_ref: u8, algorithm_id: u8) -> Result<Self, CommandBuilderError> {
+    pub fn manage_sec_env_select_private_key(key_ref: i32, algorithm_id: i32) -> Result<Self, CommandBuilderError> {
+        let key_ref = u8_from_i32("key_ref", key_ref)?;
+        let algorithm_id = u8_from_i32("algorithm_id", algorithm_id)?;
         Ok(Self::new(CoreHealthCardCommand::manage_sec_env_select_private_key(key_ref, algorithm_id)?))
     }
 
@@ -403,8 +436,9 @@ impl HealthCardCommand {
     pub fn general_authenticate_with_data(
         command_chaining: bool,
         data: Vec<u8>,
-        tag_no: u8,
+        tag_no: i32,
     ) -> Result<Self, CommandBuilderError> {
+        let tag_no = u8_from_i32("tag_no", tag_no)?;
         Ok(Self::new(CoreHealthCardCommand::general_authenticate_with_data(command_chaining, &data, tag_no)?))
     }
 
@@ -428,36 +462,26 @@ impl HealthCardCommand {
     }
 }
 
-/// Generates the host-side ephemeral public key for GA step 2 (ELC), based on the curve in the CVC.
-#[uniffi::export]
-pub fn generate_elc_ephemeral_public_key(cvc: Vec<u8>) -> Result<Vec<u8>, ExchangeError> {
-    crate::exchange::generate_elc_ephemeral_public_key_from_cvc(&cvc).map_err(ExchangeError::from)
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use asn1::cv_certificate::CVCertificate;
-    use asn1::decoder::extract_context_values;
-    use std::fs;
-    use std::path::PathBuf;
 
-    fn load_fixture(name: &str) -> Vec<u8> {
-        let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        path.pop();
-        path.pop();
-        path.push("test-vectors");
-        path.push("cvc-chain");
-        path.push("pki_cvc_g2_input");
-        path.push("Atos_CVC-Root-CA");
-        path.push(name);
-        fs::read(&path).expect("fixture should be readable")
+    #[test]
+    fn u8_from_i32_rejects_negative_values() {
+        let result = u8_from_i32("value", -1);
+        assert!(matches!(result, Err(CommandBuilderError::InvalidArgument { .. })));
     }
 
-    fn expected_point_len(cvc: &CVCertificate) -> usize {
-        let key_data = &cvc.body.public_key.key_data;
-        let mut values = extract_context_values(key_data, 6).expect("context tag 6 present");
-        values.pop().expect("public key point").len()
+    #[test]
+    fn u16_from_i32_rejects_large_values() {
+        let result = u16_from_i32("value", 70_000);
+        assert!(matches!(result, Err(CommandBuilderError::InvalidArgument { .. })));
+    }
+
+    #[test]
+    fn usize_from_i32_rejects_negative_values() {
+        let result = usize_from_i32("value", -1);
+        assert!(matches!(result, Err(CommandBuilderError::InvalidArgument { .. })));
     }
 
     #[test]
@@ -484,22 +508,5 @@ mod tests {
     fn key_ref_from_bytes_rejects_wrong_len() {
         let result = key_ref_from_bytes(vec![0x00; 11]);
         assert!(matches!(result, Err(CommandBuilderError::InvalidArgument { .. })));
-    }
-
-    #[test]
-    fn generate_elc_ephemeral_public_key_matches_curve_length() {
-        let cvc_bytes = load_fixture("DEGXX820214.cvc");
-        let certificate = CVCertificate::parse(&cvc_bytes).expect("valid CVC");
-
-        let expected_len = expected_point_len(&certificate);
-        let pk = generate_elc_ephemeral_public_key(cvc_bytes).expect("key generation succeeds");
-
-        assert_eq!(pk.len(), expected_len);
-    }
-
-    #[test]
-    fn generate_elc_ephemeral_public_key_rejects_invalid_cvc() {
-        let result = generate_elc_ephemeral_public_key(Vec::new());
-        assert!(result.is_err());
     }
 }

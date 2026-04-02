@@ -65,10 +65,16 @@ uniffi-bindings-generate platform arch language library_file profile="release":
     rm -rf "${language_dir}" "${resources_dir}"
     mkdir -p "${language_dir}" "${resources_dir}"
 
-    cargo build \
-      --manifest-path "{{ rust_manifest }}" \
-      --locked \
-      --profile "{{ profile }}"
+    if [ "{{ profile }}" = "release" ]; then
+        cargo build \
+          --manifest-path "{{ rust_manifest }}" \
+          --locked \
+          --profile release
+    else
+        cargo build \
+          --manifest-path "{{ rust_manifest }}" \
+          --locked
+    fi
 
     library_path="${CARGO_TARGET_DIR}/{{ profile }}/{{ library_file }}"
     test -f "${library_path}"
@@ -86,4 +92,3 @@ uniffi-bindings-generate platform arch language library_file profile="release":
         --no-format
 
     cp "${library_path}" "${resources_dir}/"
-

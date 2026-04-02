@@ -51,11 +51,28 @@ impl CommandApdu {
     }
 }
 
+fn u8_from_i32(name: &str, value: i32) -> Result<u8, ApduError> {
+    u8::try_from(value).map_err(|_| ApduError::InvalidLength(format!("{name} must be in range [0, {}]: {value}", u8::MAX)))
+}
+
+fn u16_from_i32(name: &str, value: i32) -> Result<u16, ApduError> {
+    u16::try_from(value)
+        .map_err(|_| ApduError::InvalidLength(format!("{name} must be in range [0, {}]: {value}", u16::MAX)))
+}
+
+fn usize_from_i32(name: &str, value: i32) -> Result<usize, ApduError> {
+    usize::try_from(value).map_err(|_| ApduError::InvalidLength(format!("{name} must not be negative: {value}")))
+}
+
 #[uniffi::export]
 impl CommandApdu {
     /// Creates a case 1 APDU (header only, no data, no expected length).
     #[uniffi::constructor]
-    pub fn header_only(cla: u8, ins: u8, p1: u8, p2: u8) -> Result<Self, ApduError> {
+    pub fn header_only(cla: i32, ins: i32, p1: i32, p2: i32) -> Result<Self, ApduError> {
+        let cla = u8_from_i32("cla", cla)?;
+        let ins = u8_from_i32("ins", ins)?;
+        let p1 = u8_from_i32("p1", p1)?;
+        let p2 = u8_from_i32("p2", p2)?;
         Ok(Self { inner: CardCommandApdu::header_only(cla, ins, p1, p2)? })
     }
 
@@ -76,15 +93,18 @@ impl CommandApdu {
     ///   - `expected_length = 65536` requests the maximum extended-length response (`Le = 0x0000`).
     #[uniffi::constructor]
     pub fn with_expect(
-        cla: u8,
-        ins: u8,
-        p1: u8,
-        p2: u8,
+        cla: i32,
+        ins: i32,
+        p1: i32,
+        p2: i32,
         length_class: crate::command::apdu::LengthClass,
-        expected_length: u32,
+        expected_length: i32,
     ) -> Result<Self, ApduError> {
-        let expected_length = usize::try_from(expected_length)
-            .map_err(|_| ApduError::InvalidLength("expected_length is too large".into()))?;
+        let cla = u8_from_i32("cla", cla)?;
+        let ins = u8_from_i32("ins", ins)?;
+        let p1 = u8_from_i32("p1", p1)?;
+        let p2 = u8_from_i32("p2", p2)?;
+        let expected_length = usize_from_i32("expected_length", expected_length)?;
         Ok(Self { inner: CardCommandApdu::with_expect(cla, ins, p1, p2, length_class, expected_length)? })
     }
 
@@ -94,13 +114,17 @@ impl CommandApdu {
     /// length (short: `1..=255`, extended: `>= 256`).
     #[uniffi::constructor]
     pub fn with_data(
-        cla: u8,
-        ins: u8,
-        p1: u8,
-        p2: u8,
+        cla: i32,
+        ins: i32,
+        p1: i32,
+        p2: i32,
         length_class: crate::command::apdu::LengthClass,
         data: Vec<u8>,
     ) -> Result<Self, ApduError> {
+        let cla = u8_from_i32("cla", cla)?;
+        let ins = u8_from_i32("ins", ins)?;
+        let p1 = u8_from_i32("p1", p1)?;
+        let p2 = u8_from_i32("p2", p2)?;
         Ok(Self {
             inner: CardCommandApdu::with_data(cla, ins, p1, p2, length_class, Asn1VecOfU8::new_zeroizing(data))?,
         })
@@ -111,16 +135,19 @@ impl CommandApdu {
     /// See `with_expect` for the valid `expected_length` ranges.
     #[uniffi::constructor]
     pub fn with_data_and_expect(
-        cla: u8,
-        ins: u8,
-        p1: u8,
-        p2: u8,
+        cla: i32,
+        ins: i32,
+        p1: i32,
+        p2: i32,
         length_class: crate::command::apdu::LengthClass,
         data: Vec<u8>,
-        expected_length: u32,
+        expected_length: i32,
     ) -> Result<Self, ApduError> {
-        let expected_length = usize::try_from(expected_length)
-            .map_err(|_| ApduError::InvalidLength("expected_length is too large".into()))?;
+        let cla = u8_from_i32("cla", cla)?;
+        let ins = u8_from_i32("ins", ins)?;
+        let p1 = u8_from_i32("p1", p1)?;
+        let p2 = u8_from_i32("p2", p2)?;
+        let expected_length = usize_from_i32("expected_length", expected_length)?;
         Ok(Self {
             inner: CardCommandApdu::with_data_and_expect(
                 cla,
@@ -184,7 +211,8 @@ impl ResponseApdu {
     ///
     /// `sw` is interpreted as big-endian (SW1<<8 | SW2).
     #[uniffi::constructor]
-    pub fn from_parts(sw: u16, data: Vec<u8>) -> Result<Self, ApduError> {
+    pub fn from_parts(sw: i32, data: Vec<u8>) -> Result<Self, ApduError> {
+        let sw = u16_from_i32("sw", sw)?;
         let mut full = data;
         full.push((sw >> 8) as u8);
         full.push(sw as u8);
@@ -192,8 +220,8 @@ impl ResponseApdu {
     }
 
     /// Returns the status word (SW1SW2) as `0xSW1SW2` (big-endian).
-    pub fn sw(&self) -> u16 {
-        self.inner.sw()
+    pub fn sw(&self) -> i32 {
+        i32::from(self.inner.sw())
     }
 
     /// Returns the response data (without SW1SW2).
@@ -303,6 +331,18 @@ mod tests {
     use crate::ffi::maybe_zeroizing_vec::VecOfU8 as FfiVecOfU8;
 
     #[test]
+    fn u8_from_i32_rejects_negative_values() {
+        let err = u8_from_i32("cla", -1).unwrap_err();
+        assert!(matches!(err, ApduError::InvalidLength(_)));
+    }
+
+    #[test]
+    fn usize_from_i32_rejects_negative_values() {
+        let err = usize_from_i32("expected_length", -1).unwrap_err();
+        assert!(matches!(err, ApduError::InvalidLength(_)));
+    }
+
+    #[test]
     fn command_apdu_roundtrip() {
         let ffi_apdu = CommandApdu::header_only(0x00, 0xA4, 0x04, 0x00).unwrap();
         let rebuilt = ffi_apdu.to_core();
@@ -317,7 +357,7 @@ mod tests {
             0,
             0,
             crate::command::apdu::LengthClass::Short,
-            (EXPECTED_LENGTH_WILDCARD_EXTENDED as u32) + 1,
+            (EXPECTED_LENGTH_WILDCARD_EXTENDED as i32) + 1,
         )
         .unwrap_err();
         assert!(matches!(err, ApduError::InvalidLength(_)));
@@ -364,7 +404,7 @@ mod tests {
             0,
             crate::command::apdu::LengthClass::Short,
             vec![0x01],
-            u32::MAX,
+            i32::MAX,
         )
         .unwrap_err();
         assert!(matches!(err, ApduError::InvalidLength(_)));
