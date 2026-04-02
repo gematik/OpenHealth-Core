@@ -32,7 +32,7 @@ pub mod secure_channel;
 pub mod sign_challenge;
 #[cfg(test)]
 pub(crate) mod test_utils;
-#[cfg(any(test, feature = "trusted-channel", feature = "trusted-channel-ffi"))]
+#[cfg(any(test, feature = "trusted-channel"))]
 pub mod trusted_channel;
 
 pub use certificate::{retrieve_certificate, retrieve_certificate_from, CertificateFile};

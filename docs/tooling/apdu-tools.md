@@ -93,22 +93,6 @@ Notes:
 - `--select-private-key` sends the key selection MSE step before the trusted channel flow (recommended).
 - The default `--cvc-dir` points to `test-vectors/cvc-chain/pki_cvc_g2_input` and can be overridden.
 
-### Helper script (conservative default)
-
-If you want a minimal helper that auto-picks the first detected reader and runs either contactless (PACE) or
-contact-based (trusted channel), use:
-
-```sh
-./tools/run_apdu.sh contactless
-./tools/run_apdu.sh contact-based
-```
-
-To force a specific reader:
-
-```sh
-READER="Identiv uTrust 3700 F CL Reader" ./tools/run_apdu.sh contactless
-```
-
 For secure-channel transcripts, you can additionally read the certificates and print them to the console:
 
 ```sh

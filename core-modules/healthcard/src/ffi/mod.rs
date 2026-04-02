@@ -32,5 +32,3 @@ mod command;
 mod exchange;
 pub mod maybe_zeroizing_vec;
 mod secure_channel;
-#[cfg(feature = "trusted-channel-ffi")]
-mod trusted_channel;

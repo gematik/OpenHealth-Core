@@ -95,7 +95,3 @@ Defined in `secure_channel.rs`:
 - Treat `CardPin` input and all card transcripts as secrets; do not log or persist them.
 - `CardPin::from_digits` zeroizes the input string after parsing, but foreign runtimes may still retain copies.
 - A `ResponseApdu` may contain personal data (depending on the command); handle with care.
-
-## Internal-only APIs
-
-- The trusted-channel FFI is behind the `trusted-channel-ffi` feature and is not enabled by default.

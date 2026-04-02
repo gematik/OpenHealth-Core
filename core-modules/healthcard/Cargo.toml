@@ -32,7 +32,6 @@ name = "healthcard"
 [features]
 default = ["uniffi"]
 ci = ["uniffi"]
-trusted-channel-ffi = ["uniffi"]
 trusted-channel = []
 
 [dependencies]

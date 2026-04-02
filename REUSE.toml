@@ -35,8 +35,3 @@ SPDX-License-Identifier = "CC0-1.0"
 path = ["test-vectors/apdu-replay/*.jsonl"]
 SPDX-FileCopyrightText = "2026 gematik GmbH"
 SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = ["test-vectors/cvc-chain/pki_cvc_g2_input/Atos_CVC-Root-CA/DEGXX820214.cvc"]
-SPDX-FileCopyrightText = "2026 gematik GmbH"
-SPDX-License-Identifier = "Apache-2.0"

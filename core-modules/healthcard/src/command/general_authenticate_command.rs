@@ -133,7 +133,7 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
         let cla = if command_chaining { CLA_COMMAND_CHAINING } else { CLA_NO_COMMAND_CHAINING };
 
         let data_to_write = data.to_vec();
-        let encoded_data = Asn1Encoder::write_nonzeroizing(|w| {
+        let encoded_data = Asn1Encoder::write_zeroizing(|w| {
             w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |inner| {
                 inner.write_tagged_object(tag_no.context_tag(), |innermost| -> Result<(), Asn1EncoderError> {
                     innermost.write_bytes(&data_to_write);
@@ -156,7 +156,7 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
     fn general_authenticate_mutual_authentication_step1(
         key_ref: &[u8; 12],
     ) -> GeneralAuthenticateResult<HealthCardCommand> {
-        let data = Asn1Encoder::write_nonzeroizing(|w| {
+        let data = Asn1Encoder::write_zeroizing(|w| {
             w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |inner| {
                 inner.write_tagged_object(
                     MUTUAL_AUTHENTICATION_KEY_REF_TAG.private_tag(),
@@ -196,7 +196,7 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
     }
 
     fn general_authenticate_pace_end_user_step2(pk1_pcd: &[u8]) -> GeneralAuthenticateResult<HealthCardCommand> {
-        let data = Asn1Encoder::write_nonzeroizing(|w| {
+        let data = Asn1Encoder::write_zeroizing(|w| {
             w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |inner| {
                 inner.write_tagged_object(
                     PACE_KEY_AGREEMENT_TAG.context_tag(),
@@ -220,7 +220,7 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
     }
 
     fn general_authenticate_pace_end_user_step3(pk2_pcd: &[u8]) -> GeneralAuthenticateResult<HealthCardCommand> {
-        let data = Asn1Encoder::write_nonzeroizing(|w| {
+        let data = Asn1Encoder::write_zeroizing(|w| {
             w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |inner| {
                 inner.write_tagged_object(
                     PACE_EPHEMERAL_KEY2_TAG.context_tag(),
@@ -244,7 +244,7 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
     }
 
     fn general_authenticate_pace_end_user_step4(tpcd: &[u8; 8]) -> GeneralAuthenticateResult<HealthCardCommand> {
-        let data = Asn1Encoder::write_nonzeroizing(|w| {
+        let data = Asn1Encoder::write_zeroizing(|w| {
             w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |inner| {
                 inner.write_tagged_object(
                     PACE_MUTUAL_KEY1_TAG.context_tag(),
@@ -268,7 +268,7 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
     }
 
     fn general_authenticate_elc_step2(ephemeral_pk_opponent: &[u8]) -> GeneralAuthenticateResult<HealthCardCommand> {
-        let data = Asn1Encoder::write_nonzeroizing(|w| {
+        let data = Asn1Encoder::write_zeroizing(|w| {
             w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |inner| {
                 inner.write_tagged_object(
                     PACE_MUTUAL_KEY1_TAG.context_tag(),
@@ -296,6 +296,7 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
 mod tests {
     use super::*;
     use crate::command::apdu::EXPECTED_LENGTH_WILDCARD_SHORT;
+    use asn1::maybe_zeroizing_vec::ZeroizingOption;
     use asn1::tag::{Asn1Class, Asn1Form};
 
     #[test]
@@ -350,6 +351,7 @@ mod tests {
         assert_eq!(data[2], u8::from(Asn1Class::ContextSpecific) | 1);
         assert_eq!(data[3], test_data.len() as u8);
         assert_eq!(&data[4..8], &test_data);
+        assert_eq!(data.get_zeroizing_option(), ZeroizingOption::Zeroes);
     }
 
     #[test]
@@ -508,5 +510,6 @@ mod tests {
         let data = command.data.unwrap();
         assert_eq!(data[2], u8::from(Asn1Class::ContextSpecific) | PACE_MUTUAL_KEY1_TAG);
         assert_eq!(&data[4..7], &pk_opponent);
+        assert_eq!(data.get_zeroizing_option(), ZeroizingOption::Zeroes);
     }
 }
