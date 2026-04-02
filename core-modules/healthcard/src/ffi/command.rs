@@ -299,7 +299,11 @@ impl HealthCardCommand {
 
     /// Creates a VERIFY PIN command with an encrypted PIN block (format 2).
     #[uniffi::constructor]
-    pub fn verify_pin(password_id: i32, df_specific: bool, encrypted_pin: Vec<u8>) -> Result<Self, CommandBuilderError> {
+    pub fn verify_pin(
+        password_id: i32,
+        df_specific: bool,
+        encrypted_pin: Vec<u8>,
+    ) -> Result<Self, CommandBuilderError> {
         let password_id = u8_from_i32("password_id", password_id)?;
         let password_reference = PasswordReference::new(password_id)?;
         let encrypted_pin = encrypted_pin_from_bytes(encrypted_pin)?;

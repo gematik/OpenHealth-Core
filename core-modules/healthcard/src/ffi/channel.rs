@@ -52,7 +52,8 @@ impl CommandApdu {
 }
 
 fn u8_from_i32(name: &str, value: i32) -> Result<u8, ApduError> {
-    u8::try_from(value).map_err(|_| ApduError::InvalidLength(format!("{name} must be in range [0, {}]: {value}", u8::MAX)))
+    u8::try_from(value)
+        .map_err(|_| ApduError::InvalidLength(format!("{name} must be in range [0, {}]: {value}", u8::MAX)))
 }
 
 fn u16_from_i32(name: &str, value: i32) -> Result<u16, ApduError> {
