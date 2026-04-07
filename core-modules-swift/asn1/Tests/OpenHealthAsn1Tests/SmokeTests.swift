@@ -37,13 +37,15 @@ final class SmokeTests: XCTestCase {
 
         let data = try Data(hex: hexData)
         let cert = try parseCvCertificate(data: data)
+        let body = cert.body()
+        let effectiveDate = body.certificateEffectiveDate()
 
-        XCTAssertEqual(cert.body.profileIdentifier, 0x70)
-        XCTAssertEqual(cert.body.publicKey.keyOid, "1.3.36.3.5.3.1")
-        XCTAssertEqual(cert.body.certificateHolderAuthorizationTemplate.terminalTypeOid, "1.2.276.0.76.4.152")
-        XCTAssertEqual(cert.body.certificateEffectiveDate.year, 24)
-        XCTAssertEqual(cert.body.certificateEffectiveDate.month, 4)
-        XCTAssertEqual(cert.body.certificateEffectiveDate.day, 2)
+        XCTAssertEqual(body.profileIdentifier(), UInt8(0x70))
+        XCTAssertEqual(body.publicKey().keyOid(), "1.3.36.3.5.3.1")
+        XCTAssertEqual(body.certificateHolderAuthorizationTemplate().terminalTypeOid(), "1.2.276.0.76.4.152")
+        XCTAssertEqual(effectiveDate.year(), UInt8(24))
+        XCTAssertEqual(effectiveDate.month(), UInt8(4))
+        XCTAssertEqual(effectiveDate.day(), UInt8(2))
     }
 }
 

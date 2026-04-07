@@ -40,15 +40,55 @@ class UniffiKmpLibraryPlugin : Plugin<Project> {
         ext.jnaVersion.convention("5.14.0")
         ext.publishToMavenCentral.convention(true)
 
-        if (project.group.toString() == "unspecified") {
-            project.group = "de.gematik.openhealth"
-        }
+        val publicationGroup = project.rootProject.group.toString()
+            .takeIf { it != "unspecified" }
+            ?: "de.gematik.openhealth"
+        project.group = publicationGroup
 
         val generatedOutRoot = project.providers.environmentVariable("OUT_ROOT")
             .orElse(project.layout.buildDirectory.dir("generated/uniffi").map { it.asFile.absolutePath })
         val generatedKotlinDir = generatedOutRoot.map { "$it/kotlin" }.get()
         val generatedResourcesDir = generatedOutRoot.map { "$it/resources" }.get()
         val generatedJniLibsDir = generatedOutRoot.map { "$it/android-jni" }.get()
+        val generatedKotlinDirFile = project.file(generatedKotlinDir)
+        val generatedResourcesDirFile = project.file(generatedResourcesDir)
+        val generatedJniLibsDirFile = project.file(generatedJniLibsDir)
+
+        val validateJvmGeneratedBindings = project.tasks.register("validateJvmGeneratedBindings") {
+            doLast {
+                if (!generatedKotlinDirFile.isDirectory) {
+                    throw GradleException(
+                        "Generated Kotlin bindings are missing at `${generatedKotlinDirFile.absolutePath}`. " +
+                            "Run `just kotlin-bindings-generate <module> <platform> <arch> <library_file> [profile]` first.",
+                    )
+                }
+
+                if (!generatedResourcesDirFile.isDirectory || generatedResourcesDirFile.walkTopDown().none { it.isFile }) {
+                    throw GradleException(
+                        "Generated JVM native resources are missing at `${generatedResourcesDirFile.absolutePath}`. " +
+                            "Run `just kotlin-bindings-generate <module> <platform> <arch> <library_file> [profile]` first.",
+                    )
+                }
+            }
+        }
+
+        val validateAndroidGeneratedBindings = project.tasks.register("validateAndroidGeneratedBindings") {
+            doLast {
+                if (!generatedKotlinDirFile.isDirectory) {
+                    throw GradleException(
+                        "Generated Kotlin bindings are missing at `${generatedKotlinDirFile.absolutePath}`. " +
+                            "Run `just kotlin-bindings-generate <module> <platform> <arch> <library_file> [profile]` first.",
+                    )
+                }
+
+                if (!generatedJniLibsDirFile.isDirectory || generatedJniLibsDirFile.walkTopDown().none { it.isFile && it.extension == "so" }) {
+                    throw GradleException(
+                        "Generated Android JNI libraries are missing at `${generatedJniLibsDirFile.absolutePath}`. " +
+                            "Run `just kotlin-bindings-generate-android <module> [profile]` first.",
+                    )
+                }
+            }
+        }
 
         project.afterEvaluate {
             val artifactId = ext.artifactId.orNull ?: throw GradleException("openHealthUniffiKmp.artifactId must be set")
@@ -142,6 +182,33 @@ class UniffiKmpLibraryPlugin : Plugin<Project> {
 
         project.tasks.matching { it.name == "compileTestKotlinJvm" || it.name == "jvmTest" }.configureEach {
             onlyIf { project.file(generatedKotlinDir).exists() }
+        }
+
+        project.tasks.matching {
+            it.name in setOf(
+                "publishJvmPublicationToMavenLocal",
+                "publishJvmPublicationToMavenCentralRepository",
+            )
+        }.configureEach {
+            dependsOn(validateJvmGeneratedBindings)
+        }
+
+        project.tasks.matching {
+            it.name in setOf(
+                "publishAndroidPublicationToMavenLocal",
+                "publishAndroidPublicationToMavenCentralRepository",
+            )
+        }.configureEach {
+            dependsOn(validateAndroidGeneratedBindings)
+        }
+
+        project.tasks.matching {
+            it.name in setOf(
+                "publishKotlinMultiplatformPublicationToMavenLocal",
+                "publishKotlinMultiplatformPublicationToMavenCentralRepository",
+            )
+        }.configureEach {
+            dependsOn(validateJvmGeneratedBindings, validateAndroidGeneratedBindings)
         }
     }
 }
