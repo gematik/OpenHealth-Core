@@ -24,28 +24,45 @@
 # Kotlin
 # -------------------------------------------------
 
-# Args:
-# - `platform`: `linux|windows|darwin`
-# - `arch`: `x86_64|aarch64`
-# - `library_file`: e.g. `libhealthcard.so`, `libhealthcard.dylib`, `healthcard.dll`
-# - `profile`: `release|debug`
-#
-# Uses (override via env):
-# - `OUT_ROOT` (default: `core-modules-kotlin/healthcard/build/generated/uniffi`)
-# - `CARGO_TARGET_DIR` (default: `core-modules-kotlin/healthcard/build/cargo`)
-#
-# Generate Kotlin bindings for a host target (Kotlin module defaults).
+# Usage:
+# - module-driven:      `just kotlin-bindings-generate <module> <platform> <arch> <library_file> [profile]`
+[arg('module', pattern='healthcard|asn1')]
 [arg('platform', pattern='linux|windows|darwin')]
 [arg('arch', pattern='x86_64|aarch64')]
 [arg('library_file')]
 [arg('profile', pattern='release|debug')]
-kotlin-bindings-generate platform arch library_file profile="release":
+kotlin-bindings-generate module platform arch library_file profile="release":
     #!/usr/bin/env bash
     set -euxo pipefail
 
-    OUT_ROOT="{{ kotlin_out_root }}" \
-    CARGO_TARGET_DIR="{{ kotlin_cargo_target_dir }}" \
-    just uniffi-bindings-generate "{{ platform }}" "{{ arch }}" kotlin "{{ library_file }}" "{{ profile }}"
+    module="{{ module }}"
+    platform="{{ platform }}"
+    arch="{{ arch }}"
+    library_file="{{ library_file }}"
+    profile="{{ profile }}"
+
+    case "${module}" in
+      healthcard)
+        rust_crate_dir="{{ repo_root }}/core-modules/healthcard"
+        kotlin_module_dir="{{ repo_root }}/core-modules-kotlin/healthcard"
+        ;;
+      asn1)
+        rust_crate_dir="{{ repo_root }}/core-modules/asn1"
+        kotlin_module_dir="{{ repo_root }}/core-modules-kotlin/asn1"
+        ;;
+      *)
+        echo "Unknown module: ${module}" >&2
+        exit 2
+        ;;
+    esac
+
+    rust_manifest_path="${rust_crate_dir}/Cargo.toml"
+    out_root_default="${kotlin_module_dir}/build/generated/uniffi"
+    cargo_target_dir_default="${kotlin_module_dir}/build/cargo"
+
+    OUT_ROOT="${OUT_ROOT:-${out_root_default}}" \
+    CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-${cargo_target_dir_default}}" \
+      just uniffi-bindings-generate-crate "${platform}" "${arch}" kotlin "${library_file}" "${rust_crate_dir}" "${rust_manifest_path}" "${profile}"
 
 # Generate Kotlin bindings for the `crypto` crate.
 [arg('platform', pattern='linux|windows|darwin')]
@@ -66,7 +83,9 @@ kotlin-bindings-generate-crypto platform arch library_file profile="release":
 # - `ANDROID_NDK_HOME` or `ANDROID_NDK_ROOT`
 #
 # Build Android Rust libraries via `cargo ndk` and stage them as `android-jni/`.
-kotlin-bindings-generate-android:
+[arg('module', pattern='healthcard|asn1')]
+[arg('profile', pattern='release|debug')]
+kotlin-bindings-generate-android module="healthcard" profile="release":
     #!/usr/bin/env bash
     set -euxo pipefail
 
@@ -74,14 +93,55 @@ kotlin-bindings-generate-android:
     : "${ANDROID_NDK_HOME:?ANDROID_NDK_HOME or ANDROID_NDK_ROOT must be set}"
     export ANDROID_NDK_HOME
 
+    module="{{ module }}"
+    profile="{{ profile }}"
+
+    case "${module}" in
+      healthcard)
+        rust_manifest_path="{{ repo_root }}/core-modules/healthcard/Cargo.toml"
+        kotlin_module_dir="{{ repo_root }}/core-modules-kotlin/healthcard"
+        ;;
+      asn1)
+        rust_manifest_path="{{ repo_root }}/core-modules/asn1/Cargo.toml"
+        kotlin_module_dir="{{ repo_root }}/core-modules-kotlin/asn1"
+        ;;
+      *)
+        echo "Unknown module: ${module}" >&2
+        exit 2
+        ;;
+    esac
+
+    out_root_default="${kotlin_module_dir}/build/generated/uniffi"
+    cargo_target_dir_default="${kotlin_module_dir}/build/cargo"
+    out_root="${OUT_ROOT:-${out_root_default}}"
+    cargo_target_dir="${CARGO_TARGET_DIR:-${cargo_target_dir_default}}"
+    android_jni_root="${out_root}/android-jni"
+    cargo_profile_flag="--release"
+    cargo_profile_dir="release"
+
+    if [ "${profile}" = "debug" ]; then
+        cargo_profile_flag=""
+        cargo_profile_dir="debug"
+    fi
+
     cargo ndk \
       -t arm64-v8a -t x86_64 \
-      -o "{{ kotlin_cargo_target_dir }}/android" \
-      --manifest-path "{{ rust_manifest }}" \
-      -- build --locked --release
+      -o "${cargo_target_dir}/android" \
+      --manifest-path "${rust_manifest_path}" \
+      -- build --locked ${cargo_profile_flag} --features uniffi
 
-    rm -rf "{{ android_jni_root }}"
-    cp -r "{{ kotlin_cargo_target_dir }}/android" "{{ android_jni_root }}"
+    if [ "${cargo_profile_dir}" != "release" ]; then
+        find "${cargo_target_dir}/android" -type f -path "*/release/*" | while read -r artifact; do
+            debug_artifact="${artifact%/release/*}/debug/${artifact##*/}"
+            if [ -f "${debug_artifact}" ]; then
+                mkdir -p "$(dirname "${artifact}")"
+                cp "${debug_artifact}" "${artifact}"
+            fi
+        done
+    fi
+
+    rm -rf "${android_jni_root}"
+    cp -r "${cargo_target_dir}/android" "${android_jni_root}"
 
 # Build Android Rust libraries for the `crypto` crate and stage them as `android-jni/`.
 kotlin-bindings-generate-android-crypto:
@@ -138,11 +198,7 @@ kotlin-bindings-assemble input_root output_root:
     done
 
 # Publish the Kotlin `healthcard` module to the local Maven repository.
-kotlin-publish-local:
+[arg('module', pattern='healthcard|asn1')]
+kotlin-publish-local module="healthcard":
     cd "{{ repo_root }}/core-modules-kotlin" \
-      && ./gradlew --no-daemon :healthcard:publishToMavenLocal
-
-# Publish the Kotlin `crypto` module to the local Maven repository.
-kotlin-publish-local-crypto:
-    cd "{{ repo_root }}/core-modules-kotlin" \
-      && ./gradlew --no-daemon :crypto:publishToMavenLocal
+      && ./gradlew --no-daemon :{{ module }}:publishToMavenLocal

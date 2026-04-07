@@ -25,10 +25,16 @@ version = "0.1.0"
 edition = "2021"
 license = "Apache-2.0"
 
+[lib]
+crate-type = ["cdylib", "staticlib", "rlib"]
+name = "asn1"
+
 [features]
 default = []
+uniffi = ["dep:uniffi"]
 
 [dependencies]
 regex = "1.12.2"
 thiserror = "2.0"
+uniffi = { version = "0.30.0", optional = true }
 zeroize = { version = "1.8.1", features = ["zeroize_derive"] }

@@ -23,6 +23,11 @@ pub mod date_time;
 pub mod decoder;
 pub mod encoder;
 pub mod error;
+#[cfg(feature = "uniffi")]
+pub mod ffi;
 pub mod maybe_zeroizing_vec;
 pub mod oid;
 pub mod tag;
+
+#[cfg(feature = "uniffi")]
+uniffi::setup_scaffolding!();

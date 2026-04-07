@@ -25,6 +25,8 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
     }
+
+    includeBuild("build-logic")
 }
 
 plugins {
@@ -34,6 +36,7 @@ plugins {
 include(":crypto")
 include(":healthcard")
 include(":healthcard-testkit")
+include(":asn1")
 include(":sample-app")
 
 rootProject.name = "core-modules-kotlin"

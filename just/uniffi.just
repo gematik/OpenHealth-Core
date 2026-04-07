@@ -24,16 +24,6 @@
 # UniFFI (shared primitive)
 # -------------------------------------------------
 
-# Required env:
-# - `OUT_ROOT`: output root directory (cleared and re-created per invocation)
-# - `CARGO_TARGET_DIR`: cargo target directory used to locate the built library
-#
-# Output layout (under `OUT_ROOT`):
-# - `{{ language }}/`: generated sources (Kotlin or Swift)
-# - `resources/<resource-id>/`: contains the built library file
-#   - normalized for JNA resource lookup (e.g. `windows/x86_64` -> `win32-x86-64`)
-#
-# Generate UniFFI bindings and stage the built library per target.
 [arg('platform', pattern='linux|windows|darwin')]
 [arg('arch', pattern='x86_64|aarch64')]
 [arg('language', pattern='kotlin|swift')]
@@ -45,6 +35,32 @@ uniffi-bindings-generate platform arch language library_file profile="release":
 
     : "${OUT_ROOT:?OUT_ROOT must be set}"
     : "${CARGO_TARGET_DIR:?CARGO_TARGET_DIR must be set}"
+
+    rust_crate_dir="{{ repo_root }}/core-modules/healthcard"
+    rust_manifest_path="${rust_crate_dir}/Cargo.toml"
+    just uniffi-bindings-generate-crate "{{ platform }}" "{{ arch }}" "{{ language }}" "{{ library_file }}" "${rust_crate_dir}" "${rust_manifest_path}" "{{ profile }}"
+
+# Generate UniFFI bindings and stage the built library for an explicit crate/manifest.
+[arg('platform', pattern='linux|windows|darwin')]
+[arg('arch', pattern='x86_64|aarch64')]
+[arg('language', pattern='kotlin|swift')]
+[arg('library_file', pattern='(lib.+\.(so|dylib|a))|(.+\.dll)')]
+[arg('rust_crate_dir')]
+[arg('rust_manifest_path')]
+[arg('profile', pattern='release|debug')]
+uniffi-bindings-generate-crate platform arch language library_file rust_crate_dir rust_manifest_path profile="release":
+    #!/usr/bin/env bash
+    set -euxo pipefail
+
+    : "${OUT_ROOT:?OUT_ROOT must be set}"
+    : "${CARGO_TARGET_DIR:?CARGO_TARGET_DIR must be set}"
+
+    profile="{{ profile }}"
+    cargo_profile_dir="release"
+
+    if [ "${profile}" = "debug" ]; then
+        cargo_profile_dir="debug"
+    fi
 
     resource_platform="{{ platform }}"
     resource_arch="{{ arch }}"
@@ -65,18 +81,20 @@ uniffi-bindings-generate platform arch language library_file profile="release":
     rm -rf "${language_dir}" "${resources_dir}"
     mkdir -p "${language_dir}" "${resources_dir}"
 
-    if [ "{{ profile }}" = "release" ]; then
+    if [ "${profile}" = "debug" ]; then
         cargo build \
-          --manifest-path "{{ rust_manifest }}" \
+          --manifest-path "{{ rust_manifest_path }}" \
           --locked \
-          --profile release
+          --features uniffi
     else
         cargo build \
-          --manifest-path "{{ rust_manifest }}" \
-          --locked
+          --manifest-path "{{ rust_manifest_path }}" \
+          --locked \
+          --profile release \
+          --features uniffi
     fi
 
-    library_path="${CARGO_TARGET_DIR}/{{ profile }}/{{ library_file }}"
+    library_path="${CARGO_TARGET_DIR}/${cargo_profile_dir}/{{ library_file }}"
     test -f "${library_path}"
 
     cargo run \
@@ -85,7 +103,7 @@ uniffi-bindings-generate platform arch language library_file profile="release":
       --quiet \
       --bin uniffi-bindgen -- \
         generate \
-        --config "{{ rust_crate }}/uniffi.toml" \
+        --config "{{ rust_crate_dir }}/uniffi.toml" \
         --library "${library_path}" \
         --language "{{ language }}" \
         --out-dir "${language_dir}" \

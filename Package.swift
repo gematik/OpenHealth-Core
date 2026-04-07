@@ -30,6 +30,7 @@ let package = Package(
     ],
     products: [
         .library(name: "OpenHealthHealthcard", targets: ["OpenHealthHealthcard"]),
+        .library(name: "OpenHealthAsn1", targets: ["OpenHealthAsn1"]),
     ],
     targets: [
         .binaryTarget(
@@ -45,6 +46,15 @@ let package = Package(
             name: "OpenHealthHealthcardTests",
             dependencies: ["OpenHealthHealthcard"],
             path: "core-modules-swift/healthcard/Tests/OpenHealthHealthcardTests"
+        ),
+        .binaryTarget(
+            name: "OpenHealthAsn1FFI",
+            path: "core-modules-swift/asn1/OpenHealthAsn1FFI.xcframework"
+        ),
+        .target(
+            name: "OpenHealthAsn1",
+            dependencies: ["OpenHealthAsn1FFI"],
+            path: "core-modules-swift/asn1/Sources/OpenHealthAsn1"
         ),
     ]
 )

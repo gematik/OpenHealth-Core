@@ -60,6 +60,7 @@ Work through this checklist and propose changes where they add clear value and p
 - [ ] Are there obvious internal details accidentally exposed as `pub`?
 - [ ] Are public types and functions documented sufficiently for downstream crate authors?
 - [ ] Do re-exports and visibility align with how the crate is intended to be used?
+- [ ] For exported FFI types, especially UniFFI-facing ones, are objects preferred over records, with methods/accessors exposed instead of public fields where practical?
 
 ### 2.2 ASN.1 Correctness & Robustness
 
@@ -147,4 +148,3 @@ When you finish your review of the `asn1` crate, produce:
      - A **small, focused patch** or pseudo-code showing the change.
 
 Avoid huge rewrites; prefer a sequence of small, reviewable improvements.
-
