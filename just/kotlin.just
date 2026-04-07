@@ -25,29 +25,21 @@
 # -------------------------------------------------
 
 # Usage:
-# - legacy (healthcard): `just kotlin-bindings-generate <platform> <arch> <library_file> [profile]`
 # - module-driven:      `just kotlin-bindings-generate <module> <platform> <arch> <library_file> [profile]`
-kotlin-bindings-generate *ARGS:
+[arg('module', pattern='healthcard|asn1')]
+[arg('platform', pattern='linux|windows|darwin')]
+[arg('arch', pattern='x86_64|aarch64')]
+[arg('library_file')]
+[arg('profile', pattern='release|debug')]
+kotlin-bindings-generate module platform arch library_file profile="release":
     #!/usr/bin/env bash
     set -euxo pipefail
 
-    set -- {{ ARGS }}
-
-    if [ $# -lt 3 ]; then
-        echo "Usage: just kotlin-bindings-generate [module] <platform> <arch> <library_file> [profile]" >&2
-        exit 2
-    fi
-
-    module="healthcard"
-    if [ "$1" = "healthcard" ] || [ "$1" = "asn1" ]; then
-        module="$1"
-        shift
-    fi
-
-    platform="$1"
-    arch="$2"
-    library_file="$3"
-    profile="${4:-release}"
+    module="{{ module }}"
+    platform="{{ platform }}"
+    arch="{{ arch }}"
+    library_file="{{ library_file }}"
+    profile="{{ profile }}"
 
     case "${module}" in
       healthcard)
@@ -76,7 +68,9 @@ kotlin-bindings-generate *ARGS:
 # - `ANDROID_NDK_HOME` or `ANDROID_NDK_ROOT`
 #
 # Build Android Rust libraries via `cargo ndk` and stage them as `android-jni/`.
-kotlin-bindings-generate-android module="healthcard":
+[arg('module', pattern='healthcard|asn1')]
+[arg('profile', pattern='release|debug')]
+kotlin-bindings-generate-android module="healthcard" profile="release":
     #!/usr/bin/env bash
     set -euxo pipefail
 
@@ -85,6 +79,7 @@ kotlin-bindings-generate-android module="healthcard":
     export ANDROID_NDK_HOME
 
     module="{{ module }}"
+    profile="{{ profile }}"
 
     case "${module}" in
       healthcard)
@@ -106,12 +101,29 @@ kotlin-bindings-generate-android module="healthcard":
     out_root="${OUT_ROOT:-${out_root_default}}"
     cargo_target_dir="${CARGO_TARGET_DIR:-${cargo_target_dir_default}}"
     android_jni_root="${out_root}/android-jni"
+    cargo_profile_flag="--release"
+    cargo_profile_dir="release"
+
+    if [ "${profile}" = "debug" ]; then
+        cargo_profile_flag=""
+        cargo_profile_dir="debug"
+    fi
 
     cargo ndk \
       -t arm64-v8a -t x86_64 \
       -o "${cargo_target_dir}/android" \
       --manifest-path "${rust_manifest_path}" \
-      -- build --locked --release --features uniffi
+      -- build --locked ${cargo_profile_flag} --features uniffi
+
+    if [ "${cargo_profile_dir}" != "release" ]; then
+        find "${cargo_target_dir}/android" -type f -path "*/release/*" | while read -r artifact; do
+            debug_artifact="${artifact%/release/*}/debug/${artifact##*/}"
+            if [ -f "${debug_artifact}" ]; then
+                mkdir -p "$(dirname "${artifact}")"
+                cp "${debug_artifact}" "${artifact}"
+            fi
+        done
+    fi
 
     rm -rf "${android_jni_root}"
     cp -r "${cargo_target_dir}/android" "${android_jni_root}"
@@ -153,44 +165,7 @@ kotlin-bindings-assemble input_root output_root:
     done
 
 # Publish the Kotlin `healthcard` module to the local Maven repository.
+[arg('module', pattern='healthcard|asn1')]
 kotlin-publish-local module="healthcard":
     cd "{{ repo_root }}/core-modules-kotlin" \
       && ./gradlew --no-daemon :{{ module }}:publishToMavenLocal
-
-# -------------------------------------------------
-# Kotlin (asn1) - legacy wrappers
-# -------------------------------------------------
-
-# Args:
-# - `platform`: `linux|windows|darwin`
-# - `arch`: `x86_64|aarch64`
-# - `library_file`: e.g. `libasn1.so`, `libasn1.dylib`, `asn1.dll`
-# - `profile`: `release|debug`
-#
-# Uses (override via env):
-# - `OUT_ROOT` (default: `core-modules-kotlin/asn1/build/generated/uniffi`)
-# - `CARGO_TARGET_DIR` (default: `core-modules-kotlin/asn1/build/cargo`)
-#
-# Generate Kotlin bindings for a host target (Kotlin module defaults).
-[arg('platform', pattern='linux|windows|darwin')]
-[arg('arch', pattern='x86_64|aarch64')]
-[arg('library_file')]
-[arg('profile', pattern='release|debug')]
-kotlin-asn1-bindings-generate platform arch library_file profile="release":
-    #!/usr/bin/env bash
-    set -euxo pipefail
-
-    just kotlin-bindings-generate asn1 "{{ platform }}" "{{ arch }}" "{{ library_file }}" "{{ profile }}"
-
-# Required env:
-# - `ANDROID_NDK_HOME` or `ANDROID_NDK_ROOT`
-#
-# Build Android Rust libraries via `cargo ndk` and stage them as `android-jni/`.
-kotlin-asn1-bindings-generate-android:
-    #!/usr/bin/env bash
-    set -euxo pipefail
-    just kotlin-bindings-generate-android asn1
-
-# Publish the Kotlin `asn1` module to the local Maven repository.
-kotlin-asn1-publish-local:
-    just kotlin-publish-local asn1

@@ -40,15 +40,20 @@ From the repository root:
 just kotlin-bindings-generate asn1 darwin aarch64 libasn1.dylib
 ```
 
+Pick a different profile (default is `release`):
+
+```bash
+just kotlin-bindings-generate asn1 darwin aarch64 libasn1.dylib debug
+```
+
 Android native libraries (Linux only):
 
 ```bash
 just kotlin-bindings-generate-android asn1
 ```
 
-Legacy wrappers still exist:
+Android debug JNI libs:
 
 ```bash
-just kotlin-asn1-bindings-generate darwin aarch64 libasn1.dylib
-just kotlin-asn1-bindings-generate-android
+just kotlin-bindings-generate-android asn1 debug
 ```

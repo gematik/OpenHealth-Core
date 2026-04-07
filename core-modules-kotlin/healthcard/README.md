@@ -39,12 +39,6 @@ find details in the "Readme" file.
 ```bash
 # platform: linux | windows | darwin
 # arch: x86_64 | aarch64
-just kotlin-bindings-generate darwin aarch64 libhealthcard.dylib
-```
-
-- Module-driven variant (explicit module name):
-
-```bash
 just kotlin-bindings-generate healthcard darwin aarch64 libhealthcard.dylib
 ```
 
@@ -53,13 +47,19 @@ just kotlin-bindings-generate healthcard darwin aarch64 libhealthcard.dylib
 ```bash
 OUT_ROOT=core-modules-kotlin/healthcard/build/generated/uniffi \
 CARGO_TARGET_DIR=core-modules-kotlin/healthcard/build/cargo \
-just kotlin-bindings-generate linux x86_64 libhealthcard.so
+just kotlin-bindings-generate healthcard linux x86_64 libhealthcard.so
 ```
 
 - Pick a different profile (default is `release`):
 
 ```bash
-just kotlin-bindings-generate linux x86_64 libhealthcard.so debug
+just kotlin-bindings-generate healthcard linux x86_64 libhealthcard.so debug
+```
+
+- Android JNI libs can also be generated in `debug` now:
+
+```bash
+just kotlin-bindings-generate-android healthcard debug
 ```
 
 - On Windows, force Git Bash if `bash` resolves to WSL:
@@ -67,7 +67,7 @@ just kotlin-bindings-generate linux x86_64 libhealthcard.so debug
 ```bash
 CARGO_BUILD_TARGET=x86_64-pc-windows-msvc \
 just --shell "C:/Program Files/Git/bin/bash.exe" --shell-arg "-euo" --shell-arg "pipefail" --shell-arg "-c" \
-kotlin-bindings-generate windows x86_64 healthcard.dll
+kotlin-bindings-generate healthcard windows x86_64 healthcard.dll
 ```
 
 - Assemble downloaded platform artifacts into a single bundle (used by CI, usable locally):

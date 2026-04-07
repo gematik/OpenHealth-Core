@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
+// SPDX-FileCopyrightText: Copyright 2026 gematik GmbH
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -19,19 +19,7 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-plugins {
-    kotlin("jvm") version "2.3.0" apply false
-    kotlin("multiplatform") version "2.3.0" apply false
-    id("com.android.library") version "8.13.2" apply false
-    id("com.android.kotlin.multiplatform.library") version "8.13.2" apply false
-    id("com.vanniktech.maven.publish") version "0.35.0" apply false
-}
+package de.gematik.openhealth.asn1
 
-group = "de.gematik.openhealth"
-
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
+@Throws(Asn1FfiException::class)
+fun parseCvCertificateJvm(data: ByteArray): CvCertificate = parseCvCertificate(data)

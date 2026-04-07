@@ -19,11 +19,9 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-import org.gradle.api.JavaVersion
-
 plugins {
     kotlin("multiplatform")
-    id("com.android.library")
+    id("com.android.kotlin.multiplatform.library")
 }
 
 val replayVectorsDir = rootDir.resolve("../test-vectors/apdu-replay").normalize()
@@ -77,7 +75,11 @@ val generateReplayFixtures = tasks.register("generateReplayFixtures") {
 
 kotlin {
     jvm {}
-    androidTarget()
+    androidLibrary {
+        namespace = "de.gematik.openhealth.healthcard.testkit"
+        compileSdk = 36
+        minSdk = 24
+    }
     jvmToolchain(21)
 
     sourceSets {
@@ -90,18 +92,6 @@ kotlin {
         }
         val jvmMain by getting
         val androidMain by getting
-    }
-}
-
-android {
-    namespace = "de.gematik.openhealth.healthcard.testkit"
-    compileSdk = 36
-    defaultConfig {
-        minSdk = 24
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 

@@ -21,10 +21,10 @@
 
 package de.gematik.openhealth.conventions
 
-import com.android.build.gradle.LibraryExtension
+import com.android.build.api.dsl.androidLibrary
+import com.android.build.api.variant.KotlinMultiplatformAndroidComponentsExtension
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import org.gradle.api.GradleException
-import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
@@ -37,7 +37,7 @@ class UniffiKmpLibraryPlugin : Plugin<Project> {
         val ext = project.extensions.create("openHealthUniffiKmp", OpenHealthUniffiKmpExtension::class.java)
         ext.compileSdk.convention(36)
         ext.minSdk.convention(24)
-        ext.jnaVersion.convention("5.18.1")
+        ext.jnaVersion.convention("5.14.0")
         ext.publishToMavenCentral.convention(true)
 
         if (project.group.toString() == "unspecified") {
@@ -60,25 +60,17 @@ class UniffiKmpLibraryPlugin : Plugin<Project> {
             val pomInceptionYear =
                 ext.inceptionYear.orNull ?: throw GradleException("openHealthUniffiKmp.inceptionYear must be set")
 
-            project.extensions.configure<LibraryExtension> {
-                namespace = androidNamespace
-                compileSdk = ext.compileSdk.get()
-
-                defaultConfig.apply {
+            project.extensions.configure<KotlinMultiplatformExtension> {
+                androidLibrary {
+                    namespace = androidNamespace
+                    compileSdk = ext.compileSdk.get()
                     minSdk = ext.minSdk.get()
-                    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-                    consumerProguardFiles("consumer-rules.pro")
                 }
+            }
 
-                compileOptions.apply {
-                    sourceCompatibility = JavaVersion.VERSION_17
-                    targetCompatibility = JavaVersion.VERSION_17
-                }
-
-                sourceSets.getByName("main").jniLibs.srcDir(generatedJniLibsDir)
-
-                publishing.singleVariant("release") {
-                    withSourcesJar()
+            project.extensions.configure<KotlinMultiplatformAndroidComponentsExtension> {
+                onVariants { variant ->
+                    variant.sources.jniLibs?.addStaticSourceDirectory(generatedJniLibsDir)
                 }
             }
 
@@ -120,13 +112,15 @@ class UniffiKmpLibraryPlugin : Plugin<Project> {
         }
 
         project.pluginManager.apply("org.jetbrains.kotlin.multiplatform")
-        project.pluginManager.apply("com.android.library")
+        project.pluginManager.apply("com.android.kotlin.multiplatform.library")
         project.pluginManager.apply("com.vanniktech.maven.publish")
 
         project.extensions.configure<KotlinMultiplatformExtension> {
             jvm()
-            androidTarget {
-                publishLibraryVariants("release")
+            androidLibrary {
+                withDeviceTest {
+                    instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+                }
             }
             jvmToolchain(21)
 

@@ -22,11 +22,12 @@
 //! UniFFI bindings for `asn1`.
 //!
 //! This module defines the Rust-side surface that is exported via UniFFI to foreign languages.
-//! It intentionally exposes a small, FFI-friendly API and record graph.
+//! It intentionally exposes a small, FFI-friendly API and object graph.
 //!
 //! See `core-modules/asn1/src/ffi/README.md` for an overview of the exported API.
 
 use crate::tag::{Asn1Class as CoreAsn1Class, Asn1Form as CoreAsn1Form, Asn1Id as CoreAsn1Id};
+use std::sync::Arc;
 use thiserror::Error;
 
 /// FFI-friendly tag form (`primitive` vs `constructed`).
@@ -69,11 +70,11 @@ impl From<CoreAsn1Class> for Asn1TagClass {
 
 /// FFI-friendly ASN.1 tag representation.
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
 pub struct Asn1Tag {
-    pub class_: Asn1TagClass,
-    pub form: Asn1TagForm,
-    pub number: u32,
+    class_: Asn1TagClass,
+    form: Asn1TagForm,
+    number: u32,
 }
 
 impl From<CoreAsn1Id> for Asn1Tag {
@@ -82,12 +83,27 @@ impl From<CoreAsn1Id> for Asn1Tag {
     }
 }
 
+#[uniffi::export]
+impl Asn1Tag {
+    pub fn class_(&self) -> Asn1TagClass {
+        self.class_
+    }
+
+    pub fn form(&self) -> Asn1TagForm {
+        self.form
+    }
+
+    pub fn number(&self) -> u32 {
+        self.number
+    }
+}
+
 /// Parsed CV certificate (application tag `7F21`).
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
 pub struct CvCertificate {
-    pub body: CvCertificateBody,
-    pub signature: Vec<u8>,
+    body: CvCertificateBody,
+    signature: Vec<u8>,
 }
 
 impl From<crate::cv_certificate::CVCertificate> for CvCertificate {
@@ -96,18 +112,29 @@ impl From<crate::cv_certificate::CVCertificate> for CvCertificate {
     }
 }
 
+#[uniffi::export]
+impl CvCertificate {
+    pub fn body(&self) -> Arc<CvCertificateBody> {
+        Arc::new(self.body.clone())
+    }
+
+    pub fn signature(&self) -> Vec<u8> {
+        self.signature.clone()
+    }
+}
+
 /// Parsed CV certificate body.
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
 pub struct CvCertificateBody {
-    pub profile_identifier: u8,
-    pub certification_authority_reference: Vec<u8>,
-    pub public_key: CvPublicKey,
-    pub certificate_holder_reference: Vec<u8>,
-    pub certificate_holder_authorization_template: CvChat,
-    pub certificate_effective_date: CvCertificateDate,
-    pub certificate_expiration_date: CvCertificateDate,
-    pub certificate_extensions: Option<CvCertificateExtensions>,
+    profile_identifier: u8,
+    certification_authority_reference: Vec<u8>,
+    public_key: CvPublicKey,
+    certificate_holder_reference: Vec<u8>,
+    certificate_holder_authorization_template: CvChat,
+    certificate_effective_date: CvCertificateDate,
+    certificate_expiration_date: CvCertificateDate,
+    certificate_extensions: Option<CvCertificateExtensions>,
 }
 
 impl From<crate::cv_certificate::CertificateBody> for CvCertificateBody {
@@ -125,12 +152,47 @@ impl From<crate::cv_certificate::CertificateBody> for CvCertificateBody {
     }
 }
 
+#[uniffi::export]
+impl CvCertificateBody {
+    pub fn profile_identifier(&self) -> u8 {
+        self.profile_identifier
+    }
+
+    pub fn certification_authority_reference(&self) -> Vec<u8> {
+        self.certification_authority_reference.clone()
+    }
+
+    pub fn public_key(&self) -> Arc<CvPublicKey> {
+        Arc::new(self.public_key.clone())
+    }
+
+    pub fn certificate_holder_reference(&self) -> Vec<u8> {
+        self.certificate_holder_reference.clone()
+    }
+
+    pub fn certificate_holder_authorization_template(&self) -> Arc<CvChat> {
+        Arc::new(self.certificate_holder_authorization_template.clone())
+    }
+
+    pub fn certificate_effective_date(&self) -> Arc<CvCertificateDate> {
+        Arc::new(self.certificate_effective_date.clone())
+    }
+
+    pub fn certificate_expiration_date(&self) -> Arc<CvCertificateDate> {
+        Arc::new(self.certificate_expiration_date.clone())
+    }
+
+    pub fn certificate_extensions(&self) -> Option<Arc<CvCertificateExtensions>> {
+        self.certificate_extensions.clone().map(Arc::new)
+    }
+}
+
 /// CV certificate public key information.
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
 pub struct CvPublicKey {
-    pub key_oid: String,
-    pub key_data: Vec<u8>,
+    key_oid: String,
+    key_data: Vec<u8>,
 }
 
 impl From<crate::cv_certificate::CVCertPublicKey> for CvPublicKey {
@@ -139,27 +201,52 @@ impl From<crate::cv_certificate::CVCertPublicKey> for CvPublicKey {
     }
 }
 
+#[uniffi::export]
+impl CvPublicKey {
+    pub fn key_oid(&self) -> String {
+        self.key_oid.clone()
+    }
+
+    pub fn key_data(&self) -> Vec<u8> {
+        self.key_data.clone()
+    }
+}
+
 /// Certificate Holder Authorization Template (CHAT).
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
 pub struct CvChat {
-    pub terminal_type_oid: String,
-    pub relative_authorization: Vec<u8>,
+    terminal_type_oid: String,
+    relative_authorization: Vec<u8>,
 }
 
 impl From<crate::cv_certificate::Chat> for CvChat {
     fn from(value: crate::cv_certificate::Chat) -> Self {
-        Self { terminal_type_oid: value.terminal_type.to_string(), relative_authorization: value.relative_authorization }
+        Self {
+            terminal_type_oid: value.terminal_type.to_string(),
+            relative_authorization: value.relative_authorization,
+        }
+    }
+}
+
+#[uniffi::export]
+impl CvChat {
+    pub fn terminal_type_oid(&self) -> String {
+        self.terminal_type_oid.clone()
+    }
+
+    pub fn relative_authorization(&self) -> Vec<u8> {
+        self.relative_authorization.clone()
     }
 }
 
 /// A CVC date encoded as digits `YYMMDD`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
 pub struct CvCertificateDate {
-    pub year: u8,
-    pub month: u8,
-    pub day: u8,
+    year: u8,
+    month: u8,
+    day: u8,
 }
 
 impl From<crate::cv_certificate::CertificateDate> for CvCertificateDate {
@@ -168,11 +255,26 @@ impl From<crate::cv_certificate::CertificateDate> for CvCertificateDate {
     }
 }
 
+#[uniffi::export]
+impl CvCertificateDate {
+    pub fn year(&self) -> u8 {
+        self.year
+    }
+
+    pub fn month(&self) -> u8 {
+        self.month
+    }
+
+    pub fn day(&self) -> u8 {
+        self.day
+    }
+}
+
 /// Optional extensions carried in the certificate body.
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
 pub struct CvCertificateExtensions {
-    pub templates: Vec<CvDiscretionaryDataTemplate>,
+    templates: Vec<CvDiscretionaryDataTemplate>,
 }
 
 impl From<crate::cv_certificate::CertificateExtensions> for CvCertificateExtensions {
@@ -181,12 +283,19 @@ impl From<crate::cv_certificate::CertificateExtensions> for CvCertificateExtensi
     }
 }
 
+#[uniffi::export]
+impl CvCertificateExtensions {
+    pub fn templates(&self) -> Vec<Arc<CvDiscretionaryDataTemplate>> {
+        self.templates.iter().cloned().map(Arc::new).collect()
+    }
+}
+
 /// One discretionary data template within [`CvCertificateExtensions`].
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
 pub struct CvDiscretionaryDataTemplate {
-    pub extension_id_oid: String,
-    pub extension_data: Vec<CvExtensionField>,
+    extension_id_oid: String,
+    extension_data: Vec<CvExtensionField>,
 }
 
 impl From<crate::cv_certificate::DiscretionaryDataTemplate> for CvDiscretionaryDataTemplate {
@@ -198,17 +307,39 @@ impl From<crate::cv_certificate::DiscretionaryDataTemplate> for CvDiscretionaryD
     }
 }
 
+#[uniffi::export]
+impl CvDiscretionaryDataTemplate {
+    pub fn extension_id_oid(&self) -> String {
+        self.extension_id_oid.clone()
+    }
+
+    pub fn extension_data(&self) -> Vec<Arc<CvExtensionField>> {
+        self.extension_data.iter().cloned().map(Arc::new).collect()
+    }
+}
+
 /// A raw extension field inside a discretionary data template.
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
 pub struct CvExtensionField {
-    pub tag: Asn1Tag,
-    pub value: Vec<u8>,
+    tag: Asn1Tag,
+    value: Vec<u8>,
 }
 
 impl From<crate::cv_certificate::ExtensionField> for CvExtensionField {
     fn from(value: crate::cv_certificate::ExtensionField) -> Self {
         Self { tag: value.tag.into(), value: value.value }
+    }
+}
+
+#[uniffi::export]
+impl CvExtensionField {
+    pub fn tag(&self) -> Arc<Asn1Tag> {
+        Arc::new(self.tag.clone())
+    }
+
+    pub fn value(&self) -> Vec<u8> {
+        self.value.clone()
     }
 }
 
@@ -223,13 +354,13 @@ pub enum Asn1FfiError {
 }
 
 #[uniffi::export]
-pub fn parse_cv_certificate(data: Vec<u8>) -> Result<CvCertificate, Asn1FfiError> {
+pub fn parse_cv_certificate(data: Vec<u8>) -> Result<Arc<CvCertificate>, Asn1FfiError> {
     if data.is_empty() {
         return Err(Asn1FfiError::InvalidArgument { reason: "data must not be empty".into() });
     }
     let cert = crate::cv_certificate::parse_cv_certificate(&data)
         .map_err(|err| Asn1FfiError::Decode { reason: err.to_string() })?;
-    Ok(cert.into())
+    Ok(Arc::new(cert.into()))
 }
 
 #[cfg(test)]
@@ -261,20 +392,27 @@ mod tests {
         let bytes = hex_to_bytes(hex_data);
         let cert = parse_cv_certificate(bytes).expect("parse should succeed");
 
-        assert_eq!(cert.body.profile_identifier, 0x70);
-        assert_eq!(cert.body.public_key.key_oid, "1.3.36.3.5.3.1");
-        assert_eq!(cert.body.certificate_holder_authorization_template.terminal_type_oid, "1.2.276.0.76.4.152");
-        assert_eq!(cert.body.certificate_effective_date, CvCertificateDate { year: 24, month: 4, day: 2 });
-        assert_eq!(cert.body.certificate_expiration_date, CvCertificateDate { year: 29, month: 4, day: 1 });
+        let body = cert.body();
+        assert_eq!(body.profile_identifier(), 0x70);
+        assert_eq!(body.public_key().key_oid(), "1.3.36.3.5.3.1");
+        assert_eq!(body.certificate_holder_authorization_template().terminal_type_oid(), "1.2.276.0.76.4.152");
+        let effective_date = body.certificate_effective_date();
+        assert_eq!(effective_date.year(), 24);
+        assert_eq!(effective_date.month(), 4);
+        assert_eq!(effective_date.day(), 2);
+        let expiration_date = body.certificate_expiration_date();
+        assert_eq!(expiration_date.year(), 29);
+        assert_eq!(expiration_date.month(), 4);
+        assert_eq!(expiration_date.day(), 1);
     }
 
     #[test]
     fn tag_mapping_preserves_fields() {
         let id = crate::tag::Asn1Id::ctx(1).constructed();
         let tag: Asn1Tag = id.into();
-        assert_eq!(tag.class_, Asn1TagClass::ContextSpecific);
-        assert_eq!(tag.form, Asn1TagForm::Constructed);
-        assert_eq!(tag.number, 1);
+        assert_eq!(tag.class_(), Asn1TagClass::ContextSpecific);
+        assert_eq!(tag.form(), Asn1TagForm::Constructed);
+        assert_eq!(tag.number(), 1);
     }
 
     #[test]
@@ -286,4 +424,3 @@ mod tests {
         }
     }
 }
-

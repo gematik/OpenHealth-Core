@@ -105,6 +105,7 @@ Before changing anything:
 - [ ] Are public types and functions named clearly and consistently?
 - [ ] Is the module structure (`cipher`, `ec`, `exchange`, `mac`, `kem`, etc.) intuitive and cohesive?
 - [ ] Does the crate provide a **high-level API** that is easy to use correctly and hard to misuse?
+- [ ] For exported FFI types, especially UniFFI-facing ones, are objects preferred over records, with methods/accessors exposed instead of public fields where practical?
 - [ ] Are there unnecessary public types or functions that could be made private?
 - [ ] Are error types well-structured and specific enough for callers?
 
@@ -187,4 +188,3 @@ When you finish your review of the `crypto` crate, produce:
      - A small patch or pseudo-code for the change.
 
 Keep changes focused and reviewable; avoid redesigning the entire crate unless explicitly requested.
-

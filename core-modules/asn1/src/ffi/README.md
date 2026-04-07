@@ -36,7 +36,9 @@ The UniFFI API is only compiled when the crate feature `uniffi` is enabled.
 
 - `parse_cv_certificate(data: Vec<u8>) -> CvCertificate`
 
-The CV certificate is parsed from BER/DER-like TLV bytes into a structured, FFI-friendly record graph.
+The CV certificate is parsed from BER/DER-like TLV bytes into a structured, FFI-friendly object graph.
+Exported structs should prefer accessor methods over public fields so generated bindings expose behavior through methods,
+not mutable record-like field bags.
 
 ## Security notes
 

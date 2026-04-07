@@ -38,7 +38,7 @@ kotlin {
                 implementation(kotlin("test"))
             }
         }
-        val androidInstrumentedTest by getting {
+        val androidDeviceTest by getting {
             dependencies {
                 implementation(project(":healthcard-testkit"))
                 implementation(kotlin("test"))

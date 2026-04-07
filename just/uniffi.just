@@ -55,6 +55,13 @@ uniffi-bindings-generate-crate platform arch language library_file rust_crate_di
     : "${OUT_ROOT:?OUT_ROOT must be set}"
     : "${CARGO_TARGET_DIR:?CARGO_TARGET_DIR must be set}"
 
+    profile="{{ profile }}"
+    cargo_profile_dir="release"
+
+    if [ "${profile}" = "debug" ]; then
+        cargo_profile_dir="debug"
+    fi
+
     resource_platform="{{ platform }}"
     resource_arch="{{ arch }}"
 
@@ -74,13 +81,20 @@ uniffi-bindings-generate-crate platform arch language library_file rust_crate_di
     rm -rf "${language_dir}" "${resources_dir}"
     mkdir -p "${language_dir}" "${resources_dir}"
 
-    cargo build \
-      --manifest-path "{{ rust_manifest_path }}" \
-      --locked \
-      --profile "{{ profile }}" \
-      --features uniffi
+    if [ "${profile}" = "debug" ]; then
+        cargo build \
+          --manifest-path "{{ rust_manifest_path }}" \
+          --locked \
+          --features uniffi
+    else
+        cargo build \
+          --manifest-path "{{ rust_manifest_path }}" \
+          --locked \
+          --profile release \
+          --features uniffi
+    fi
 
-    library_path="${CARGO_TARGET_DIR}/{{ profile }}/{{ library_file }}"
+    library_path="${CARGO_TARGET_DIR}/${cargo_profile_dir}/{{ library_file }}"
     test -f "${library_path}"
 
     cargo run \

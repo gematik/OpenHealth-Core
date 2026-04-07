@@ -23,6 +23,7 @@ package de.gematik.openhealth.asn1
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.text.HexFormat
 
 val format = HexFormat {
     bytes {
@@ -46,14 +47,17 @@ class CvCertificateParsingTest {
             """.trimIndent()
         val bytes = hexData.hexToByteArray(format)
 
-        val cert = parseCvCertificate(bytes)
-        val body = cert.body
+        val cert = parseCvCertificateJvm(bytes)
+        val body = cert.body()
+        val publicKey = body.publicKey()
+        val chat = body.certificateHolderAuthorizationTemplate()
+        val effectiveDate = body.certificateEffectiveDate()
 
-        assertEquals(0x70.toUByte(), body.profileIdentifier)
-        assertEquals("1.3.36.3.5.3.1", body.publicKey.keyOid)
-        assertEquals("1.2.276.0.76.4.152", body.certificateHolderAuthorizationTemplate.terminalTypeOid)
-        assertEquals(24.toUByte(), body.certificateEffectiveDate.year)
-        assertEquals(4.toUByte(), body.certificateEffectiveDate.month)
-        assertEquals(2.toUByte(), body.certificateEffectiveDate.day)
+        assertEquals(0x70.toUByte(), body.profileIdentifier())
+        assertEquals("1.3.36.3.5.3.1", publicKey.keyOid())
+        assertEquals("1.2.276.0.76.4.152", chat.terminalTypeOid())
+        assertEquals(24.toUByte(), effectiveDate.year())
+        assertEquals(4.toUByte(), effectiveDate.month())
+        assertEquals(2.toUByte(), effectiveDate.day())
     }
 }
