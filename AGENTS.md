@@ -37,6 +37,7 @@ find details in the "Readme" file.
 ## Coding Style & Naming
 - Rust is formatted with `rustfmt` (see `rustfmt.toml`), 4-space indentation, max line width 120.
 - Use expressive, domain-oriented names and follow existing module layout (e.g. `exchange`, `command`, `identifier` in `healthcard`).
+- For exported FFI types, especially UniFFI-facing ones, prefer objects over records. Expose data through methods/accessors instead of public fields when practical so bindings stay behavior-oriented and stable.
 - TODOs must reference a ticket: `// TODO OPEN-1234: Brief description`.
 - New files must carry SPDX headers and license annotations consistent with existing files.
 

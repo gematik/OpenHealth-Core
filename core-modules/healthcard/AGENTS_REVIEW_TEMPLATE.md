@@ -60,6 +60,7 @@ Before making changes:
 
 - [ ] Are the main public types and functions documented and named clearly?
 - [ ] Are APIs appropriate for cross-language use (simple types, good error reporting)?
+- [ ] For exported FFI types, especially UniFFI-facing ones, are objects preferred over records, with methods/accessors exposed instead of public fields where practical?
 - [ ] Are high-level operations safe and hard to misuse (e.g., enforcing correct sequence of card commands)?
 - [ ] Are details that should be internal kept private or in dedicated internal modules?
 
@@ -159,4 +160,3 @@ When you finish your review of the `healthcard` crate, produce:
      - A small patch or pseudo-code sketch.
 
 Focus on changes that make the crate easier to use correctly and safer in security- and privacy-sensitive contexts.
-

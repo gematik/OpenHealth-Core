@@ -40,12 +40,12 @@ permissions:
   contents: read
 
 jobs:
-  kotlin-bindings:
-    name: Kotlin bindings (${{ matrix.display_name }})
+  kotlin-bindings-host:
+    name: Kotlin host bindings (${{ matrix.display_name }})
     runs-on: ${{ matrix.runner }}
     env:
-      OUT_ROOT: ${{ github.workspace }}/artifacts/${{ matrix.display_name }}/generated/uniffi
-      CARGO_TARGET_DIR: ${{ github.workspace }}/artifacts/${{ matrix.display_name }}/cargo
+      OUT_ROOT_BASE: ${{ github.workspace }}/artifacts
+      CARGO_TARGET_DIR: ${{ github.workspace }}/artifacts/cargo/${{ matrix.display_name }}
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
       RUST_BACKTRACE: "1"
     strategy:
@@ -56,20 +56,26 @@ jobs:
             display_name: linux-x86_64
             platform: linux
             arch: x86_64
-            library_file: libhealthcard.so
             just_shell: ""
+            build_android: true
+          - runner: ubuntu-24.04-arm
+            display_name: linux-aarch64
+            platform: linux
+            arch: aarch64
+            just_shell: ""
+            build_android: false
           - runner: windows-latest
             display_name: windows-x86_64
             platform: windows
             arch: x86_64
-            library_file: healthcard.dll
             just_shell: "C:/Program Files/Git/bin/bash.exe"
+            build_android: false
           - runner: macos-26
             display_name: darwin-aarch64
             platform: darwin
             arch: aarch64
-            library_file: libhealthcard.dylib
             just_shell: ""
+            build_android: false
 
     defaults:
       run:
@@ -94,27 +100,27 @@ jobs:
         with:
           tool: just
 
-      - name: Set up Java (Linux only)
-        if: runner.os == 'Linux'
+      - name: Set up Java (Android build host only)
+        if: matrix.build_android
         uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "21"
 
-      - name: Ensure Android SDK platforms (Linux only)
-        if: runner.os == 'Linux'
+      - name: Ensure Android SDK platforms (Android build host only)
+        if: matrix.build_android
         run: |
           yes | "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="${ANDROID_SDK_ROOT}" --licenses >/dev/null || true
           "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="${ANDROID_SDK_ROOT}" "platforms;android-34" "build-tools;34.0.0"
 
-      - name: Install cargo-ndk (Linux only)
-        if: runner.os == 'Linux'
+      - name: Install cargo-ndk (Android build host only)
+        if: matrix.build_android
         uses: taiki-e/install-action@v2
         with:
           tool: cargo-ndk
 
-      - name: Add Rust Android targets (Linux only)
-        if: runner.os == 'Linux'
+      - name: Add Rust Android targets (Android build host only)
+        if: matrix.build_android
         run: rustup target add aarch64-linux-android x86_64-linux-android
 
       - name: Set Perl environment variables
@@ -138,18 +144,51 @@ jobs:
             rm -f /usr/bin/link
           fi
 
-      - name: Build Kotlin bindings
+      - name: Build Kotlin host bindings
         run: |
-          if [ -n "${{ matrix.just_shell }}" ]; then
-            just --shell="${{ matrix.just_shell }}" kotlin-bindings-generate ${{ matrix.platform }} ${{ matrix.arch }} ${{ matrix.library_file }} release
-          else
-            just kotlin-bindings-generate ${{ matrix.platform }} ${{ matrix.arch }} ${{ matrix.library_file }} release
-          fi
+          for module in healthcard asn1; do
+            case "${module}" in
+              healthcard)
+                library_file="libhealthcard.so"
+                if [ "${{ matrix.platform }}" = "windows" ]; then
+                  library_file="healthcard.dll"
+                elif [ "${{ matrix.platform }}" = "darwin" ]; then
+                  library_file="libhealthcard.dylib"
+                fi
+                ;;
+              asn1)
+                library_file="libasn1.so"
+                if [ "${{ matrix.platform }}" = "windows" ]; then
+                  library_file="asn1.dll"
+                elif [ "${{ matrix.platform }}" = "darwin" ]; then
+                  library_file="libasn1.dylib"
+                fi
+                ;;
+              *)
+                echo "Unknown module: ${module}" >&2
+                exit 2
+                ;;
+            esac
 
-      - name: Build Android native libraries (Linux only - arm64-v8a, x86_64)
-        if: runner.os == 'Linux'
+            out_root="${OUT_ROOT_BASE}/${module}/${{ matrix.display_name }}/generated/uniffi"
+
+            if [ -n "${{ matrix.just_shell }}" ]; then
+              OUT_ROOT="${out_root}" \
+                just --shell="${{ matrix.just_shell }}" \
+                kotlin-bindings-generate "${module}" "${{ matrix.platform }}" "${{ matrix.arch }}" "${library_file}" release
+            else
+              OUT_ROOT="${out_root}" \
+                just kotlin-bindings-generate "${module}" "${{ matrix.platform }}" "${{ matrix.arch }}" "${library_file}" release
+            fi
+          done
+
+      - name: Build Android native libraries (Linux x64 only)
+        if: matrix.build_android
         run: |
-          just kotlin-bindings-generate-android
+          for module in healthcard asn1; do
+            out_root="${OUT_ROOT_BASE}/${module}/${{ matrix.display_name }}/generated/uniffi"
+            OUT_ROOT="${out_root}" just kotlin-bindings-generate-android "${module}"
+          done
 
       - name: Upload OpenSSL Configure logs (on failure)
         if: failure()
@@ -161,21 +200,31 @@ jobs:
             ${{ github.workspace }}/**/configure.log
           if-no-files-found: warn
 
-      - name: Upload Resources
+      - name: Upload Kotlin resources (healthcard)
         uses: actions/upload-artifact@v7
         with:
-          name: kotlin-bindings-${{ matrix.display_name }}
+          name: kotlin-healthcard-bindings-${{ matrix.display_name }}
           path: |
-            ${{ env.OUT_ROOT }}/resources/**
-            ${{ env.OUT_ROOT }}/kotlin/**
-            ${{ env.OUT_ROOT }}/android-jni/**
+            ${{ github.workspace }}/artifacts/healthcard/${{ matrix.display_name }}/generated/uniffi/resources/**
+            ${{ github.workspace }}/artifacts/healthcard/${{ matrix.display_name }}/generated/uniffi/kotlin/**
+            ${{ github.workspace }}/artifacts/healthcard/${{ matrix.display_name }}/generated/uniffi/android-jni/**
           if-no-files-found: warn
 
-  swift-bindings:
+      - name: Upload Kotlin resources (asn1)
+        uses: actions/upload-artifact@v6
+        with:
+          name: kotlin-asn1-bindings-${{ matrix.display_name }}
+          path: |
+            ${{ github.workspace }}/artifacts/asn1/${{ matrix.display_name }}/generated/uniffi/resources/**
+            ${{ github.workspace }}/artifacts/asn1/${{ matrix.display_name }}/generated/uniffi/kotlin/**
+            ${{ github.workspace }}/artifacts/asn1/${{ matrix.display_name }}/generated/uniffi/android-jni/**
+          if-no-files-found: warn
+
+  swift-xcframework:
     name: Swift bindings (darwin-universal)
     runs-on: macos-26
     env:
-      OUT_ROOT: ${{ github.workspace }}/artifacts/swift/generated/uniffi
+      OUT_ROOT_BASE: ${{ github.workspace }}/artifacts/swift
       CARGO_TARGET_DIR: ${{ github.workspace }}/artifacts/swift/cargo
       RUST_BACKTRACE: "1"
     steps:
@@ -199,18 +248,17 @@ jobs:
         with:
           tool: just
 
-      - name: Build XCFramework
-        run: just swift-xcframework
+      - name: Build XCFrameworks
+        run: |
+          for module in healthcard asn1; do
+            out_root="${OUT_ROOT_BASE}/${module}/generated/uniffi"
+            OUT_ROOT="${out_root}" just swift-xcframework "${module}"
+          done
 
-      - name: Stage Swift wrapper for release
-        run: cp core-modules-swift/healthcard/Sources/OpenHealthHealthcard/OpenHealthHealthcard.swift OpenHealthHealthcard.swift
-
-      - name: Upload Swift wrapper
-        uses: actions/upload-artifact@v7
-        with:
-          name: swift-wrapper
-          path: OpenHealthHealthcard.swift
-          if-no-files-found: error
+      - name: Stage Swift wrappers for release
+        run: |
+          cp core-modules-swift/healthcard/Sources/OpenHealthHealthcard/OpenHealthHealthcard.swift OpenHealthHealthcard.swift
+          cp core-modules-swift/asn1/Sources/OpenHealthAsn1/OpenHealthAsn1.swift OpenHealthAsn1.swift
 
       - name: Upload OpenSSL Configure logs (Swift - on failure)
         if: failure()
@@ -222,41 +270,71 @@ jobs:
             ${{ github.workspace }}/**/configure.log
           if-no-files-found: warn
 
-      - name: Zip XCFramework
+      - name: Zip healthcard XCFramework
         working-directory: core-modules-swift/healthcard
         run: zip -r OpenHealthHealthcardFFI.xcframework.zip OpenHealthHealthcardFFI.xcframework
 
-      - name: Write XCFramework checksum
+      - name: Write healthcard XCFramework checksum
         working-directory: core-modules-swift/healthcard
         run: |
           swift package compute-checksum OpenHealthHealthcardFFI.xcframework.zip > OpenHealthHealthcardFFI.xcframework.sha256
 
-      - name: Upload XCFramework Zip
+      - name: Upload Swift healthcard wrapper
         uses: actions/upload-artifact@v7
         with:
-          name: swift-xcframework
+          name: swift-healthcard-wrapper
+          path: OpenHealthHealthcard.swift
+          if-no-files-found: error
+
+      - name: Upload healthcard XCFramework Zip
+        uses: actions/upload-artifact@v6
+        with:
+          name: swift-healthcard-xcframework
           path: core-modules-swift/healthcard/OpenHealthHealthcardFFI.xcframework.zip
 
-      - name: Upload XCFramework checksum
+      - name: Upload healthcard XCFramework checksum
         uses: actions/upload-artifact@v7
         with:
-          name: swift-xcframework-checksum
+          name: swift-healthcard-xcframework-checksum
           path: core-modules-swift/healthcard/OpenHealthHealthcardFFI.xcframework.sha256
+
+      - name: Zip asn1 XCFramework
+        working-directory: core-modules-swift/asn1
+        run: zip -r OpenHealthAsn1FFI.xcframework.zip OpenHealthAsn1FFI.xcframework
+
+      - name: Write asn1 XCFramework checksum
+        working-directory: core-modules-swift/asn1
+        run: |
+          swift package compute-checksum OpenHealthAsn1FFI.xcframework.zip > OpenHealthAsn1FFI.xcframework.sha256
+
+      - name: Upload Swift asn1 wrapper
+        uses: actions/upload-artifact@v6
+        with:
+          name: swift-asn1-wrapper
+          path: OpenHealthAsn1.swift
+          if-no-files-found: error
+
+      - name: Upload asn1 XCFramework Zip
+        uses: actions/upload-artifact@v6
+        with:
+          name: swift-asn1-xcframework
+          path: core-modules-swift/asn1/OpenHealthAsn1FFI.xcframework.zip
+
+      - name: Upload asn1 XCFramework checksum
+        uses: actions/upload-artifact@v6
+        with:
+          name: swift-asn1-xcframework-checksum
+          path: core-modules-swift/asn1/OpenHealthAsn1FFI.xcframework.sha256
 
   assemble-kotlin-bindings:
     name: Assemble Kotlin bindings bundle
     runs-on: ubuntu-latest
-    needs: kotlin-bindings
-    env:
-      OUT_ROOT: ${{ github.workspace }}/assembly/dist/generated/uniffi
+    needs: [ kotlin-bindings-host ]
     steps:
       - name: Checkout (for directory layout)
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-
-      - name: Set up Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
 
       - name: Install just
         uses: taiki-e/install-action@v2
@@ -272,24 +350,41 @@ jobs:
       - name: Set up Gradle cache
         uses: gradle/actions/setup-gradle@v6
 
-      - name: Download platform artifacts
+      - name: Download healthcard platform artifacts
         uses: actions/download-artifact@v8
         with:
-          pattern: "kotlin-bindings-*"
-          path: assembly/input
+          pattern: "kotlin-healthcard-bindings-*"
+          path: assembly/input/healthcard
 
-      - name: Collect libraries and generated Kotlin
+      - name: Download asn1 platform artifacts
+        uses: actions/download-artifact@v7
+        with:
+          pattern: "kotlin-asn1-bindings-*"
+          path: assembly/input/asn1
+
+      - name: Collect libraries and generated Kotlin (healthcard + asn1)
         run: |
-          just kotlin-bindings-assemble assembly/input assembly/dist/generated/uniffi
+          just kotlin-bindings-assemble assembly/input/healthcard assembly/dist/healthcard/generated/uniffi
+          just kotlin-bindings-assemble assembly/input/asn1 assembly/dist/asn1/generated/uniffi
 
-      - name: Upload Kotlin bindings bundle
+      - name: Upload Kotlin bindings bundle (healthcard)
         uses: actions/upload-artifact@v7
         with:
           name: kotlin-bindings-bundle
           path: |
-            ${{ env.OUT_ROOT }}/resources/**
-            ${{ env.OUT_ROOT }}/kotlin/**
-            ${{ env.OUT_ROOT }}/android-jni/**
+            assembly/dist/healthcard/generated/uniffi/resources/**
+            assembly/dist/healthcard/generated/uniffi/kotlin/**
+            assembly/dist/healthcard/generated/uniffi/android-jni/**
+          if-no-files-found: error
+
+      - name: Upload Kotlin bindings bundle (asn1)
+        uses: actions/upload-artifact@v6
+        with:
+          name: kotlin-asn1-bindings-bundle
+          path: |
+            assembly/dist/asn1/generated/uniffi/resources/**
+            assembly/dist/asn1/generated/uniffi/kotlin/**
+            assembly/dist/asn1/generated/uniffi/android-jni/**
           if-no-files-found: error
 
       - name: Publish Kotlin bindings to mavenLocal (assembled outputs)
@@ -297,7 +392,8 @@ jobs:
           if [ -n "${{ inputs.version }}" ]; then
             export ORG_GRADLE_PROJECT_version="${{ inputs.version }}"
           fi
-          just kotlin-publish-local
+          OUT_ROOT="${GITHUB_WORKSPACE}/assembly/dist/healthcard/generated/uniffi" just kotlin-publish-local healthcard
+          OUT_ROOT="${GITHUB_WORKSPACE}/assembly/dist/asn1/generated/uniffi" just kotlin-publish-local asn1
 
       - name: Stage Maven local artifacts for upload
         run: |
@@ -317,7 +413,7 @@ jobs:
   release:
     name: Create Release
     runs-on: ubuntu-latest
-    needs: [swift-bindings, assemble-kotlin-bindings]
+    needs: [ swift-xcframework, assemble-kotlin-bindings ]
     if: inputs.version != ''
     permissions:
       contents: write
@@ -327,23 +423,43 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download Swift Artifact
+      - name: Download Swift healthcard Artifact
         uses: actions/download-artifact@v8
         with:
-          name: swift-xcframework
-          path: artifacts/swift
+          name: swift-healthcard-xcframework
+          path: artifacts/swift/healthcard
 
-      - name: Download Swift wrapper
+      - name: Download Swift healthcard wrapper
+        uses: actions/download-artifact@v8
+      - name: Download Swift healthcard wrapper
         uses: actions/download-artifact@v8
         with:
-          name: swift-wrapper
-          path: artifacts/swift-wrapper
-      
-      - name: Download Swift checksum
+          name: swift-healthcard-wrapper
+          path: artifacts/swift-wrapper/healthcard
+
+      - name: Download Swift healthcard checksum
         uses: actions/download-artifact@v8
         with:
-          name: swift-xcframework-checksum
-          path: artifacts/swift-checksum
+          name: swift-healthcard-xcframework-checksum
+          path: artifacts/swift-checksum/healthcard
+
+      - name: Download Swift asn1 Artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: swift-asn1-xcframework
+          path: artifacts/swift/asn1
+
+      - name: Download Swift asn1 wrapper
+        uses: actions/download-artifact@v7
+        with:
+          name: swift-asn1-wrapper
+          path: artifacts/swift-wrapper/asn1
+
+      - name: Download Swift asn1 checksum
+        uses: actions/download-artifact@v7
+        with:
+          name: swift-asn1-xcframework-checksum
+          path: artifacts/swift-checksum/asn1
 
       - name: Download Kotlin Artifact
         uses: actions/download-artifact@v8
@@ -359,15 +475,38 @@ jobs:
       - name: Update Package.swift
         run: |
           VERSION="${{ inputs.version }}"
-          ZIP_PATH="artifacts/swift/OpenHealthHealthcardFFI.xcframework.zip"
-          CHECKSUM=$(cat artifacts/swift-checksum/OpenHealthHealthcardFFI.xcframework.sha256)
-          REPO_URL="https://github.com/${{ github.repository }}/releases/download/${VERSION}/OpenHealthHealthcardFFI.xcframework.zip"
+          for module in healthcard asn1; do
+            case "${module}" in
+              healthcard)
+                ffi_name="OpenHealthHealthcardFFI"
+                wrapper_file="OpenHealthHealthcard.swift"
+                wrapper_dest="core-modules-swift/healthcard/Sources/OpenHealthHealthcard/OpenHealthHealthcard.swift"
+                sed_path="core-modules-swift/healthcard/OpenHealthHealthcardFFI.xcframework"
+                checksum_path="artifacts/swift-checksum/healthcard/OpenHealthHealthcardFFI.xcframework.sha256"
+                wrapper_src="artifacts/swift-wrapper/healthcard/OpenHealthHealthcard.swift"
+                ;;
+              asn1)
+                ffi_name="OpenHealthAsn1FFI"
+                wrapper_file="OpenHealthAsn1.swift"
+                wrapper_dest="core-modules-swift/asn1/Sources/OpenHealthAsn1/OpenHealthAsn1.swift"
+                sed_path="core-modules-swift/asn1/OpenHealthAsn1FFI.xcframework"
+                checksum_path="artifacts/swift-checksum/asn1/OpenHealthAsn1FFI.xcframework.sha256"
+                wrapper_src="artifacts/swift-wrapper/asn1/OpenHealthAsn1.swift"
+                ;;
+              *)
+                echo "Unknown module: ${module}" >&2
+                exit 2
+                ;;
+            esac
 
-          mkdir -p core-modules-swift/healthcard/Sources/OpenHealthHealthcard
-          cp artifacts/swift-wrapper/OpenHealthHealthcard.swift core-modules-swift/healthcard/Sources/OpenHealthHealthcard/OpenHealthHealthcard.swift
-          
-          # Update Package.swift to use remote binary target
-          sed -i "s|path: \"core-modules-swift/healthcard/OpenHealthHealthcardFFI.xcframework\"|url: \"$REPO_URL\", checksum: \"$CHECKSUM\"|" Package.swift
+            CHECKSUM="$(cat "${checksum_path}")"
+            REPO_URL="https://github.com/${{ github.repository }}/releases/download/${VERSION}/${ffi_name}.xcframework.zip"
+
+            mkdir -p "$(dirname "${wrapper_dest}")"
+            cp "${wrapper_src}" "${wrapper_dest}"
+
+            sed -i "s|path: \"${sed_path}\"|url: \"${REPO_URL}\", checksum: \"${CHECKSUM}\"|" Package.swift
+          done
           
           # Verify change
           cat Package.swift
@@ -376,6 +515,7 @@ jobs:
           git config user.email "actions@github.com"
           git add Package.swift
           git add -f core-modules-swift/healthcard/Sources/OpenHealthHealthcard/OpenHealthHealthcard.swift
+          git add -f core-modules-swift/asn1/Sources/OpenHealthAsn1/OpenHealthAsn1.swift
           git commit -m "Release ${VERSION}"
           git tag "${VERSION}"
           git push origin "${VERSION}"
@@ -385,6 +525,7 @@ jobs:
         with:
           tag_name: ${{ inputs.version }}
           files: |
-            artifacts/swift/OpenHealthHealthcardFFI.xcframework.zip
+            artifacts/swift/healthcard/OpenHealthHealthcardFFI.xcframework.zip
+            artifacts/swift/asn1/OpenHealthAsn1FFI.xcframework.zip
             maven-repo.zip
           generate_release_notes: true

@@ -25,35 +25,4 @@
 # -------------------------------------------------
 
 repo_root := justfile_directory()
-
-rust_crate := repo_root + "/core-modules/healthcard"
-rust_manifest := rust_crate + "/Cargo.toml"
 uniffi_cli := repo_root + "/tools/uniffi-cli/Cargo.toml"
-
-# -------------------------------------------------
-# Kotlin paths
-# -------------------------------------------------
-
-kotlin_module := repo_root + "/core-modules-kotlin/healthcard"
-kotlin_cargo_target_dir_default := kotlin_module + "/build/cargo"
-kotlin_out_root_default := kotlin_module + "/build/generated/uniffi"
-
-kotlin_cargo_target_dir := env_var_or_default("CARGO_TARGET_DIR", kotlin_cargo_target_dir_default)
-kotlin_out_root := env_var_or_default("OUT_ROOT", kotlin_out_root_default)
-
-android_jni_root := kotlin_out_root + "/android-jni"
-
-# -------------------------------------------------
-# Swift paths
-# -------------------------------------------------
-
-swift_module := repo_root + "/core-modules-swift/healthcard"
-swift_module_name := "OpenHealthHealthcard"
-swift_ffi_module_name := "OpenHealthHealthcardFFI"
-
-swift_cargo_target_dir_default := swift_module + "/build/cargo"
-swift_out_root_default := swift_module + "/build/generated/uniffi"
-
-swift_cargo_target_dir := env_var_or_default("CARGO_TARGET_DIR", swift_cargo_target_dir_default)
-swift_out_root := env_var_or_default("OUT_ROOT", swift_out_root_default)
-
