@@ -524,7 +524,7 @@ mod tests {
     #[test]
     fn write_utc_time_basic_z() {
         let value = Asn1Time::Utc(Asn1UtcTime::new(2025, 1, 1, 12, 0, None, None).unwrap());
-        let out = crate::encoder::Asn1Encoder::write(|w| -> Result<(), Asn1EncoderError> {
+        let out = crate::encoder::Asn1Encoder::write_nonzeroizing(|w| -> Result<(), Asn1EncoderError> {
             w.write_utc_time(&value)?;
             Ok(())
         })
@@ -542,7 +542,7 @@ mod tests {
         let value = Asn1Time::Utc(
             Asn1UtcTime::new(1999, 12, 31, 23, 59, Some(58), Some(Asn1Offset::utc_offset(2, 30).unwrap())).unwrap(),
         );
-        let out = crate::encoder::Asn1Encoder::write(|w| -> Result<(), Asn1EncoderError> {
+        let out = crate::encoder::Asn1Encoder::write_nonzeroizing(|w| -> Result<(), Asn1EncoderError> {
             w.write_utc_time(&value)?;
             Ok(())
         })
@@ -605,7 +605,7 @@ mod tests {
             )
             .unwrap(),
         );
-        let out = crate::encoder::Asn1Encoder::write(|w| -> Result<(), Asn1EncoderError> {
+        let out = crate::encoder::Asn1Encoder::write_nonzeroizing(|w| -> Result<(), Asn1EncoderError> {
             w.write_generalized_time(&value)?;
             Ok(())
         })
@@ -721,14 +721,14 @@ mod tests {
         let utc = Asn1Time::utc(2024, 1, 1, 0, 0, None, None).unwrap();
         let gen = Asn1Time::generalized(2024, 1, 1, 0, None, None, None, None).unwrap();
 
-        let err = crate::encoder::Asn1Encoder::write(|w| w.write_generalized_time(&utc)).unwrap_err();
+        let err = crate::encoder::Asn1Encoder::write_nonzeroizing(|w| w.write_generalized_time(&utc)).unwrap_err();
         assert!(matches!(
             err,
             Asn1EncoderError::TimeTypeMismatch { expected, actual }
                 if expected == crate::error::Asn1TimeType::Generalized && actual == crate::error::Asn1TimeType::Utc
         ));
 
-        let err = crate::encoder::Asn1Encoder::write(|w| w.write_utc_time(&gen)).unwrap_err();
+        let err = crate::encoder::Asn1Encoder::write_nonzeroizing(|w| w.write_utc_time(&gen)).unwrap_err();
         assert!(matches!(
             err,
             Asn1EncoderError::TimeTypeMismatch { expected, actual }
@@ -739,7 +739,7 @@ mod tests {
     #[test]
     fn write_generalized_time_without_optional_parts() {
         let value = Asn1Time::generalized(2024, 6, 15, 8, None, None, None, None).unwrap();
-        let out = crate::encoder::Asn1Encoder::write(|w| -> Result<(), Asn1EncoderError> {
+        let out = crate::encoder::Asn1Encoder::write_nonzeroizing(|w| -> Result<(), Asn1EncoderError> {
             w.write_generalized_time(&value)?;
             Ok(())
         })

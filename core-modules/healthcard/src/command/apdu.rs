@@ -19,6 +19,7 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
+use asn1::maybe_zeroizing_vec::{VecOfU8, ZeroizingOption};
 use std::fmt;
 use thiserror::Error;
 
@@ -40,7 +41,7 @@ pub enum ApduError {
 /// Common trait for all APDU types
 pub trait Apdu {
     fn bytes(&self) -> &[u8];
-    fn to_bytes(&self) -> Vec<u8>;
+    fn to_vec(&self) -> VecOfU8;
 }
 
 /// Encodes the data length (Nc) for extended length APDUs (Lc1, Lc2).
@@ -127,12 +128,12 @@ fn encode_expected_length_short(ne: usize) -> Result<[u8; 1], ApduError> {
 
 #[derive(Clone)]
 pub struct CardCommandApdu {
-    apdu: Vec<u8>,
+    apdu: VecOfU8,
     cla: u8,
     ins: u8,
     p1: u8,
     p2: u8,
-    data: Option<Vec<u8>>,
+    data: Option<VecOfU8>,
     ne: Option<usize>,
 }
 
@@ -147,7 +148,7 @@ pub enum LengthClass {
 impl CardCommandApdu {
     /// Construct a case 1 APDU (header only).
     pub fn header_only(cla: u8, ins: u8, p1: u8, p2: u8) -> Result<Self, ApduError> {
-        Self::new(cla, ins, p1, p2, None::<Vec<u8>>, None)
+        Self::new(cla, ins, p1, p2, None::<VecOfU8>, None)
     }
 
     /// Construct a case 2 APDU (Le only) with explicit length class.
@@ -173,19 +174,18 @@ impl CardCommandApdu {
                 }
             }
         }
-        Self::new(cla, ins, p1, p2, None::<Vec<u8>>, Some(ne))
+        Self::new(cla, ins, p1, p2, None::<VecOfU8>, Some(ne))
     }
 
     /// Construct a case 3 APDU (Lc + data) with explicit length class.
-    pub fn with_data<D: Into<Vec<u8>>>(
+    pub fn with_data(
         cla: u8,
         ins: u8,
         p1: u8,
         p2: u8,
         length_class: LengthClass,
-        data: D,
+        data_vec: VecOfU8,
     ) -> Result<Self, ApduError> {
-        let data_vec = data.into();
         match length_class {
             LengthClass::Short => {
                 if data_vec.is_empty() || data_vec.len() >= EXPECTED_LENGTH_WILDCARD_SHORT {
@@ -204,16 +204,15 @@ impl CardCommandApdu {
     }
 
     /// Construct a case 4 APDU (Lc + data + Le) with explicit length class.
-    pub fn with_data_and_expect<D: Into<Vec<u8>>>(
+    pub fn with_data_and_expect(
         cla: u8,
         ins: u8,
         p1: u8,
         p2: u8,
         length_class: LengthClass,
-        data: D,
+        data_vec: VecOfU8,
         ne: usize,
     ) -> Result<Self, ApduError> {
-        let data_vec = data.into();
         match length_class {
             LengthClass::Short => {
                 if data_vec.is_empty() || data_vec.len() >= EXPECTED_LENGTH_WILDCARD_SHORT {
@@ -245,13 +244,8 @@ impl CardCommandApdu {
     }
 
     /// Returns a clone of the APDU byte array.
-    pub fn to_bytes(&self) -> Vec<u8> {
+    pub fn to_vec(&self) -> VecOfU8 {
         self.apdu.clone()
-    }
-
-    /// Consumes the APDU and returns the underlying bytes.
-    pub fn into_bytes(self) -> Vec<u8> {
-        self.apdu
     }
 
     /// Returns the expected length (Ne) of the response.
@@ -292,7 +286,7 @@ impl CardCommandApdu {
     /// * `p2` - The parameter 2 byte (P2).
     /// * `ne` - The expected response length (Ne), or None for case 1.
     pub fn new_without_data(cla: u8, ins: u8, p1: u8, p2: u8, ne: Option<usize>) -> Result<Self, ApduError> {
-        Self::new(cla, ins, p1, p2, None::<Vec<u8>>, ne)
+        Self::new(cla, ins, p1, p2, None::<VecOfU8>, ne)
     }
 
     /// Creates a CardCommandApdu for cases 1, 2s, 2e, 3s, 3e, 4s, or 4e.
@@ -304,14 +298,7 @@ impl CardCommandApdu {
     /// * `p2` - The parameter 2 byte (P2).
     /// * `data` - The command data (body), or None for cases 1, 2s, or 2e.
     /// * `ne` - The expected response length (Ne), or None for cases 3s or 3e.
-    pub fn new<D: Into<Vec<u8>>>(
-        cla: u8,
-        ins: u8,
-        p1: u8,
-        p2: u8,
-        data: Option<D>,
-        ne: Option<usize>,
-    ) -> Result<Self, ApduError> {
+    pub fn new(cla: u8, ins: u8, p1: u8, p2: u8, data: Option<VecOfU8>, ne: Option<usize>) -> Result<Self, ApduError> {
         // Validate the expected length (Ne), if provided.
         if let Some(ne_val) = ne {
             if ne_val > EXPECTED_LENGTH_WILDCARD_EXTENDED {
@@ -326,8 +313,7 @@ impl CardCommandApdu {
         // Append header: |CLA|INS|P1|P2|
         apdu.extend_from_slice(&[cla, ins, p1, p2]);
 
-        let (_data_length, _data_offset, data_vec) = if let Some(data_into) = data {
-            let data_vec = data_into.into();
+        let (_data_length, _data_offset, data_vec) = if let Some(data_vec) = data {
             let data_length = data_vec.len();
 
             if data_length >= EXPECTED_LENGTH_WILDCARD_EXTENDED {
@@ -388,6 +374,12 @@ impl CardCommandApdu {
             }
         };
 
+        let apdu: VecOfU8 = {
+            let apdu_zeroizing_opt =
+                if let Some(d) = &data_vec { d.get_zeroizing_option() } else { ZeroizingOption::None };
+            VecOfU8::new(apdu, apdu_zeroizing_opt)
+        };
+
         Ok(CardCommandApdu { apdu, cla, ins, p1, p2, data: data_vec, ne })
     }
 
@@ -432,7 +424,7 @@ impl CardCommandApdu {
                 return Err(ApduError::InvalidApdu(format!(
                     "Invalid APDU: length={}, lengthIndicator={}",
                     apdu.len(),
-                    (apdu[4] as usize)
+                    apdu[4] as usize
                 )));
             }
 
@@ -447,7 +439,7 @@ impl CardCommandApdu {
                     return Err(ApduError::InvalidApdu(format!(
                         "Invalid APDU: length={}, lengthIndicator={}, extendedLength={}",
                         apdu.len(),
-                        (apdu[4] as usize),
+                        apdu[4] as usize,
                         data_length_extended
                     )));
                 }
@@ -470,7 +462,7 @@ impl CardCommandApdu {
                     return Err(ApduError::InvalidApdu(format!(
                         "Invalid APDU: length={}, lengthIndicator={}, extendedLength={}",
                         apdu.len(),
-                        (apdu[4] as usize),
+                        apdu[4] as usize,
                         data_length_extended
                     )));
                 }
@@ -487,12 +479,12 @@ impl CardCommandApdu {
         let data = if data_length > 0 {
             let start = data_offset;
             let end = start + data_length;
-            Some(apdu[start..end].to_vec())
+            Some(VecOfU8::new_nonzeroizing(apdu[start..end].to_vec()))
         } else {
             None
         };
 
-        Ok(CardCommandApdu { apdu: apdu.to_vec(), cla, ins, p1, p2, data, ne: expected_length })
+        Ok(CardCommandApdu { apdu: VecOfU8::new_nonzeroizing(apdu), cla, ins, p1, p2, data, ne: expected_length })
     }
 }
 
@@ -501,7 +493,7 @@ impl Apdu for CardCommandApdu {
         &self.apdu
     }
 
-    fn to_bytes(&self) -> Vec<u8> {
+    fn to_vec(&self) -> VecOfU8 {
         self.apdu.clone()
     }
 }
@@ -524,27 +516,51 @@ impl fmt::Debug for CardCommandApdu {
 /// as defined by ISO/IEC 7816-4.
 #[derive(Clone, Eq, PartialEq)]
 pub struct CardResponseApdu {
-    bytes: Vec<u8>,
+    bytes: VecOfU8,
 }
 
 impl CardResponseApdu {
+    /// Creates a new CardResponseApdu from a byte slice.
+    ///
+    /// # Arguments
+    /// * `apdu` - The raw byte array of the received APDU.
+    pub fn new_nonzeroizing(apdu: &[u8]) -> Result<Self, ApduError> {
+        Self::new(apdu, ZeroizingOption::None)
+    }
+
     /// Creates a new CardResponseApdu from a byte array.
     ///
     /// # Arguments
     /// * `apdu` - The raw byte array of the received APDU.
-    pub fn new(apdu: &[u8]) -> Result<Self, ApduError> {
+    /// * `zeroizing_option` - Whether the bytes should be zeroed out after use.
+    pub fn new(apdu: &[u8], zeroizing_option: ZeroizingOption) -> Result<Self, ApduError> {
         if apdu.len() < 2 {
             return Err(ApduError::InvalidApdu(
                 "Response APDU must contain at least 2 bytes (status bytes SW1, SW2)".to_string(),
             ));
         }
 
-        Ok(CardResponseApdu { bytes: apdu.to_vec() })
+        Ok(CardResponseApdu { bytes: VecOfU8::new(apdu.to_vec(), zeroizing_option) })
+    }
+
+    /// Creates a new CardResponseApdu from a Vec<u8>.
+    ///
+    /// # Arguments
+    /// * `apdu` - A Vec<u8> containing the raw byte array of the received APDU.
+    /// * `zeroizing_option` - Whether the bytes should be zeroed out after use.
+    pub fn new_from_vec(apdu: Vec<u8>, zeroizing_option: ZeroizingOption) -> Result<Self, ApduError> {
+        if apdu.len() < 2 {
+            return Err(ApduError::InvalidApdu(
+                "Response APDU must contain at least 2 bytes (status bytes SW1, SW2)".to_string(),
+            ));
+        }
+
+        Ok(CardResponseApdu { bytes: VecOfU8::new(apdu, zeroizing_option) })
     }
 
     /// Convenience constructor mirroring `new`.
     pub fn from_bytes(bytes: &[u8]) -> Result<Self, ApduError> {
-        Self::new(bytes)
+        Self::new_nonzeroizing(bytes)
     }
 
     /// The data bytes of the response.
@@ -582,12 +598,12 @@ impl CardResponseApdu {
     }
 
     /// Returns a clone of the raw byte array.
-    pub fn to_bytes(&self) -> Vec<u8> {
+    pub fn to_vec(&self) -> VecOfU8 {
         self.bytes.clone()
     }
 
     /// Consumes the response and returns the underlying bytes.
-    pub fn into_bytes(self) -> Vec<u8> {
+    pub fn into_vec(self) -> VecOfU8 {
         self.bytes
     }
 }
@@ -597,7 +613,7 @@ impl Apdu for CardResponseApdu {
         &self.bytes
     }
 
-    fn to_bytes(&self) -> Vec<u8> {
+    fn to_vec(&self) -> VecOfU8 {
         self.bytes.clone()
     }
 }
@@ -621,7 +637,7 @@ mod tests {
     fn test_card_command_apdu_case1() {
         // Case 1: Header only
         let apdu = CardCommandApdu::header_only(0x00, 0xA4, 0x04, 0x00).unwrap();
-        assert_eq!(apdu.to_bytes(), vec![0x00, 0xA4, 0x04, 0x00]);
+        assert_eq!(apdu.to_vec(), VecOfU8::new_nonzeroizing(vec![0x00, 0xA4, 0x04, 0x00]));
         assert_eq!(apdu.data, None);
         assert_eq!(apdu.ne, None);
     }
@@ -630,7 +646,7 @@ mod tests {
     fn test_card_command_apdu_case2s() {
         // Case 2s: Header + Le (short)
         let apdu = CardCommandApdu::with_expect(0x00, 0xA4, 0x04, 0x00, LengthClass::Short, 256).unwrap();
-        assert_eq!(apdu.to_bytes(), vec![0x00, 0xA4, 0x04, 0x00, 0x00]);
+        assert_eq!(apdu.to_vec(), VecOfU8::new_nonzeroizing(vec![0x00, 0xA4, 0x04, 0x00, 0x00]));
         assert_eq!(apdu.data, None);
         assert_eq!(apdu.ne, Some(256));
     }
@@ -639,7 +655,7 @@ mod tests {
     fn test_card_command_apdu_shape_helpers() {
         // header only
         let header = CardCommandApdu::header_only(0x00, 0xA4, 0x04, 0x00).unwrap();
-        assert_eq!(header.to_bytes(), vec![0x00, 0xA4, 0x04, 0x00]);
+        assert_eq!(header.to_vec(), VecOfU8::new_nonzeroizing(vec![0x00, 0xA4, 0x04, 0x00]));
 
         // expect short validation
         assert!(CardCommandApdu::with_expect(0, 0, 0, 0, LengthClass::Short, 257).is_err());
@@ -648,27 +664,69 @@ mod tests {
 
         // data extended validation
         let long_data = vec![0u8; EXPECTED_LENGTH_WILDCARD_SHORT];
-        let case3e = CardCommandApdu::with_data(0x80, 0x10, 0, 0, LengthClass::Extended, long_data.clone()).unwrap();
+        let case3e = CardCommandApdu::with_data(
+            0x80,
+            0x10,
+            0,
+            0,
+            LengthClass::Extended,
+            VecOfU8::new_nonzeroizing(long_data.clone()),
+        )
+        .unwrap();
         assert_eq!(case3e.as_data().unwrap().len(), long_data.len());
-        let case3s = CardCommandApdu::with_data(0x00, 0xA4, 0x04, 0x00, LengthClass::Short, vec![0x01]).unwrap();
+        let case3s = CardCommandApdu::with_data(
+            0x00,
+            0xA4,
+            0x04,
+            0x00,
+            LengthClass::Short,
+            VecOfU8::new_nonzeroizing(vec![0x01]),
+        )
+        .unwrap();
         assert_eq!(case3s.as_data().unwrap(), [0x01]);
 
         // data+expect short validation
-        assert!(CardCommandApdu::with_data_and_expect(0, 0, 0, 0, LengthClass::Short, vec![0u8; 256], 1).is_err());
+        assert!(CardCommandApdu::with_data_and_expect(
+            0,
+            0,
+            0,
+            0,
+            LengthClass::Short,
+            VecOfU8::new_nonzeroizing(vec![0u8; 256]),
+            1
+        )
+        .is_err());
         let short_data = vec![0xAB];
-        let case4s = CardCommandApdu::with_data_and_expect(0, 0, 0, 0, LengthClass::Short, short_data, 1).unwrap();
+        let case4s = CardCommandApdu::with_data_and_expect(
+            0,
+            0,
+            0,
+            0,
+            LengthClass::Short,
+            VecOfU8::new_nonzeroizing(short_data),
+            1,
+        )
+        .unwrap();
         assert_eq!(case4s.expected_length(), Some(1));
 
         let extended_data = vec![0u8; EXPECTED_LENGTH_WILDCARD_SHORT];
-        let case4e =
-            CardCommandApdu::with_data_and_expect(0, 0, 0, 0, LengthClass::Extended, extended_data, 300).unwrap();
+        let case4e = CardCommandApdu::with_data_and_expect(
+            0,
+            0,
+            0,
+            0,
+            LengthClass::Extended,
+            VecOfU8::new_nonzeroizing(extended_data),
+            300,
+        )
+        .unwrap();
         assert_eq!(case4e.expected_length(), Some(300));
     }
 
     #[test]
     fn test_card_response_apdu() {
         // Test response APDU with status 9000 (success)
-        let response = CardResponseApdu::new(&[0x01, 0x02, 0x90, 0x00]).unwrap();
+        let response = CardResponseApdu::new_nonzeroizing(&[0x01, 0x02, 0x90, 0x00]).unwrap();
         assert_eq!(response.to_data(), vec![0x01, 0x02]);
         assert_eq!(response.sw1(), 0x90);
         assert_eq!(response.sw2(), 0x00);
@@ -677,14 +735,14 @@ mod tests {
 
     #[test]
     fn test_from_bytes() {
-        let bytes = [0x00, 0xA4, 0x04, 0x00, 0x02, 0x3F, 0x00, 0x00];
+        let bytes = VecOfU8::new_nonzeroizing([0x00, 0xA4, 0x04, 0x00, 0x02, 0x3F, 0x00, 0x00]);
         let command = CardCommandApdu::from_bytes(&bytes).unwrap();
         assert_eq!(command.cla(), 0x00);
         assert_eq!(command.ins(), 0xA4);
         assert_eq!(command.p1(), 0x04);
         assert_eq!(command.p2(), 0x00);
         assert_eq!(command.as_data(), Some(&[0x3F, 0x00][..]));
-        assert_eq!(command.to_bytes(), bytes);
+        assert_eq!(command.to_vec(), bytes);
         assert_eq!(command.expected_length(), Some(256));
 
         let response_bytes = [0x6F, 0x12, 0x90, 0x00];
@@ -780,31 +838,63 @@ mod tests {
     #[test]
     fn test_command_apdu_validations() {
         assert!(matches!(
-            CardCommandApdu::with_data(0, 0, 0, 0, LengthClass::Short, Vec::<u8>::new()),
+            CardCommandApdu::with_data(0, 0, 0, 0, LengthClass::Short, VecOfU8::new_nonzeroizing(Vec::<u8>::new())),
             Err(ApduError::InvalidLength(_))
         ));
         assert!(matches!(
-            CardCommandApdu::with_data(0, 0, 0, 0, LengthClass::Short, vec![0u8; 256]),
+            CardCommandApdu::with_data(0, 0, 0, 0, LengthClass::Short, VecOfU8::new_nonzeroizing(vec![0u8; 256])),
             Err(ApduError::InvalidLength(_))
         ));
         assert!(matches!(
-            CardCommandApdu::with_data(0, 0, 0, 0, LengthClass::Extended, vec![0u8; 128]),
+            CardCommandApdu::with_data(0, 0, 0, 0, LengthClass::Extended, VecOfU8::new_nonzeroizing(vec![0u8; 128])),
             Err(ApduError::InvalidLength(_))
         ));
         assert!(matches!(
-            CardCommandApdu::with_data_and_expect(0, 0, 0, 0, LengthClass::Extended, vec![0u8; 256], 256),
+            CardCommandApdu::with_data_and_expect(
+                0,
+                0,
+                0,
+                0,
+                LengthClass::Extended,
+                VecOfU8::new_nonzeroizing(vec![0u8; 256]),
+                256
+            ),
             Err(ApduError::InvalidLength(_))
         ));
         assert!(matches!(
-            CardCommandApdu::with_data_and_expect(0, 0, 0, 0, LengthClass::Extended, vec![0u8; 255], 257),
+            CardCommandApdu::with_data_and_expect(
+                0,
+                0,
+                0,
+                0,
+                LengthClass::Extended,
+                VecOfU8::new_nonzeroizing(vec![0u8; 255]),
+                257
+            ),
             Err(ApduError::InvalidLength(_))
         ));
         assert!(matches!(
-            CardCommandApdu::with_data_and_expect(0, 0, 0, 0, LengthClass::Short, Vec::<u8>::new(), 1),
+            CardCommandApdu::with_data_and_expect(
+                0,
+                0,
+                0,
+                0,
+                LengthClass::Short,
+                VecOfU8::new_nonzeroizing(Vec::<u8>::new()),
+                1
+            ),
             Err(ApduError::InvalidLength(_))
         ));
         assert!(matches!(
-            CardCommandApdu::with_data_and_expect(0, 0, 0, 0, LengthClass::Short, vec![0u8; 1], 257),
+            CardCommandApdu::with_data_and_expect(
+                0,
+                0,
+                0,
+                0,
+                LengthClass::Short,
+                VecOfU8::new_nonzeroizing(vec![0u8; 1]),
+                257
+            ),
             Err(ApduError::InvalidLength(_))
         ));
         assert!(matches!(
@@ -812,17 +902,24 @@ mod tests {
             Err(ApduError::InvalidLength(_))
         ));
         assert!(matches!(
-            CardCommandApdu::new(0, 0, 0, 0, None::<Vec<u8>>, Some(EXPECTED_LENGTH_WILDCARD_EXTENDED + 1)),
+            CardCommandApdu::new(0, 0, 0, 0, None::<VecOfU8>, Some(EXPECTED_LENGTH_WILDCARD_EXTENDED + 1)),
             Err(ApduError::InvalidLength(_))
         ));
         assert!(matches!(
-            CardCommandApdu::new(0, 0, 0, 0, Some(vec![0u8; EXPECTED_LENGTH_WILDCARD_EXTENDED]), None::<usize>),
+            CardCommandApdu::new(
+                0,
+                0,
+                0,
+                0,
+                Some(VecOfU8::new_nonzeroizing(vec![0u8; EXPECTED_LENGTH_WILDCARD_EXTENDED])),
+                None::<usize>
+            ),
             Err(ApduError::InvalidLength(_))
         ));
     }
 
     #[test]
     fn test_response_apdu_requires_status() {
-        assert!(matches!(CardResponseApdu::new(&[0x90]), Err(ApduError::InvalidApdu(_))));
+        assert!(matches!(CardResponseApdu::new_nonzeroizing(&[0x90]), Err(ApduError::InvalidApdu(_))));
     }
 }

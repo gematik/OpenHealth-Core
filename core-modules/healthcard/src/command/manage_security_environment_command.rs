@@ -94,7 +94,7 @@ impl ManageSecurityEnvironmentCommand for HealthCardCommand {
         df_specific: bool,
         oid: &[u8],
     ) -> ManageSecurityEnvironmentResult<HealthCardCommand> {
-        let data = Asn1Encoder::write(|w| {
+        let data = Asn1Encoder::write_nonzeroizing(|w| {
             // '80 I2OS(OctetLength(OID), 1) || OID
             w.write_tagged_object(0u8.context_tag(), |inner| -> Result<(), Asn1EncoderError> {
                 inner.write_bytes(oid);
@@ -124,7 +124,7 @@ impl ManageSecurityEnvironmentCommand for HealthCardCommand {
         key: &K,
         df_specific: bool,
     ) -> ManageSecurityEnvironmentResult<HealthCardCommand> {
-        let data = Asn1Encoder::write(|w| {
+        let data = Asn1Encoder::write_nonzeroizing(|w| {
             // '8401 || keyRef'
             w.write_tagged_object(
                 UniversalTag::OctetString.number().context_tag(),

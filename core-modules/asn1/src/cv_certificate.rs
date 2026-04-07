@@ -299,12 +299,13 @@ fn parse_date_bytes(bytes: &[u8]) -> Result<CertificateDate, Asn1DecoderError> {
 mod tests {
     use super::*;
     use crate::encoder::Asn1Encoder;
+    use crate::maybe_zeroizing_vec::VecOfU8;
     use crate::tag::TagNumberExt;
 
     type EncResult = Result<(), crate::error::Asn1EncoderError>;
 
-    fn build_test_certificate(with_extensions: bool) -> Vec<u8> {
-        Asn1Encoder::write::<crate::error::Asn1EncoderError>(|w| {
+    fn build_test_certificate(with_extensions: bool) -> VecOfU8 {
+        Asn1Encoder::write_nonzeroizing::<crate::error::Asn1EncoderError>(|w| {
             w.write_tagged_object(TAG_CV_CERTIFICATE.application_tag().constructed(), |cert| -> EncResult {
                 cert.write_tagged_object(TAG_CERTIFICATE_BODY.application_tag().constructed(), |body| -> EncResult {
                     body.write_tagged_object(TAG_PROFILE_IDENTIFIER.application_tag(), |field| -> EncResult {
@@ -401,7 +402,7 @@ mod tests {
         chr: &[u8],
         effective: &[u8],
         expiration: &[u8],
-    ) -> Vec<u8> {
+    ) -> VecOfU8 {
         build_certificate_with_fields_and_signature(profile_bytes, car, chr, effective, expiration, &[0x00])
     }
 
@@ -412,8 +413,8 @@ mod tests {
         effective: &[u8],
         expiration: &[u8],
         signature: &[u8],
-    ) -> Vec<u8> {
-        Asn1Encoder::write::<crate::error::Asn1EncoderError>(|w| {
+    ) -> VecOfU8 {
+        Asn1Encoder::write_nonzeroizing::<crate::error::Asn1EncoderError>(|w| {
             w.write_tagged_object(TAG_CV_CERTIFICATE.application_tag().constructed(), |cert| -> EncResult {
                 cert.write_tagged_object(TAG_CERTIFICATE_BODY.application_tag().constructed(), |body| -> EncResult {
                     body.write_tagged_object(TAG_PROFILE_IDENTIFIER.application_tag(), |field| -> EncResult {
@@ -472,8 +473,8 @@ mod tests {
         .expect("encoding must succeed")
     }
 
-    fn build_certificate_with_chat_data(chat_data: &[u8]) -> Vec<u8> {
-        Asn1Encoder::write::<crate::error::Asn1EncoderError>(|w| {
+    fn build_certificate_with_chat_data(chat_data: &[u8]) -> VecOfU8 {
+        Asn1Encoder::write_nonzeroizing::<crate::error::Asn1EncoderError>(|w| {
             w.write_tagged_object(TAG_CV_CERTIFICATE.application_tag().constructed(), |cert| -> EncResult {
                 cert.write_tagged_object(TAG_CERTIFICATE_BODY.application_tag().constructed(), |body| -> EncResult {
                     body.write_tagged_object(TAG_PROFILE_IDENTIFIER.application_tag(), |field| -> EncResult {
@@ -532,8 +533,8 @@ mod tests {
         .expect("encoding must succeed")
     }
 
-    fn build_certificate_with_public_key(public_key: &[u8]) -> Vec<u8> {
-        Asn1Encoder::write::<crate::error::Asn1EncoderError>(|w| {
+    fn build_certificate_with_public_key(public_key: &[u8]) -> VecOfU8 {
+        Asn1Encoder::write_nonzeroizing::<crate::error::Asn1EncoderError>(|w| {
             w.write_tagged_object(TAG_CV_CERTIFICATE.application_tag().constructed(), |cert| -> EncResult {
                 cert.write_tagged_object(TAG_CERTIFICATE_BODY.application_tag().constructed(), |body| -> EncResult {
                     body.write_tagged_object(TAG_PROFILE_IDENTIFIER.application_tag(), |field| -> EncResult {

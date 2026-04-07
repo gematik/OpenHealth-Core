@@ -150,15 +150,15 @@ mod tests {
     #[test]
     fn write_object_identifier_rejects_invalid_components() {
         let missing = ObjectIdentifier(Vec::new());
-        let err = Asn1Encoder::write(|w| w.write_object_identifier(&missing)).unwrap_err();
+        let err = Asn1Encoder::write_nonzeroizing(|w| w.write_object_identifier(&missing)).unwrap_err();
         assert!(matches!(err, Asn1EncoderError::ObjectIdentifierMissingComponents));
 
         let invalid_first = ObjectIdentifier(vec![3, 1]);
-        let err = Asn1Encoder::write(|w| w.write_object_identifier(&invalid_first)).unwrap_err();
+        let err = Asn1Encoder::write_nonzeroizing(|w| w.write_object_identifier(&invalid_first)).unwrap_err();
         assert!(matches!(err, Asn1EncoderError::InvalidObjectIdentifierFirstComponent { .. }));
 
         let invalid_second = ObjectIdentifier(vec![1, 40]);
-        let err = Asn1Encoder::write(|w| w.write_object_identifier(&invalid_second)).unwrap_err();
+        let err = Asn1Encoder::write_nonzeroizing(|w| w.write_object_identifier(&invalid_second)).unwrap_err();
         assert!(matches!(err, Asn1EncoderError::InvalidObjectIdentifierSecondComponent { .. }));
     }
 }

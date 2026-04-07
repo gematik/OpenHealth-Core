@@ -68,10 +68,10 @@ where
     }
 
     fn transmit(&mut self, command: &CardCommandApdu) -> Result<CardResponseApdu, Self::Error> {
-        let tx = command.to_bytes();
+        let tx = command.to_vec();
         match self.inner.transmit(command) {
             Ok(response) => {
-                self.transcript.push_exchange(&tx, &response.to_bytes());
+                self.transcript.push_exchange(&tx, &response.to_vec());
                 Ok(response)
             }
             Err(err) => {
@@ -94,10 +94,10 @@ where
     }
 
     fn transmit(&mut self, command: &CardCommandApdu) -> Result<CardResponseApdu, Self::Error> {
-        let tx = command.to_bytes();
+        let tx = command.to_vec();
         match self.inner.transmit(command) {
             Ok(response) => {
-                self.transcript.push_exchange(&tx, &response.to_bytes());
+                self.transcript.push_exchange(&tx, &response.to_vec());
                 Ok(response)
             }
             Err(err) => {
@@ -134,12 +134,12 @@ impl CardChannel for ReplayChannel {
     }
 
     fn transmit(&mut self, command: &CardCommandApdu) -> Result<CardResponseApdu, Self::Error> {
-        let tx = command.to_bytes();
+        let tx = command.to_vec();
         let rx = self
             .session
             .transmit_bytes(&tx)
             .map_err(|err| ExchangeError::Transport { code: 0, message: err.to_string() })?;
-        CardResponseApdu::new(&rx).map_err(ExchangeError::from)
+        CardResponseApdu::new_nonzeroizing(&rx).map_err(ExchangeError::from)
     }
 }
 
@@ -192,12 +192,12 @@ impl CardChannel for PcscChannel {
     }
 
     fn transmit(&mut self, command: &CardCommandApdu) -> Result<CardResponseApdu, Self::Error> {
-        let tx = command.to_bytes();
+        let tx = command.to_vec();
         let response = self
             .card
             .transmit(&tx, &mut self.recv_buffer)
             .map_err(|err| ExchangeError::Transport { code: 0, message: format!("pcsc transmit failed: {err}") })?;
-        CardResponseApdu::new(response).map_err(ExchangeError::from)
+        CardResponseApdu::new_nonzeroizing(response).map_err(ExchangeError::from)
     }
 }
 
@@ -214,8 +214,10 @@ mod tests {
 
     impl MockSession {
         fn new(responses: Vec<Vec<u8>>) -> Self {
-            let responses =
-                responses.into_iter().map(|raw| CardResponseApdu::new(&raw).expect("valid response APDU")).collect();
+            let responses = responses
+                .into_iter()
+                .map(|raw| CardResponseApdu::new_nonzeroizing(&raw).expect("valid response APDU"))
+                .collect();
             Self { responses, supports_extended_length: false }
         }
     }
@@ -247,7 +249,7 @@ mod tests {
         let replay = Transcript::from_jsonl_str(&jsonl).unwrap();
         let mut channel = ReplayChannel::from_transcript(replay);
         let response = channel.transmit(&command).unwrap();
-        assert_eq!(response.to_bytes(), vec![0x90, 0x00]);
+        assert_eq!(response.to_vec().as_ref(), &vec![0x90, 0x00]);
     }
 
     #[test]
@@ -299,13 +301,13 @@ mod tests {
             let channel = PcscChannel::connect(&reader, true).expect("pcsc connect");
             let mut recorder = RecordingChannel::new(channel);
             let response = recorder.execute_command(&HealthCardCommand::select(false, false)).expect("select MF");
-            let response_bytes = response.apdu.to_bytes();
+            let response_bytes = response.apdu.to_vec();
 
             let transcript = recorder.into_transcript();
             let mut replay = ReplayChannel::from_transcript(transcript);
             let replay_response =
                 replay.execute_command(&HealthCardCommand::select(false, false)).expect("replay select MF");
-            assert_eq!(replay_response.apdu.to_bytes(), response_bytes);
+            assert_eq!(replay_response.apdu.to_vec(), response_bytes);
         }
 
         #[test]

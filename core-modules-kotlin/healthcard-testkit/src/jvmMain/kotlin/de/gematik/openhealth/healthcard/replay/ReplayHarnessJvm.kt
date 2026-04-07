@@ -40,7 +40,10 @@ actual fun establishReplaySecureChannel(transcript: Transcript): SecureChannelHa
 
         override fun transmit(command: CommandApdu): ResponseApdu {
             val responseBytes = try {
-                replayCore.transmit(command.toBytes())
+                val commandBytes = command.toVec()
+                commandBytes.use { commandBytes ->
+                    replayCore.transmit(commandBytes.cloneAsNonzeroizingVec())
+                }
             } catch (ex: RuntimeException) {
                 throw CardChannelException.Transport(code = 0u, reason = ex.message ?: "replay failed")
             }

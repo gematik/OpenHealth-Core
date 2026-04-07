@@ -271,7 +271,7 @@ mod tests {
 
     #[test]
     fn map_verify_response_unexpected_status() {
-        let apdu = crate::command::apdu::CardResponseApdu::new(&[0x69, 0x82]).unwrap();
+        let apdu = crate::command::apdu::CardResponseApdu::new_nonzeroizing(&[0x69, 0x82]).unwrap();
         let response = HealthCardResponse::new(HealthCardResponseStatus::SecurityStatusNotSatisfied, apdu);
         let err = map_verify_response(response).unwrap_err();
         assert!(matches!(err, ExchangeError::UnexpectedStatus { .. }));

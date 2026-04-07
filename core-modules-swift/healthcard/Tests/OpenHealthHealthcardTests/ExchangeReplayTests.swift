@@ -110,7 +110,7 @@ private final class ReplayCardChannel: CardChannel, @unchecked Sendable {
 
     func transmit(command: CommandApdu) throws -> ResponseApdu {
         do {
-            let responseBytes = try core.transmit(commandBytes: command.toBytes())
+            let responseBytes = try core.transmit(commandBytes: command.toVec().cloneAsNonzeroizingVec())
             return try ResponseApdu.fromBytes(bytes: responseBytes)
         } catch let apduError as ApduError {
             throw CardChannelError.Apdu(error: apduError)

@@ -37,3 +37,4 @@ uniffi = ["dep:uniffi"]
 regex = "1.12.2"
 thiserror = "2.0"
 uniffi = { version = "0.30.0", optional = true }
+zeroize = { version = "1.8.1", features = ["zeroize_derive"] }

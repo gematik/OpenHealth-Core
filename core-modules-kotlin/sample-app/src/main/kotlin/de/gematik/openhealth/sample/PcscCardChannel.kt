@@ -45,7 +45,10 @@ class PcscCardChannel(
 
     override fun transmit(command: CommandApdu): ResponseApdu {
         try {
-            val response = delegate.transmit(CommandAPDU(command.toBytes()))
+            val commandBytes = command.toVec()
+            val response = commandBytes.use { commandBytes ->
+                delegate.transmit(CommandAPDU(commandBytes.cloneAsNonzeroizingVec()))
+            }
             return try {
                 ResponseApdu.fromBytes(response.bytes)
             } catch (ex: ApduException) {
