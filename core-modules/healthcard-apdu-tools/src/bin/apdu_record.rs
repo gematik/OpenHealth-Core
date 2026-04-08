@@ -36,15 +36,15 @@ fn main() {
     #[cfg(feature = "trusted-channel")]
     use healthcard::exchange::channel::CardChannel;
     use healthcard::exchange::secure_channel::{establish_secure_channel_with, CardAccessNumber};
-    #[cfg(feature = "trusted-channel")]
-    use healthcard::exchange::trusted_channel::{
-        establish_trusted_channel, establish_trusted_channel_with_cvcs,
-        establish_trusted_channel_with_cvcs_and_options_detailed, load_cvc_chain_from_dir,
-        load_cvc_chain_from_dir_for_cars, TrustedChannelOptions, TrustedChannelResult,
-    };
     use healthcard::exchange::{
         change_pin, change_pin_with_puk, get_random, read_vsd, sign_challenge, unlock_egk_with_puk, verify_pin,
         CardPin, HealthCardVerifyPinResult,
+    };
+    #[cfg(feature = "trusted-channel")]
+    use healthcard_apdu_tools::trusted_channel::{
+        establish_trusted_channel, establish_trusted_channel_with_cvcs,
+        establish_trusted_channel_with_cvcs_and_options_detailed, load_cvc_chain_from_dir,
+        load_cvc_chain_from_dir_for_cars, TrustedChannelOptions, TrustedChannelResult,
     };
     use healthcard_apdu_tools::{PcscChannel, RecordingChannel};
 
@@ -356,7 +356,7 @@ fn main() {
     }
 
     #[cfg(feature = "trusted-channel")]
-    fn print_trusted_channel_info(result: &healthcard::exchange::trusted_channel::TrustedChannelResult) {
+    fn print_trusted_channel_info(result: &TrustedChannelResult) {
         println!("TrustedChannel: CVCs used");
         for (idx, info) in result.cvcs.iter().enumerate() {
             println!("  [{}] CAR={} CHR={}", idx, hex::encode_upper(&info.car), hex::encode_upper(&info.chr));

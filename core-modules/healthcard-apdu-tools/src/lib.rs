@@ -20,6 +20,8 @@
 // find details in the "Readme" file.
 
 pub mod apdu_tools;
+#[cfg(feature = "trusted-channel")]
+pub mod trusted_channel;
 
 #[cfg(feature = "pcsc")]
 pub use apdu_tools::PcscChannel;

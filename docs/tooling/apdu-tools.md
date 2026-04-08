@@ -34,7 +34,7 @@ Source locations:
 ## Feature flag
 
 The PC/SC transport is gated behind the `pcsc` feature on the `healthcard-apdu-tools` crate. The contact-based
-trusted channel flow additionally requires the `trusted-channel` feature (propagates to `healthcard`).
+trusted channel flow additionally requires the `trusted-channel` feature on the tooling crate itself.
 
 - Build/run tools: add `--features pcsc` to your `cargo` command (`--features "pcsc trusted-channel"` when using
   `--trusted-channel`).

@@ -23,17 +23,16 @@ use asn1::cv_certificate::CVCertificate;
 use asn1::decoder::Asn1Decoder;
 use asn1::extraction::extract_context_values;
 use asn1::tag::TagNumberExt;
-
-use crate::command::general_authenticate_command::GeneralAuthenticateCommand;
-use crate::command::health_card_command::HealthCardCommand;
-use crate::command::list_public_key_command::ListPublicKeyCommand;
-use crate::command::manage_security_environment_command::ManageSecurityEnvironmentCommand;
-use crate::command::pso_compute_digital_signature_command::PsoComputeDigitalSignatureCommand;
-use crate::command::select_command::SelectCommand;
-use crate::exchange::certificate::{retrieve_certificate_from, CertificateFile};
-use crate::exchange::channel::{CardChannel, CardChannelExt};
-use crate::exchange::error::ExchangeError;
 use crypto::exchange::elc::generate_elc_ephemeral_public_key_from_cvc;
+use healthcard::command::general_authenticate_command::GeneralAuthenticateCommand;
+use healthcard::command::health_card_command::HealthCardCommand;
+use healthcard::command::list_public_key_command::ListPublicKeyCommand;
+use healthcard::command::manage_security_environment_command::ManageSecurityEnvironmentCommand;
+use healthcard::command::pso_compute_digital_signature_command::PsoComputeDigitalSignatureCommand;
+use healthcard::command::select_command::SelectCommand;
+use healthcard::exchange::certificate::{retrieve_certificate_from, CertificateFile};
+use healthcard::exchange::channel::{CardChannel, CardChannelExt};
+use healthcard::exchange::ExchangeError;
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -83,13 +82,6 @@ pub struct TrustedChannelOptions {
 }
 
 /// Establish a trusted channel using the CVC read from the card (end-entity).
-///
-/// This runs:
-/// 1) Read CVC from MF/EF.C.eGK.AUT_CVC.E256
-/// 2) MSE (CAR -> key reference)
-/// 3) PSO (CVC value field)
-/// 4) GENERAL AUTHENTICATE step 1
-/// 5) GENERAL AUTHENTICATE step 2 (with freshly generated ephemeral key)
 pub fn establish_trusted_channel<S>(session: &mut S) -> Result<TrustedChannelResult, ExchangeError>
 where
     S: CardChannel + CardChannelExt,
@@ -99,9 +91,6 @@ where
 }
 
 /// Establish a trusted channel using the provided CV certificates.
-///
-/// Certificates should be ordered from Sub-CA to End-Entity. The last certificate is used
-/// for the mutual authentication key reference (CHR).
 pub fn establish_trusted_channel_with_cvcs<S>(
     session: &mut S,
     cvcs: &[Vec<u8>],
@@ -365,8 +354,6 @@ where
 }
 
 /// Build a CVC chain from a directory by following CHR/CAR references.
-///
-/// Returns certificates ordered from issuer to end-entity (last element).
 pub fn load_cvc_chain_from_dir(end_entity: &[u8], dir: &Path) -> Result<Vec<Vec<u8>>, ExchangeError> {
     let end_entity_cert = CVCertificate::parse(end_entity)?;
     let mut map: HashMap<Vec<u8>, Vec<u8>> = HashMap::new();
@@ -400,9 +387,6 @@ pub fn load_cvc_chain_from_dir(end_entity: &[u8], dir: &Path) -> Result<Vec<Vec<
 }
 
 /// Build a CVC chain from a directory based on available CAR references.
-///
-/// The first certificate is chosen by matching its CAR to one of the provided references.
-/// The chain is then extended by following CAR == previous CHR.
 pub fn load_cvc_chain_from_dir_for_cars(available_cars: &[Vec<u8>], dir: &Path) -> Result<Vec<Vec<u8>>, ExchangeError> {
     if available_cars.is_empty() {
         return Err(ExchangeError::invalid_argument("no CAR references provided"));
@@ -446,10 +430,6 @@ pub fn load_cvc_chain_from_dir_for_cars(available_cars: &[Vec<u8>], dir: &Path) 
 }
 
 /// Establish a trusted channel using a directory of CVCs and the card's public key identifiers.
-///
-/// The card is queried via LIST PUBLIC KEY (gemSpec_COS_3.14.0#14.9.7) to obtain
-/// available CARs and a key reference list.
-/// The CVC chain is then resolved from `cvc_dir`, and GA step 1 uses the key reference from the card.
 pub fn establish_trusted_channel_with_cvc_dir<S>(
     session: &mut S,
     cvc_dir: &Path,
