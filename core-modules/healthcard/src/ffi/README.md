@@ -29,6 +29,7 @@ to:
 - send/receive raw APDUs,
 - run high-level exchange operations (PIN verify, certificate retrieval, etc.),
 - establish and use a secure channel (PACE).
+- build and execute command APDUs via command builders.
 
 ## Feature gate
 
@@ -54,6 +55,14 @@ Defined in `channel.rs`:
 - `ResponseApdu`: object exposing `sw()`, `data()`, and `to_vec()`.
   Construct via `ResponseApdu::from_bytes(...)` or `ResponseApdu::from_parts(sw, data)`.
 - `CardChannelError`: error returned by the foreign channel implementation (`Transport` vs `Apdu`).
+
+### Command builders
+
+Defined in `command.rs`:
+
+- `HealthCardCommand`: constructors for the `healthcard::command` builders (SELECT, READ BINARY, MSE, GENERAL AUTHENTICATE, etc.).
+- `HealthCardCommand::to_apdu(...)`: encodes to a `CommandApdu`.
+- `HealthCardCommand::execute(session)`: sends the command and returns a `HealthCardResponse`.
 
 ### Stateless exchange functions
 

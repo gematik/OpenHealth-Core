@@ -26,7 +26,7 @@
 
 # Usage:
 # - module-driven:      `just kotlin-bindings-generate <module> <platform> <arch> <library_file> [profile]`
-[arg('module', pattern='healthcard|asn1')]
+[arg('module', pattern='healthcard|asn1|crypto')]
 [arg('platform', pattern='linux|windows|darwin')]
 [arg('arch', pattern='x86_64|aarch64')]
 [arg('library_file')]
@@ -45,10 +45,47 @@ kotlin-bindings-generate module platform arch library_file profile="release":
       healthcard)
         rust_crate_dir="{{ repo_root }}/core-modules/healthcard"
         kotlin_module_dir="{{ repo_root }}/core-modules-kotlin/healthcard"
+        case "${platform}" in
+          darwin)
+            staged_library_file="libopenhealth_healthcard.dylib"
+            ;;
+          linux)
+            staged_library_file="libopenhealth_healthcard.so"
+            ;;
+          windows)
+            staged_library_file="openhealth_healthcard.dll"
+            ;;
+        esac
         ;;
       asn1)
         rust_crate_dir="{{ repo_root }}/core-modules/asn1"
         kotlin_module_dir="{{ repo_root }}/core-modules-kotlin/asn1"
+        case "${platform}" in
+          darwin)
+            staged_library_file="libopenhealth_asn1.dylib"
+            ;;
+          linux)
+            staged_library_file="libopenhealth_asn1.so"
+            ;;
+          windows)
+            staged_library_file="openhealth_asn1.dll"
+            ;;
+        esac
+        ;;
+      crypto)
+        rust_crate_dir="{{ repo_root }}/core-modules/crypto"
+        kotlin_module_dir="{{ repo_root }}/core-modules-kotlin/crypto"
+        case "${platform}" in
+          darwin)
+            staged_library_file="libopenhealth_crypto.dylib"
+            ;;
+          linux)
+            staged_library_file="libopenhealth_crypto.so"
+            ;;
+          windows)
+            staged_library_file="openhealth_crypto.dll"
+            ;;
+        esac
         ;;
       *)
         echo "Unknown module: ${module}" >&2
@@ -62,13 +99,38 @@ kotlin-bindings-generate module platform arch library_file profile="release":
 
     OUT_ROOT="${OUT_ROOT:-${out_root_default}}" \
     CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-${cargo_target_dir_default}}" \
-      just uniffi-bindings-generate-crate "${platform}" "${arch}" kotlin "${library_file}" "${rust_crate_dir}" "${rust_manifest_path}" "${profile}"
+      just uniffi-bindings-generate-crate "${platform}" "${arch}" kotlin "${library_file}" "${staged_library_file}" "${rust_crate_dir}" "${rust_manifest_path}" "${profile}"
+
+# Generate Kotlin bindings for the `crypto` crate.
+[arg('platform', pattern='linux|windows|darwin')]
+[arg('arch', pattern='x86_64|aarch64')]
+[arg('library_file')]
+[arg('profile', pattern='release|debug')]
+kotlin-bindings-generate-crypto platform arch library_file profile="release":
+    #!/usr/bin/env bash
+    set -euxo pipefail
+
+    case "{{ platform }}" in
+      darwin)
+        staged_library_file="libopenhealth_crypto.dylib"
+        ;;
+      linux)
+        staged_library_file="libopenhealth_crypto.so"
+        ;;
+      windows)
+        staged_library_file="openhealth_crypto.dll"
+        ;;
+    esac
+
+    OUT_ROOT="{{ kotlin_crypto_out_root }}" \
+    CARGO_TARGET_DIR="{{ kotlin_crypto_cargo_target_dir }}" \
+      just uniffi-bindings-generate-crate "{{ platform }}" "{{ arch }}" kotlin "{{ library_file }}" "${staged_library_file}" "{{ crypto_rust_crate }}" "{{ crypto_rust_manifest }}" "{{ profile }}"
 
 # Required env:
 # - `ANDROID_NDK_HOME` or `ANDROID_NDK_ROOT`
 #
 # Build Android Rust libraries via `cargo ndk` and stage them as `android-jni/`.
-[arg('module', pattern='healthcard|asn1')]
+[arg('module', pattern='healthcard|asn1|crypto')]
 [arg('profile', pattern='release|debug')]
 kotlin-bindings-generate-android module="healthcard" profile="release":
     #!/usr/bin/env bash
@@ -85,10 +147,20 @@ kotlin-bindings-generate-android module="healthcard" profile="release":
       healthcard)
         rust_manifest_path="{{ repo_root }}/core-modules/healthcard/Cargo.toml"
         kotlin_module_dir="{{ repo_root }}/core-modules-kotlin/healthcard"
+        android_built_library_file="libhealthcard.so"
+        android_staged_library_file="libopenhealth_healthcard.so"
         ;;
       asn1)
         rust_manifest_path="{{ repo_root }}/core-modules/asn1/Cargo.toml"
         kotlin_module_dir="{{ repo_root }}/core-modules-kotlin/asn1"
+        android_built_library_file="libasn1.so"
+        android_staged_library_file="libopenhealth_asn1.so"
+        ;;
+      crypto)
+        rust_manifest_path="{{ repo_root }}/core-modules/crypto/Cargo.toml"
+        kotlin_module_dir="{{ repo_root }}/core-modules-kotlin/crypto"
+        android_built_library_file="libcrypto.so"
+        android_staged_library_file="libopenhealth_crypto.so"
         ;;
       *)
         echo "Unknown module: ${module}" >&2
@@ -128,6 +200,34 @@ kotlin-bindings-generate-android module="healthcard" profile="release":
     rm -rf "${android_jni_root}"
     cp -r "${cargo_target_dir}/android" "${android_jni_root}"
 
+    if [ "${android_staged_library_file}" != "${android_built_library_file}" ]; then
+        find "${android_jni_root}" -type f -name "${android_built_library_file}" | while read -r artifact; do
+            mv "${artifact}" "$(dirname "${artifact}")/${android_staged_library_file}"
+        done
+    fi
+
+# Build Android Rust libraries for the `crypto` crate and stage them as `android-jni/`.
+kotlin-bindings-generate-android-crypto:
+    #!/usr/bin/env bash
+    set -euxo pipefail
+
+    ANDROID_NDK_HOME="${ANDROID_NDK_HOME:-${ANDROID_NDK_ROOT:-}}"
+    : "${ANDROID_NDK_HOME:?ANDROID_NDK_HOME or ANDROID_NDK_ROOT must be set}"
+    export ANDROID_NDK_HOME
+
+    cargo ndk \
+      -t arm64-v8a -t x86_64 \
+      -o "{{ kotlin_crypto_cargo_target_dir }}/android" \
+      --manifest-path "{{ crypto_rust_manifest }}" \
+      -- build --locked --release
+
+    rm -rf "{{ android_crypto_jni_root }}"
+    cp -r "{{ kotlin_crypto_cargo_target_dir }}/android" "{{ android_crypto_jni_root }}"
+
+    find "{{ android_crypto_jni_root }}" -type f -name 'libcrypto.so' | while read -r artifact; do
+        mv "${artifact}" "$(dirname "${artifact}")/libopenhealth_crypto.so"
+    done
+
 # Useful when you generated bindings for multiple `platform/arch` pairs into separate directories and want one combined
 # layout containing:
 # - `resources/` (merged)
@@ -165,7 +265,7 @@ kotlin-bindings-assemble input_root output_root:
     done
 
 # Publish the Kotlin `healthcard` module to the local Maven repository.
-[arg('module', pattern='healthcard|asn1')]
+[arg('module', pattern='healthcard|asn1|crypto')]
 kotlin-publish-local module="healthcard":
     cd "{{ repo_root }}/core-modules-kotlin" \
       && ./gradlew --no-daemon :{{ module }}:publishToMavenLocal

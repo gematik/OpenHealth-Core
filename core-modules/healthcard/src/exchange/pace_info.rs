@@ -109,10 +109,7 @@ pub fn parse_pace_info(asn1: &[u8]) -> Result<PaceInfo, PaceInfoError> {
             // SEQUENCE (constructed)
             reader.advance_with_tag(UniversalTag::Sequence.constructed(), |reader| -> Result<PaceInfo, PaceInfoError> {
                 // 1) protocol identifier (OID)
-                let protocol_id = {
-                    // use the free helper to read an OBJECT IDENTIFIER
-                    reader.read_object_identifier()?
-                };
+                let protocol_id = reader.read_object_identifier()?;
 
                 // 2) ignore first INTEGER
                 let _ = reader.read_int_tagged()?;

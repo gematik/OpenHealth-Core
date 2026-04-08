@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2025 gematik GmbH
+// SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -24,6 +24,7 @@
 /// ISO/IEC7816-4
 /// gemSpec_COS_3.14.0#14.8 PSO Algorithm
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 pub enum PsoAlgorithm {
     /// Algorithm for ECDSA sign/verify operations
     SignVerifyEcdsa,
