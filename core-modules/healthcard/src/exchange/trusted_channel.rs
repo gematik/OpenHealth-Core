@@ -20,7 +20,8 @@
 // find details in the "Readme" file.
 
 use asn1::cv_certificate::CVCertificate;
-use asn1::decoder::{extract_context_values, Asn1Decoder};
+use asn1::decoder::Asn1Decoder;
+use asn1::extraction::extract_context_values;
 use asn1::tag::TagNumberExt;
 
 use crate::command::general_authenticate_command::GeneralAuthenticateCommand;

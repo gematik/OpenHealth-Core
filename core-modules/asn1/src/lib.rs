@@ -23,6 +23,7 @@ pub mod date_time;
 pub mod decoder;
 pub mod encoder;
 pub mod error;
+pub mod extraction;
 #[cfg(feature = "uniffi")]
 pub mod ffi;
 pub mod maybe_zeroizing_vec;

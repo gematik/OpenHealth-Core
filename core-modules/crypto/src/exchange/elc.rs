@@ -22,7 +22,7 @@
 use crate::ec::ec_key::{EcCurve, EcKeyPairSpec};
 use crate::error::CryptoResult;
 use asn1::cv_certificate::CVCertificate;
-use asn1::decoder::extract_context_values;
+use asn1::extraction::extract_context_values;
 
 /// Generates the host-side ephemeral public key for ELC GA step 2, derived from the curve in the CVC.
 pub fn generate_elc_ephemeral_public_key_from_cvc(cvc: &[u8]) -> CryptoResult<Vec<u8>> {
