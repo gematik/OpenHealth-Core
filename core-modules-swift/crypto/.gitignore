@@ -25,3 +25,4 @@
 /Sources/OpenHealthCrypto/OpenHealthCrypto.swift
 /build/
 /.swiftpm/
+/.cache/

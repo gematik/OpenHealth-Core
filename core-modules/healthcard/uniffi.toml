@@ -21,7 +21,7 @@
 
 [bindings.kotlin]
 package_name = "de.gematik.openhealth.healthcard"
-cdylib_name = "healthcard"
+cdylib_name = "openhealth_healthcard"
 
 [bindings.swift]
 module_name = "OpenHealthHealthcard"
