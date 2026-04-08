@@ -33,13 +33,10 @@ Source locations:
 
 ## Feature flag
 
-The PC/SC transport is gated behind the `pcsc` feature on the `healthcard-apdu-tools` crate. The contact-based
-trusted channel flow additionally requires the `trusted-channel` feature on the tooling crate itself.
+The PC/SC transport is gated behind the `pcsc` feature on the `healthcard-apdu-tools` crate.
 
-- Build/run tools: add `--features pcsc` to your `cargo` command (`--features "pcsc trusted-channel"` when using
-  `--trusted-channel`).
-- Use in another crate: `healthcard-apdu-tools = { path = "../core-modules/healthcard-apdu-tools", features = ["pcsc"] }`
-  (add `trusted-channel` if you need the contact-based flow).
+- Build/run tools: add `--features pcsc` to your `cargo` command.
+- Use in another crate: `healthcard-apdu-tools = { path = "../core-modules/healthcard-apdu-tools", features = ["pcsc"] }`.
 
 ## `apdu_record` (PC/SC recorder)
 
@@ -75,10 +72,9 @@ cargo run -p healthcard-apdu-tools --bin apdu_record --features pcsc -- \
 ### Record a trusted channel transcript (contact-based)
 
 The trusted channel flow uses contact-based mutual ELC authentication and does **not** require a CAN.
-Enable it with `--features "pcsc trusted-channel"` when running `apdu_record`.
 
 ```sh
-cargo run -p healthcard-apdu-tools --bin apdu_record --features "pcsc trusted-channel" -- \
+cargo run -p healthcard-apdu-tools --bin apdu_record --features pcsc -- \
   --reader "<PCSC reader name>" \
   --out ./trusted-channel.jsonl \
   --trusted-channel \

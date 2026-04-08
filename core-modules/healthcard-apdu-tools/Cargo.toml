@@ -28,7 +28,6 @@ license = "Apache-2.0"
 [features]
 default = []
 pcsc = ["dep:pcsc"]
-trusted-channel = []
 
 [dependencies]
 asn1 = { path = "../asn1" }
