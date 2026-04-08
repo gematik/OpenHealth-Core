@@ -24,27 +24,36 @@ find details in the "Readme" file.
 # Crypto Kotlin bindings (KMP)
 
 - This module is a Kotlin Multiplatform project with JVM and Android targets.
-- UniFFI-generated Kotlin sources and native libraries are consumed from `build/generated/uniffi`.
-- Gradle does not generate Rust bindings itself; use the repository `just` commands first.
+- UniFFI bindings and native libraries are expected to be provided by the shared pipeline and placed under:
+  - Kotlin/Java sources: `${OUT_ROOT}/kotlin`
+  - Native artifacts and scaffolding: `${OUT_ROOT}/resources/<platform-id>/`
+  - Android JNI libs (optional): `${OUT_ROOT}/android-jni/`
+- Gradle does not build Rust or run UniFFI; it consumes the pre-generated artifacts from the locations above.
 
 ## Using `just` for bindings generation
 
-- Generate Kotlin/JVM bindings for a platform/arch:
+From the repository root:
 
 ```bash
-just kotlin-bindings-generate-crypto darwin aarch64 libcrypto.dylib
+# platform: linux | windows | darwin
+# arch: x86_64 | aarch64
+just kotlin-bindings-generate crypto darwin aarch64 libcrypto.dylib
 ```
 
-- Override output paths and cargo target dir:
+Pick a different profile (default is `release`):
 
 ```bash
-OUT_ROOT=core-modules-kotlin/crypto/build/generated/uniffi \
-CARGO_TARGET_DIR=core-modules-kotlin/crypto/build/cargo \
-just kotlin-bindings-generate-crypto linux x86_64 libcrypto.so
+just kotlin-bindings-generate crypto darwin aarch64 libcrypto.dylib debug
 ```
 
-- Publish the Kotlin module to `mavenLocal`:
+Android native libraries (Linux only):
 
 ```bash
-just kotlin-publish-local-crypto
+just kotlin-bindings-generate-android crypto
+```
+
+Android debug JNI libs:
+
+```bash
+just kotlin-bindings-generate-android crypto debug
 ```

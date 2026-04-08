@@ -1,3 +1,4 @@
+// swift-tools-version: 5.9
 // SPDX-FileCopyrightText: Copyright 2026 gematik GmbH
 //
 // SPDX-License-Identifier: Apache-2.0
@@ -19,29 +20,31 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-plugins {
-    id("de.gematik.openhealth.uniffi-kmp-library")
-}
+import PackageDescription
 
-openHealthUniffiKmp {
-    artifactId.set("crypto")
-    androidNamespace.set("de.gematik.openhealth.crypto")
-    pomName.set("OpenHealth Crypto")
-    pomDescription.set("OpenHealth cryptography utilities (KMP) backed by Rust + UniFFI")
-    inceptionYear.set("2026")
-}
-
-kotlin {
-    sourceSets {
-        val commonTest by getting {
-            dependencies {
-                implementation(kotlin("test"))
-            }
-        }
-        val jvmTest by getting {
-            dependencies {
-                implementation(kotlin("test-junit5"))
-            }
-        }
-    }
-}
+let package = Package(
+    name: "OpenHealthCrypto",
+    platforms: [
+        .iOS(.v13),
+        .macOS(.v11),
+    ],
+    products: [
+        .library(name: "OpenHealthCrypto", targets: ["OpenHealthCrypto"]),
+    ],
+    targets: [
+        .binaryTarget(
+            name: "OpenHealthCryptoFFI",
+            path: "OpenHealthCryptoFFI.xcframework"
+        ),
+        .target(
+            name: "OpenHealthCrypto",
+            dependencies: ["OpenHealthCryptoFFI"],
+            path: "Sources/OpenHealthCrypto"
+        ),
+        .testTarget(
+            name: "OpenHealthCryptoTests",
+            dependencies: ["OpenHealthCrypto"],
+            path: "Tests/OpenHealthCryptoTests"
+        ),
+    ]
+)

@@ -19,10 +19,9 @@
 # For additional notes and disclaimer from gematik and in case of changes by gematik,
 # find details in the "Readme" file.
 
-[bindings.kotlin]
-package_name = "de.gematik.openhealth.crypto"
-cdylib_name = "crypto"
-
-[bindings.swift]
-module_name = "OpenHealthCrypto"
-ffi_module_name = "OpenHealthCryptoFFI"
+/OpenHealthCryptoFFI.xcframework
+# Generated UniFFI Swift wrapper; intentionally ignored during development.
+# Release workflow force-adds this file into the tagged release commit.
+/Sources/OpenHealthCrypto/OpenHealthCrypto.swift
+/build/
+/.swiftpm/

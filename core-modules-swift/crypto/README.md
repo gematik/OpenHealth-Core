@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
+SPDX-FileCopyrightText: Copyright 2026 gematik GmbH
 
 SPDX-License-Identifier: Apache-2.0
 
@@ -21,18 +21,24 @@ For additional notes and disclaimer from gematik and in case of changes by gemat
 find details in the "Readme" file.
 -->
 
-# Swift bindings
+# Crypto Swift bindings
 
-This directory contains Swift/iOS interoperability artifacts built on top of Rust core modules via UniFFI.
+This module provides Swift bindings for the Rust `crypto` crate via UniFFI, packaged as an Apple `xcframework`.
 
-- `healthcard/`: Swift Package scaffold + scripts to generate UniFFI Swift bindings and build an Apple `xcframework`.
-- `asn1/`: Swift Package artifacts for the Rust `asn1` crate via UniFFI.
-- `crypto/`: Swift Package scaffold for the Rust `crypto` crate via UniFFI.
+## Build (local)
 
 From the repository root:
 
 ```bash
-just swift-xcframework healthcard
-just swift-xcframework asn1
 just swift-xcframework crypto
 ```
+
+This generates:
+
+- `core-modules-swift/crypto/OpenHealthCryptoFFI.xcframework` (Rust static library + UniFFI C module)
+- `core-modules-swift/crypto/Sources/OpenHealthCrypto/OpenHealthCrypto.swift` (UniFFI Swift wrapper)
+
+## Notes
+
+- The generated Swift wrapper and `xcframework` are ignored during development and are produced by the shared release/build pipeline.
+- Building for iOS requires the Rust Apple targets to be installed (for example `aarch64-apple-ios`, `aarch64-apple-ios-sim`, and `x86_64-apple-ios`).

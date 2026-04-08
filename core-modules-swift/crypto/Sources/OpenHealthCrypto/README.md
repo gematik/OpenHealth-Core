@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
+SPDX-FileCopyrightText: Copyright 2026 gematik GmbH
 
 SPDX-License-Identifier: Apache-2.0
 
@@ -21,18 +21,4 @@ For additional notes and disclaimer from gematik and in case of changes by gemat
 find details in the "Readme" file.
 -->
 
-# Swift bindings
-
-This directory contains Swift/iOS interoperability artifacts built on top of Rust core modules via UniFFI.
-
-- `healthcard/`: Swift Package scaffold + scripts to generate UniFFI Swift bindings and build an Apple `xcframework`.
-- `asn1/`: Swift Package artifacts for the Rust `asn1` crate via UniFFI.
-- `crypto/`: Swift Package scaffold for the Rust `crypto` crate via UniFFI.
-
-From the repository root:
-
-```bash
-just swift-xcframework healthcard
-just swift-xcframework asn1
-just swift-xcframework crypto
-```
+Generated UniFFI Swift sources are written here by `just swift-xcframework crypto`.

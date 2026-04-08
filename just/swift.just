@@ -34,7 +34,7 @@ swift-bindings-generate *ARGS:
     set -- {{ ARGS }}
 
     module="healthcard"
-    if [ $# -gt 0 ] && { [ "$1" = "healthcard" ] || [ "$1" = "asn1" ]; }; then
+    if [ $# -gt 0 ] && { [ "$1" = "healthcard" ] || [ "$1" = "asn1" ] || [ "$1" = "crypto" ]; }; then
         module="$1"
         shift
     fi
@@ -56,6 +56,13 @@ swift-bindings-generate *ARGS:
         swift_module_name="OpenHealthAsn1"
         swift_ffi_module_name="OpenHealthAsn1FFI"
         library_file="${2:-libasn1.a}"
+        ;;
+      crypto)
+        rust_crate_dir="{{ repo_root }}/core-modules/crypto"
+        swift_module_dir="{{ repo_root }}/core-modules-swift/crypto"
+        swift_module_name="OpenHealthCrypto"
+        swift_ffi_module_name="OpenHealthCryptoFFI"
+        library_file="${2:-libcrypto.a}"
         ;;
       *)
         echo "Unknown module: ${module}" >&2
@@ -93,6 +100,10 @@ swift-build-apple module="healthcard":
       asn1)
         rust_manifest_path="{{ repo_root }}/core-modules/asn1/Cargo.toml"
         swift_module_dir="{{ repo_root }}/core-modules-swift/asn1"
+        ;;
+      crypto)
+        rust_manifest_path="{{ repo_root }}/core-modules/crypto/Cargo.toml"
+        swift_module_dir="{{ repo_root }}/core-modules-swift/crypto"
         ;;
       *)
         echo "Unknown module: ${module}" >&2
@@ -138,6 +149,12 @@ swift-xcframework module="healthcard":
         swift_module_name="OpenHealthAsn1"
         swift_ffi_module_name="OpenHealthAsn1FFI"
         library_file="libasn1.a"
+        ;;
+      crypto)
+        swift_module_dir="{{ repo_root }}/core-modules-swift/crypto"
+        swift_module_name="OpenHealthCrypto"
+        swift_ffi_module_name="OpenHealthCryptoFFI"
+        library_file="libcrypto.a"
         ;;
       *)
         echo "Unknown module: ${module}" >&2
