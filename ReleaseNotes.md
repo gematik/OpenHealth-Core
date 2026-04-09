@@ -29,11 +29,18 @@ This document summarizes the publicly released versions of OpenHealth Core.
 
 ### 0.2.0 (Upcoming)
 
+This release captures the changes since `0.2.0-alpha1`.
+
+No changes documented yet.
+
+### 0.2.0-alpha1
+
 This release captures the changes since `0.1.1-alpha1`.
 
 Added
 - ASN.1 UniFFI bindings with dedicated Kotlin and Swift modules, including generated host/mobile packaging for `asn1` alongside `healthcard` ([#66](https://github.com/gematik/OpenHealth-Core/pull/66)).
 - Additional FFI surface for healthcard exchange-layer operations such as certificate retrieval, random exchange, PACE-related flows, and PIN handling ([#47](https://github.com/gematik/OpenHealth-Core/pull/47)).
+- Additional APDU command builders, ELC helper flows, and matching JVM facades for healthcard operations ([#62](https://github.com/gematik/OpenHealth-Core/pull/62)).
 - Zeroizing support for ASN.1 encoder buffers via the new `VecOfU8`/`ZeroizingOption` path ([#55](https://github.com/gematik/OpenHealth-Core/pull/55)).
 - CodeQL analysis workflow and expanded Rust coverage quality gates ([#53](https://github.com/gematik/OpenHealth-Core/pull/53), [#57](https://github.com/gematik/OpenHealth-Core/pull/57), [#58](https://github.com/gematik/OpenHealth-Core/pull/58)).
 
