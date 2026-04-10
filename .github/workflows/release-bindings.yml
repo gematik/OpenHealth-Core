@@ -219,7 +219,7 @@ jobs:
           if-no-files-found: warn
 
       - name: Upload Kotlin resources (asn1)
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: kotlin-asn1-bindings-${{ matrix.display_name }}
           path: |
@@ -305,7 +305,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload healthcard XCFramework Zip
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: swift-healthcard-xcframework
           path: core-modules-swift/healthcard/OpenHealthHealthcardFFI.xcframework.zip
@@ -326,20 +326,20 @@ jobs:
           swift package compute-checksum OpenHealthAsn1FFI.xcframework.zip > OpenHealthAsn1FFI.xcframework.sha256
 
       - name: Upload Swift asn1 wrapper
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: swift-asn1-wrapper
           path: OpenHealthAsn1.swift
           if-no-files-found: error
 
       - name: Upload asn1 XCFramework Zip
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: swift-asn1-xcframework
           path: core-modules-swift/asn1/OpenHealthAsn1FFI.xcframework.zip
 
       - name: Upload asn1 XCFramework checksum
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: swift-asn1-xcframework-checksum
           path: core-modules-swift/asn1/OpenHealthAsn1FFI.xcframework.sha256
@@ -375,7 +375,7 @@ jobs:
           path: assembly/input/healthcard
 
       - name: Download asn1 platform artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           pattern: "kotlin-asn1-bindings-*"
           path: assembly/input/asn1
@@ -403,7 +403,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload Kotlin bindings bundle (asn1)
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: kotlin-asn1-bindings-bundle
           path: |
@@ -480,19 +480,19 @@ jobs:
           path: artifacts/swift-checksum/healthcard
 
       - name: Download Swift asn1 Artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: swift-asn1-xcframework
           path: artifacts/swift/asn1
 
       - name: Download Swift asn1 wrapper
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: swift-asn1-wrapper
           path: artifacts/swift-wrapper/asn1
 
       - name: Download Swift asn1 checksum
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: swift-asn1-xcframework-checksum
           path: artifacts/swift-checksum/asn1
