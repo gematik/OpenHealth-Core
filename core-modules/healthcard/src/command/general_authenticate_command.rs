@@ -296,8 +296,8 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
 mod tests {
     use super::*;
     use crate::command::apdu::EXPECTED_LENGTH_WILDCARD_SHORT;
-    use openhealth_asn1::tag::{Asn1Class, Asn1Form};
     use openhealth_asn1::maybe_zeroizing_vec::ZeroizingOption;
+    use openhealth_asn1::tag::{Asn1Class, Asn1Form};
 
     #[test]
     fn test_general_authenticate_without_chaining() {

@@ -104,17 +104,19 @@ pub fn brainpool_p256r1_ecdh(private_key: Vec<u8>, peer_public_key: Vec<u8>) -> 
     }
 
     let private_key = EcPrivateKey::from_bytes(EcCurve::BrainpoolP256r1, private_key);
-    let peer_public_key = EcPublicKey::from_uncompressed(EcCurve::BrainpoolP256r1, peer_public_key)
-        .map_err(CryptoError::from)?;
-    let shared_secret = Ecdh::new(private_key).and_then(|ecdh| ecdh.derive(peer_public_key)).map_err(CryptoError::from)?;
+    let peer_public_key =
+        EcPublicKey::from_uncompressed(EcCurve::BrainpoolP256r1, peer_public_key).map_err(CryptoError::from)?;
+    let shared_secret =
+        Ecdh::new(private_key).and_then(|ecdh| ecdh.derive(peer_public_key)).map_err(CryptoError::from)?;
     Ok(shared_secret.as_ref().to_vec())
 }
 
 /// Computes AES-CMAC and returns the requested number of leading tag bytes.
 #[uniffi::export]
 pub fn aes_cmac(key: Vec<u8>, message: Vec<u8>, output_length: i32) -> Result<Vec<u8>, CryptoError> {
-    let mut mac =
-        MacSpec::Cmac { algorithm: CmacAlgorithm::Aes }.create(SecretKey::new_secret(key)).map_err(CryptoError::from)?;
+    let mut mac = MacSpec::Cmac { algorithm: CmacAlgorithm::Aes }
+        .create(SecretKey::new_secret(key))
+        .map_err(CryptoError::from)?;
     mac.update(&message).map_err(CryptoError::from)?;
     let tag = mac.finalize().map_err(CryptoError::from)?;
     let output_length = usize::try_from(output_length).map_err(|_| CryptoError::InvalidArgument {
