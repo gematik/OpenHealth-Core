@@ -48,7 +48,7 @@ swift-bindings-generate *ARGS:
         swift_module_dir="{{ repo_root }}/core-modules-swift/healthcard"
         swift_module_name="OpenHealthHealthcard"
         swift_ffi_module_name="OpenHealthHealthcardFFI"
-        built_library_file="${2:-libhealthcard.a}"
+        built_library_file="${2:-libopenhealth_healthcard.a}"
         staged_library_file="libopenhealth_healthcard.a"
         ;;
       asn1)
@@ -56,7 +56,7 @@ swift-bindings-generate *ARGS:
         swift_module_dir="{{ repo_root }}/core-modules-swift/asn1"
         swift_module_name="OpenHealthAsn1"
         swift_ffi_module_name="OpenHealthAsn1FFI"
-        built_library_file="${2:-libasn1.a}"
+        built_library_file="${2:-libopenhealth_asn1.a}"
         staged_library_file="libopenhealth_asn1.a"
         ;;
       crypto)
@@ -64,7 +64,7 @@ swift-bindings-generate *ARGS:
         swift_module_dir="{{ repo_root }}/core-modules-swift/crypto"
         swift_module_name="OpenHealthCrypto"
         swift_ffi_module_name="OpenHealthCryptoFFI"
-        built_library_file="${2:-libcrypto.a}"
+        built_library_file="${2:-libopenhealth_crypto.a}"
         staged_library_file="libopenhealth_crypto.a"
         ;;
       *)
@@ -145,21 +145,21 @@ swift-xcframework module="healthcard":
         swift_module_dir="{{ repo_root }}/core-modules-swift/healthcard"
         swift_module_name="OpenHealthHealthcard"
         swift_ffi_module_name="OpenHealthHealthcardFFI"
-        built_library_file="libhealthcard.a"
+        built_library_file="libopenhealth_healthcard.a"
         staged_library_file="libopenhealth_healthcard.a"
         ;;
       asn1)
         swift_module_dir="{{ repo_root }}/core-modules-swift/asn1"
         swift_module_name="OpenHealthAsn1"
         swift_ffi_module_name="OpenHealthAsn1FFI"
-        built_library_file="libasn1.a"
+        built_library_file="libopenhealth_asn1.a"
         staged_library_file="libopenhealth_asn1.a"
         ;;
       crypto)
         swift_module_dir="{{ repo_root }}/core-modules-swift/crypto"
         swift_module_name="OpenHealthCrypto"
         swift_ffi_module_name="OpenHealthCryptoFFI"
-        built_library_file="libcrypto.a"
+        built_library_file="libopenhealth_crypto.a"
         staged_library_file="libopenhealth_crypto.a"
         ;;
       *)

@@ -37,13 +37,13 @@ From the repository root:
 ```bash
 # platform: linux | windows | darwin
 # arch: x86_64 | aarch64
-just kotlin-bindings-generate crypto darwin aarch64 libcrypto.dylib
+just kotlin-bindings-generate crypto darwin aarch64 libopenhealth_crypto.dylib
 ```
 
 Pick a different profile (default is `release`):
 
 ```bash
-just kotlin-bindings-generate crypto darwin aarch64 libcrypto.dylib debug
+just kotlin-bindings-generate crypto darwin aarch64 libopenhealth_crypto.dylib debug
 ```
 
 Android native libraries (Linux only):

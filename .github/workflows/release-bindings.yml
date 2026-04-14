@@ -172,14 +172,6 @@ jobs:
                   library_file="libopenhealth_crypto.dylib"
                 fi
                 ;;
-              crypto)
-                library_file="libcrypto.so"
-                if [ "${{ matrix.platform }}" = "windows" ]; then
-                  library_file="crypto.dll"
-                elif [ "${{ matrix.platform }}" = "darwin" ]; then
-                  library_file="libcrypto.dylib"
-                fi
-                ;;
               *)
                 echo "Unknown module: ${module}" >&2
                 exit 2
@@ -435,9 +427,15 @@ jobs:
           if [ -n "${{ inputs.version }}" ]; then
             export ORG_GRADLE_PROJECT_version="${{ inputs.version }}"
           fi
-          OUT_ROOT="${GITHUB_WORKSPACE}/assembly/dist/healthcard/generated/uniffi" just kotlin-publish-local healthcard
-          OUT_ROOT="${GITHUB_WORKSPACE}/assembly/dist/asn1/generated/uniffi" just kotlin-publish-local asn1
-          OUT_ROOT="${GITHUB_WORKSPACE}/assembly/dist/crypto/generated/uniffi" just kotlin-publish-local crypto
+
+          cd core-modules-kotlin
+
+          OUT_ROOT="${GITHUB_WORKSPACE}/assembly/dist/healthcard/generated/uniffi" \
+            ./gradlew --no-daemon :healthcard:publishToMavenLocal
+          OUT_ROOT="${GITHUB_WORKSPACE}/assembly/dist/asn1/generated/uniffi" \
+            ./gradlew --no-daemon :asn1:publishToMavenLocal
+          OUT_ROOT="${GITHUB_WORKSPACE}/assembly/dist/crypto/generated/uniffi" \
+            ./gradlew --no-daemon :crypto:publishToMavenLocal
 
       - name: Stage Maven local artifacts for upload
         run: |

@@ -37,7 +37,6 @@ include(":crypto")
 include(":healthcard")
 include(":healthcard-testkit")
 include(":asn1")
-include(":crypto")
 include(":sample-app")
 
 rootProject.name = "core-modules-kotlin"
