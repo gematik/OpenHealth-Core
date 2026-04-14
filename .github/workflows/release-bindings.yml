@@ -146,22 +146,30 @@ jobs:
 
       - name: Build Kotlin host bindings
         run: |
-          for module in healthcard asn1; do
+          for module in healthcard asn1 crypto; do
             case "${module}" in
               healthcard)
-                library_file="libhealthcard.so"
+                library_file="libopenhealth_healthcard.so"
                 if [ "${{ matrix.platform }}" = "windows" ]; then
-                  library_file="healthcard.dll"
+                  library_file="openhealth_healthcard.dll"
                 elif [ "${{ matrix.platform }}" = "darwin" ]; then
-                  library_file="libhealthcard.dylib"
+                  library_file="libopenhealth_healthcard.dylib"
                 fi
                 ;;
               asn1)
-                library_file="libasn1.so"
+                library_file="libopenhealth_asn1.so"
                 if [ "${{ matrix.platform }}" = "windows" ]; then
-                  library_file="asn1.dll"
+                  library_file="openhealth_asn1.dll"
                 elif [ "${{ matrix.platform }}" = "darwin" ]; then
-                  library_file="libasn1.dylib"
+                  library_file="libopenhealth_asn1.dylib"
+                fi
+                ;;
+              crypto)
+                library_file="libopenhealth_crypto.so"
+                if [ "${{ matrix.platform }}" = "windows" ]; then
+                  library_file="openhealth_crypto.dll"
+                elif [ "${{ matrix.platform }}" = "darwin" ]; then
+                  library_file="libopenhealth_crypto.dylib"
                 fi
                 ;;
               *)
@@ -185,7 +193,7 @@ jobs:
       - name: Build Android native libraries (Linux x64 only)
         if: matrix.build_android
         run: |
-          for module in healthcard asn1; do
+          for module in healthcard asn1 crypto; do
             out_root="${OUT_ROOT_BASE}/${module}/${{ matrix.display_name }}/generated/uniffi"
             OUT_ROOT="${out_root}" just kotlin-bindings-generate-android "${module}"
           done
@@ -218,6 +226,16 @@ jobs:
             ${{ github.workspace }}/artifacts/asn1/${{ matrix.display_name }}/generated/uniffi/resources/**
             ${{ github.workspace }}/artifacts/asn1/${{ matrix.display_name }}/generated/uniffi/kotlin/**
             ${{ github.workspace }}/artifacts/asn1/${{ matrix.display_name }}/generated/uniffi/android-jni/**
+          if-no-files-found: warn
+
+      - name: Upload Kotlin resources (crypto)
+        uses: actions/upload-artifact@v7
+        with:
+          name: kotlin-crypto-bindings-${{ matrix.display_name }}
+          path: |
+            ${{ github.workspace }}/artifacts/crypto/${{ matrix.display_name }}/generated/uniffi/resources/**
+            ${{ github.workspace }}/artifacts/crypto/${{ matrix.display_name }}/generated/uniffi/kotlin/**
+            ${{ github.workspace }}/artifacts/crypto/${{ matrix.display_name }}/generated/uniffi/android-jni/**
           if-no-files-found: warn
 
   swift-xcframework:

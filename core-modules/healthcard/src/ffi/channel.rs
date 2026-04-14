@@ -23,7 +23,7 @@ use crate::command::apdu::{ApduError, CardCommandApdu, CardResponseApdu};
 use crate::exchange::channel::CardChannel as CoreCardChannel;
 use crate::exchange::ExchangeError;
 use crate::ffi::maybe_zeroizing_vec::VecOfU8 as FfiVecOfU8;
-use asn1::maybe_zeroizing_vec::VecOfU8 as Asn1VecOfU8;
+use openhealth_asn1::maybe_zeroizing_vec::VecOfU8 as Asn1VecOfU8;
 use std::sync::{Arc, Mutex};
 use thiserror::Error;
 

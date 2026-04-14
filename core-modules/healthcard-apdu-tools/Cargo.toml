@@ -32,7 +32,7 @@ pcsc = ["dep:pcsc"]
 [dependencies]
 healthcard-apdu-base = { path = "../healthcard-apdu-base" }
 healthcard = { path = "../healthcard", default-features = false }
-crypto = { path = "../crypto" }
+crypto = { path = "../crypto", default-features = false }
 hex = "0.4.3"
 clap = { version = "4.5.40", features = ["derive"] }
 pcsc = { version = "2.8.2", optional = true }

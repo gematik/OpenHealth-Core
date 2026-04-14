@@ -43,6 +43,8 @@ pub mod kem;
 mod ossl;
 
 pub mod exchange;
+#[cfg(feature = "uniffi")]
+pub mod ffi;
 
 pub mod cipher;
 pub mod error;
@@ -52,3 +54,6 @@ pub mod utils;
 // mod exchange;
 
 pub mod ec;
+
+#[cfg(feature = "uniffi")]
+uniffi::setup_scaffolding!("openhealth_crypto");

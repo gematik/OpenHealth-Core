@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
+// SPDX-FileCopyrightText: Copyright 2026 gematik GmbH
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -19,24 +19,14 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-pluginManagement {
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-
-    includeBuild("build-logic")
-}
-
 plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+    id("de.gematik.openhealth.uniffi-kmp-library")
 }
 
-include(":healthcard")
-include(":healthcard-testkit")
-include(":asn1")
-include(":crypto")
-include(":sample-app")
-
-rootProject.name = "core-modules-kotlin"
+openHealthUniffiKmp {
+    artifactId.set("crypto")
+    androidNamespace.set("de.gematik.openhealth.crypto")
+    pomName.set("OpenHealth Crypto")
+    pomDescription.set("OpenHealth Crypto bindings for KMP")
+    inceptionYear.set("2026")
+}

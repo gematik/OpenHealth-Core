@@ -26,7 +26,7 @@ edition = "2021"
 license = "Apache-2.0"
 
 [dependencies]
-crypto = { path = "../crypto" }
+openhealth_crypto = { package = "crypto", path = "../crypto", default-features = false }
 thiserror = "2.0.16"
 hex = "0.4.3"
 num-bigint = "0.4"

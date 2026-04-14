@@ -25,7 +25,7 @@ use std::fmt;
 use crate::command::apdu::{ApduError, CardCommandApdu, CardResponseApdu};
 use crate::command::apdu::{EXPECTED_LENGTH_WILDCARD_EXTENDED, EXPECTED_LENGTH_WILDCARD_SHORT};
 use crate::command::health_card_status::HealthCardResponseStatus;
-use asn1::maybe_zeroizing_vec::VecOfU8;
+use openhealth_asn1::maybe_zeroizing_vec::VecOfU8;
 use thiserror::Error;
 
 /// Expected length for a command response.

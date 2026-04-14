@@ -269,7 +269,7 @@ mod tests {
     use crate::exchange::ExchangeError as CoreExchangeError;
     use crate::exchange::HealthCardVerifyPinResult as CoreVerifyPinResult;
     use crate::ffi::channel;
-    use asn1::error::Asn1DecoderError;
+    use openhealth_asn1::error::Asn1DecoderError;
     use std::sync::Arc;
 
     fn response(status: HealthCardResponseStatus) -> CoreHealthCardResponse {

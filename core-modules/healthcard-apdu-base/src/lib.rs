@@ -19,9 +19,9 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use crypto::ec::ec_key::{EcCurve, EcPrivateKey, EcPublicKey};
-use crypto::error::CryptoError;
 use num_bigint::{BigInt, Sign};
+use openhealth_crypto::ec::ec_key::{EcCurve, EcPrivateKey, EcPublicKey};
+use openhealth_crypto::error::CryptoError;
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
 use std::fs::File;
@@ -286,7 +286,7 @@ fn derive_keypair_from_scalar(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crypto::error::CryptoError;
+    use openhealth_crypto::error::CryptoError;
     use std::path::PathBuf;
     use std::time::{SystemTime, UNIX_EPOCH};
 

@@ -25,12 +25,16 @@ version = "0.1.0"
 edition = "2021"
 license = "Apache-2.0"
 
+[lib]
+crate-type = ["cdylib", "staticlib", "rlib"]
+name = "openhealth_crypto"
+
 [features]
 default = ["uniffi"]
 ci = ["uniffi"]
 
 [dependencies]
-asn1 = { path = "../asn1" }
+openhealth_asn1 = { package = "asn1", path = "../asn1" }
 crypto-openssl-sys = { path = "../crypto-openssl-sys" }
 regex = "1.12.2"
 base64 = "0.22.1"

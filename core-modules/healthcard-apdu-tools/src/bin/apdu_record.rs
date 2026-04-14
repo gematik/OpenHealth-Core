@@ -27,14 +27,14 @@ fn main() {
 #[cfg(feature = "pcsc")]
 fn main() {
     use clap::Parser;
-    use crypto::ec::ec_key::{EcCurve, EcKeyPairSpec};
-    use healthcard::exchange::certificate::{retrieve_certificate_from, CertificateFile};
-    use healthcard::exchange::secure_channel::{establish_secure_channel_with, CardAccessNumber};
-    use healthcard::exchange::{
+    use healthcard_apdu_tools::{PcscChannel, RecordingChannel};
+    use openhealth_crypto::ec::ec_key::{EcCurve, EcKeyPairSpec};
+    use openhealth_healthcard::exchange::certificate::{retrieve_certificate_from, CertificateFile};
+    use openhealth_healthcard::exchange::secure_channel::{establish_secure_channel_with, CardAccessNumber};
+    use openhealth_healthcard::exchange::{
         change_pin, change_pin_with_puk, get_random, read_vsd, sign_challenge, unlock_egk_with_puk, verify_pin,
         CardPin, HealthCardVerifyPinResult,
     };
-    use healthcard_apdu_tools::{PcscChannel, RecordingChannel};
 
     if let Err(err) = run() {
         eprintln!("{err}");

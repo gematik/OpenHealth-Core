@@ -26,7 +26,7 @@
 
 # Usage:
 # - module-driven:      `just kotlin-bindings-generate <module> <platform> <arch> <library_file> [profile]`
-[arg('module', pattern='healthcard|asn1')]
+[arg('module', pattern='healthcard|asn1|crypto')]
 [arg('platform', pattern='linux|windows|darwin')]
 [arg('arch', pattern='x86_64|aarch64')]
 [arg('library_file')]
@@ -50,6 +50,10 @@ kotlin-bindings-generate module platform arch library_file profile="release":
         rust_crate_dir="{{ repo_root }}/core-modules/asn1"
         kotlin_module_dir="{{ repo_root }}/core-modules-kotlin/asn1"
         ;;
+      crypto)
+        rust_crate_dir="{{ repo_root }}/core-modules/crypto"
+        kotlin_module_dir="{{ repo_root }}/core-modules-kotlin/crypto"
+        ;;
       *)
         echo "Unknown module: ${module}" >&2
         exit 2
@@ -68,7 +72,7 @@ kotlin-bindings-generate module platform arch library_file profile="release":
 # - `ANDROID_NDK_HOME` or `ANDROID_NDK_ROOT`
 #
 # Build Android Rust libraries via `cargo ndk` and stage them as `android-jni/`.
-[arg('module', pattern='healthcard|asn1')]
+[arg('module', pattern='healthcard|asn1|crypto')]
 [arg('profile', pattern='release|debug')]
 kotlin-bindings-generate-android module="healthcard" profile="release":
     #!/usr/bin/env bash
@@ -89,6 +93,10 @@ kotlin-bindings-generate-android module="healthcard" profile="release":
       asn1)
         rust_manifest_path="{{ repo_root }}/core-modules/asn1/Cargo.toml"
         kotlin_module_dir="{{ repo_root }}/core-modules-kotlin/asn1"
+        ;;
+      crypto)
+        rust_manifest_path="{{ repo_root }}/core-modules/crypto/Cargo.toml"
+        kotlin_module_dir="{{ repo_root }}/core-modules-kotlin/crypto"
         ;;
       *)
         echo "Unknown module: ${module}" >&2
@@ -165,7 +173,7 @@ kotlin-bindings-assemble input_root output_root:
     done
 
 # Publish the Kotlin `healthcard` module to the local Maven repository.
-[arg('module', pattern='healthcard|asn1')]
+[arg('module', pattern='healthcard|asn1|crypto')]
 kotlin-publish-local module="healthcard":
     cd "{{ repo_root }}/core-modules-kotlin" \
       && ./gradlew --no-daemon :{{ module }}:publishToMavenLocal

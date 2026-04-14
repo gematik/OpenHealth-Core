@@ -26,9 +26,9 @@ use crate::command::general_authenticate_command::GeneralAuthenticateCommandErro
 use crate::command::health_card_status::HealthCardResponseStatus;
 use crate::command::manage_security_environment_command::ManageSecurityEnvironmentCommandError;
 use crate::command::CommandError;
-use asn1::error::Asn1DecoderError;
-use asn1::error::Asn1EncoderError;
-use crypto::error::CryptoError;
+use openhealth_asn1::error::Asn1DecoderError;
+use openhealth_asn1::error::Asn1EncoderError;
+use openhealth_crypto::error::CryptoError;
 use thiserror::Error;
 
 /// Error type for higher-level healthcard exchanges.

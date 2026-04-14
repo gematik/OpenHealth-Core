@@ -48,14 +48,14 @@ swift-bindings-generate *ARGS:
         swift_module_dir="{{ repo_root }}/core-modules-swift/healthcard"
         swift_module_name="OpenHealthHealthcard"
         swift_ffi_module_name="OpenHealthHealthcardFFI"
-        library_file="${2:-libhealthcard.a}"
+        library_file="${2:-libopenhealth_healthcard.a}"
         ;;
       asn1)
         rust_crate_dir="{{ repo_root }}/core-modules/asn1"
         swift_module_dir="{{ repo_root }}/core-modules-swift/asn1"
         swift_module_name="OpenHealthAsn1"
         swift_ffi_module_name="OpenHealthAsn1FFI"
-        library_file="${2:-libasn1.a}"
+        library_file="${2:-libopenhealth_asn1.a}"
         ;;
       *)
         echo "Unknown module: ${module}" >&2
@@ -131,13 +131,13 @@ swift-xcframework module="healthcard":
         swift_module_dir="{{ repo_root }}/core-modules-swift/healthcard"
         swift_module_name="OpenHealthHealthcard"
         swift_ffi_module_name="OpenHealthHealthcardFFI"
-        library_file="libhealthcard.a"
+        library_file="libopenhealth_healthcard.a"
         ;;
       asn1)
         swift_module_dir="{{ repo_root }}/core-modules-swift/asn1"
         swift_module_name="OpenHealthAsn1"
         swift_ffi_module_name="OpenHealthAsn1FFI"
-        library_file="libasn1.a"
+        library_file="libopenhealth_asn1.a"
         ;;
       *)
         echo "Unknown module: ${module}" >&2
@@ -193,7 +193,7 @@ swift-xcframework module="healthcard":
 # Swift (asn1) - legacy wrappers
 # -------------------------------------------------
 
-swift-asn1-bindings-generate arch="aarch64" library_file="libasn1.a" profile="release":
+swift-asn1-bindings-generate arch="aarch64" library_file="libopenhealth_asn1.a" profile="release":
     just swift-bindings-generate asn1 "{{ arch }}" "{{ library_file }}" "{{ profile }}"
 
 swift-asn1-build-apple:

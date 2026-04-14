@@ -19,29 +19,27 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use openhealth_asn1::maybe_zeroizing_vec::VecOfU8 as Asn1VecOfU8;
-use std::sync::Arc;
+package de.gematik.openhealth.healthcard
 
-/// a wrapped Vec<u8> that might be zeroized (depending on it's configuration)
-#[derive(uniffi::Object, Debug, PartialEq, Eq)]
-pub struct VecOfU8 {
-    inner: Asn1VecOfU8,
-}
+sealed class CommandBuilderException : Exception() {
 
-impl VecOfU8 {
-    pub(crate) fn from_core(inner: Asn1VecOfU8) -> Arc<Self> {
-        Arc::new(Self { inner })
+    class InvalidArgument(val reason: String) : CommandBuilderException() {
+        override val message: String
+            get() = "reason=$reason"
     }
 
-    #[allow(dead_code)]
-    pub(crate) fn from_nonzeroizing_bytes(bytes: Vec<u8>) -> Arc<Self> {
-        Arc::new(Self { inner: Asn1VecOfU8::new_nonzeroizing(bytes) })
+    class Asn1Encode(val reason: String) : CommandBuilderException() {
+        override val message: String
+            get() = "reason=$reason"
     }
-}
 
-#[uniffi::export]
-impl VecOfU8 {
-    pub fn clone_as_nonzeroizing_vec(&self) -> Vec<u8> {
-        self.inner.as_ref().to_vec()
+    class Command(val reason: String) : CommandBuilderException() {
+        override val message: String
+            get() = "reason=$reason"
+    }
+
+    class PinBlock(val reason: String) : CommandBuilderException() {
+        override val message: String
+            get() = "reason=$reason"
     }
 }

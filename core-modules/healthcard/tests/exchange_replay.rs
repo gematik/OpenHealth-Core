@@ -19,15 +19,15 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use healthcard::command::apdu::{CardCommandApdu, CardResponseApdu};
-use healthcard::command::health_card_status::HealthCardResponseStatus;
-use healthcard::exchange::channel::CardChannel;
-use healthcard::exchange::{
+use healthcard_apdu_base::{ReplaySession, Transcript};
+use openhealth_healthcard::command::apdu::{CardCommandApdu, CardResponseApdu};
+use openhealth_healthcard::command::health_card_status::HealthCardResponseStatus;
+use openhealth_healthcard::exchange::channel::CardChannel;
+use openhealth_healthcard::exchange::{
     change_pin_with_puk, establish_secure_channel_with, get_random, read_vsd, retrieve_certificate,
     retrieve_certificate_from, unlock_egk_with_puk, verify_pin, CardAccessNumber, CardPin, CertificateFile,
     ExchangeError, HealthCardVerifyPinResult, SecureChannel,
 };
-use healthcard_apdu_base::{ReplaySession, Transcript};
 
 struct ReplayChannel {
     session: ReplaySession,

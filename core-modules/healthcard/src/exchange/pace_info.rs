@@ -19,13 +19,13 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use asn1::decoder::Asn1Decoder;
-use asn1::encoder::Asn1Encoder;
-use asn1::error::Asn1DecoderError;
-use asn1::oid::ObjectIdentifier;
-use asn1::tag::UniversalTag;
-use crypto::ec::ec_key::EcCurve;
 use once_cell::sync::Lazy;
+use openhealth_asn1::decoder::Asn1Decoder;
+use openhealth_asn1::encoder::Asn1Encoder;
+use openhealth_asn1::error::Asn1DecoderError;
+use openhealth_asn1::oid::ObjectIdentifier;
+use openhealth_asn1::tag::UniversalTag;
+use openhealth_crypto::ec::ec_key::EcCurve;
 use std::collections::HashMap;
 use thiserror::Error;
 

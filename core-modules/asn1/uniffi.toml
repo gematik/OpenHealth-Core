@@ -21,7 +21,7 @@
 
 [bindings.kotlin]
 package_name = "de.gematik.openhealth.asn1"
-cdylib_name = "asn1"
+cdylib_name = "openhealth_asn1"
 
 [bindings.swift]
 module_name = "OpenHealthAsn1"

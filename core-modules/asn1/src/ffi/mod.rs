@@ -26,6 +26,9 @@
 //!
 //! See `core-modules/asn1/src/ffi/README.md` for an overview of the exported API.
 
+use crate::decoder::{Asn1Decoder, Asn1Length};
+use crate::encoder::Asn1Encoder;
+use crate::error::Asn1EncoderError;
 use crate::tag::{Asn1Class as CoreAsn1Class, Asn1Form as CoreAsn1Form, Asn1Id as CoreAsn1Id};
 use std::sync::Arc;
 use thiserror::Error;
@@ -95,6 +98,22 @@ impl Asn1Tag {
 
     pub fn number(&self) -> u32 {
         self.number
+    }
+}
+
+impl From<Asn1Tag> for CoreAsn1Id {
+    fn from(value: Asn1Tag) -> Self {
+        let class = match value.class_ {
+            Asn1TagClass::Universal => CoreAsn1Class::Universal,
+            Asn1TagClass::Application => CoreAsn1Class::Application,
+            Asn1TagClass::ContextSpecific => CoreAsn1Class::ContextSpecific,
+            Asn1TagClass::Private => CoreAsn1Class::Private,
+        };
+        let form = match value.form {
+            Asn1TagForm::Primitive => CoreAsn1Form::Primitive,
+            Asn1TagForm::Constructed => CoreAsn1Form::Constructed,
+        };
+        CoreAsn1Id::new(class, form, value.number)
     }
 }
 
@@ -175,11 +194,11 @@ impl CvCertificateBody {
     }
 
     pub fn certificate_effective_date(&self) -> Arc<CvCertificateDate> {
-        Arc::new(self.certificate_effective_date.clone())
+        Arc::new(self.certificate_effective_date)
     }
 
     pub fn certificate_expiration_date(&self) -> Arc<CvCertificateDate> {
-        Arc::new(self.certificate_expiration_date.clone())
+        Arc::new(self.certificate_expiration_date)
     }
 
     pub fn certificate_extensions(&self) -> Option<Arc<CvCertificateExtensions>> {
@@ -349,6 +368,8 @@ impl CvExtensionField {
 pub enum Asn1FfiError {
     #[error("ASN.1 decode error: {reason}")]
     Decode { reason: String },
+    #[error("ASN.1 encode error: {reason}")]
+    Encode { reason: String },
     #[error("invalid argument: {reason}")]
     InvalidArgument { reason: String },
 }
@@ -361,6 +382,84 @@ pub fn parse_cv_certificate(data: Vec<u8>) -> Result<Arc<CvCertificate>, Asn1Ffi
     let cert = crate::cv_certificate::parse_cv_certificate(&data)
         .map_err(|err| Asn1FfiError::Decode { reason: err.to_string() })?;
     Ok(Arc::new(cert.into()))
+}
+
+#[uniffi::export]
+pub fn write_tagged_object(
+    class_: Asn1TagClass,
+    form: Asn1TagForm,
+    number: i32,
+    value: Vec<u8>,
+) -> Result<Vec<u8>, Asn1FfiError> {
+    let number = u32::try_from(number)
+        .map_err(|_| Asn1FfiError::InvalidArgument { reason: "tag number must be non-negative".into() })?;
+    let encoded = Asn1Encoder::write_nonzeroizing(|writer| {
+        writer.write_tagged_object(
+            CoreAsn1Id::new(class_.into(), form.into(), number),
+            |inner| -> Result<(), Asn1EncoderError> {
+                inner.write_bytes(&value);
+                Ok(())
+            },
+        )
+    })
+    .map_err(|err| Asn1FfiError::Encode { reason: err.to_string() })?;
+    Ok(encoded.to_vec())
+}
+
+#[uniffi::export]
+pub fn read_tagged_object_value(
+    data: Vec<u8>,
+    class_: Asn1TagClass,
+    form: Asn1TagForm,
+    number: i32,
+) -> Result<Vec<u8>, Asn1FfiError> {
+    if data.is_empty() {
+        return Err(Asn1FfiError::InvalidArgument { reason: "data must not be empty".into() });
+    }
+    let number = u32::try_from(number)
+        .map_err(|_| Asn1FfiError::InvalidArgument { reason: "tag number must be non-negative".into() })?;
+    Asn1Decoder::new(&data).read(|scope| {
+        while scope.remaining_length() > 0 {
+            let tag = scope.read_tag().map_err(Asn1FfiError::from)?;
+            let length = scope.read_length().map_err(Asn1FfiError::from)?;
+            let value = match length {
+                Asn1Length::Definite(length) => scope.read_bytes(length).map_err(Asn1FfiError::from)?,
+                Asn1Length::Indefinite => {
+                    return Err(Asn1FfiError::Decode { reason: "indefinite lengths are not supported".into() });
+                }
+            };
+            if tag.class == class_.into() && tag.form == form.into() && tag.number == number {
+                return Ok(value);
+            }
+        }
+        Err(Asn1FfiError::Decode { reason: "matching tagged object not found".into() })
+    })
+}
+
+impl From<crate::error::Asn1DecoderError> for Asn1FfiError {
+    fn from(value: crate::error::Asn1DecoderError) -> Self {
+        Asn1FfiError::Decode { reason: value.to_string() }
+    }
+}
+
+impl From<Asn1TagClass> for CoreAsn1Class {
+    fn from(value: Asn1TagClass) -> Self {
+        match value {
+            Asn1TagClass::Universal => CoreAsn1Class::Universal,
+            Asn1TagClass::Application => CoreAsn1Class::Application,
+            Asn1TagClass::ContextSpecific => CoreAsn1Class::ContextSpecific,
+            Asn1TagClass::Private => CoreAsn1Class::Private,
+        }
+    }
+}
+
+impl From<Asn1TagForm> for CoreAsn1Form {
+    fn from(value: Asn1TagForm) -> Self {
+        match value {
+            Asn1TagForm::Primitive => CoreAsn1Form::Primitive,
+            Asn1TagForm::Constructed => CoreAsn1Form::Constructed,
+        }
+    }
 }
 
 #[cfg(test)]
@@ -422,5 +521,56 @@ mod tests {
             Asn1FfiError::Decode { reason } => assert!(!reason.is_empty()),
             other => panic!("expected Decode error, got {other:?}"),
         }
+    }
+
+    #[test]
+    fn read_tagged_object_value_reads_constructed_child_value() {
+        let value = read_tagged_object_value(
+            hex_to_bytes("85 02 12 34"),
+            Asn1TagClass::ContextSpecific,
+            Asn1TagForm::Primitive,
+            0x05,
+        )
+        .expect("read should succeed");
+        assert_eq!(value, hex_to_bytes("12 34"));
+    }
+
+    #[test]
+    fn write_tagged_object_encodes_expected_bytes() {
+        let tlv =
+            write_tagged_object(Asn1TagClass::ContextSpecific, Asn1TagForm::Primitive, 0x01, hex_to_bytes("90 00"))
+                .unwrap();
+        assert_eq!(tlv, hex_to_bytes("81 02 90 00"));
+    }
+
+    #[test]
+    fn write_tagged_object_constructed_encodes_expected_bytes() {
+        let tlv = write_tagged_object(
+            Asn1TagClass::ContextSpecific,
+            Asn1TagForm::Constructed,
+            0x1C,
+            hex_to_bytes("85 02 04 05"),
+        )
+        .unwrap();
+        assert_eq!(tlv, hex_to_bytes("BC 04 85 02 04 05"));
+    }
+
+    #[test]
+    fn read_tagged_object_value_reads_real_world_application_7c_value() {
+        let value = read_tagged_object_value(
+            hex_to_bytes(
+                "7C 43 85 41 04 2B E9 58 49 26 7F 76 4D EF 49 F0 38 92 A5 14 7D 94 FF C4 30 A5 39 E7 D2 F7 08 29 6E C3 FE A3 47 54 CC 4B 1C 27 70 C6 85 42 7F F3 45 5C 84 AA 81 B8 2D 17 66 35 3D 49 C6 A7 19 84 7F 49 87 49 50",
+            ),
+            Asn1TagClass::Application,
+            Asn1TagForm::Constructed,
+            0x1C,
+        )
+        .expect("read should succeed");
+        assert_eq!(
+            value,
+            hex_to_bytes(
+                "85 41 04 2B E9 58 49 26 7F 76 4D EF 49 F0 38 92 A5 14 7D 94 FF C4 30 A5 39 E7 D2 F7 08 29 6E C3 FE A3 47 54 CC 4B 1C 27 70 C6 85 42 7F F3 45 5C 84 AA 81 B8 2D 17 66 35 3D 49 C6 A7 19 84 7F 49 87 49 50"
+            )
+        );
     }
 }
