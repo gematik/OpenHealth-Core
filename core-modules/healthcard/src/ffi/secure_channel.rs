@@ -142,6 +142,11 @@ impl From<ExchangeError> for SecureChannelError {
     }
 }
 
+fn usize_from_i32(name: &str, value: i32) -> Result<usize, SecureChannelError> {
+    usize::try_from(value)
+        .map_err(|_| SecureChannelError::InvalidArgument { reason: format!("{name} must not be negative: {value}") })
+}
+
 /// Establishes a secure channel (PACE) over the given card session.
 ///
 /// The returned `SecureChannel` can be used to transmit protected APDUs and to call higher-level
@@ -260,8 +265,9 @@ impl SecureChannel {
     }
 
     /// Returns `length` bytes of random data from the card.
-    pub fn get_random(&self, length: u32) -> Result<Vec<u8>, SecureChannelError> {
-        self.with_locked(|channel| crate::exchange::get_random(channel, length as usize))
+    pub fn get_random(&self, length: i32) -> Result<Vec<u8>, SecureChannelError> {
+        let length = usize_from_i32("length", length)?;
+        self.with_locked(|channel| crate::exchange::get_random(channel, length))
     }
 
     /// Reads the VSD container from the card (if available).
@@ -415,5 +421,16 @@ mod tests {
             err,
             CryptoError::InvalidKeyMaterial { context } if context == "missing fixed key material"
         ));
+    }
+
+    #[test]
+    fn secure_channel_get_random_rejects_negative_length() {
+        let inner: Arc<dyn CardChannel> = Arc::new(DummyForeign);
+        let adapter = FfiCardChannelAdapter::new(inner);
+        let core = crate::exchange::secure_channel::test_secure_channel_with_adapter(adapter);
+        let secure = SecureChannel { inner: Mutex::new(core) };
+
+        let err = secure.get_random(-1).expect_err_no_debug("expected invalid argument");
+        assert!(matches!(err, SecureChannelError::InvalidArgument { .. }));
     }
 }

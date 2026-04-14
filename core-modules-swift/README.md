@@ -27,10 +27,12 @@ This directory contains Swift/iOS interoperability artifacts built on top of Rus
 
 - `healthcard/`: Swift Package scaffold + scripts to generate UniFFI Swift bindings and build an Apple `xcframework`.
 - `asn1/`: Swift Package artifacts for the Rust `asn1` crate via UniFFI.
+- `crypto/`: Swift Package scaffold for the Rust `crypto` crate via UniFFI.
 
 From the repository root:
 
 ```bash
 just swift-xcframework healthcard
 just swift-xcframework asn1
+just swift-xcframework crypto
 ```

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2025 gematik GmbH
+// SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -35,8 +35,16 @@ const CLA_NO_COMMAND_CHAINING: u8 = 0x00;
 const INS: u8 = 0x86;
 /// P1 and P2 parameter (no meaning)
 const NO_MEANING: u8 = 0x00;
-/// ASN.1 tag for GENERAL AUTHENTICATE
+/// ASN.1 tag for GENERAL AUTHENTICATE (DO 7C)
 const GENERAL_AUTHENTICATE_TAG: u8 = 28;
+/// ASN.1 tag for mutual authentication step 1 key reference (DO C3)
+const MUTUAL_AUTHENTICATION_KEY_REF_TAG: u8 = 3;
+/// ASN.1 tag for PACE key agreement data (DO 81)
+const PACE_KEY_AGREEMENT_TAG: u8 = 1;
+/// ASN.1 tag for PACE ephemeral public key 2 (DO 83)
+const PACE_EPHEMERAL_KEY2_TAG: u8 = 3;
+/// ASN.1 tag for PACE mutual auth key 1 / ELC step 2 (DO 85)
+const PACE_MUTUAL_KEY1_TAG: u8 = 5;
 
 #[derive(Debug, Error)]
 pub enum GeneralAuthenticateCommandError {
@@ -67,6 +75,35 @@ pub trait GeneralAuthenticateCommand {
         data: &[u8],
         tag_no: u8,
     ) -> GeneralAuthenticateResult<HealthCardCommand>;
+
+    /// Creates a HealthCardCommand for GENERAL AUTHENTICATE
+    /// UseCase: gemSpec_COS_3.14.0#14.7.2.2.1 mutual ELC authentication, Step 1.
+    ///
+    /// # Arguments
+    /// * `key_ref` - 12-byte public authentication key reference from the CV certificate.
+    fn general_authenticate_mutual_authentication_step1(
+        key_ref: &[u8; 12],
+    ) -> GeneralAuthenticateResult<HealthCardCommand>;
+
+    /// Creates a HealthCardCommand for the GENERAL AUTHENTICATE command
+    /// UseCase: gemSpec_COS_3.14.0#14.7.2.1.1 PACE end-user card, Step 1a.
+    fn general_authenticate_pace_end_user_step1() -> GeneralAuthenticateResult<HealthCardCommand>;
+
+    /// Creates a HealthCardCommand for the GENERAL AUTHENTICATE command
+    /// UseCase: gemSpec_COS_3.14.0#14.7.2.1.2 PACE end-user card, Step 2a.
+    fn general_authenticate_pace_end_user_step2(pk1_pcd: &[u8]) -> GeneralAuthenticateResult<HealthCardCommand>;
+
+    /// Creates a HealthCardCommand for the GENERAL AUTHENTICATE command
+    /// UseCase: gemSpec_COS_3.14.0#14.7.2.1.3 PACE end-user card, Step 3a.
+    fn general_authenticate_pace_end_user_step3(pk2_pcd: &[u8]) -> GeneralAuthenticateResult<HealthCardCommand>;
+
+    /// Creates a HealthCardCommand for the GENERAL AUTHENTICATE command
+    /// UseCase: gemSpec_COS_3.14.0#14.7.2.1.4 PACE end-user card, Step 4a.
+    fn general_authenticate_pace_end_user_step4(tpcd: &[u8; 8]) -> GeneralAuthenticateResult<HealthCardCommand>;
+
+    /// Creates a HealthCardCommand for the GENERAL AUTHENTICATE command
+    /// UseCase: gemSpec_COS_3.14.0#14.7.2.2.2 mutual ELC authentication, Step 2.
+    fn general_authenticate_elc_step2(ephemeral_pk_opponent: &[u8]) -> GeneralAuthenticateResult<HealthCardCommand>;
 }
 
 impl GeneralAuthenticateCommand for HealthCardCommand {
@@ -115,6 +152,144 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
             Some(ExpectedLength::Any),
         ))
     }
+
+    fn general_authenticate_mutual_authentication_step1(
+        key_ref: &[u8; 12],
+    ) -> GeneralAuthenticateResult<HealthCardCommand> {
+        let data = Asn1Encoder::write_zeroizing(|w| {
+            w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |inner| {
+                inner.write_tagged_object(
+                    MUTUAL_AUTHENTICATION_KEY_REF_TAG.private_tag(),
+                    |innermost| -> Result<(), Asn1EncoderError> {
+                        innermost.write_bytes(key_ref);
+                        Ok(())
+                    },
+                )
+            })
+        })?;
+
+        Ok(HealthCardCommand::new(
+            GENERAL_AUTHENTICATE_STATUS.clone(),
+            CLA_COMMAND_CHAINING,
+            INS,
+            NO_MEANING,
+            NO_MEANING,
+            Some(data),
+            Some(ExpectedLength::Any),
+        ))
+    }
+
+    fn general_authenticate_pace_end_user_step1() -> GeneralAuthenticateResult<HealthCardCommand> {
+        let data = Asn1Encoder::write_nonzeroizing(|w| -> Result<(), Asn1EncoderError> {
+            w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |_inner| Ok(()))
+        })?;
+
+        Ok(HealthCardCommand::new(
+            GENERAL_AUTHENTICATE_STATUS.clone(),
+            CLA_COMMAND_CHAINING,
+            INS,
+            NO_MEANING,
+            NO_MEANING,
+            Some(data),
+            Some(ExpectedLength::Any),
+        ))
+    }
+
+    fn general_authenticate_pace_end_user_step2(pk1_pcd: &[u8]) -> GeneralAuthenticateResult<HealthCardCommand> {
+        let data = Asn1Encoder::write_zeroizing(|w| {
+            w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |inner| {
+                inner.write_tagged_object(
+                    PACE_KEY_AGREEMENT_TAG.context_tag(),
+                    |innermost| -> Result<(), Asn1EncoderError> {
+                        innermost.write_bytes(pk1_pcd);
+                        Ok(())
+                    },
+                )
+            })
+        })?;
+
+        Ok(HealthCardCommand::new(
+            GENERAL_AUTHENTICATE_STATUS.clone(),
+            CLA_COMMAND_CHAINING,
+            INS,
+            NO_MEANING,
+            NO_MEANING,
+            Some(data),
+            Some(ExpectedLength::Any),
+        ))
+    }
+
+    fn general_authenticate_pace_end_user_step3(pk2_pcd: &[u8]) -> GeneralAuthenticateResult<HealthCardCommand> {
+        let data = Asn1Encoder::write_zeroizing(|w| {
+            w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |inner| {
+                inner.write_tagged_object(
+                    PACE_EPHEMERAL_KEY2_TAG.context_tag(),
+                    |innermost| -> Result<(), Asn1EncoderError> {
+                        innermost.write_bytes(pk2_pcd);
+                        Ok(())
+                    },
+                )
+            })
+        })?;
+
+        Ok(HealthCardCommand::new(
+            GENERAL_AUTHENTICATE_STATUS.clone(),
+            CLA_COMMAND_CHAINING,
+            INS,
+            NO_MEANING,
+            NO_MEANING,
+            Some(data),
+            Some(ExpectedLength::Any),
+        ))
+    }
+
+    fn general_authenticate_pace_end_user_step4(tpcd: &[u8; 8]) -> GeneralAuthenticateResult<HealthCardCommand> {
+        let data = Asn1Encoder::write_zeroizing(|w| {
+            w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |inner| {
+                inner.write_tagged_object(
+                    PACE_MUTUAL_KEY1_TAG.context_tag(),
+                    |innermost| -> Result<(), Asn1EncoderError> {
+                        innermost.write_bytes(tpcd);
+                        Ok(())
+                    },
+                )
+            })
+        })?;
+
+        Ok(HealthCardCommand::new(
+            GENERAL_AUTHENTICATE_STATUS.clone(),
+            CLA_NO_COMMAND_CHAINING,
+            INS,
+            NO_MEANING,
+            NO_MEANING,
+            Some(data),
+            Some(ExpectedLength::Any),
+        ))
+    }
+
+    fn general_authenticate_elc_step2(ephemeral_pk_opponent: &[u8]) -> GeneralAuthenticateResult<HealthCardCommand> {
+        let data = Asn1Encoder::write_zeroizing(|w| {
+            w.write_tagged_object(GENERAL_AUTHENTICATE_TAG.application_tag().constructed(), |inner| {
+                inner.write_tagged_object(
+                    PACE_MUTUAL_KEY1_TAG.context_tag(),
+                    |innermost| -> Result<(), Asn1EncoderError> {
+                        innermost.write_bytes(ephemeral_pk_opponent);
+                        Ok(())
+                    },
+                )
+            })
+        })?;
+
+        Ok(HealthCardCommand::new(
+            GENERAL_AUTHENTICATE_STATUS.clone(),
+            CLA_NO_COMMAND_CHAINING,
+            INS,
+            NO_MEANING,
+            NO_MEANING,
+            Some(data),
+            None,
+        ))
+    }
 }
 
 #[cfg(test)]
@@ -122,6 +297,7 @@ mod tests {
     use super::*;
     use crate::command::apdu::EXPECTED_LENGTH_WILDCARD_SHORT;
     use openhealth_asn1::tag::{Asn1Class, Asn1Form};
+    use openhealth_asn1::maybe_zeroizing_vec::ZeroizingOption;
 
     #[test]
     fn test_general_authenticate_without_chaining() {
@@ -175,6 +351,7 @@ mod tests {
         assert_eq!(data[2], u8::from(Asn1Class::ContextSpecific) | 1);
         assert_eq!(data[3], test_data.len() as u8);
         assert_eq!(&data[4..8], &test_data);
+        assert_eq!(data.get_zeroizing_option(), ZeroizingOption::Zeroes);
     }
 
     #[test]
@@ -203,6 +380,18 @@ mod tests {
         assert_eq!(data[2], u8::from(Asn1Class::ContextSpecific) | 5);
         assert_eq!(data[3], test_data.len() as u8);
         assert_eq!(&data[4..7], &test_data);
+    }
+
+    #[test]
+    fn test_general_authenticate_with_data_tag5_apdu_encoding() {
+        let mac = [0xDE, 0xAD, 0xBE, 0xEF, 0xCA, 0xFE, 0xBA, 0xBE];
+        let command = HealthCardCommand::general_authenticate_with_data(false, &mac, 5).unwrap();
+        let apdu = command.command_apdu(false).unwrap();
+
+        let expected = vec![
+            0x00, 0x86, 0x00, 0x00, 0x0C, 0x7C, 0x0A, 0x85, 0x08, 0xDE, 0xAD, 0xBE, 0xEF, 0xCA, 0xFE, 0xBA, 0xBE, 0x00,
+        ];
+        assert_eq!(apdu.as_bytes(), expected);
     }
 
     #[test]
@@ -236,5 +425,91 @@ mod tests {
 
         assert_eq!(&data[6..(6 + 128)], &large_data[..]);
         assert_eq!(data.len(), 134);
+    }
+
+    #[test]
+    fn test_general_authenticate_mutual_authentication_step1() {
+        let key_ref = *b"0123456789AB";
+        let command = HealthCardCommand::general_authenticate_mutual_authentication_step1(&key_ref).unwrap();
+
+        assert_eq!(command.cla, CLA_COMMAND_CHAINING);
+        assert_eq!(command.ins, INS);
+        assert_eq!(command.p1, NO_MEANING);
+        assert_eq!(command.p2, NO_MEANING);
+        assert_eq!(command.ne, Some(ExpectedLength::Any));
+
+        let data = command.data.unwrap();
+        assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | (Asn1Class::Application | Asn1Form::Constructed));
+        assert_eq!(data[1], 0x0E);
+        assert_eq!(data[2], u8::from(Asn1Class::Private) | MUTUAL_AUTHENTICATION_KEY_REF_TAG);
+        assert_eq!(data[3], 0x0C);
+        assert_eq!(&data[4..16], &key_ref);
+        assert_eq!(data.len(), 16);
+    }
+
+    #[test]
+    fn test_general_authenticate_pace_end_user_step1() {
+        let command = HealthCardCommand::general_authenticate_pace_end_user_step1().unwrap();
+
+        assert_eq!(command.cla, CLA_COMMAND_CHAINING);
+        assert_eq!(command.ne, Some(ExpectedLength::Any));
+
+        let data = command.data.unwrap();
+        assert_eq!(data.as_ref(), &[0x7C, 0x00]);
+    }
+
+    #[test]
+    fn test_general_authenticate_pace_end_user_step2() {
+        let pk1 = vec![0xAA, 0xBB, 0xCC];
+        let command = HealthCardCommand::general_authenticate_pace_end_user_step2(&pk1).unwrap();
+
+        assert_eq!(command.cla, CLA_COMMAND_CHAINING);
+        assert_eq!(command.ne, Some(ExpectedLength::Any));
+
+        let data = command.data.unwrap();
+        assert_eq!(data[0], GENERAL_AUTHENTICATE_TAG | (Asn1Class::Application | Asn1Form::Constructed));
+        assert_eq!(data[2], u8::from(Asn1Class::ContextSpecific) | PACE_KEY_AGREEMENT_TAG);
+        assert_eq!(&data[4..7], &pk1);
+    }
+
+    #[test]
+    fn test_general_authenticate_pace_end_user_step3() {
+        let pk2 = vec![0x01, 0x02];
+        let command = HealthCardCommand::general_authenticate_pace_end_user_step3(&pk2).unwrap();
+
+        assert_eq!(command.cla, CLA_COMMAND_CHAINING);
+        assert_eq!(command.ne, Some(ExpectedLength::Any));
+
+        let data = command.data.unwrap();
+        assert_eq!(data[2], u8::from(Asn1Class::ContextSpecific) | PACE_EPHEMERAL_KEY2_TAG);
+        assert_eq!(&data[4..6], &pk2);
+    }
+
+    #[test]
+    fn test_general_authenticate_pace_end_user_step4() {
+        let tpcd = *b"TPCDTEST";
+        let command = HealthCardCommand::general_authenticate_pace_end_user_step4(&tpcd).unwrap();
+
+        assert_eq!(command.cla, CLA_NO_COMMAND_CHAINING);
+        assert_eq!(command.ne, Some(ExpectedLength::Any));
+
+        let data = command.data.unwrap();
+        assert_eq!(data[2], u8::from(Asn1Class::ContextSpecific) | PACE_MUTUAL_KEY1_TAG);
+        assert_eq!(data[3], 0x08);
+        assert_eq!(&data[4..12], &tpcd);
+    }
+
+    #[test]
+    fn test_general_authenticate_elc_step2() {
+        let pk_opponent = vec![0x10, 0x11, 0x12];
+        let command = HealthCardCommand::general_authenticate_elc_step2(&pk_opponent).unwrap();
+
+        assert_eq!(command.cla, CLA_NO_COMMAND_CHAINING);
+        assert_eq!(command.ne, None);
+
+        let data = command.data.unwrap();
+        assert_eq!(data[2], u8::from(Asn1Class::ContextSpecific) | PACE_MUTUAL_KEY1_TAG);
+        assert_eq!(&data[4..7], &pk_opponent);
+        assert_eq!(data.get_zeroizing_option(), ZeroizingOption::Zeroes);
     }
 }

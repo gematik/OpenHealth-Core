@@ -26,3 +26,15 @@
 
 repo_root := justfile_directory()
 uniffi_cli := repo_root + "/tools/uniffi-cli/Cargo.toml"
+
+# -------------------------------------------------
+# Crypto Kotlin paths
+# -------------------------------------------------
+
+crypto_rust_crate := repo_root + "/core-modules/crypto"
+crypto_rust_manifest := crypto_rust_crate + "/Cargo.toml"
+
+kotlin_crypto_module_dir := repo_root + "/core-modules-kotlin/crypto"
+kotlin_crypto_out_root := kotlin_crypto_module_dir + "/build/generated/uniffi"
+kotlin_crypto_cargo_target_dir := kotlin_crypto_module_dir + "/build/cargo"
+android_crypto_jni_root := kotlin_crypto_out_root + "/android-jni"

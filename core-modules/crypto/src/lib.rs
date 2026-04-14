@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2025 gematik GmbH
+// SPDX-FileCopyrightText: Copyright 2025 - 2026 gematik GmbH
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -35,7 +35,7 @@
 //! Notes
 //! - The internal `ossl` module contains the low-level FFI bindings and is not
 //!   part of the public API.
-//! - When the `uniffi` feature is enabled, `interop` exports a UniFFI-compatible
+//! - When the `uniffi` feature is enabled, `ffi` exports a UniFFI-compatible
 //!   interface for use from other languages.
 
 pub mod digest;
@@ -51,7 +51,6 @@ pub mod error;
 pub mod key;
 pub mod mac;
 pub mod utils;
-// mod exchange;
 
 pub mod ec;
 

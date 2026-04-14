@@ -34,7 +34,7 @@ swift-bindings-generate *ARGS:
     set -- {{ ARGS }}
 
     module="healthcard"
-    if [ $# -gt 0 ] && { [ "$1" = "healthcard" ] || [ "$1" = "asn1" ]; }; then
+    if [ $# -gt 0 ] && { [ "$1" = "healthcard" ] || [ "$1" = "asn1" ] || [ "$1" = "crypto" ]; }; then
         module="$1"
         shift
     fi
@@ -48,14 +48,24 @@ swift-bindings-generate *ARGS:
         swift_module_dir="{{ repo_root }}/core-modules-swift/healthcard"
         swift_module_name="OpenHealthHealthcard"
         swift_ffi_module_name="OpenHealthHealthcardFFI"
-        library_file="${2:-libopenhealth_healthcard.a}"
+        built_library_file="${2:-libhealthcard.a}"
+        staged_library_file="libopenhealth_healthcard.a"
         ;;
       asn1)
         rust_crate_dir="{{ repo_root }}/core-modules/asn1"
         swift_module_dir="{{ repo_root }}/core-modules-swift/asn1"
         swift_module_name="OpenHealthAsn1"
         swift_ffi_module_name="OpenHealthAsn1FFI"
-        library_file="${2:-libopenhealth_asn1.a}"
+        built_library_file="${2:-libasn1.a}"
+        staged_library_file="libopenhealth_asn1.a"
+        ;;
+      crypto)
+        rust_crate_dir="{{ repo_root }}/core-modules/crypto"
+        swift_module_dir="{{ repo_root }}/core-modules-swift/crypto"
+        swift_module_name="OpenHealthCrypto"
+        swift_ffi_module_name="OpenHealthCryptoFFI"
+        built_library_file="${2:-libcrypto.a}"
+        staged_library_file="libopenhealth_crypto.a"
         ;;
       *)
         echo "Unknown module: ${module}" >&2
@@ -69,7 +79,7 @@ swift-bindings-generate *ARGS:
 
     OUT_ROOT="${OUT_ROOT:-${out_root_default}}" \
     CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-${cargo_target_dir_default}}" \
-      just uniffi-bindings-generate-crate darwin "${arch}" swift "${library_file}" "${rust_crate_dir}" "${rust_manifest_path}" "${profile}"
+      just uniffi-bindings-generate-crate darwin "${arch}" swift "${built_library_file}" "${staged_library_file}" "${rust_crate_dir}" "${rust_manifest_path}" "${profile}"
 
     out_root="${OUT_ROOT:-${out_root_default}}"
     gen_dir="${out_root}/swift"
@@ -93,6 +103,10 @@ swift-build-apple module="healthcard":
       asn1)
         rust_manifest_path="{{ repo_root }}/core-modules/asn1/Cargo.toml"
         swift_module_dir="{{ repo_root }}/core-modules-swift/asn1"
+        ;;
+      crypto)
+        rust_manifest_path="{{ repo_root }}/core-modules/crypto/Cargo.toml"
+        swift_module_dir="{{ repo_root }}/core-modules-swift/crypto"
         ;;
       *)
         echo "Unknown module: ${module}" >&2
@@ -131,13 +145,22 @@ swift-xcframework module="healthcard":
         swift_module_dir="{{ repo_root }}/core-modules-swift/healthcard"
         swift_module_name="OpenHealthHealthcard"
         swift_ffi_module_name="OpenHealthHealthcardFFI"
-        library_file="libopenhealth_healthcard.a"
+        built_library_file="libhealthcard.a"
+        staged_library_file="libopenhealth_healthcard.a"
         ;;
       asn1)
         swift_module_dir="{{ repo_root }}/core-modules-swift/asn1"
         swift_module_name="OpenHealthAsn1"
         swift_ffi_module_name="OpenHealthAsn1FFI"
-        library_file="libopenhealth_asn1.a"
+        built_library_file="libasn1.a"
+        staged_library_file="libopenhealth_asn1.a"
+        ;;
+      crypto)
+        swift_module_dir="{{ repo_root }}/core-modules-swift/crypto"
+        swift_module_name="OpenHealthCrypto"
+        swift_ffi_module_name="OpenHealthCryptoFFI"
+        built_library_file="libcrypto.a"
+        staged_library_file="libopenhealth_crypto.a"
         ;;
       *)
         echo "Unknown module: ${module}" >&2
@@ -169,24 +192,24 @@ swift-xcframework module="healthcard":
 
     apple="${cargo_target_dir}/apple"
 
-    cp "${apple}/aarch64-apple-ios/release/${library_file}" "${uni}/ios/${library_file}"
+    cp "${apple}/aarch64-apple-ios/release/${built_library_file}" "${uni}/ios/${staged_library_file}"
 
     lipo -create \
-      "${apple}/aarch64-apple-ios-sim/release/${library_file}" \
-      "${apple}/x86_64-apple-ios/release/${library_file}" \
-      -output "${uni}/ios-simulator/${library_file}"
+      "${apple}/aarch64-apple-ios-sim/release/${built_library_file}" \
+      "${apple}/x86_64-apple-ios/release/${built_library_file}" \
+      -output "${uni}/ios-simulator/${staged_library_file}"
 
     lipo -create \
-      "${apple}/aarch64-apple-darwin/release/${library_file}" \
-      "${apple}/x86_64-apple-darwin/release/${library_file}" \
-      -output "${uni}/macos/${library_file}"
+      "${apple}/aarch64-apple-darwin/release/${built_library_file}" \
+      "${apple}/x86_64-apple-darwin/release/${built_library_file}" \
+      -output "${uni}/macos/${staged_library_file}"
 
     rm -rf "${swift_module_dir}/${swift_ffi_module_name}.xcframework"
 
     xcodebuild -create-xcframework \
-      -library "${uni}/ios/${library_file}" -headers "${headers_dir}" \
-      -library "${uni}/ios-simulator/${library_file}" -headers "${headers_dir}" \
-      -library "${uni}/macos/${library_file}" -headers "${headers_dir}" \
+      -library "${uni}/ios/${staged_library_file}" -headers "${headers_dir}" \
+      -library "${uni}/ios-simulator/${staged_library_file}" -headers "${headers_dir}" \
+      -library "${uni}/macos/${staged_library_file}" -headers "${headers_dir}" \
       -output "${swift_module_dir}/${swift_ffi_module_name}.xcframework"
 
 # -------------------------------------------------

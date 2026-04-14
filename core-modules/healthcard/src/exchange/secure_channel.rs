@@ -337,7 +337,8 @@ where
     )?)?;
 
     // Step 1: obtain nonce Z from the card and compute S
-    let nonce_z_response = channel.execute_command_success(&HealthCardCommand::general_authenticate(true)?)?;
+    let nonce_z_response =
+        channel.execute_command_success(&HealthCardCommand::general_authenticate_pace_end_user_step1()?)?;
     let nonce_z = decode_general_authenticate(nonce_z_response.apdu.as_data())?;
     let can_key = get_aes128_key(card_access_number.as_bytes(), Mode::Password)?;
     let nonce_s_bytes = decrypt_nonce(&can_key, &nonce_z)?;
@@ -348,11 +349,8 @@ where
     let pcd_scalar = big_int_from_secret(&pcd_private);
     let pcd_shared_secret = pace_info.curve.g().mul(&pcd_scalar)?;
     let pcd_shared_bytes = pcd_shared_secret.uncompressed()?;
-    let picc_pk_response = channel.execute_command_success(&HealthCardCommand::general_authenticate_with_data(
-        true,
-        &pcd_shared_bytes,
-        1,
-    )?)?;
+    let picc_pk_response = channel
+        .execute_command_success(&HealthCardCommand::general_authenticate_pace_end_user_step2(&pcd_shared_bytes)?)?;
     let mut picc_public_key = EcPublicKey::from_uncompressed(
         pace_info.curve.clone(),
         decode_general_authenticate(picc_pk_response.apdu.as_data())?,
@@ -367,7 +365,7 @@ where
     let ep_gs_bytes = ep_gs_shared_secret.uncompressed()?;
 
     let picc_pk_response =
-        channel.execute_command_success(&HealthCardCommand::general_authenticate_with_data(true, &ep_gs_bytes, 3)?)?;
+        channel.execute_command_success(&HealthCardCommand::general_authenticate_pace_end_user_step3(&ep_gs_bytes)?)?;
     picc_public_key = EcPublicKey::from_uncompressed(
         pace_info.curve.clone(),
         decode_general_authenticate(picc_pk_response.apdu.as_data())?,
@@ -385,8 +383,10 @@ where
 
     let mac = derive_mac(pace_key.mac(), &picc_public_key, &pace_info.protocol_id)?;
 
+    let tpcd: [u8; 8] =
+        mac.as_slice().try_into().map_err(|_| ExchangeError::invalid_argument("PACE MAC must be 8 bytes"))?;
     let picc_mac_response =
-        channel.execute_command_success(&HealthCardCommand::general_authenticate_with_data(false, &mac, 5)?)?;
+        channel.execute_command_success(&HealthCardCommand::general_authenticate_pace_end_user_step4(&tpcd)?)?;
     let picc_mac = decode_general_authenticate(picc_mac_response.apdu.as_data())?;
     let ep_gs_public_key = ep_gs_shared_secret.to_ec_public_key()?;
     verify_mutual_authentication_mac(pace_key.mac(), &ep_gs_public_key, &pace_info.protocol_id, &picc_mac)?;

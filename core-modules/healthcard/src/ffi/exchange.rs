@@ -178,6 +178,11 @@ impl From<CoreExchangeError> for ExchangeError {
     }
 }
 
+fn usize_from_i32(name: &str, value: i32) -> Result<usize, ExchangeError> {
+    usize::try_from(value)
+        .map_err(|_| ExchangeError::InvalidArgument { reason: format!("{name} must not be negative: {value}") })
+}
+
 fn with_channel<T, F>(session: Arc<dyn CardChannel>, op: F) -> Result<T, ExchangeError>
 where
     F: FnOnce(&mut FfiCardChannelAdapter) -> Result<T, CoreExchangeError>,
@@ -229,8 +234,9 @@ pub fn change_pin_with_puk(
 
 /// Returns `length` bytes of random data from the card.
 #[uniffi::export]
-pub fn get_random(session: Arc<dyn CardChannel>, length: u32) -> Result<Vec<u8>, ExchangeError> {
-    with_channel(session, |adapter| exchange::get_random(adapter, length as usize))
+pub fn get_random(session: Arc<dyn CardChannel>, length: i32) -> Result<Vec<u8>, ExchangeError> {
+    let length = usize_from_i32("length", length)?;
+    with_channel(session, |adapter| exchange::get_random(adapter, length))
 }
 
 /// Reads the VSD container from the card (if available).
@@ -333,5 +339,27 @@ mod tests {
         })
         .unwrap_err();
         assert!(matches!(err, ExchangeError::InvalidArgument { reason } if reason == "boom"));
+    }
+
+    #[test]
+    fn get_random_rejects_negative_length() {
+        struct DummyChannel;
+
+        impl CardChannel for DummyChannel {
+            fn supports_extended_length(&self) -> bool {
+                false
+            }
+
+            fn transmit(
+                &self,
+                _command: Arc<channel::CommandApdu>,
+            ) -> Result<Arc<channel::ResponseApdu>, channel::CardChannelError> {
+                unreachable!()
+            }
+        }
+
+        let session: Arc<dyn CardChannel> = Arc::new(DummyChannel);
+        let err = super::get_random(session, -1).unwrap_err();
+        assert!(matches!(err, ExchangeError::InvalidArgument { .. }));
     }
 }

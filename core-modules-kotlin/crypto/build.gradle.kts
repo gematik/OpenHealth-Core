@@ -27,6 +27,21 @@ openHealthUniffiKmp {
     artifactId.set("crypto")
     androidNamespace.set("de.gematik.openhealth.crypto")
     pomName.set("OpenHealth Crypto")
-    pomDescription.set("OpenHealth Crypto bindings for KMP")
+    pomDescription.set("OpenHealth cryptography utilities (KMP) backed by Rust + UniFFI")
     inceptionYear.set("2026")
+}
+
+kotlin {
+    sourceSets {
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
+        val jvmTest by getting {
+            dependencies {
+                implementation(kotlin("test-junit5"))
+            }
+        }
+    }
 }

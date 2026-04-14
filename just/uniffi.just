@@ -38,17 +38,18 @@ uniffi-bindings-generate platform arch language library_file profile="release":
 
     rust_crate_dir="{{ repo_root }}/core-modules/healthcard"
     rust_manifest_path="${rust_crate_dir}/Cargo.toml"
-    just uniffi-bindings-generate-crate "{{ platform }}" "{{ arch }}" "{{ language }}" "{{ library_file }}" "${rust_crate_dir}" "${rust_manifest_path}" "{{ profile }}"
+    just uniffi-bindings-generate-crate "{{ platform }}" "{{ arch }}" "{{ language }}" "{{ library_file }}" "{{ library_file }}" "${rust_crate_dir}" "${rust_manifest_path}" "{{ profile }}"
 
 # Generate UniFFI bindings and stage the built library for an explicit crate/manifest.
 [arg('platform', pattern='linux|windows|darwin')]
 [arg('arch', pattern='x86_64|aarch64')]
 [arg('language', pattern='kotlin|swift')]
 [arg('library_file', pattern='(lib.+\.(so|dylib|a))|(.+\.dll)')]
+[arg('staged_library_file', pattern='(lib.+\.(so|dylib|a))|(.+\.dll)')]
 [arg('rust_crate_dir')]
 [arg('rust_manifest_path')]
 [arg('profile', pattern='release|debug')]
-uniffi-bindings-generate-crate platform arch language library_file rust_crate_dir rust_manifest_path profile="release":
+uniffi-bindings-generate-crate platform arch language library_file staged_library_file rust_crate_dir rust_manifest_path profile="release":
     #!/usr/bin/env bash
     set -euxo pipefail
 
@@ -116,4 +117,4 @@ uniffi-bindings-generate-crate platform arch language library_file rust_crate_di
         --out-dir "${language_dir}" \
         --no-format
 
-    cp "${library_path}" "${resources_dir}/${requested_library_file}"
+    cp "${library_path}" "${resources_dir}/{{ staged_library_file }}"

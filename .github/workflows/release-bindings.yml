@@ -172,6 +172,14 @@ jobs:
                   library_file="libopenhealth_crypto.dylib"
                 fi
                 ;;
+              crypto)
+                library_file="libcrypto.so"
+                if [ "${{ matrix.platform }}" = "windows" ]; then
+                  library_file="crypto.dll"
+                elif [ "${{ matrix.platform }}" = "darwin" ]; then
+                  library_file="libcrypto.dylib"
+                fi
+                ;;
               *)
                 echo "Unknown module: ${module}" >&2
                 exit 2
@@ -380,10 +388,17 @@ jobs:
           pattern: "kotlin-asn1-bindings-*"
           path: assembly/input/asn1
 
-      - name: Collect libraries and generated Kotlin (healthcard + asn1)
+      - name: Download crypto platform artifacts
+        uses: actions/download-artifact@v8
+        with:
+          pattern: "kotlin-crypto-bindings-*"
+          path: assembly/input/crypto
+
+      - name: Collect libraries and generated Kotlin (healthcard + asn1 + crypto)
         run: |
           just kotlin-bindings-assemble assembly/input/healthcard assembly/dist/healthcard/generated/uniffi
           just kotlin-bindings-assemble assembly/input/asn1 assembly/dist/asn1/generated/uniffi
+          just kotlin-bindings-assemble assembly/input/crypto assembly/dist/crypto/generated/uniffi
 
       - name: Upload Kotlin bindings bundle (healthcard)
         uses: actions/upload-artifact@v7
@@ -405,6 +420,16 @@ jobs:
             assembly/dist/asn1/generated/uniffi/android-jni/**
           if-no-files-found: error
 
+      - name: Upload Kotlin bindings bundle (crypto)
+        uses: actions/upload-artifact@v7
+        with:
+          name: kotlin-crypto-bindings-bundle
+          path: |
+            assembly/dist/crypto/generated/uniffi/resources/**
+            assembly/dist/crypto/generated/uniffi/kotlin/**
+            assembly/dist/crypto/generated/uniffi/android-jni/**
+          if-no-files-found: error
+
       - name: Publish Kotlin bindings to mavenLocal (assembled outputs)
         run: |
           if [ -n "${{ inputs.version }}" ]; then
@@ -412,6 +437,7 @@ jobs:
           fi
           OUT_ROOT="${GITHUB_WORKSPACE}/assembly/dist/healthcard/generated/uniffi" just kotlin-publish-local healthcard
           OUT_ROOT="${GITHUB_WORKSPACE}/assembly/dist/asn1/generated/uniffi" just kotlin-publish-local asn1
+          OUT_ROOT="${GITHUB_WORKSPACE}/assembly/dist/crypto/generated/uniffi" just kotlin-publish-local crypto
 
       - name: Stage Maven local artifacts for upload
         run: |

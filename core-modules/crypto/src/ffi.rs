@@ -22,18 +22,16 @@
 use crate::ec::ec_key::{EcCurve, EcKeyPairSpec, EcPrivateKey, EcPublicKey};
 use crate::error::CryptoError as CoreCryptoError;
 use crate::exchange::ecdh::Ecdh;
+use crate::exchange::elc::generate_elc_ephemeral_public_key_from_cvc;
 use crate::key::SecretKey;
 use crate::mac::{CmacAlgorithm, MacSpec};
-use openhealth_asn1::cv_certificate::parse_cv_certificate;
 use std::sync::Arc;
 use thiserror::Error;
 
-const TAG_CVC_PUBLIC_POINT: u8 = 0x86;
-const BRAINPOOL_P256R1_PUBLIC_KEY_LEN: usize = 65;
-
+/// UniFFI-friendly error type for exported crypto helpers.
 #[derive(Debug, Clone, Error)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Error))]
-pub enum CryptoException {
+pub enum CryptoError {
     #[error("invalid argument: {reason}")]
     InvalidArgument { reason: String },
     #[error("ASN.1 decode error: {reason}")]
@@ -42,10 +40,23 @@ pub enum CryptoException {
     Crypto { reason: String },
 }
 
-impl From<CoreCryptoError> for CryptoException {
-    fn from(error: CoreCryptoError) -> Self {
-        match error {
+impl From<CoreCryptoError> for CryptoError {
+    fn from(err: CoreCryptoError) -> Self {
+        match err {
             CoreCryptoError::Asn1Decoding(inner) => Self::Asn1Decode { reason: inner.to_string() },
+            CoreCryptoError::InvalidEcPoint(reason) => Self::InvalidArgument { reason },
+            CoreCryptoError::InvalidKeyMaterial { context } => Self::InvalidArgument { reason: context.to_owned() },
+            CoreCryptoError::InvalidKeyLength { expected, actual } => Self::InvalidArgument {
+                reason: format!("invalid key length: expected one of {expected:?}, got {actual}"),
+            },
+            CoreCryptoError::InvalidIvLength { mode, expected, actual } => Self::InvalidArgument {
+                reason: format!("invalid {mode} IV/nonce length: expected one of {expected:?}, got {actual}"),
+            },
+            CoreCryptoError::InvalidTagLength { expected_min, expected_max, actual } => Self::InvalidArgument {
+                reason: format!(
+                    "invalid AEAD tag length: expected between {expected_min} and {expected_max}, got {actual}"
+                ),
+            },
             other => Self::Crypto { reason: other.to_string() },
         }
     }
@@ -70,15 +81,15 @@ impl BrainpoolP256r1KeyPair {
 
 /// Generates the host-side ephemeral public key for ELC from the supplied end-entity CVC.
 #[uniffi::export]
-pub fn generate_elc_ephemeral_public_key(cvc: Vec<u8>) -> Result<Vec<u8>, CryptoException> {
-    extract_cvc_brainpool_p256r1_public_key(&cvc)
+pub fn generate_elc_ephemeral_public_key(cvc: Vec<u8>) -> Result<Vec<u8>, CryptoError> {
+    generate_elc_ephemeral_public_key_from_cvc(&cvc).map_err(CryptoError::from)
 }
 
 /// Generates a fresh brainpoolP256r1 EC key pair and returns raw key bytes.
 #[uniffi::export]
-pub fn generate_brainpool_p256r1_key_pair() -> Result<Arc<BrainpoolP256r1KeyPair>, CryptoException> {
+pub fn generate_brainpool_p256r1_key_pair() -> Result<Arc<BrainpoolP256r1KeyPair>, CryptoError> {
     let (public_key, private_key) =
-        EcKeyPairSpec { curve: EcCurve::BrainpoolP256r1 }.generate_keypair().map_err(CryptoException::from)?;
+        EcKeyPairSpec { curve: EcCurve::BrainpoolP256r1 }.generate_keypair().map_err(CryptoError::from)?;
     Ok(Arc::new(BrainpoolP256r1KeyPair {
         private_key: SecretKey::new_secret(private_key.as_bytes().to_vec()),
         public_key: public_key.as_bytes().to_vec(),
@@ -87,133 +98,72 @@ pub fn generate_brainpool_p256r1_key_pair() -> Result<Arc<BrainpoolP256r1KeyPair
 
 /// Derives the raw ECDH shared secret on brainpoolP256r1 from raw private/public key bytes.
 #[uniffi::export]
-pub fn brainpool_p256r1_ecdh(private_key: Vec<u8>, peer_public_key: Vec<u8>) -> Result<Vec<u8>, CryptoException> {
+pub fn brainpool_p256r1_ecdh(private_key: Vec<u8>, peer_public_key: Vec<u8>) -> Result<Vec<u8>, CryptoError> {
     if private_key.is_empty() {
-        return Err(CryptoException::InvalidArgument { reason: "private key must not be empty".to_string() });
+        return Err(CryptoError::InvalidArgument { reason: "private key must not be empty".to_string() });
     }
+
     let private_key = EcPrivateKey::from_bytes(EcCurve::BrainpoolP256r1, private_key);
-    let peer_public_key =
-        EcPublicKey::from_uncompressed(EcCurve::BrainpoolP256r1, peer_public_key).map_err(CryptoException::from)?;
-    let shared_secret =
-        Ecdh::new(private_key).and_then(|ecdh| ecdh.derive(peer_public_key)).map_err(CryptoException::from)?;
+    let peer_public_key = EcPublicKey::from_uncompressed(EcCurve::BrainpoolP256r1, peer_public_key)
+        .map_err(CryptoError::from)?;
+    let shared_secret = Ecdh::new(private_key).and_then(|ecdh| ecdh.derive(peer_public_key)).map_err(CryptoError::from)?;
     Ok(shared_secret.as_ref().to_vec())
 }
 
 /// Computes AES-CMAC and returns the requested number of leading tag bytes.
 #[uniffi::export]
-pub fn aes_cmac(key: Vec<u8>, message: Vec<u8>, output_length: i32) -> Result<Vec<u8>, CryptoException> {
-    let mut mac = MacSpec::Cmac { algorithm: CmacAlgorithm::Aes }
-        .create(SecretKey::new_secret(key))
-        .map_err(CryptoException::from)?;
-    mac.update(&message).map_err(CryptoException::from)?;
-    let tag = mac.finalize().map_err(CryptoException::from)?;
-    let output_length = usize::try_from(output_length).map_err(|_| CryptoException::InvalidArgument {
+pub fn aes_cmac(key: Vec<u8>, message: Vec<u8>, output_length: i32) -> Result<Vec<u8>, CryptoError> {
+    let mut mac =
+        MacSpec::Cmac { algorithm: CmacAlgorithm::Aes }.create(SecretKey::new_secret(key)).map_err(CryptoError::from)?;
+    mac.update(&message).map_err(CryptoError::from)?;
+    let tag = mac.finalize().map_err(CryptoError::from)?;
+    let output_length = usize::try_from(output_length).map_err(|_| CryptoError::InvalidArgument {
         reason: "requested CMAC output length must not be negative".to_string(),
     })?;
     if output_length > tag.len() {
-        return Err(CryptoException::InvalidArgument {
+        return Err(CryptoError::InvalidArgument {
             reason: format!("requested CMAC output length {output_length} exceeds tag length {}", tag.len()),
         });
     }
     Ok(tag[..output_length].to_vec())
 }
 
-fn extract_cvc_brainpool_p256r1_public_key(cvc: &[u8]) -> Result<Vec<u8>, CryptoException> {
-    let certificate =
-        parse_cv_certificate(cvc).map_err(|err| CryptoException::Asn1Decode { reason: err.to_string() })?;
-    let public_key = extract_single_byte_tag_value(&certificate.body.public_key.key_data, TAG_CVC_PUBLIC_POINT)?;
-    if public_key.len() != BRAINPOOL_P256R1_PUBLIC_KEY_LEN || public_key.first() != Some(&0x04) {
-        return Err(CryptoException::InvalidArgument {
-            reason: "CVC does not contain a valid uncompressed brainpoolP256r1 public key".to_string(),
-        });
-    }
-    Ok(public_key)
-}
-
-fn extract_single_byte_tag_value(data: &[u8], expected_tag: u8) -> Result<Vec<u8>, CryptoException> {
-    let mut offset = 0usize;
-    while offset < data.len() {
-        let tag = data[offset];
-        offset += 1;
-
-        let (len, len_octets) = parse_definite_length(&data[offset..])?;
-        offset += len_octets;
-
-        let end = offset
-            .checked_add(len)
-            .ok_or_else(|| CryptoException::InvalidArgument { reason: "TLV length overflow".to_string() })?;
-        if end > data.len() {
-            return Err(CryptoException::InvalidArgument { reason: "TLV value exceeds input length".to_string() });
-        }
-
-        if tag == expected_tag {
-            return Ok(data[offset..end].to_vec());
-        }
-        offset = end;
-    }
-
-    Err(CryptoException::InvalidArgument { reason: format!("missing TLV tag 0x{expected_tag:02X}") })
-}
-
-fn parse_definite_length(data: &[u8]) -> Result<(usize, usize), CryptoException> {
-    let first =
-        *data.first().ok_or_else(|| CryptoException::InvalidArgument { reason: "missing TLV length".to_string() })?;
-    if (first & 0x80) == 0 {
-        return Ok((first as usize, 1));
-    }
-
-    let count = (first & 0x7F) as usize;
-    if count == 0 {
-        return Err(CryptoException::InvalidArgument { reason: "indefinite lengths are not supported".to_string() });
-    }
-    if count > std::mem::size_of::<usize>() {
-        return Err(CryptoException::InvalidArgument { reason: "TLV length uses too many octets".to_string() });
-    }
-    if data.len() < 1 + count {
-        return Err(CryptoException::InvalidArgument { reason: "truncated TLV length".to_string() });
-    }
-
-    let mut len = 0usize;
-    for byte in &data[1..=count] {
-        len = len
-            .checked_mul(256)
-            .and_then(|value| value.checked_add(*byte as usize))
-            .ok_or_else(|| CryptoException::InvalidArgument { reason: "TLV length overflow".to_string() })?;
-    }
-    Ok((len, 1 + count))
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fs;
+    use std::path::PathBuf;
 
     fn hex_to_bytes(hex_str: &str) -> Vec<u8> {
         hex::decode(hex_str.replace(char::is_whitespace, "")).unwrap()
     }
 
+    fn load_fixture(name: &str) -> Vec<u8> {
+        let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        path.pop();
+        path.pop();
+        path.push("test-vectors");
+        path.push("cvc-chain");
+        path.push("pki_cvc_g2_input");
+        path.push("Atos_CVC-Root-CA");
+        path.push(name);
+        fs::read(&path).expect("fixture should be readable")
+    }
+
     #[test]
-    fn generate_elc_ephemeral_public_key_extracts_cvc_public_point() {
-        let cvc = hex_to_bytes(
-            "\
-            7f2181da7f4e81935f290170420844454758581102237f494b06062b24030503\
-            018641045e7ae614740e7012e350de71c10021ec668f21d6859591b4f709c4c7\
-            3cce91c5a7fb0be1327e59ff1d0cb402b9c2bb0dc0432fa566bd4ff5f532258c\
-            7364aecd5f200c0009802768831100001565497f4c1306082a8214004c048118\
-            5307000000000000005f25060204000400025f24060209000400015f37409d24\
-            4d497832172304f298bd49f91f45bf346cb306adeb44b0742017a074902146cc\
-            cbdbb35426c2eb602d38253d92ebe1ac6905f388407398a474c4ea612d84",
-        );
+    fn generate_elc_ephemeral_public_key_exports_public_key_bytes() {
+        let cvc_bytes = load_fixture("DEGXX820214.cvc");
 
-        let public_key = generate_elc_ephemeral_public_key(cvc).unwrap();
+        let pk = generate_elc_ephemeral_public_key(cvc_bytes).expect("key generation succeeds");
 
-        assert_eq!(public_key.len(), BRAINPOOL_P256R1_PUBLIC_KEY_LEN);
-        assert_eq!(
-            hex::encode(public_key),
-            concat!(
-                "045e7ae614740e7012e350de71c10021ec668f21d6859591b4f709c4c73cce91",
-                "c5a7fb0be1327e59ff1d0cb402b9c2bb0dc0432fa566bd4ff5f532258c7364aecd"
-            )
-        );
+        assert!(!pk.is_empty());
+    }
+
+    #[test]
+    fn generate_elc_ephemeral_public_key_rejects_invalid_input() {
+        let result = generate_elc_ephemeral_public_key(Vec::new());
+
+        assert!(matches!(result, Err(CryptoError::Asn1Decode { .. })));
     }
 
     #[test]
