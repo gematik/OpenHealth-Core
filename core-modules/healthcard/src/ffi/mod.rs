@@ -28,6 +28,7 @@
 //! See `core-modules/healthcard/src/ffi/README.md` for an overview of the exported API.
 
 mod channel;
+mod command;
 mod exchange;
 pub mod maybe_zeroizing_vec;
 mod secure_channel;
