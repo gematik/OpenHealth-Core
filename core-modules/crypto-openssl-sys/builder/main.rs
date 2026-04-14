@@ -495,33 +495,29 @@ fn build_openssl_bindings() {
     let wrapper_header = manifest_dir.join("wrapper/rust_wrapper.h");
     let bindings_path = out_dir.join("ossl.rs");
 
-    if env::var("OPENSSL_SYS_USE_PREGENERATED_BINDINGS").ok().as_deref() == Some("1") {
-        fs::copy(manifest_dir.join("src/ossl.rs"), &bindings_path).expect("Failed to copy pregenerated ossl bindings");
-    } else {
-        // Generate ossl
-        let bindings = bindgen::Builder::default()
-            .derive_copy(true)
-            .derive_debug(true)
-            .derive_default(true)
-            .derive_eq(true)
-            .allowlist_file(r".*(/|\\)openssl((/|\\)[^/\\]+)+\.h")
-            .allowlist_file(r".*(/|\\)rust_wrapper\.h")
-            .rustified_enum(r"point_conversion_form_t")
-            .default_macro_constant_type(bindgen::MacroTypeVariation::Signed)
-            .generate_comments(true)
-            .fit_macro_constants(false)
-            .size_t_is_usize(true)
-            .layout_tests(true)
-            .prepend_enum_name(true)
-            .raw_line(get_license_header())
-            .formatter(bindgen::Formatter::Rustfmt)
-            .header(wrapper_header.display().to_string())
-            .clang_args(clang_args)
-            .generate()
-            .expect("Unable to generate ossl");
+    // Generate ossl
+    let bindings = bindgen::Builder::default()
+        .derive_copy(true)
+        .derive_debug(true)
+        .derive_default(true)
+        .derive_eq(true)
+        .allowlist_file(r".*(/|\\)openssl((/|\\)[^/\\]+)+\.h")
+        .allowlist_file(r".*(/|\\)rust_wrapper\.h")
+        .rustified_enum(r"point_conversion_form_t")
+        .default_macro_constant_type(bindgen::MacroTypeVariation::Signed)
+        .generate_comments(true)
+        .fit_macro_constants(false)
+        .size_t_is_usize(true)
+        .layout_tests(true)
+        .prepend_enum_name(true)
+        .raw_line(get_license_header())
+        .formatter(bindgen::Formatter::Rustfmt)
+        .header(wrapper_header.display().to_string())
+        .clang_args(clang_args)
+        .generate()
+        .expect("Unable to generate ossl");
 
-        bindings.write_to_file(&bindings_path).expect("Failed to write ossl to file");
-    }
+    bindings.write_to_file(&bindings_path).expect("Failed to write ossl to file");
 
     println!("cargo:rerun-if-changed=wrapper/rust_wrapper.h");
 
