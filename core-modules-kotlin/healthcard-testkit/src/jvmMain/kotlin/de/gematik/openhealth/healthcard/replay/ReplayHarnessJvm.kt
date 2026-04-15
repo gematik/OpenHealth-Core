@@ -67,7 +67,7 @@ actual class SecureChannelHandle internal constructor(
         return VerifyPinOutcome.valueOf(result.outcome.name)
     }
 
-    actual fun getRandom(length: UInt): ByteArray = secureChannel.getRandom(length)
+    actual fun getRandom(length: UInt): ByteArray = secureChannel.getRandom(length.toInt())
 
     actual fun readVsd(): ByteArray = secureChannel.readVsd()
 
