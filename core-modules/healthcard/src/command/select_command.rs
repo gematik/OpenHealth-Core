@@ -23,7 +23,7 @@ use crate::command::apdu::EXPECTED_LENGTH_WILDCARD_SHORT;
 use crate::command::health_card_command::{ExpectedLength, HealthCardCommand};
 use crate::command::health_card_status::SELECT_STATUS;
 use crate::identifier::{ApplicationIdentifier, FileIdentifier};
-use asn1::maybe_zeroizing_vec::VecOfU8;
+use openhealth_asn1::maybe_zeroizing_vec::VecOfU8;
 
 const CLA: u8 = 0x00;
 const INS: u8 = 0xA4;

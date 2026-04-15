@@ -23,9 +23,9 @@ use crate::card::card_key_reference::CardKeyReference;
 use crate::card::pso_algorithm::PsoAlgorithm;
 use crate::command::health_card_command::HealthCardCommand;
 use crate::command::health_card_status::MANAGE_SECURITY_ENVIRONMENT_STATUS;
-use asn1::encoder::Asn1Encoder;
-use asn1::error::Asn1EncoderError;
-use asn1::tag::{TagNumberExt, UniversalTag};
+use openhealth_asn1::encoder::Asn1Encoder;
+use openhealth_asn1::error::Asn1EncoderError;
+use openhealth_asn1::tag::{TagNumberExt, UniversalTag};
 use thiserror::Error;
 
 /// CLA byte for the MANAGE SECURITY ENVIRONMENT command

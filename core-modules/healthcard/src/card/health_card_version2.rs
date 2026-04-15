@@ -19,9 +19,9 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use asn1::decoder::{Asn1Decoder, Asn1Length};
-use asn1::error::Asn1DecoderError;
-use asn1::tag::Asn1Id;
+use openhealth_asn1::decoder::{Asn1Decoder, Asn1Length};
+use openhealth_asn1::error::Asn1DecoderError;
+use openhealth_asn1::tag::Asn1Id;
 use std::collections::HashMap;
 use thiserror::Error;
 

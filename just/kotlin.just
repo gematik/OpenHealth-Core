@@ -266,6 +266,11 @@ kotlin-bindings-assemble input_root output_root:
 
 # Publish the Kotlin `healthcard` module to the local Maven repository.
 [arg('module', pattern='healthcard|asn1|crypto')]
-kotlin-publish-local module="healthcard":
-    cd "{{ repo_root }}/core-modules-kotlin" \
-      && ./gradlew --no-daemon :{{ module }}:publishToMavenLocal
+kotlin-publish-local module version:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    cd "{{ repo_root }}/core-modules-kotlin"
+
+    ORG_GRADLE_PROJECT_version="{{ version }}" \
+      ./gradlew --no-daemon :{{ module }}:publishToMavenLocal

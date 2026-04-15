@@ -19,20 +19,20 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use asn1::cv_certificate::CVCertificate;
-use asn1::decoder::Asn1Decoder;
-use asn1::extraction::extract_context_values;
-use asn1::tag::TagNumberExt;
-use crypto::exchange::elc::generate_elc_ephemeral_public_key_from_cvc;
-use healthcard::command::general_authenticate_command::GeneralAuthenticateCommand;
-use healthcard::command::health_card_command::HealthCardCommand;
-use healthcard::command::list_public_key_command::ListPublicKeyCommand;
-use healthcard::command::manage_security_environment_command::ManageSecurityEnvironmentCommand;
-use healthcard::command::pso_compute_digital_signature_command::PsoComputeDigitalSignatureCommand;
-use healthcard::command::select_command::SelectCommand;
-use healthcard::exchange::certificate::{retrieve_certificate_from, CertificateFile};
-use healthcard::exchange::channel::{CardChannel, CardChannelExt};
-use healthcard::exchange::ExchangeError;
+use openhealth_asn1::cv_certificate::CVCertificate;
+use openhealth_asn1::decoder::Asn1Decoder;
+use openhealth_asn1::extraction::extract_context_values;
+use openhealth_asn1::tag::TagNumberExt;
+use openhealth_crypto::exchange::elc::generate_elc_ephemeral_public_key_from_cvc;
+use openhealth_healthcard::command::general_authenticate_command::GeneralAuthenticateCommand;
+use openhealth_healthcard::command::health_card_command::HealthCardCommand;
+use openhealth_healthcard::command::list_public_key_command::ListPublicKeyCommand;
+use openhealth_healthcard::command::manage_security_environment_command::ManageSecurityEnvironmentCommand;
+use openhealth_healthcard::command::pso_compute_digital_signature_command::PsoComputeDigitalSignatureCommand;
+use openhealth_healthcard::command::select_command::SelectCommand;
+use openhealth_healthcard::exchange::certificate::{retrieve_certificate_from, CertificateFile};
+use openhealth_healthcard::exchange::channel::{CardChannel, CardChannelExt};
+use openhealth_healthcard::exchange::ExchangeError;
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};

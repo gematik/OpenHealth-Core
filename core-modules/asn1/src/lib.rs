@@ -31,4 +31,4 @@ pub mod oid;
 pub mod tag;
 
 #[cfg(feature = "uniffi")]
-uniffi::setup_scaffolding!();
+uniffi::setup_scaffolding!("openhealth_asn1");

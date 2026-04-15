@@ -51,7 +51,7 @@ mod tests {
     use super::*;
     use crate::command::select_command::SelectCommand;
     use crate::exchange::test_utils::MockSession;
-    use asn1::maybe_zeroizing_vec::VecOfU8;
+    use openhealth_asn1::maybe_zeroizing_vec::VecOfU8;
 
     #[test]
     fn random_success() {

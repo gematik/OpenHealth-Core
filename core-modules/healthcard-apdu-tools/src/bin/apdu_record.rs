@@ -27,23 +27,23 @@ fn main() {
 #[cfg(feature = "pcsc")]
 fn main() {
     use clap::Parser;
-    use crypto::ec::ec_key::{EcCurve, EcKeyPairSpec};
-    use healthcard::command::apdu::{
-        CardCommandApdu, LengthClass, EXPECTED_LENGTH_WILDCARD_EXTENDED, EXPECTED_LENGTH_WILDCARD_SHORT,
-    };
-    use healthcard::exchange::certificate::{retrieve_certificate_from, CertificateFile};
-    use healthcard::exchange::channel::CardChannel;
-    use healthcard::exchange::secure_channel::{establish_secure_channel_with, CardAccessNumber};
-    use healthcard::exchange::{
-        change_pin, change_pin_with_puk, get_random, read_vsd, sign_challenge, unlock_egk_with_puk, verify_pin,
-        CardPin, HealthCardVerifyPinResult,
-    };
     use healthcard_apdu_tools::trusted_channel::{
         establish_trusted_channel, establish_trusted_channel_with_cvcs,
         establish_trusted_channel_with_cvcs_and_options_detailed, load_cvc_chain_from_dir,
         load_cvc_chain_from_dir_for_cars, TrustedChannelOptions, TrustedChannelResult,
     };
     use healthcard_apdu_tools::{PcscChannel, RecordingChannel};
+    use openhealth_crypto::ec::ec_key::{EcCurve, EcKeyPairSpec};
+    use openhealth_healthcard::command::apdu::{
+        CardCommandApdu, LengthClass, EXPECTED_LENGTH_WILDCARD_EXTENDED, EXPECTED_LENGTH_WILDCARD_SHORT,
+    };
+    use openhealth_healthcard::exchange::certificate::{retrieve_certificate_from, CertificateFile};
+    use openhealth_healthcard::exchange::channel::CardChannel;
+    use openhealth_healthcard::exchange::secure_channel::{establish_secure_channel_with, CardAccessNumber};
+    use openhealth_healthcard::exchange::{
+        change_pin, change_pin_with_puk, get_random, read_vsd, sign_challenge, unlock_egk_with_puk, verify_pin,
+        CardPin, HealthCardVerifyPinResult,
+    };
 
     if let Err(err) = run() {
         eprintln!("{err}");

@@ -31,7 +31,9 @@ This document summarizes the publicly released versions of OpenHealth Core.
 
 This release captures the changes since `0.2.0-alpha1`.
 
-No changes documented yet.
+- Expose exchange-layer card operations (PIN verify/unlock, random/VSD/cert/sign) via FFI ([#47](https://github.com/gematik/OpenHealth-Core/pull/47)).
+- Document FFI exported APIs ([#47](https://github.com/gematik/OpenHealth-Core/pull/47)).
+- Align JVM/UniFFI component naming and published native artifacts to the `openhealth_*` namespace for `asn1`, `crypto`, and `healthcard` (breaking change).
 
 ### 0.2.0-alpha1
 

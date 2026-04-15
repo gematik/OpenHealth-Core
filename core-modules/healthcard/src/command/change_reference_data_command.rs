@@ -24,7 +24,7 @@ use crate::card::encrypted_pin_format2::EncryptedPinFormat2;
 use crate::card::password_reference::PasswordReference;
 use crate::command::health_card_command::HealthCardCommand;
 use crate::command::health_card_status::CHANGE_REFERENCE_DATA_STATUS;
-use asn1::maybe_zeroizing_vec::VecOfU8;
+use openhealth_asn1::maybe_zeroizing_vec::VecOfU8;
 
 /// CLA byte for the CHANGE REFERENCE DATA command
 const CLA: u8 = 0x00;
@@ -84,7 +84,7 @@ impl ChangeReferenceDataCommand for HealthCardCommand {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use asn1::maybe_zeroizing_vec::VecOfU8;
+    use openhealth_asn1::maybe_zeroizing_vec::VecOfU8;
 
     #[test]
     fn test_change_reference_data_command() {

@@ -95,8 +95,15 @@ uniffi-bindings-generate-crate platform arch language library_file staged_librar
           --features uniffi
     fi
 
-    library_path="${CARGO_TARGET_DIR}/${cargo_profile_dir}/{{ library_file }}"
-    test -f "${library_path}"
+    requested_library_file="{{ library_file }}"
+    library_path="${CARGO_TARGET_DIR}/${cargo_profile_dir}/${requested_library_file}"
+
+    if [ ! -f "${library_path}" ]; then
+        fallback_library_file="${requested_library_file/openhealth_/}"
+        fallback_library_path="${CARGO_TARGET_DIR}/${cargo_profile_dir}/${fallback_library_file}"
+        test -f "${fallback_library_path}"
+        library_path="${fallback_library_path}"
+    fi
 
     cargo run \
       --manifest-path "{{ uniffi_cli }}" \

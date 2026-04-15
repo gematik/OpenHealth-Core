@@ -493,6 +493,7 @@ fn build_openssl_bindings() {
         }
     }
     let wrapper_header = manifest_dir.join("wrapper/rust_wrapper.h");
+    let bindings_path = out_dir.join("ossl.rs");
 
     // Generate ossl
     let bindings = bindgen::Builder::default()
@@ -516,7 +517,6 @@ fn build_openssl_bindings() {
         .generate()
         .expect("Unable to generate ossl");
 
-    let bindings_path = out_dir.join("ossl.rs");
     bindings.write_to_file(&bindings_path).expect("Failed to write ossl to file");
 
     println!("cargo:rerun-if-changed=wrapper/rust_wrapper.h");

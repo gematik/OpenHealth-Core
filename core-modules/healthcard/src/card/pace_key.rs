@@ -21,10 +21,10 @@
 
 use std::fmt;
 
-use crypto::digest::DigestSpec;
-use crypto::error::CryptoError;
-use crypto::key::SecretKey;
-use crypto::utils::constant_time::content_constant_time_equals;
+use openhealth_crypto::digest::DigestSpec;
+use openhealth_crypto::error::CryptoError;
+use openhealth_crypto::key::SecretKey;
+use openhealth_crypto::utils::constant_time::content_constant_time_equals;
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 /// PACE key derivation modes as defined in BSI TR-03110.

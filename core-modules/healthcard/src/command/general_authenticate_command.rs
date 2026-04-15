@@ -19,9 +19,9 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use asn1::encoder::Asn1Encoder;
-use asn1::error::Asn1EncoderError;
-use asn1::tag::TagNumberExt;
+use openhealth_asn1::encoder::Asn1Encoder;
+use openhealth_asn1::error::Asn1EncoderError;
+use openhealth_asn1::tag::TagNumberExt;
 use thiserror::Error;
 
 use crate::command::health_card_command::{ExpectedLength, HealthCardCommand};
@@ -296,8 +296,8 @@ impl GeneralAuthenticateCommand for HealthCardCommand {
 mod tests {
     use super::*;
     use crate::command::apdu::EXPECTED_LENGTH_WILDCARD_SHORT;
-    use asn1::maybe_zeroizing_vec::ZeroizingOption;
-    use asn1::tag::{Asn1Class, Asn1Form};
+    use openhealth_asn1::maybe_zeroizing_vec::ZeroizingOption;
+    use openhealth_asn1::tag::{Asn1Class, Asn1Form};
 
     #[test]
     fn test_general_authenticate_without_chaining() {

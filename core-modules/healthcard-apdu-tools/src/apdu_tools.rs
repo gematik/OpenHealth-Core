@@ -19,10 +19,10 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use healthcard::command::apdu::{CardCommandApdu, CardResponseApdu};
-use healthcard::exchange::channel::CardChannel;
-use healthcard::exchange::ExchangeError;
 use healthcard_apdu_base::{EcKeyPairGenerator, ReplaySession, Transcript, TranscriptError};
+use openhealth_healthcard::command::apdu::{CardCommandApdu, CardResponseApdu};
+use openhealth_healthcard::exchange::channel::CardChannel;
+use openhealth_healthcard::exchange::ExchangeError;
 use std::path::Path;
 
 #[cfg(feature = "pcsc")]
@@ -204,8 +204,8 @@ impl CardChannel for PcscChannel {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use healthcard::command::apdu::{CardCommandApdu, CardResponseApdu};
-    use healthcard::exchange::channel::CardChannel;
+    use openhealth_healthcard::command::apdu::{CardCommandApdu, CardResponseApdu};
+    use openhealth_healthcard::exchange::channel::CardChannel;
 
     struct MockSession {
         responses: Vec<CardResponseApdu>,
@@ -254,7 +254,7 @@ mod tests {
 
     #[test]
     fn fixed_key_generator_returns_keys() {
-        let curve = crypto::ec::ec_key::EcCurve::BrainpoolP256r1;
+        let curve = openhealth_crypto::ec::ec_key::EcCurve::BrainpoolP256r1;
         let keys = vec![vec![0x01; 32], vec![0x02; 32]];
         let mut generator = healthcard_apdu_base::FixedKeyGenerator::new(keys).generator();
         let (pub1, priv1) = generator(curve.clone()).unwrap();
@@ -277,7 +277,7 @@ mod tests {
         assert_eq!(parsed.keys().unwrap(), keys_hex.as_slice());
 
         let mut generator = parsed.fixed_key_generator().unwrap().unwrap();
-        let curve = crypto::ec::ec_key::EcCurve::BrainpoolP256r1;
+        let curve = openhealth_crypto::ec::ec_key::EcCurve::BrainpoolP256r1;
         let (_pub1, priv1) = generator(curve.clone()).unwrap();
         assert_eq!(priv1.as_bytes(), key1.as_slice());
         let (_pub2, priv2) = generator(curve).unwrap();
@@ -287,9 +287,9 @@ mod tests {
     #[cfg(feature = "pcsc")]
     mod pcsc_tests {
         use super::*;
-        use healthcard::command::health_card_command::HealthCardCommand;
-        use healthcard::command::SelectCommand;
-        use healthcard::exchange::channel::CardChannelExt;
+        use openhealth_healthcard::command::health_card_command::HealthCardCommand;
+        use openhealth_healthcard::command::SelectCommand;
+        use openhealth_healthcard::exchange::channel::CardChannelExt;
 
         #[test]
         fn pcsc_record_and_replay_select_mf() {

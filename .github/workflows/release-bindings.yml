@@ -149,27 +149,27 @@ jobs:
           for module in healthcard asn1 crypto; do
             case "${module}" in
               healthcard)
-                library_file="libhealthcard.so"
+                library_file="libopenhealth_healthcard.so"
                 if [ "${{ matrix.platform }}" = "windows" ]; then
-                  library_file="healthcard.dll"
+                  library_file="openhealth_healthcard.dll"
                 elif [ "${{ matrix.platform }}" = "darwin" ]; then
-                  library_file="libhealthcard.dylib"
+                  library_file="libopenhealth_healthcard.dylib"
                 fi
                 ;;
               asn1)
-                library_file="libasn1.so"
+                library_file="libopenhealth_asn1.so"
                 if [ "${{ matrix.platform }}" = "windows" ]; then
-                  library_file="asn1.dll"
+                  library_file="openhealth_asn1.dll"
                 elif [ "${{ matrix.platform }}" = "darwin" ]; then
-                  library_file="libasn1.dylib"
+                  library_file="libopenhealth_asn1.dylib"
                 fi
                 ;;
               crypto)
-                library_file="libcrypto.so"
+                library_file="libopenhealth_crypto.so"
                 if [ "${{ matrix.platform }}" = "windows" ]; then
-                  library_file="crypto.dll"
+                  library_file="openhealth_crypto.dll"
                 elif [ "${{ matrix.platform }}" = "darwin" ]; then
-                  library_file="libcrypto.dylib"
+                  library_file="libopenhealth_crypto.dylib"
                 fi
                 ;;
               *)
@@ -427,9 +427,15 @@ jobs:
           if [ -n "${{ inputs.version }}" ]; then
             export ORG_GRADLE_PROJECT_version="${{ inputs.version }}"
           fi
-          OUT_ROOT="${GITHUB_WORKSPACE}/assembly/dist/healthcard/generated/uniffi" just kotlin-publish-local healthcard
-          OUT_ROOT="${GITHUB_WORKSPACE}/assembly/dist/asn1/generated/uniffi" just kotlin-publish-local asn1
-          OUT_ROOT="${GITHUB_WORKSPACE}/assembly/dist/crypto/generated/uniffi" just kotlin-publish-local crypto
+
+          cd core-modules-kotlin
+
+          OUT_ROOT="${GITHUB_WORKSPACE}/assembly/dist/healthcard/generated/uniffi" \
+            ./gradlew --no-daemon :healthcard:publishToMavenLocal
+          OUT_ROOT="${GITHUB_WORKSPACE}/assembly/dist/asn1/generated/uniffi" \
+            ./gradlew --no-daemon :asn1:publishToMavenLocal
+          OUT_ROOT="${GITHUB_WORKSPACE}/assembly/dist/crypto/generated/uniffi" \
+            ./gradlew --no-daemon :crypto:publishToMavenLocal
 
       - name: Stage Maven local artifacts for upload
         run: |

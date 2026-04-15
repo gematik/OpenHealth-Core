@@ -31,9 +31,9 @@ use crate::exchange::{
     change_pin as exchange_change_pin, change_pin_with_puk as exchange_change_pin_with_puk,
     unlock_egk_with_puk as exchange_unlock_egk_with_puk,
 };
-use crypto::ec::ec_key::{EcCurve, EcPrivateKey};
-use crypto::error::CryptoError;
 use num_bigint::{BigInt, Sign};
+use openhealth_crypto::ec::ec_key::{EcCurve, EcPrivateKey};
+use openhealth_crypto::error::CryptoError;
 use std::convert::TryInto;
 use std::sync::{Arc, Mutex};
 use thiserror::Error;

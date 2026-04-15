@@ -21,7 +21,7 @@
 
 use crate::command::health_card_command::{ExpectedLength, HealthCardCommand};
 use crate::command::health_card_status::INTERNAL_AUTHENTICATE_STATUS;
-use asn1::maybe_zeroizing_vec::VecOfU8;
+use openhealth_asn1::maybe_zeroizing_vec::VecOfU8;
 
 /// CLA byte for INTERNAL AUTHENTICATE (ISO/IEC 7816-4).
 const CLA: u8 = 0x00;

@@ -55,4 +55,4 @@ pub mod utils;
 pub mod ec;
 
 #[cfg(feature = "uniffi")]
-uniffi::setup_scaffolding!();
+uniffi::setup_scaffolding!("openhealth_crypto");

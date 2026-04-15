@@ -19,7 +19,7 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use asn1::maybe_zeroizing_vec::VecOfU8 as Asn1VecOfU8;
+use openhealth_asn1::maybe_zeroizing_vec::VecOfU8 as Asn1VecOfU8;
 use std::sync::Arc;
 
 /// a wrapped Vec<u8> that might be zeroized (depending on it's configuration)

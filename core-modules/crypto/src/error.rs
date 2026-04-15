@@ -20,8 +20,8 @@
 // find details in the "Readme" file.
 
 use crate::ossl::api::OsslError;
-use asn1::error::Asn1DecoderError;
-use asn1::error::Asn1EncoderError;
+use openhealth_asn1::error::Asn1DecoderError;
+use openhealth_asn1::error::Asn1EncoderError;
 
 /// Errors returned by high-level cryptographic operations.
 #[derive(Debug, thiserror::Error)]

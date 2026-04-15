@@ -19,8 +19,13 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
+use crate::ec::ec_key::{EcCurve, EcKeyPairSpec, EcPrivateKey, EcPublicKey};
 use crate::error::CryptoError as CoreCryptoError;
+use crate::exchange::ecdh::Ecdh;
 use crate::exchange::elc::generate_elc_ephemeral_public_key_from_cvc;
+use crate::key::SecretKey;
+use crate::mac::{CmacAlgorithm, MacSpec};
+use std::sync::Arc;
 use thiserror::Error;
 
 /// UniFFI-friendly error type for exported crypto helpers.
@@ -57,10 +62,72 @@ impl From<CoreCryptoError> for CryptoError {
     }
 }
 
+#[derive(uniffi::Object)]
+pub struct BrainpoolP256r1KeyPair {
+    private_key: SecretKey,
+    public_key: Vec<u8>,
+}
+
+#[uniffi::export]
+impl BrainpoolP256r1KeyPair {
+    pub fn private_key(&self) -> Vec<u8> {
+        self.private_key.as_ref().to_vec()
+    }
+
+    pub fn public_key(&self) -> Vec<u8> {
+        self.public_key.clone()
+    }
+}
+
 /// Generates the host-side ephemeral public key for ELC from the supplied end-entity CVC.
 #[uniffi::export]
 pub fn generate_elc_ephemeral_public_key(cvc: Vec<u8>) -> Result<Vec<u8>, CryptoError> {
     generate_elc_ephemeral_public_key_from_cvc(&cvc).map_err(CryptoError::from)
+}
+
+/// Generates a fresh brainpoolP256r1 EC key pair and returns raw key bytes.
+#[uniffi::export]
+pub fn generate_brainpool_p256r1_key_pair() -> Result<Arc<BrainpoolP256r1KeyPair>, CryptoError> {
+    let (public_key, private_key) =
+        EcKeyPairSpec { curve: EcCurve::BrainpoolP256r1 }.generate_keypair().map_err(CryptoError::from)?;
+    Ok(Arc::new(BrainpoolP256r1KeyPair {
+        private_key: SecretKey::new_secret(private_key.as_bytes().to_vec()),
+        public_key: public_key.as_bytes().to_vec(),
+    }))
+}
+
+/// Derives the raw ECDH shared secret on brainpoolP256r1 from raw private/public key bytes.
+#[uniffi::export]
+pub fn brainpool_p256r1_ecdh(private_key: Vec<u8>, peer_public_key: Vec<u8>) -> Result<Vec<u8>, CryptoError> {
+    if private_key.is_empty() {
+        return Err(CryptoError::InvalidArgument { reason: "private key must not be empty".to_string() });
+    }
+
+    let private_key = EcPrivateKey::from_bytes(EcCurve::BrainpoolP256r1, private_key);
+    let peer_public_key =
+        EcPublicKey::from_uncompressed(EcCurve::BrainpoolP256r1, peer_public_key).map_err(CryptoError::from)?;
+    let shared_secret =
+        Ecdh::new(private_key).and_then(|ecdh| ecdh.derive(peer_public_key)).map_err(CryptoError::from)?;
+    Ok(shared_secret.as_ref().to_vec())
+}
+
+/// Computes AES-CMAC and returns the requested number of leading tag bytes.
+#[uniffi::export]
+pub fn aes_cmac(key: Vec<u8>, message: Vec<u8>, output_length: i32) -> Result<Vec<u8>, CryptoError> {
+    let mut mac = MacSpec::Cmac { algorithm: CmacAlgorithm::Aes }
+        .create(SecretKey::new_secret(key))
+        .map_err(CryptoError::from)?;
+    mac.update(&message).map_err(CryptoError::from)?;
+    let tag = mac.finalize().map_err(CryptoError::from)?;
+    let output_length = usize::try_from(output_length).map_err(|_| CryptoError::InvalidArgument {
+        reason: "requested CMAC output length must not be negative".to_string(),
+    })?;
+    if output_length > tag.len() {
+        return Err(CryptoError::InvalidArgument {
+            reason: format!("requested CMAC output length {output_length} exceeds tag length {}", tag.len()),
+        });
+    }
+    Ok(tag[..output_length].to_vec())
 }
 
 #[cfg(test)]
@@ -68,6 +135,10 @@ mod tests {
     use super::*;
     use std::fs;
     use std::path::PathBuf;
+
+    fn hex_to_bytes(hex_str: &str) -> Vec<u8> {
+        hex::decode(hex_str.replace(char::is_whitespace, "")).unwrap()
+    }
 
     fn load_fixture(name: &str) -> Vec<u8> {
         let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
@@ -95,5 +166,29 @@ mod tests {
         let result = generate_elc_ephemeral_public_key(Vec::new());
 
         assert!(matches!(result, Err(CryptoError::Asn1Decode { .. })));
+    }
+
+    #[test]
+    fn brainpool_p256r1_ecdh_matches_for_both_sides() {
+        let left = generate_brainpool_p256r1_key_pair().unwrap();
+        let right = generate_brainpool_p256r1_key_pair().unwrap();
+
+        let left_secret = brainpool_p256r1_ecdh(left.private_key(), right.public_key()).unwrap();
+        let right_secret = brainpool_p256r1_ecdh(right.private_key(), left.public_key()).unwrap();
+
+        assert_eq!(left_secret, right_secret);
+        assert!(!left_secret.is_empty());
+    }
+
+    #[test]
+    fn aes_cmac_truncates_to_requested_length() {
+        let tag = aes_cmac(
+            hex_to_bytes("2B7E151628AED2A6ABF7158809CF4F3C"),
+            hex_to_bytes("6BC1BEE22E409F96E93D7E117393172A"),
+            8,
+        )
+        .unwrap();
+
+        assert_eq!(hex::encode(tag), "070a16b46b4d4144");
     }
 }

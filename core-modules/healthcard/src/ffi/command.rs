@@ -145,7 +145,7 @@ fn key_ref_from_bytes(bytes: Vec<u8>) -> Result<[u8; 12], CommandBuilderError> {
         .try_into()
         .map_err(|_| CommandBuilderError::InvalidArgument { reason: "key_ref must be exactly 12 bytes".into() })
 }
-extern crate asn1;
+
 fn encrypted_pin_from_bytes(bytes: Vec<u8>) -> Result<EncryptedPinFormat2, CommandBuilderError> {
     Ok(EncryptedPinFormat2::from_encrypted_bytes(bytes)?)
 }

@@ -37,13 +37,13 @@ From the repository root:
 ```bash
 # platform: linux | windows | darwin
 # arch: x86_64 | aarch64
-just kotlin-bindings-generate asn1 darwin aarch64 libasn1.dylib
+just kotlin-bindings-generate asn1 darwin aarch64 libopenhealth_asn1.dylib
 ```
 
 Pick a different profile (default is `release`):
 
 ```bash
-just kotlin-bindings-generate asn1 darwin aarch64 libasn1.dylib debug
+just kotlin-bindings-generate asn1 darwin aarch64 libopenhealth_asn1.dylib debug
 ```
 
 Android native libraries (Linux only):

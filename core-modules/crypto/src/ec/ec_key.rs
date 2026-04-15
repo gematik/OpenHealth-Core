@@ -23,13 +23,13 @@ use crate::ec::ec_point::EcPoint;
 use crate::error::{CryptoError, CryptoResult};
 use crate::key::SecretKey;
 use crate::ossl;
-use asn1::decoder::Asn1Decoder;
-use asn1::encoder::Asn1Encoder;
-use asn1::error::{Asn1DecoderError, Asn1EncoderError};
-use asn1::maybe_zeroizing_vec::VecOfU8;
-use asn1::oid::ObjectIdentifier;
-use asn1::tag::UniversalTag;
 use num_bigint::BigInt;
+use openhealth_asn1::decoder::Asn1Decoder;
+use openhealth_asn1::encoder::Asn1Encoder;
+use openhealth_asn1::error::{Asn1DecoderError, Asn1EncoderError};
+use openhealth_asn1::maybe_zeroizing_vec::VecOfU8;
+use openhealth_asn1::oid::ObjectIdentifier;
+use openhealth_asn1::tag::UniversalTag;
 
 /// Supported elliptic curves.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -381,7 +381,7 @@ impl EcPrivateKey {
 ///   parameters  ANY DEFINED BY algorithm OPTIONAL
 /// }
 fn read_ec_curve_from_algorithm_identifier(
-    scope: &mut asn1::decoder::ParserScope,
+    scope: &mut openhealth_asn1::decoder::ParserScope,
 ) -> Result<EcCurve, Asn1DecoderError> {
     scope.advance_with_tag(UniversalTag::Sequence.constructed(), |scope| {
         // Read algorithm OID (should be id-ecPublicKey)

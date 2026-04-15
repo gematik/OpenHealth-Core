@@ -33,6 +33,16 @@ Gradle consumes pre-generated outputs from `OUT_ROOT` (defaults to `build/genera
 - Native library resources (JNA): `${OUT_ROOT}/resources/<resource-id>/`
 - Android JNI libs (optional): `${OUT_ROOT}/android-jni/`
 
+## Local Maven publishing
+
+`kotlin-publish-local` requires an explicit version so local Maven publishes never depend on editing committed Gradle files:
+
+```bash
+just kotlin-publish-local healthcard 0.2.0-alpha2
+```
+
+The checked-in Gradle default remains `0.0.0-SNAPSHOT` for non-release local builds.
+
 ## Adding a new Rust-backed binding module
 
 1) Create a new Gradle subproject under `core-modules-kotlin/<module>`.
@@ -56,4 +66,3 @@ openHealthUniffiKmp {
 4) Add module entries where required:
    - `just` recipes: new module name in `just/kotlin.just` (and `just/swift.just` if Swift is required).
    - CI workflow: add matrix entries in `.github/workflows/release-bindings.yml`.
-

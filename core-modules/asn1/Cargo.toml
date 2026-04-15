@@ -27,7 +27,7 @@ license = "Apache-2.0"
 
 [lib]
 crate-type = ["cdylib", "staticlib", "rlib"]
-name = "asn1"
+name = "openhealth_asn1"
 
 [features]
 default = []
