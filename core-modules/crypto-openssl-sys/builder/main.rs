@@ -97,7 +97,7 @@ struct AndroidEnv {
 }
 
 fn build_openssl() {
-    const OPENSSL_VERSION: &str = "8fabfd81094d1d9f8890df4bee083aa6f77d769d";
+    const OPENSSL_VERSION: &str = "11b7b6ea3b65a584e1d31408ed1bdb139465cffd";
     const OPENSSL_REPO_URL: &str = "https://github.com/openssl/openssl.git";
 
     let target = env::var("TARGET").unwrap_or_else(|_| "aarch64-apple-darwin".to_string());
