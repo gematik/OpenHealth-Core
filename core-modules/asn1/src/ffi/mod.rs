@@ -123,24 +123,17 @@ impl From<Asn1Tag> for CoreAsn1Id {
 #[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
 pub struct CvCertificate {
     body: CvCertificateBody,
-    // Preserve the original certificate TLV because some consumers need the exact input bytes,
-    // not a re-encoding from the parsed semantic model.
-    encoded: Vec<u8>,
-    // Preserve the original 7F4E certificate body TLV for signature-relevant use cases.
-    body_encoded: Vec<u8>,
+    // Preserve signature-relevant source slices into the original certificate input.
+    raw_slices: crate::cv_certificate::CvCertificateRawSlices,
     signature: Vec<u8>,
-    // Preserve the original outer value field (body + signature) as it appears on the wire.
-    value_field: Vec<u8>,
 }
 
 impl From<crate::cv_certificate::ParsedCvCertificateWithRawParts> for CvCertificate {
     fn from(value: crate::cv_certificate::ParsedCvCertificateWithRawParts) -> Self {
         Self {
             body: value.certificate.body.into(),
-            encoded: value.encoded,
-            body_encoded: value.body_encoded,
+            raw_slices: value.raw_slices,
             signature: value.certificate.signature,
-            value_field: value.value_field,
         }
     }
 }
@@ -152,7 +145,7 @@ impl CvCertificate {
     }
 
     pub fn encoded(&self) -> Vec<u8> {
-        self.encoded.clone()
+        self.raw_slices.encoded()
     }
 
     pub fn signature(&self) -> Vec<u8> {
@@ -160,11 +153,11 @@ impl CvCertificate {
     }
 
     pub fn body_encoded(&self) -> Vec<u8> {
-        self.body_encoded.clone()
+        self.raw_slices.body_encoded()
     }
 
     pub fn value_field(&self) -> Vec<u8> {
-        self.value_field.clone()
+        self.raw_slices.value_field()
     }
 }
 

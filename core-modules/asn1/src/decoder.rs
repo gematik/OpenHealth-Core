@@ -55,11 +55,6 @@ pub struct ParserScope<'a> {
 
 impl<'a> ParserScope<'a> {
     #[inline]
-    pub(crate) fn data(&self) -> &'a [u8] {
-        self.data
-    }
-
-    #[inline]
     pub(crate) fn offset(&self) -> usize {
         self.offset
     }

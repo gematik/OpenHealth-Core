@@ -38,6 +38,7 @@ use crate::decoder::{Asn1Decoder, Asn1Length, ParserScope};
 use crate::error::{Asn1DecoderError, Asn1DecoderResult};
 use crate::oid::ObjectIdentifier;
 use crate::tag::{Asn1Id, TagNumberExt};
+use std::sync::Arc;
 
 const TAG_CV_CERTIFICATE: u32 = 33;
 const TAG_CERTIFICATE_BODY: u32 = 78;
@@ -178,12 +179,58 @@ pub struct ExtensionField {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct ParsedCvCertificateWithRawParts {
     pub certificate: CvCertificate,
-    // Preserve the original outer certificate TLV for consumers that need signature-relevant bytes.
-    pub encoded: Vec<u8>,
-    // Preserve the original 7F4E certificate body TLV instead of re-encoding the parsed body.
-    pub body_encoded: Vec<u8>,
-    // Preserve the original outer value field (body + signature) from the input bytes.
-    pub value_field: Vec<u8>,
+    /// Preserved source slices into the original certificate bytes.
+    pub raw_slices: CvCertificateRawSlices,
+}
+
+/// A validated half-open byte range into a preserved source buffer.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct SourceSpan {
+    start: usize,
+    end: usize,
+}
+
+impl SourceSpan {
+    fn new(start: usize, end: usize, source_len: usize, context: &str) -> Result<Self, Asn1DecoderError> {
+        if start > end || end > source_len {
+            return Err(Asn1DecoderError::custom(format!("{context} is out of bounds")));
+        }
+        Ok(Self { start, end })
+    }
+}
+
+/// Signature-relevant source slices preserved from the original certificate input.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct CvCertificateRawSlices {
+    source: Arc<[u8]>,
+    encoded: SourceSpan,
+    body_encoded: SourceSpan,
+    value_field: SourceSpan,
+}
+
+impl CvCertificateRawSlices {
+    fn new(source: Arc<[u8]>, encoded: SourceSpan, body_encoded: SourceSpan, value_field: SourceSpan) -> Self {
+        Self { source, encoded, body_encoded, value_field }
+    }
+}
+
+#[cfg(any(test, feature = "uniffi"))]
+impl CvCertificateRawSlices {
+    pub(crate) fn encoded(&self) -> Vec<u8> {
+        self.materialize(&self.encoded)
+    }
+
+    pub(crate) fn body_encoded(&self) -> Vec<u8> {
+        self.materialize(&self.body_encoded)
+    }
+
+    pub(crate) fn value_field(&self) -> Vec<u8> {
+        self.materialize(&self.value_field)
+    }
+
+    fn materialize(&self, span: &SourceSpan) -> Vec<u8> {
+        self.source[span.start..span.end].to_vec()
+    }
 }
 
 impl CvCertificate {
@@ -207,35 +254,32 @@ pub fn parse_cv_certificate(data: &[u8]) -> Asn1DecoderResult<CvCertificate> {
 }
 
 pub(crate) fn parse_cv_certificate_with_raw_parts(data: &[u8]) -> Asn1DecoderResult<ParsedCvCertificateWithRawParts> {
-    let decoder = Asn1Decoder::new(data);
-    let mut parsed = decoder.read(parse_cv_certificate_scope)?;
-    parsed.encoded = data.to_vec();
-    Ok(parsed)
+    let source: Arc<[u8]> = Arc::from(data.to_vec());
+    let decoder = Asn1Decoder::new(source.as_ref());
+    decoder.read(|scope| parse_cv_certificate_scope(scope, source.clone()))
 }
 
-fn parse_cv_certificate_scope(scope: &mut ParserScope) -> Result<ParsedCvCertificateWithRawParts, Asn1DecoderError> {
+fn parse_cv_certificate_scope(
+    scope: &mut ParserScope,
+    source: Arc<[u8]>,
+) -> Result<ParsedCvCertificateWithRawParts, Asn1DecoderError> {
     scope.advance_with_tag(TAG_CV_CERTIFICATE.application_tag().constructed(), |scope| {
+        let source_len = source.len();
         let value_start = scope.offset();
         let body_start = scope.offset();
         let body = parse_certificate_body(scope)?;
         let body_end = scope.offset();
         let signature = read_application_bytes(scope, TAG_SIGNATURE, 0, MAX_CERT_FIELD_LEN)?;
         let value_end = scope.offset();
-        let data = scope.data();
-        let body_encoded = data
-            .get(body_start..body_end)
-            .ok_or_else(|| Asn1DecoderError::custom("Certificate body slice is out of bounds"))?
-            .to_vec();
-        let value_field = data
-            .get(value_start..value_end)
-            .ok_or_else(|| Asn1DecoderError::custom("Certificate value slice is out of bounds"))?
-            .to_vec();
 
         Ok(ParsedCvCertificateWithRawParts {
             certificate: CvCertificate { body, signature },
-            encoded: Vec::new(),
-            body_encoded,
-            value_field,
+            raw_slices: CvCertificateRawSlices::new(
+                source.clone(),
+                SourceSpan::new(0, source_len, source_len, "Certificate slice")?,
+                SourceSpan::new(body_start, body_end, source_len, "Certificate body slice")?,
+                SourceSpan::new(value_start, value_end, source_len, "Certificate value slice")?,
+            ),
         })
     })
 }
@@ -718,14 +762,15 @@ mod tests {
         let data = build_test_certificate(false);
         let parsed = parse_cv_certificate_with_raw_parts(&data).expect("parse should succeed");
 
+        assert_eq!(parsed.raw_slices.encoded(), data.to_vec());
         assert_eq!(
-            parsed.body_encoded,
+            parsed.raw_slices.body_encoded(),
             hex_to_bytes(
                 "7F4E365F29010042034341527F490806032A0304A001025F200243487F4C0806022A035302AABB5F25060205000100015F2406020601020301"
             )
         );
         assert_eq!(
-            parsed.value_field,
+            parsed.raw_slices.value_field(),
             hex_to_bytes(
                 "7F4E365F29010042034341527F490806032A0304A001025F200243487F4C0806022A035302AABB5F25060205000100015F24060206010203015F3702DEAD"
             )
