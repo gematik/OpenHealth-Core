@@ -212,4 +212,23 @@ mod tests {
         let err = parse_list_public_keys(&bytes).unwrap_err();
         assert!(matches!(err, ListPublicKeyError::MissingKeyReference));
     }
+
+    #[test]
+    fn parse_list_public_key_finds_key_reference_after_other_nested_tlv() {
+        let bytes = hex_to_bytes("E0 11 4F 07 D2 76 00 01 44 80 00 B6 06 80 01 AA 83 01 23");
+
+        let parsed = parse_list_public_keys(&bytes).expect("entry parsed");
+
+        assert_eq!(parsed.entries().len(), 1);
+        assert_eq!(parsed.entries()[0].key_reference(), &[0x23]);
+    }
+
+    #[test]
+    fn parse_list_public_key_requires_key_reference_inside_constructed_container() {
+        let bytes = hex_to_bytes("E0 0E 4F 07 D2 76 00 01 44 80 00 B6 03 80 01 AA");
+
+        let err = parse_list_public_keys(&bytes).unwrap_err();
+
+        assert!(matches!(err, ListPublicKeyError::MissingKeyReference));
+    }
 }

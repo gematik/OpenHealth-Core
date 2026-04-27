@@ -235,6 +235,13 @@ mod tests {
     use std::fs;
     use std::path::PathBuf;
 
+    const ECDSA_PUBLIC_KEY: &str =
+        "04223ddca232b0188e6aa70f8d8beb5e67347b8b0d759c7f361a1930cfdc3571b02e59ef95e567076bff633922ae6d97514a771188171b2aa1603455d0031c168a";
+    const ECDSA_MESSAGE: &[u8] = b"OpenHealth brainpool verify test";
+    const ECDSA_MESSAGE_DIGEST_SHA256: &str = "aade9d5d08b880411fa7c2bff4d8af93cd43fa942fe9d3b2377121328be5cbc7";
+    const ECDSA_SIGNATURE: &str =
+        "96c713abe48f06e0f6cde0709501268302ee7a41b4d2b188e661fe86bfe832084e11b5995ca4fd152efa1045e573026ead3e7accb0cd4e634ddc45e6ac804fe2";
+
     fn hex_to_bytes(hex_str: &str) -> Vec<u8> {
         hex::decode(hex_str.replace(char::is_whitespace, "")).unwrap()
     }
@@ -345,6 +352,30 @@ mod tests {
 
         assert_eq!(left_secret, right_secret);
         assert!(!left_secret.is_empty());
+    }
+
+    #[test]
+    fn verify_ecdsa_message_signature_accepts_valid_signature() {
+        let valid = verify_ecdsa_message_signature(
+            hex_to_bytes(ECDSA_PUBLIC_KEY),
+            ECDSA_MESSAGE.to_vec(),
+            hex_to_bytes(ECDSA_SIGNATURE),
+        )
+        .unwrap();
+
+        assert!(valid);
+    }
+
+    #[test]
+    fn verify_ecdsa_value_signature_accepts_valid_signature() {
+        let valid = verify_ecdsa_value_signature(
+            hex_to_bytes(ECDSA_PUBLIC_KEY),
+            hex_to_bytes(ECDSA_MESSAGE_DIGEST_SHA256),
+            hex_to_bytes(ECDSA_SIGNATURE),
+        )
+        .unwrap();
+
+        assert!(valid);
     }
 
     #[test]
