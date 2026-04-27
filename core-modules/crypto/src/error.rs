@@ -45,6 +45,12 @@ pub enum CryptoError {
     /// An elliptic curve point was invalid or malformed.
     #[error("invalid ec point: {0}")]
     InvalidEcPoint(String),
+    /// CV certificate validation failed.
+    #[error("invalid CVC chain: {context}")]
+    InvalidCvcChain { context: String },
+    /// A CV certificate signature was cryptographically invalid.
+    #[error("invalid CVC signature: {context}")]
+    InvalidCvcSignature { context: String },
     /// Underlying native cryptographic failure with original message.
     #[error("native error: {0}")]
     Native(String),

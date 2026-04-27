@@ -32,12 +32,14 @@ name = "openhealth_crypto"
 [features]
 default = ["uniffi"]
 ci = ["uniffi"]
+uniffi = ["dep:uniffi", "openhealth_asn1/uniffi"]
 
 [dependencies]
 openhealth_asn1 = { package = "asn1", path = "../asn1" }
 crypto-openssl-sys = { path = "../crypto-openssl-sys" }
 regex = "1.12.2"
 base64 = "0.22.1"
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
 num-bigint = "0.4"
 num-traits = "0.2.19"
 zeroize = { version = "1.8.1", features = ["zeroize_derive"] }

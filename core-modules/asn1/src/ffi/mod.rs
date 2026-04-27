@@ -121,24 +121,45 @@ impl From<Asn1Tag> for CoreAsn1Id {
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
 pub struct CvCertificate {
-    body: CvCertificateBody,
-    signature: Vec<u8>,
+    inner: crate::cv_certificate::CVCertificate,
 }
 
 impl From<crate::cv_certificate::CVCertificate> for CvCertificate {
     fn from(value: crate::cv_certificate::CVCertificate) -> Self {
-        Self { body: value.body.into(), signature: value.signature }
+        Self { inner: value }
+    }
+}
+
+impl CvCertificate {
+    pub fn as_core(&self) -> &crate::cv_certificate::CVCertificate {
+        &self.inner
     }
 }
 
 #[uniffi::export]
 impl CvCertificate {
     pub fn body(&self) -> Arc<CvCertificateBody> {
-        Arc::new(self.body.clone())
+        Arc::new(self.inner.body.clone().into())
     }
 
     pub fn signature(&self) -> Vec<u8> {
-        self.signature.clone()
+        self.inner.signature.to_vec()
+    }
+
+    pub fn encoded_certificate_tlv(&self) -> Vec<u8> {
+        self.inner.encoded_certificate_tlv().to_vec()
+    }
+
+    pub fn encoded_body_tlv(&self) -> Vec<u8> {
+        self.inner.encoded_body_tlv().to_vec()
+    }
+
+    pub fn encoded_public_key_tlv(&self) -> Vec<u8> {
+        self.inner.encoded_public_key_tlv().to_vec()
+    }
+
+    pub fn encoded_signature_tlv(&self) -> Vec<u8> {
+        self.inner.encoded_signature_tlv().to_vec()
     }
 }
 

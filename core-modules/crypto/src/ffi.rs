@@ -19,13 +19,16 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
+use crate::cvc as core_cvc;
 use crate::ec::ec_key::{EcCurve, EcKeyPairSpec, EcPrivateKey, EcPublicKey};
 use crate::error::CryptoError as CoreCryptoError;
 use crate::exchange::ecdh::Ecdh;
 use crate::exchange::elc::generate_elc_ephemeral_public_key_from_cvc;
 use crate::key::SecretKey;
 use crate::mac::{CmacAlgorithm, MacSpec};
+use openhealth_asn1::ffi::CvCertificate;
 use std::sync::Arc;
+use std::time::SystemTime;
 use thiserror::Error;
 
 /// UniFFI-friendly error type for exported crypto helpers.
@@ -45,6 +48,8 @@ impl From<CoreCryptoError> for CryptoError {
         match err {
             CoreCryptoError::Asn1Decoding(inner) => Self::Asn1Decode { reason: inner.to_string() },
             CoreCryptoError::InvalidEcPoint(reason) => Self::InvalidArgument { reason },
+            CoreCryptoError::InvalidCvcChain { context } => Self::InvalidArgument { reason: context },
+            CoreCryptoError::InvalidCvcSignature { context } => Self::Crypto { reason: context },
             CoreCryptoError::InvalidKeyMaterial { context } => Self::InvalidArgument { reason: context.to_owned() },
             CoreCryptoError::InvalidKeyLength { expected, actual } => Self::InvalidArgument {
                 reason: format!("invalid key length: expected one of {expected:?}, got {actual}"),
@@ -68,6 +73,47 @@ pub struct BrainpoolP256r1KeyPair {
     public_key: Vec<u8>,
 }
 
+#[derive(uniffi::Object)]
+pub struct CvcTrustAnchor {
+    inner: core_cvc::CvcTrustAnchor,
+}
+
+#[uniffi::export]
+impl CvcTrustAnchor {
+    #[uniffi::constructor]
+    pub fn from_certificate(certificate: Arc<CvCertificate>) -> Result<Arc<Self>, CryptoError> {
+        let inner = core_cvc::CvcTrustAnchor::from_certificate(certificate.as_core()).map_err(CryptoError::from)?;
+        Ok(Arc::new(Self { inner }))
+    }
+
+    #[uniffi::constructor]
+    pub fn from_public_key_tlv(reference: Vec<u8>, public_key_tlv: Vec<u8>) -> Result<Arc<Self>, CryptoError> {
+        let inner =
+            core_cvc::CvcTrustAnchor::from_public_key_tlv(reference, &public_key_tlv).map_err(CryptoError::from)?;
+        Ok(Arc::new(Self { inner }))
+    }
+
+    pub fn reference(&self) -> Vec<u8> {
+        self.inner.reference().to_vec()
+    }
+}
+
+#[derive(uniffi::Object)]
+pub struct CvcChainValidationResult {
+    inner: core_cvc::CvcChainValidationResult,
+}
+
+#[uniffi::export]
+impl CvcChainValidationResult {
+    pub fn validated_certificates(&self) -> u64 {
+        self.inner.validated_certificates() as u64
+    }
+
+    pub fn end_entity_chr(&self) -> Vec<u8> {
+        self.inner.end_entity_chr().to_vec()
+    }
+}
+
 #[uniffi::export]
 impl BrainpoolP256r1KeyPair {
     pub fn private_key(&self) -> Vec<u8> {
@@ -83,6 +129,18 @@ impl BrainpoolP256r1KeyPair {
 #[uniffi::export]
 pub fn generate_elc_ephemeral_public_key(cvc: Vec<u8>) -> Result<Vec<u8>, CryptoError> {
     generate_elc_ephemeral_public_key_from_cvc(&cvc).map_err(CryptoError::from)
+}
+
+#[uniffi::export]
+pub fn validate_cvc_chain(
+    chain: Vec<Arc<CvCertificate>>,
+    trust_anchors: Vec<Arc<CvcTrustAnchor>>,
+    validation_time: SystemTime,
+) -> Result<Arc<CvcChainValidationResult>, CryptoError> {
+    let chain = chain.iter().map(|certificate| certificate.as_core().clone()).collect::<Vec<_>>();
+    let trust_anchors = trust_anchors.iter().map(|anchor| anchor.inner.clone()).collect::<Vec<_>>();
+    let inner = core_cvc::validate_cvc_chain(&chain, &trust_anchors, validation_time).map_err(CryptoError::from)?;
+    Ok(Arc::new(CvcChainValidationResult { inner }))
 }
 
 /// Generates a fresh brainpoolP256r1 EC key pair and returns raw key bytes.
@@ -133,6 +191,7 @@ pub fn aes_cmac(key: Vec<u8>, message: Vec<u8>, output_length: i32) -> Result<Ve
 #[cfg(test)]
 mod tests {
     use super::*;
+    use chrono::TimeZone;
     use std::fs;
     use std::path::PathBuf;
 
@@ -152,6 +211,22 @@ mod tests {
         fs::read(&path).expect("fixture should be readable")
     }
 
+    fn load_trust_anchor(name: &str) -> Vec<u8> {
+        let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        path.pop();
+        path.pop();
+        path.push("test-vectors");
+        path.push("cvc-chain");
+        path.push("pki_cvc_g2_input");
+        path.push("trust-anchor");
+        path.push(name);
+        fs::read(&path).expect("fixture should be readable")
+    }
+
+    fn validation_time(year: i32, month: u32, day: u32) -> SystemTime {
+        chrono::Utc.with_ymd_and_hms(year, month, day, 12, 0, 0).single().unwrap().into()
+    }
+
     #[test]
     fn generate_elc_ephemeral_public_key_exports_public_key_bytes() {
         let cvc_bytes = load_fixture("DEGXX820214.cvc");
@@ -166,6 +241,21 @@ mod tests {
         let result = generate_elc_ephemeral_public_key(Vec::new());
 
         assert!(matches!(result, Err(CryptoError::Asn1Decode { .. })));
+    }
+
+    #[test]
+    fn validate_cvc_chain_accepts_asn1_cvc_objects() {
+        let cvc = openhealth_asn1::ffi::parse_cv_certificate(load_fixture("DEGXX820214.cvc")).unwrap();
+        let anchor = CvcTrustAnchor::from_public_key_tlv(
+            hex_to_bytes("4445475858820214"),
+            load_trust_anchor("4445475858820214_ELC-PublicKey.der"),
+        )
+        .unwrap();
+
+        let result = validate_cvc_chain(vec![cvc], vec![anchor], validation_time(2020, 1, 1)).unwrap();
+
+        assert_eq!(result.validated_certificates(), 1);
+        assert_eq!(hex::encode(result.end_entity_chr()), "4445475858820214");
     }
 
     #[test]

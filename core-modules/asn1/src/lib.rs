@@ -28,6 +28,7 @@ pub mod extraction;
 pub mod ffi;
 pub mod maybe_zeroizing_vec;
 pub mod oid;
+pub mod source;
 pub mod tag;
 
 #[cfg(feature = "uniffi")]

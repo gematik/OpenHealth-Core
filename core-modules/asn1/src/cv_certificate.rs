@@ -34,9 +34,12 @@
 //! - Dates are encoded as 6 digits (`YYMMDD`), where each digit is stored in a single octet with
 //!   value `0..=9` (not ASCII).
 
+use std::ops::{Deref, DerefMut};
+
 use crate::decoder::{Asn1Decoder, Asn1Length, ParserScope};
 use crate::error::{Asn1DecoderError, Asn1DecoderResult};
 use crate::oid::ObjectIdentifier;
+use crate::source::{Asn1Source, Asn1Span, Spanned};
 use crate::tag::{Asn1Id, TagNumberExt};
 
 const TAG_CV_CERTIFICATE: u32 = 33;
@@ -61,7 +64,8 @@ const MAX_CERT_FIELD_LEN: usize = 65_535;
 /// performed).
 pub struct CVCertificate {
     pub body: CertificateBody,
-    pub signature: Vec<u8>,
+    pub signature: CVCertSignature,
+    source: Asn1Source,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -79,6 +83,7 @@ pub struct CertificateBody {
     pub certificate_effective_date: CertificateDate,
     pub certificate_expiration_date: CertificateDate,
     pub certificate_extensions: Option<CertificateExtensions>,
+    source_span: Asn1Span,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -90,6 +95,70 @@ pub struct CVCertPublicKey {
     pub key_oid: ObjectIdentifier,
     /// Raw contents after the key OID (context-specific key data objects).
     pub key_data: Vec<u8>,
+    source_span: Asn1Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+/// Raw CVC signature content octets.
+pub struct CVCertSignature {
+    value: Vec<u8>,
+    source_span: Asn1Span,
+}
+
+impl CVCertSignature {
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.value
+    }
+
+    pub fn as_mut_bytes(&mut self) -> &mut [u8] {
+        &mut self.value
+    }
+
+    pub fn to_vec(&self) -> Vec<u8> {
+        self.value.clone()
+    }
+
+    pub fn source_span(&self) -> Asn1Span {
+        self.source_span
+    }
+}
+
+impl Deref for CVCertSignature {
+    type Target = [u8];
+
+    fn deref(&self) -> &Self::Target {
+        self.as_bytes()
+    }
+}
+
+impl DerefMut for CVCertSignature {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.as_mut_bytes()
+    }
+}
+
+impl PartialEq<Vec<u8>> for CVCertSignature {
+    fn eq(&self, other: &Vec<u8>) -> bool {
+        self.as_bytes() == other.as_slice()
+    }
+}
+
+impl PartialEq<CVCertSignature> for Vec<u8> {
+    fn eq(&self, other: &CVCertSignature) -> bool {
+        self.as_slice() == other.as_bytes()
+    }
+}
+
+impl CertificateBody {
+    pub fn source_span(&self) -> Asn1Span {
+        self.source_span
+    }
+}
+
+impl CVCertPublicKey {
+    pub fn source_span(&self) -> Asn1Span {
+        self.source_span
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -102,7 +171,7 @@ pub struct Chat {
     pub relative_authorization: Vec<u8>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 /// A CVC date encoded as digits `YYMMDD`.
 ///
 /// Each digit is stored as an octet `0..=9` (e.g. `250101` is `[2, 5, 0, 1, 0, 1]`).
@@ -146,9 +215,44 @@ impl CVCertificate {
     /// - date digit ranges and basic calendar constraints (month `1..=12`, day `1..=31`),
     /// - and rejects indefinite-length values in extension fields.
     pub fn parse(data: &[u8]) -> Asn1DecoderResult<Self> {
-        let decoder = Asn1Decoder::new(data);
-        let certificate = decoder.read(|scope| parse_cv_certificate_scope(scope))?;
+        let source = Asn1Source::new(data.to_vec());
+        let decoder = Asn1Decoder::new(source.as_bytes());
+        let certificate = decoder.read(|scope| {
+            let certificate = parse_cv_certificate_scope(scope, source.clone())?;
+            if scope.remaining_length() != 0 {
+                return Err(Asn1DecoderError::UnparsedBytesRemaining);
+            }
+            Ok(certificate)
+        })?;
         Ok(certificate)
+    }
+
+    pub fn source(&self) -> &Asn1Source {
+        &self.source
+    }
+
+    pub fn body_span(&self) -> Asn1Span {
+        self.body.source_span()
+    }
+
+    pub fn signature_span(&self) -> Asn1Span {
+        self.signature.source_span()
+    }
+
+    pub fn encoded_certificate_tlv(&self) -> &[u8] {
+        self.source.as_bytes()
+    }
+
+    pub fn encoded_body_tlv(&self) -> &[u8] {
+        self.source.encoded(self.body.source_span())
+    }
+
+    pub fn encoded_signature_tlv(&self) -> &[u8] {
+        self.source.encoded(self.signature.source_span())
+    }
+
+    pub fn encoded_public_key_tlv(&self) -> &[u8] {
+        self.source.encoded(self.body.public_key.source_span())
     }
 }
 
@@ -159,16 +263,22 @@ pub fn parse_cv_certificate(data: &[u8]) -> Asn1DecoderResult<CVCertificate> {
     CVCertificate::parse(data)
 }
 
-fn parse_cv_certificate_scope(scope: &mut ParserScope) -> Result<CVCertificate, Asn1DecoderError> {
-    scope.advance_with_tag(TAG_CV_CERTIFICATE.application_tag().constructed(), |scope| {
+fn parse_cv_certificate_scope(scope: &mut ParserScope, source: Asn1Source) -> Result<CVCertificate, Asn1DecoderError> {
+    let certificate = scope.advance_with_tag_spanned(TAG_CV_CERTIFICATE.application_tag().constructed(), |scope| {
         let body = parse_certificate_body(scope)?;
-        let signature = read_application_bytes(scope, TAG_SIGNATURE, 0, MAX_CERT_FIELD_LEN)?;
-        Ok(CVCertificate { body, signature })
+        let signature = read_application_bytes_spanned(scope, TAG_SIGNATURE, 0, MAX_CERT_FIELD_LEN)?;
+        Ok::<_, Asn1DecoderError>((body, signature))
+    })?;
+    let (body, signature) = certificate.value;
+    Ok(CVCertificate {
+        body: body.value,
+        signature: CVCertSignature { value: signature.value, source_span: signature.span },
+        source,
     })
 }
 
-fn parse_certificate_body(scope: &mut ParserScope) -> Result<CertificateBody, Asn1DecoderError> {
-    scope.advance_with_tag(TAG_CERTIFICATE_BODY.application_tag().constructed(), |scope| {
+fn parse_certificate_body(scope: &mut ParserScope) -> Result<Spanned<CertificateBody>, Asn1DecoderError> {
+    let body = scope.advance_with_tag_spanned(TAG_CERTIFICATE_BODY.application_tag().constructed(), |scope| {
         let profile_identifier = read_profile_identifier(scope)?;
         let certification_authority_reference =
             read_application_bytes(scope, TAG_CERTIFICATION_AUTHORITY_REFERENCE, 1, 16)?;
@@ -180,17 +290,19 @@ fn parse_certificate_body(scope: &mut ParserScope) -> Result<CertificateBody, As
         let certificate_extensions =
             if scope.remaining_length() > 0 { Some(parse_certificate_extensions(scope)?) } else { None };
 
-        Ok(CertificateBody {
+        Ok::<_, Asn1DecoderError>(CertificateBody {
             profile_identifier,
             certification_authority_reference,
-            public_key,
+            public_key: public_key.value,
             certificate_holder_reference,
             certificate_holder_authorization_template,
             certificate_effective_date,
             certificate_expiration_date,
             certificate_extensions,
+            source_span: Asn1Span::new(0, 0, 0, 0),
         })
-    })
+    })?;
+    Ok(Spanned { value: CertificateBody { source_span: body.span, ..body.value }, span: body.span })
 }
 
 fn read_profile_identifier(scope: &mut ParserScope) -> Result<u8, Asn1DecoderError> {
@@ -205,15 +317,20 @@ fn read_profile_identifier(scope: &mut ParserScope) -> Result<u8, Asn1DecoderErr
     Ok(value as u8)
 }
 
-fn parse_public_key(scope: &mut ParserScope) -> Result<CVCertPublicKey, Asn1DecoderError> {
-    scope.advance_with_tag(TAG_PUBLIC_KEY.application_tag().constructed(), |scope| {
-        let key_oid = scope.read_object_identifier()?;
-        let key_data = scope.read_bytes(scope.remaining_length())?;
-        if key_data.is_empty() {
-            return Err(Asn1DecoderError::custom("CVCertPublicKey data must not be empty"));
-        }
-        Ok(CVCertPublicKey { key_oid, key_data })
-    })
+fn parse_public_key(scope: &mut ParserScope) -> Result<Spanned<CVCertPublicKey>, Asn1DecoderError> {
+    scope
+        .advance_with_tag_spanned(TAG_PUBLIC_KEY.application_tag().constructed(), |scope| {
+            let key_oid = scope.read_object_identifier()?;
+            let key_data = scope.read_bytes(scope.remaining_length())?;
+            if key_data.is_empty() {
+                return Err(Asn1DecoderError::custom("CVCertPublicKey data must not be empty"));
+            }
+            Ok::<_, Asn1DecoderError>(CVCertPublicKey { key_oid, key_data, source_span: Asn1Span::new(0, 0, 0, 0) })
+        })
+        .map(|public_key| Spanned {
+            value: CVCertPublicKey { source_span: public_key.span, ..public_key.value },
+            span: public_key.span,
+        })
 }
 
 fn parse_chat(scope: &mut ParserScope) -> Result<Chat, Asn1DecoderError> {
@@ -269,6 +386,21 @@ fn read_application_bytes(
     max_len: usize,
 ) -> Result<Vec<u8>, Asn1DecoderError> {
     scope.advance_with_tag(tag_number.application_tag().primitive(), |scope| {
+        let len = scope.remaining_length();
+        if len < min_len || len > max_len {
+            return Err(Asn1DecoderError::custom(format!("Invalid length {len} for application tag {tag_number}")));
+        }
+        scope.read_bytes(len)
+    })
+}
+
+fn read_application_bytes_spanned(
+    scope: &mut ParserScope,
+    tag_number: u32,
+    min_len: usize,
+    max_len: usize,
+) -> Result<Spanned<Vec<u8>>, Asn1DecoderError> {
+    scope.advance_with_tag_spanned(tag_number.application_tag().primitive(), |scope| {
         let len = scope.remaining_length();
         if len < min_len || len > max_len {
             return Err(Asn1DecoderError::custom(format!("Invalid length {len} for application tag {tag_number}")));
@@ -622,6 +754,17 @@ mod tests {
         assert_eq!(cert.body.certificate_expiration_date, CertificateDate { year: 26, month: 12, day: 31 });
         assert!(cert.body.certificate_extensions.is_none());
         assert_eq!(cert.signature, vec![0xDE, 0xAD]);
+    }
+
+    #[test]
+    fn parsed_certificate_retains_original_tlv_spans() {
+        let data = build_test_certificate(false);
+        let cert = CVCertificate::parse(&data).expect("parse should succeed");
+
+        assert_eq!(cert.encoded_certificate_tlv(), data.as_ref());
+        assert!(cert.encoded_body_tlv().starts_with(&[0x7F, 0x4E]));
+        assert!(cert.encoded_public_key_tlv().starts_with(&[0x7F, 0x49]));
+        assert!(cert.encoded_signature_tlv().starts_with(&[0x5F, 0x37]));
     }
 
     #[test]
