@@ -55,6 +55,16 @@ pub struct ParserScope<'a> {
 
 impl<'a> ParserScope<'a> {
     #[inline]
+    pub(crate) fn data(&self) -> &'a [u8] {
+        self.data
+    }
+
+    #[inline]
+    pub(crate) fn offset(&self) -> usize {
+        self.offset
+    }
+
+    #[inline]
     pub fn remaining_length(&self) -> usize {
         self.end_offset - self.offset
     }

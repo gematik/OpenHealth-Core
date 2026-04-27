@@ -90,6 +90,11 @@ fn ec_point_dup(point: *mut EC_POINT, group: *mut EC_GROUP) -> *mut EC_POINT {
 }
 
 #[inline]
+fn ec_key_new_by_curve_name(nid: c_int) -> *mut EC_KEY {
+    unsafe { EC_KEY_new_by_curve_name(nid) }
+}
+
+#[inline]
 fn bn_signed_bin2bn(data: *const u8, len: c_int) -> *mut BIGNUM {
     #[cfg(test)]
     {
@@ -98,6 +103,11 @@ fn bn_signed_bin2bn(data: *const u8, len: c_int) -> *mut BIGNUM {
         }
     }
     unsafe { BN_signed_bin2bn(data, len, ptr::null_mut()) }
+}
+
+#[inline]
+fn bn_bin2bn(data: *const u8, len: c_int) -> *mut BIGNUM {
+    unsafe { BN_bin2bn(data, len, ptr::null_mut()) }
 }
 
 #[inline]
@@ -141,6 +151,97 @@ fn pkey_ctx_new(pkey: *mut EVP_PKEY) -> *mut EVP_PKEY_CTX {
         }
     }
     unsafe { EVP_PKEY_CTX_new(pkey, ptr::null_mut()) }
+}
+
+struct EcKey(*mut EC_KEY);
+
+impl EcKey {
+    fn from_public(curve_name: &str, data: &[u8]) -> OsslResult<Self> {
+        let curve = CString::new(curve_name).unwrap();
+        let nid = unsafe { OBJ_txt2nid(curve.as_ptr()) };
+        if nid == NID_undef {
+            return Err(openssl_error(OsslErrorKind::EcNidLookupFailed { curve: curve_name.to_string() }));
+        }
+
+        let key = ec_key_new_by_curve_name(nid);
+        if key.is_null() {
+            return Err(openssl_error(OsslErrorKind::EcKeyCreateFailed));
+        }
+
+        let result = Self(key);
+        ossl_check!(
+            unsafe { EC_KEY_oct2key(result.0, data.as_ptr(), data.len(), ptr::null_mut()) },
+            OsslErrorKind::EcPublicKeyFromBytesFailed
+        );
+        ossl_check!(unsafe { EC_KEY_check_key(result.0) }, OsslErrorKind::EcKeyCheckFailed);
+        Ok(result)
+    }
+}
+
+impl Drop for EcKey {
+    fn drop(&mut self) {
+        unsafe { EC_KEY_free(self.0) };
+    }
+}
+
+struct BigNum(*mut BIGNUM);
+
+impl BigNum {
+    fn from_unsigned_bytes(data: &[u8]) -> OsslResult<Self> {
+        let bn = bn_bin2bn(data.as_ptr(), data.len() as c_int);
+        if bn.is_null() {
+            return Err(openssl_error(OsslErrorKind::EcScalarToBignumFailed));
+        }
+        Ok(Self(bn))
+    }
+
+    fn into_raw(mut self) -> *mut BIGNUM {
+        let raw = self.0;
+        self.0 = ptr::null_mut();
+        raw
+    }
+}
+
+impl Drop for BigNum {
+    fn drop(&mut self) {
+        if !self.0.is_null() {
+            unsafe { BN_free(self.0) };
+        }
+    }
+}
+
+struct EcdsaSignature(*mut ECDSA_SIG);
+
+impl EcdsaSignature {
+    fn from_raw_rs(raw_signature: &[u8]) -> OsslResult<Self> {
+        let sig = unsafe { ECDSA_SIG_new() };
+        if sig.is_null() {
+            return Err(openssl_error(OsslErrorKind::EcdsaSignatureCreateFailed));
+        }
+
+        let signature = Self(sig);
+        let half = raw_signature.len() / 2;
+        let r = BigNum::from_unsigned_bytes(&raw_signature[..half])?;
+        let s = BigNum::from_unsigned_bytes(&raw_signature[half..])?;
+        let r = r.into_raw();
+        let s = s.into_raw();
+
+        if unsafe { ECDSA_SIG_set0(signature.0, r, s) } != 1 {
+            unsafe {
+                BN_free(r);
+                BN_free(s);
+            }
+            return Err(openssl_error(OsslErrorKind::EcdsaSignatureSetComponentsFailed));
+        }
+
+        Ok(signature)
+    }
+}
+
+impl Drop for EcdsaSignature {
+    fn drop(&mut self) {
+        unsafe { ECDSA_SIG_free(self.0) };
+    }
 }
 
 pub struct EcPoint {
@@ -306,6 +407,19 @@ impl Ecdh {
         );
         secret.truncate(len);
         Ok(secret)
+    }
+}
+
+pub fn verify_ecdsa(curve_name: &str, public_key: &[u8], value: &[u8], signature: &[u8]) -> OsslResult<bool> {
+    let key = EcKey::from_public(curve_name, public_key)?;
+    let signature = EcdsaSignature::from_raw_rs(signature)?;
+    let verify_result =
+        unsafe { ECDSA_do_verify(value.as_ptr(), value.len() as c_int, signature.0 as *const ECDSA_SIG, key.0) };
+
+    match verify_result {
+        1 => Ok(true),
+        0 => Ok(false),
+        _ => Err(openssl_error(OsslErrorKind::EcdsaVerifyFailed)),
     }
 }
 

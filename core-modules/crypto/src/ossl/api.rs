@@ -109,10 +109,16 @@ pub enum OsslErrorKind {
     EcNidLookupFailed { curve: String },
     #[error("Failed to create EC_GROUP")]
     EcGroupCreateFailed,
+    #[error("Failed to create EC_KEY")]
+    EcKeyCreateFailed,
     #[error("Failed to create EC_POINT")]
     EcPointCreateFailed,
     #[error("Failed to create ec point from uncompressed public key")]
     EcPointFromBytesFailed,
+    #[error("Failed to set EC public key from bytes")]
+    EcPublicKeyFromBytesFailed,
+    #[error("EC key validation failed")]
+    EcKeyCheckFailed,
     #[error("EC_POINT_add failed")]
     EcPointAddFailed,
     #[error("Failed to set affine coordinates")]
@@ -147,6 +153,12 @@ pub enum OsslErrorKind {
     EcdhSetPeerFailed,
     #[error("Failed to compute secret")]
     EcdhComputeSecretFailed,
+    #[error("Failed to create ECDSA signature container")]
+    EcdsaSignatureCreateFailed,
+    #[error("Failed to set ECDSA signature components")]
+    EcdsaSignatureSetComponentsFailed,
+    #[error("ECDSA verification failed")]
+    EcdsaVerifyFailed,
 
     #[error("Key initialization failed")]
     MlkemKeyInitFailed,

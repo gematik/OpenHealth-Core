@@ -29,7 +29,8 @@ to:
 - send/receive raw APDUs,
 - run high-level exchange operations (PIN verify, certificate retrieval, etc.),
 - establish and use a secure channel (PACE).
-- build and execute command APDUs via command builders.
+- build and execute command APDUs via command builders,
+- parse typed card data structures from response payloads.
 
 ## Feature gate
 
@@ -79,6 +80,15 @@ Defined in `exchange.rs` (operate on a plain `session: CardChannel`):
 - `retrieve_certificate_from(session, certificate) -> bytes`
 
 These helpers are useful when no secure messaging context is required.
+
+### Typed response parsers
+
+Defined in `parsing.rs`:
+
+- `parse_health_card_version2(data) -> HealthCardVersion2`
+- `parse_list_public_keys(data) -> ListPublicKeys`
+
+These helpers turn raw APDU payload bytes into typed objects so foreign callers do not need local BER/TLV parsing.
 
 ### Secure channel (PACE)
 

@@ -45,6 +45,9 @@ pub enum CryptoError {
     /// An elliptic curve point was invalid or malformed.
     #[error("invalid ec point: {0}")]
     InvalidEcPoint(String),
+    /// Invalid raw ECDSA signature length for the selected curve.
+    #[error("invalid ECDSA signature length: expected {expected}, got {actual}")]
+    InvalidSignatureLength { expected: usize, actual: usize },
     /// Underlying native cryptographic failure with original message.
     #[error("native error: {0}")]
     Native(String),

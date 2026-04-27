@@ -21,18 +21,18 @@
 
 use crate::ec::ec_key::{EcCurve, EcKeyPairSpec};
 use crate::error::CryptoResult;
-use openhealth_asn1::cv_certificate::CVCertificate;
+use openhealth_asn1::cv_certificate::CvCertificate;
 use openhealth_asn1::extraction::extract_context_values;
 
 /// Generates the host-side ephemeral public key for ELC GA step 2, derived from the curve in the CVC.
 pub fn generate_elc_ephemeral_public_key_from_cvc(cvc: &[u8]) -> CryptoResult<Vec<u8>> {
-    let certificate = CVCertificate::parse(cvc)?;
+    let certificate = CvCertificate::parse(cvc)?;
     let curve = infer_curve_from_cvc(&certificate).unwrap_or(EcCurve::BrainpoolP256r1);
     let (ephemeral_pk, _ephemeral_sk) = EcKeyPairSpec { curve }.generate_keypair()?;
     Ok(ephemeral_pk.as_bytes().to_vec())
 }
 
-fn infer_curve_from_cvc(cvc: &CVCertificate) -> Option<EcCurve> {
+fn infer_curve_from_cvc(cvc: &CvCertificate) -> Option<EcCurve> {
     let key_data = &cvc.body.public_key.key_data;
     let point = extract_context_values(key_data, 6).ok().and_then(|mut values| values.pop())?;
     match point.len() {
@@ -61,7 +61,7 @@ mod tests {
         fs::read(&path).expect("fixture should be readable")
     }
 
-    fn expected_point_len(cvc: &CVCertificate) -> usize {
+    fn expected_point_len(cvc: &CvCertificate) -> usize {
         let key_data = &cvc.body.public_key.key_data;
         let mut values = extract_context_values(key_data, 6).expect("context tag 6 present");
         values.pop().expect("public key point").len()
@@ -70,7 +70,7 @@ mod tests {
     #[test]
     fn generate_elc_ephemeral_public_key_matches_curve_length() {
         let cvc_bytes = load_fixture("DEGXX820214.cvc");
-        let certificate = CVCertificate::parse(&cvc_bytes).expect("valid CVC");
+        let certificate = CvCertificate::parse(&cvc_bytes).expect("valid CVC");
 
         let expected_len = expected_point_len(&certificate);
         let pk = generate_elc_ephemeral_public_key_from_cvc(&cvc_bytes).expect("key generation succeeds");
