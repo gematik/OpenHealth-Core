@@ -20,7 +20,7 @@
 // find details in the "Readme" file.
 
 use crate::ec::ec_key::{EcCurve, EcKeyPairSpec, EcPrivateKey, EcPublicKey};
-use crate::ec::ecdsa::{verify_brainpool_ecdsa_message, verify_brainpool_ecdsa_value};
+use crate::ec::ecdsa::{decode_ec_public_key, verify_ecdsa_message, verify_ecdsa_value};
 use crate::error::CryptoError as CoreCryptoError;
 use crate::exchange::ecdh::Ecdh;
 use crate::exchange::elc::generate_elc_ephemeral_public_key_from_cvc;
@@ -117,24 +117,26 @@ pub fn brainpool_p256r1_ecdh(private_key: Vec<u8>, peer_public_key: Vec<u8>) -> 
     Ok(shared_secret.as_ref().to_vec())
 }
 
-/// Verifies a raw brainpool ECDSA signature over a message, hashing with the SHA-2 variant implied by the curve size.
+/// Verifies a raw ECDSA signature over a message.
 #[uniffi::export]
-pub fn verify_brainpool_ecdsa_message_signature(
+pub fn verify_ecdsa_message_signature(
     public_key: Vec<u8>,
     message: Vec<u8>,
     signature: Vec<u8>,
 ) -> Result<bool, CryptoError> {
-    verify_brainpool_ecdsa_message(&public_key, &message, &signature).map_err(CryptoError::from)
+    let public_key = decode_ec_public_key(&public_key).map_err(CryptoError::from)?;
+    verify_ecdsa_message(&public_key, &message, &signature).map_err(CryptoError::from)
 }
 
-/// Verifies a raw brainpool ECDSA signature against the supplied big-endian verification value without hashing it first.
+/// Verifies a raw ECDSA signature against the supplied big-endian verification value without hashing it first.
 #[uniffi::export]
-pub fn verify_brainpool_ecdsa_value_signature(
+pub fn verify_ecdsa_value_signature(
     public_key: Vec<u8>,
     value: Vec<u8>,
     signature: Vec<u8>,
 ) -> Result<bool, CryptoError> {
-    verify_brainpool_ecdsa_value(&public_key, &value, &signature).map_err(CryptoError::from)
+    let public_key = decode_ec_public_key(&public_key).map_err(CryptoError::from)?;
+    verify_ecdsa_value(&public_key, &value, &signature).map_err(CryptoError::from)
 }
 
 /// Validates that the configured trusted-channel identity is internally consistent.

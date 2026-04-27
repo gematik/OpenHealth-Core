@@ -90,11 +90,6 @@ fn ec_point_dup(point: *mut EC_POINT, group: *mut EC_GROUP) -> *mut EC_POINT {
 }
 
 #[inline]
-fn ec_key_new_by_curve_name(nid: c_int) -> *mut EC_KEY {
-    unsafe { EC_KEY_new_by_curve_name(nid) }
-}
-
-#[inline]
 fn bn_signed_bin2bn(data: *const u8, len: c_int) -> *mut BIGNUM {
     #[cfg(test)]
     {
@@ -153,37 +148,6 @@ fn pkey_ctx_new(pkey: *mut EVP_PKEY) -> *mut EVP_PKEY_CTX {
     unsafe { EVP_PKEY_CTX_new(pkey, ptr::null_mut()) }
 }
 
-struct EcKey(*mut EC_KEY);
-
-impl EcKey {
-    fn from_public(curve_name: &str, data: &[u8]) -> OsslResult<Self> {
-        let curve = CString::new(curve_name).unwrap();
-        let nid = unsafe { OBJ_txt2nid(curve.as_ptr()) };
-        if nid == NID_undef {
-            return Err(openssl_error(OsslErrorKind::EcNidLookupFailed { curve: curve_name.to_string() }));
-        }
-
-        let key = ec_key_new_by_curve_name(nid);
-        if key.is_null() {
-            return Err(openssl_error(OsslErrorKind::EcKeyCreateFailed));
-        }
-
-        let result = Self(key);
-        ossl_check!(
-            unsafe { EC_KEY_oct2key(result.0, data.as_ptr(), data.len(), ptr::null_mut()) },
-            OsslErrorKind::EcPublicKeyFromBytesFailed
-        );
-        ossl_check!(unsafe { EC_KEY_check_key(result.0) }, OsslErrorKind::EcKeyCheckFailed);
-        Ok(result)
-    }
-}
-
-impl Drop for EcKey {
-    fn drop(&mut self) {
-        unsafe { EC_KEY_free(self.0) };
-    }
-}
-
 struct BigNum(*mut BIGNUM);
 
 impl BigNum {
@@ -235,6 +199,22 @@ impl EcdsaSignature {
         }
 
         Ok(signature)
+    }
+
+    fn to_der(&self) -> OsslResult<Vec<u8>> {
+        let der_len = unsafe { i2d_ECDSA_SIG(self.0, ptr::null_mut()) };
+        if der_len <= 0 {
+            return Err(openssl_error(OsslErrorKind::EcdsaSignatureDerEncodeLenFailed));
+        }
+
+        let mut der = vec![0u8; der_len as usize];
+        let mut out_ptr = der.as_mut_ptr();
+        let written = unsafe { i2d_ECDSA_SIG(self.0, &mut out_ptr) };
+        if written != der_len {
+            return Err(openssl_error(OsslErrorKind::EcdsaSignatureDerEncodeFailed));
+        }
+
+        Ok(der)
     }
 }
 
@@ -410,11 +390,17 @@ impl Ecdh {
     }
 }
 
-pub fn verify_ecdsa(curve_name: &str, public_key: &[u8], value: &[u8], signature: &[u8]) -> OsslResult<bool> {
-    let key = EcKey::from_public(curve_name, public_key)?;
-    let signature = EcdsaSignature::from_raw_rs(signature)?;
+pub fn verify_ecdsa(public_key_der: &[u8], value: &[u8], signature: &[u8]) -> OsslResult<bool> {
+    let key = PKey::from_der_public(public_key_der)?;
+    let signature = EcdsaSignature::from_raw_rs(signature)?.to_der()?;
+    let ctx = pkey_ctx_new(key.as_mut_ptr());
+    if ctx.is_null() {
+        return Err(openssl_error(OsslErrorKind::EvpPkeyCtxCreateFailed));
+    }
+    let ctx = PKeyCtx(ctx);
+    ossl_check!(unsafe { EVP_PKEY_verify_init(ctx.as_ptr()) }, OsslErrorKind::EcdsaVerifyInitFailed);
     let verify_result =
-        unsafe { ECDSA_do_verify(value.as_ptr(), value.len() as c_int, signature.0 as *const ECDSA_SIG, key.0) };
+        unsafe { EVP_PKEY_verify(ctx.as_ptr(), signature.as_ptr(), signature.len(), value.as_ptr(), value.len()) };
 
     match verify_result {
         1 => Ok(true),

@@ -123,9 +123,13 @@ impl From<Asn1Tag> for CoreAsn1Id {
 #[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
 pub struct CvCertificate {
     body: CvCertificateBody,
+    // Preserve the original certificate TLV because some consumers need the exact input bytes,
+    // not a re-encoding from the parsed semantic model.
     encoded: Vec<u8>,
+    // Preserve the original 7F4E certificate body TLV for signature-relevant use cases.
     body_encoded: Vec<u8>,
     signature: Vec<u8>,
+    // Preserve the original outer value field (body + signature) as it appears on the wire.
     value_field: Vec<u8>,
 }
 
@@ -327,7 +331,7 @@ impl CvCertificateDirectory {
         self.find_all_by_chr_internal(target_root_car).any(is_self_signed_root)
     }
 
-    fn build_cvc_chain(
+    fn build_reference_cvc_chain(
         &self,
         configured_service_end_entity: &CvCertificate,
         target_root_car: &[u8],
@@ -376,14 +380,19 @@ impl CvCertificateDirectory {
         self.find_all_by_chr_internal(&chr).cloned().map(Arc::new).collect()
     }
 
-    pub fn build_trusted_channel_chain(
+    /// Resolves a candidate trusted-channel CVC chain by following CAR/CHR references only.
+    ///
+    /// This helper does not validate certificate signatures and therefore does not establish trust
+    /// on its own. Callers that require cryptographic trust validation must validate the returned
+    /// chain separately in a higher-level crypto layer.
+    pub fn build_reference_trusted_channel_chain(
         &self,
         configured_service_end_entity: Arc<CvCertificate>,
         opponent_end_entity: Arc<CvCertificate>,
         known_key_identifiers: Vec<Vec<u8>>,
     ) -> Result<Vec<Arc<CvCertificate>>, Asn1FfiError> {
         let target_root_car = self.determine_target_root_car(&opponent_end_entity)?;
-        let mut chain = self.build_cvc_chain(&configured_service_end_entity, &target_root_car)?;
+        let mut chain = self.build_reference_cvc_chain(&configured_service_end_entity, &target_root_car)?;
         let known_key_identifiers: HashSet<Vec<u8>> = known_key_identifiers.into_iter().collect();
 
         while chain
@@ -394,6 +403,22 @@ impl CvCertificateDirectory {
         }
 
         Ok(chain.into_iter().map(Arc::new).collect())
+    }
+
+    /// Compatibility wrapper around [`CvCertificateDirectory::build_reference_trusted_channel_chain`].
+    ///
+    /// This function resolves certificate references but does not perform signature validation.
+    pub fn build_trusted_channel_chain(
+        &self,
+        configured_service_end_entity: Arc<CvCertificate>,
+        opponent_end_entity: Arc<CvCertificate>,
+        known_key_identifiers: Vec<Vec<u8>>,
+    ) -> Result<Vec<Arc<CvCertificate>>, Asn1FfiError> {
+        self.build_reference_trusted_channel_chain(
+            configured_service_end_entity,
+            opponent_end_entity,
+            known_key_identifiers,
+        )
     }
 }
 
@@ -911,23 +936,7 @@ mod tests {
     }
 
     #[test]
-    fn build_trusted_channel_chain_returns_configured_service_chain_without_root() {
-        let root = build_test_cvc(b"ROOT0001", b"ROOT0001", false);
-        let opponent_issuer = build_test_cvc(b"ROOT0001", b"OPPISS01", false);
-        let service_issuer = build_test_cvc(b"ROOT0001", b"SVCISS01", false);
-        let service_end_entity = parse_cv_certificate(build_test_cvc(b"SVCISS01", b"SVCEND01", true)).unwrap();
-        let opponent_end_entity = parse_cv_certificate(build_test_cvc(b"OPPISS01", b"OPPEND01", true)).unwrap();
-        let directory = parse_cv_certificate_directory(vec![opponent_issuer, service_issuer, root]).unwrap();
-
-        let chain = directory.build_trusted_channel_chain(service_end_entity, opponent_end_entity, Vec::new()).unwrap();
-
-        assert_eq!(chain.len(), 2);
-        assert_eq!(certificate_holder_reference(chain[0].as_ref()), b"SVCEND01");
-        assert_eq!(certificate_holder_reference(chain[1].as_ref()), b"SVCISS01");
-    }
-
-    #[test]
-    fn build_trusted_channel_chain_trims_known_identifiers_from_the_end() {
+    fn build_reference_trusted_channel_chain_returns_configured_service_chain_without_root() {
         let root = build_test_cvc(b"ROOT0001", b"ROOT0001", false);
         let opponent_issuer = build_test_cvc(b"ROOT0001", b"OPPISS01", false);
         let service_issuer = build_test_cvc(b"ROOT0001", b"SVCISS01", false);
@@ -936,7 +945,25 @@ mod tests {
         let directory = parse_cv_certificate_directory(vec![opponent_issuer, service_issuer, root]).unwrap();
 
         let chain = directory
-            .build_trusted_channel_chain(service_end_entity, opponent_end_entity, vec![b"SVCISS01".to_vec()])
+            .build_reference_trusted_channel_chain(service_end_entity, opponent_end_entity, Vec::new())
+            .unwrap();
+
+        assert_eq!(chain.len(), 2);
+        assert_eq!(certificate_holder_reference(chain[0].as_ref()), b"SVCEND01");
+        assert_eq!(certificate_holder_reference(chain[1].as_ref()), b"SVCISS01");
+    }
+
+    #[test]
+    fn build_reference_trusted_channel_chain_trims_known_identifiers_from_the_end() {
+        let root = build_test_cvc(b"ROOT0001", b"ROOT0001", false);
+        let opponent_issuer = build_test_cvc(b"ROOT0001", b"OPPISS01", false);
+        let service_issuer = build_test_cvc(b"ROOT0001", b"SVCISS01", false);
+        let service_end_entity = parse_cv_certificate(build_test_cvc(b"SVCISS01", b"SVCEND01", true)).unwrap();
+        let opponent_end_entity = parse_cv_certificate(build_test_cvc(b"OPPISS01", b"OPPEND01", true)).unwrap();
+        let directory = parse_cv_certificate_directory(vec![opponent_issuer, service_issuer, root]).unwrap();
+
+        let chain = directory
+            .build_reference_trusted_channel_chain(service_end_entity, opponent_end_entity, vec![b"SVCISS01".to_vec()])
             .unwrap();
 
         assert_eq!(chain.len(), 1);

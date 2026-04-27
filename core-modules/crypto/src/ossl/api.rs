@@ -157,6 +157,12 @@ pub enum OsslErrorKind {
     EcdsaSignatureCreateFailed,
     #[error("Failed to set ECDSA signature components")]
     EcdsaSignatureSetComponentsFailed,
+    #[error("Failed to determine DER length for ECDSA signature")]
+    EcdsaSignatureDerEncodeLenFailed,
+    #[error("Failed to encode ECDSA signature as DER")]
+    EcdsaSignatureDerEncodeFailed,
+    #[error("Failed to initialize ECDSA verification context")]
+    EcdsaVerifyInitFailed,
     #[error("ECDSA verification failed")]
     EcdsaVerifyFailed,
 

@@ -54,7 +54,7 @@ fn hash_message(curve: &EcCurve, message: &[u8]) -> CryptoResult<Vec<u8>> {
     digest.finalize()
 }
 
-fn decode_brainpool_public_key(public_key: &[u8]) -> CryptoResult<EcPublicKey> {
+pub(crate) fn decode_ec_public_key(public_key: &[u8]) -> CryptoResult<EcPublicKey> {
     let curve = curve_for_brainpool_public_key(public_key)?;
     EcPublicKey::from_uncompressed(curve, public_key)
 }
@@ -65,26 +65,21 @@ fn verify_signature_value(public_key: &EcPublicKey, value: &[u8], signature: &[u
         return Err(CryptoError::InvalidSignatureLength { expected: expected_signature_len, actual: signature.len() });
     }
 
-    crate::ossl::ec::verify_ecdsa(public_key.curve().name(), public_key.as_bytes(), value, signature)
-        .map_err(Into::into)
+    let public_key_der = public_key.encode_to_asn1()?;
+    crate::ossl::ec::verify_ecdsa(public_key_der.as_ref(), value, signature).map_err(Into::into)
 }
 
-/// Verifies a raw brainpool ECDSA signature over the supplied message.
+/// Verifies a raw ECDSA signature over the supplied message.
 ///
-/// The message is hashed with the SHA-2 variant implied by the curve size:
-/// brainpoolP256r1 -> SHA-256, brainpoolP384r1 -> SHA-384, brainpoolP512r1 -> SHA-512.
-pub fn verify_brainpool_ecdsa_message(public_key: &[u8], message: &[u8], signature: &[u8]) -> CryptoResult<bool> {
-    let public_key = decode_brainpool_public_key(public_key)?;
+/// The message is hashed with the SHA-2 variant implied by the public key curve.
+pub fn verify_ecdsa_message(public_key: &EcPublicKey, message: &[u8], signature: &[u8]) -> CryptoResult<bool> {
     let digest = hash_message(public_key.curve(), message)?;
-    verify_signature_value(&public_key, &digest, signature)
+    verify_signature_value(public_key, &digest, signature)
 }
 
-/// Verifies a raw brainpool ECDSA signature against a caller-supplied big-endian verification value.
-///
-/// This mirrors APIs that already provide the verification input, for example `nonce || 0x00`.
-pub fn verify_brainpool_ecdsa_value(public_key: &[u8], value: &[u8], signature: &[u8]) -> CryptoResult<bool> {
-    let public_key = decode_brainpool_public_key(public_key)?;
-    verify_signature_value(&public_key, value, signature)
+/// Verifies a raw ECDSA signature against a caller-supplied big-endian verification value.
+pub fn verify_ecdsa_value(public_key: &EcPublicKey, value: &[u8], signature: &[u8]) -> CryptoResult<bool> {
+    verify_signature_value(public_key, value, signature)
 }
 
 #[cfg(test)]
@@ -104,39 +99,36 @@ mod tests {
 
     #[test]
     fn verify_message_accepts_valid_signature() {
-        let valid =
-            verify_brainpool_ecdsa_message(&hex_to_bytes(PUBLIC_KEY), MESSAGE, &hex_to_bytes(SIGNATURE)).unwrap();
+        let public_key = decode_ec_public_key(&hex_to_bytes(PUBLIC_KEY)).unwrap();
+        let valid = verify_ecdsa_message(&public_key, MESSAGE, &hex_to_bytes(SIGNATURE)).unwrap();
 
         assert!(valid);
     }
 
     #[test]
     fn verify_value_accepts_valid_signature_for_digest_input() {
-        let valid = verify_brainpool_ecdsa_value(
-            &hex_to_bytes(PUBLIC_KEY),
-            &hex_to_bytes(MESSAGE_DIGEST_SHA256),
-            &hex_to_bytes(SIGNATURE),
-        )
-        .unwrap();
+        let public_key = decode_ec_public_key(&hex_to_bytes(PUBLIC_KEY)).unwrap();
+        let valid =
+            verify_ecdsa_value(&public_key, &hex_to_bytes(MESSAGE_DIGEST_SHA256), &hex_to_bytes(SIGNATURE)).unwrap();
 
         assert!(valid);
     }
 
     #[test]
     fn verify_message_rejects_modified_signature() {
+        let public_key = decode_ec_public_key(&hex_to_bytes(PUBLIC_KEY)).unwrap();
         let mut signature = hex_to_bytes(SIGNATURE);
         signature[0] ^= 0x01;
 
-        let valid = verify_brainpool_ecdsa_message(&hex_to_bytes(PUBLIC_KEY), MESSAGE, &signature).unwrap();
+        let valid = verify_ecdsa_message(&public_key, MESSAGE, &signature).unwrap();
 
         assert!(!valid);
     }
 
     #[test]
     fn verify_value_rejects_invalid_signature_length() {
-        let err =
-            verify_brainpool_ecdsa_value(&hex_to_bytes(PUBLIC_KEY), &hex_to_bytes(MESSAGE_DIGEST_SHA256), &[0x01; 63])
-                .unwrap_err();
+        let public_key = decode_ec_public_key(&hex_to_bytes(PUBLIC_KEY)).unwrap();
+        let err = verify_ecdsa_value(&public_key, &hex_to_bytes(MESSAGE_DIGEST_SHA256), &[0x01; 63]).unwrap_err();
 
         assert!(matches!(err, CryptoError::InvalidSignatureLength { expected: 64, actual: 63 }));
     }

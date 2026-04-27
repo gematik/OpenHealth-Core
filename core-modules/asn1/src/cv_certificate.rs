@@ -178,8 +178,11 @@ pub struct ExtensionField {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct ParsedCvCertificateWithRawParts {
     pub certificate: CvCertificate,
+    // Preserve the original outer certificate TLV for consumers that need signature-relevant bytes.
     pub encoded: Vec<u8>,
+    // Preserve the original 7F4E certificate body TLV instead of re-encoding the parsed body.
     pub body_encoded: Vec<u8>,
+    // Preserve the original outer value field (body + signature) from the input bytes.
     pub value_field: Vec<u8>,
 }
 
