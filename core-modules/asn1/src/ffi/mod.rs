@@ -486,6 +486,12 @@ impl From<Asn1TagForm> for CoreAsn1Form {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::encoder::Asn1Encoder;
+    use crate::error::Asn1EncoderError;
+    use crate::oid::ObjectIdentifier;
+    use crate::tag::TagNumberExt;
+
+    type EncResult = Result<(), Asn1EncoderError>;
 
     fn hex_to_bytes(hex_str: &str) -> Vec<u8> {
         let mut out = Vec::new();
@@ -497,6 +503,75 @@ mod tests {
             out.push(byte);
         }
         out
+    }
+
+    fn build_cv_certificate_with_extensions() -> Vec<u8> {
+        Asn1Encoder::write_nonzeroizing::<Asn1EncoderError>(|w| {
+            w.write_tagged_object(33u32.application_tag().constructed(), |cert| -> EncResult {
+                cert.write_tagged_object(78u32.application_tag().constructed(), |body| -> EncResult {
+                    body.write_tagged_object(41u32.application_tag(), |field| -> EncResult {
+                        field.write_bytes(&[0x70]);
+                        Ok(())
+                    })?;
+                    body.write_tagged_object(2u32.application_tag(), |field| -> EncResult {
+                        field.write_bytes(b"CAR");
+                        Ok(())
+                    })?;
+                    body.write_tagged_object(73u32.application_tag().constructed(), |field| -> EncResult {
+                        field.write_object_identifier(&ObjectIdentifier::parse("1.2.3.4").unwrap())?;
+                        field.write_bytes(&[0x86, 0x01, 0x04]);
+                        Ok(())
+                    })?;
+                    body.write_tagged_object(32u32.application_tag(), |field| -> EncResult {
+                        field.write_bytes(b"CHR");
+                        Ok(())
+                    })?;
+                    body.write_tagged_object(76u32.application_tag().constructed(), |chat| -> EncResult {
+                        chat.write_object_identifier(&ObjectIdentifier::parse("1.2.3").unwrap())?;
+                        chat.write_tagged_object(19u32.application_tag(), |field| -> EncResult {
+                            field.write_bytes(&[0xAA]);
+                            Ok(())
+                        })?;
+                        Ok(())
+                    })?;
+                    body.write_tagged_object(37u32.application_tag(), |field| -> EncResult {
+                        field.write_bytes(&[2, 5, 0, 1, 0, 1]);
+                        Ok(())
+                    })?;
+                    body.write_tagged_object(36u32.application_tag(), |field| -> EncResult {
+                        field.write_bytes(&[2, 6, 0, 1, 0, 1]);
+                        Ok(())
+                    })?;
+                    body.write_tagged_object(5u32.application_tag().constructed(), |extensions| -> EncResult {
+                        extensions.write_tagged_object(
+                            19u32.application_tag().constructed(),
+                            |template| -> EncResult {
+                                template.write_object_identifier(&ObjectIdentifier::parse("1.2.3.5").unwrap())?;
+                                template.write_tagged_object(0u8.context_tag(), |field| -> EncResult {
+                                    field.write_bytes(&[0x10]);
+                                    Ok(())
+                                })?;
+                                template.write_tagged_object(1u8.context_tag(), |field| -> EncResult {
+                                    field.write_bytes(&[0x20, 0x30]);
+                                    Ok(())
+                                })?;
+                                Ok(())
+                            },
+                        )?;
+                        Ok(())
+                    })?;
+                    Ok(())
+                })?;
+                cert.write_tagged_object(55u32.application_tag(), |signature| -> EncResult {
+                    signature.write_bytes(&[0xDE, 0xAD]);
+                    Ok(())
+                })?;
+                Ok(())
+            })
+        })
+        .expect("test certificate should encode")
+        .as_ref()
+        .to_vec()
     }
 
     #[test]
@@ -524,6 +599,31 @@ mod tests {
         assert_eq!(expiration_date.year(), 29);
         assert_eq!(expiration_date.month(), 4);
         assert_eq!(expiration_date.day(), 1);
+        assert!(body.certificate_extensions().is_none());
+        assert_eq!(vec![0x9D, 0x24], &cert.signature()[..2]);
+        assert!(cert.encoded_certificate_tlv().starts_with(&[0x7F, 0x21]));
+        assert!(cert.encoded_body_tlv().starts_with(&[0x7F, 0x4E]));
+        assert!(cert.encoded_public_key_tlv().starts_with(&[0x7F, 0x49]));
+        assert!(cert.encoded_signature_tlv().starts_with(&[0x5F, 0x37]));
+    }
+
+    #[test]
+    fn parse_cv_certificate_maps_extensions() {
+        let cert = parse_cv_certificate(build_cv_certificate_with_extensions()).expect("parse should succeed");
+        let body = cert.body();
+        let extensions = body.certificate_extensions().expect("extensions should be present");
+
+        let templates = extensions.templates();
+        assert_eq!(templates.len(), 1);
+        assert_eq!(templates[0].extension_id_oid(), "1.2.3.5");
+
+        let fields = templates[0].extension_data();
+        assert_eq!(fields.len(), 2);
+        assert_eq!(fields[0].tag().class_(), Asn1TagClass::ContextSpecific);
+        assert_eq!(fields[0].tag().number(), 0);
+        assert_eq!(fields[0].value(), vec![0x10]);
+        assert_eq!(fields[1].tag().number(), 1);
+        assert_eq!(fields[1].value(), vec![0x20, 0x30]);
     }
 
     #[test]

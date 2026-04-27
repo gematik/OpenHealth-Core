@@ -259,6 +259,15 @@ mod tests {
     }
 
     #[test]
+    fn cvc_trust_anchor_from_certificate_uses_holder_reference() {
+        let cvc = openhealth_asn1::ffi::parse_cv_certificate(load_fixture("DEGXX820214.cvc")).unwrap();
+
+        let anchor = CvcTrustAnchor::from_certificate(cvc).unwrap();
+
+        assert_eq!(hex::encode(anchor.reference()), "4445475858820214");
+    }
+
+    #[test]
     fn brainpool_p256r1_ecdh_matches_for_both_sides() {
         let left = generate_brainpool_p256r1_key_pair().unwrap();
         let right = generate_brainpool_p256r1_key_pair().unwrap();

@@ -754,6 +754,7 @@ mod tests {
         assert_eq!(cert.body.certificate_expiration_date, CertificateDate { year: 26, month: 12, day: 31 });
         assert!(cert.body.certificate_extensions.is_none());
         assert_eq!(cert.signature, vec![0xDE, 0xAD]);
+        assert_eq!(vec![0xDE, 0xAD], cert.signature);
     }
 
     #[test]
