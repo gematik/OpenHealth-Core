@@ -101,11 +101,6 @@ fn bn_signed_bin2bn(data: *const u8, len: c_int) -> *mut BIGNUM {
 }
 
 #[inline]
-fn bn_bin2bn(data: *const u8, len: c_int) -> *mut BIGNUM {
-    unsafe { BN_bin2bn(data, len, ptr::null_mut()) }
-}
-
-#[inline]
 fn ec_point2oct(
     group: *const EC_GROUP,
     point: *const EC_POINT,
@@ -146,82 +141,6 @@ fn pkey_ctx_new(pkey: *mut EVP_PKEY) -> *mut EVP_PKEY_CTX {
         }
     }
     unsafe { EVP_PKEY_CTX_new(pkey, ptr::null_mut()) }
-}
-
-struct BigNum(*mut BIGNUM);
-
-impl BigNum {
-    fn from_unsigned_bytes(data: &[u8]) -> OsslResult<Self> {
-        let bn = bn_bin2bn(data.as_ptr(), data.len() as c_int);
-        if bn.is_null() {
-            return Err(openssl_error(OsslErrorKind::EcScalarToBignumFailed));
-        }
-        Ok(Self(bn))
-    }
-
-    fn into_raw(mut self) -> *mut BIGNUM {
-        let raw = self.0;
-        self.0 = ptr::null_mut();
-        raw
-    }
-}
-
-impl Drop for BigNum {
-    fn drop(&mut self) {
-        if !self.0.is_null() {
-            unsafe { BN_free(self.0) };
-        }
-    }
-}
-
-struct EcdsaSignature(*mut ECDSA_SIG);
-
-impl EcdsaSignature {
-    fn from_raw_rs(raw_signature: &[u8]) -> OsslResult<Self> {
-        let sig = unsafe { ECDSA_SIG_new() };
-        if sig.is_null() {
-            return Err(openssl_error(OsslErrorKind::EcdsaSignatureCreateFailed));
-        }
-
-        let signature = Self(sig);
-        let half = raw_signature.len() / 2;
-        let r = BigNum::from_unsigned_bytes(&raw_signature[..half])?;
-        let s = BigNum::from_unsigned_bytes(&raw_signature[half..])?;
-        let r = r.into_raw();
-        let s = s.into_raw();
-
-        if unsafe { ECDSA_SIG_set0(signature.0, r, s) } != 1 {
-            unsafe {
-                BN_free(r);
-                BN_free(s);
-            }
-            return Err(openssl_error(OsslErrorKind::EcdsaSignatureSetComponentsFailed));
-        }
-
-        Ok(signature)
-    }
-
-    fn to_der(&self) -> OsslResult<Vec<u8>> {
-        let der_len = unsafe { i2d_ECDSA_SIG(self.0, ptr::null_mut()) };
-        if der_len <= 0 {
-            return Err(openssl_error(OsslErrorKind::EcdsaSignatureDerEncodeLenFailed));
-        }
-
-        let mut der = vec![0u8; der_len as usize];
-        let mut out_ptr = der.as_mut_ptr();
-        let written = unsafe { i2d_ECDSA_SIG(self.0, &mut out_ptr) };
-        if written != der_len {
-            return Err(openssl_error(OsslErrorKind::EcdsaSignatureDerEncodeFailed));
-        }
-
-        Ok(der)
-    }
-}
-
-impl Drop for EcdsaSignature {
-    fn drop(&mut self) {
-        unsafe { ECDSA_SIG_free(self.0) };
-    }
 }
 
 pub struct EcPoint {
@@ -387,25 +306,6 @@ impl Ecdh {
         );
         secret.truncate(len);
         Ok(secret)
-    }
-}
-
-pub fn verify_ecdsa(public_key_der: &[u8], value: &[u8], signature: &[u8]) -> OsslResult<bool> {
-    let key = PKey::from_der_public(public_key_der)?;
-    let signature = EcdsaSignature::from_raw_rs(signature)?.to_der()?;
-    let ctx = pkey_ctx_new(key.as_mut_ptr());
-    if ctx.is_null() {
-        return Err(openssl_error(OsslErrorKind::EvpPkeyCtxCreateFailed));
-    }
-    let ctx = PKeyCtx(ctx);
-    ossl_check!(unsafe { EVP_PKEY_verify_init(ctx.as_ptr()) }, OsslErrorKind::EcdsaVerifyInitFailed);
-    let verify_result =
-        unsafe { EVP_PKEY_verify(ctx.as_ptr(), signature.as_ptr(), signature.len(), value.as_ptr(), value.len()) };
-
-    match verify_result {
-        1 => Ok(true),
-        0 => Ok(false),
-        _ => Err(openssl_error(OsslErrorKind::EcdsaVerifyFailed)),
     }
 }
 

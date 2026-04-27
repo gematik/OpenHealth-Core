@@ -32,14 +32,10 @@ This document summarizes the publicly released versions of OpenHealth Core.
 This release captures the changes since `0.3.0-alpha1`.
 
 Added
-- CVC-focused ASN.1 UniFFI accessors for preserved certificate encodings, value/body fields, public-point extraction, CHAT end-entity checks, and numeric date accessors.
-- A platform-neutral `CvCertificateDirectory` UniFFI API for trusted-channel chain building, including support for multiple certificates per `CHR`.
-- Crypto UniFFI helpers for Brainpool ECDSA message/value signature verification and for validating configured trusted-channel identities against CVC and PKCS#8 key material.
 - Healthcard FFI parsing support for `LIST PUBLIC KEY` responses.
 
 Changed
 - Removed the JVM-only `Asn1JvmApi.kt` helper in favor of direct generated UniFFI bindings.
-- Updated the healthcard trusted-channel tooling to use the new shared CVC and verification primitives.
 
 ### 0.3.0-alpha1
 

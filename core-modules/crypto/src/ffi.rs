@@ -20,14 +20,11 @@
 // find details in the "Readme" file.
 
 use crate::ec::ec_key::{EcCurve, EcKeyPairSpec, EcPrivateKey, EcPublicKey};
-use crate::ec::ecdsa::{decode_ec_public_key, verify_ecdsa_message, verify_ecdsa_value};
 use crate::error::CryptoError as CoreCryptoError;
 use crate::exchange::ecdh::Ecdh;
 use crate::exchange::elc::generate_elc_ephemeral_public_key_from_cvc;
 use crate::key::SecretKey;
 use crate::mac::{CmacAlgorithm, MacSpec};
-use num_bigint::{BigInt, Sign};
-use openhealth_asn1::cv_certificate::CvCertificate as ParsedCvCertificate;
 use std::sync::Arc;
 use thiserror::Error;
 
@@ -49,9 +46,6 @@ impl From<CoreCryptoError> for CryptoError {
             CoreCryptoError::Asn1Decoding(inner) => Self::Asn1Decode { reason: inner.to_string() },
             CoreCryptoError::InvalidEcPoint(reason) => Self::InvalidArgument { reason },
             CoreCryptoError::InvalidKeyMaterial { context } => Self::InvalidArgument { reason: context.to_owned() },
-            CoreCryptoError::InvalidSignatureLength { expected, actual } => Self::InvalidArgument {
-                reason: format!("invalid ECDSA signature length: expected {expected}, got {actual}"),
-            },
             CoreCryptoError::InvalidKeyLength { expected, actual } => Self::InvalidArgument {
                 reason: format!("invalid key length: expected one of {expected:?}, got {actual}"),
             },
@@ -117,74 +111,6 @@ pub fn brainpool_p256r1_ecdh(private_key: Vec<u8>, peer_public_key: Vec<u8>) -> 
     Ok(shared_secret.as_ref().to_vec())
 }
 
-/// Verifies a raw ECDSA signature over a message.
-#[uniffi::export]
-pub fn verify_ecdsa_message_signature(
-    public_key: Vec<u8>,
-    message: Vec<u8>,
-    signature: Vec<u8>,
-) -> Result<bool, CryptoError> {
-    let public_key = decode_ec_public_key(&public_key).map_err(CryptoError::from)?;
-    verify_ecdsa_message(&public_key, &message, &signature).map_err(CryptoError::from)
-}
-
-/// Verifies a raw ECDSA signature against the supplied big-endian verification value without hashing it first.
-#[uniffi::export]
-pub fn verify_ecdsa_value_signature(
-    public_key: Vec<u8>,
-    value: Vec<u8>,
-    signature: Vec<u8>,
-) -> Result<bool, CryptoError> {
-    let public_key = decode_ec_public_key(&public_key).map_err(CryptoError::from)?;
-    verify_ecdsa_value(&public_key, &value, &signature).map_err(CryptoError::from)
-}
-
-/// Validates that the configured trusted-channel identity is internally consistent.
-#[uniffi::export]
-pub fn validate_configured_trusted_channel_identity(
-    sub_ca_cvc: Vec<u8>,
-    end_entity_cvc: Vec<u8>,
-    private_key_der: Vec<u8>,
-) -> Result<(), CryptoError> {
-    if sub_ca_cvc.is_empty() {
-        return Err(CryptoError::InvalidArgument { reason: "sub_ca_cvc must not be empty".to_string() });
-    }
-    if end_entity_cvc.is_empty() {
-        return Err(CryptoError::InvalidArgument { reason: "end_entity_cvc must not be empty".to_string() });
-    }
-    if private_key_der.is_empty() {
-        return Err(CryptoError::InvalidArgument { reason: "private_key_der must not be empty".to_string() });
-    }
-
-    let sub_ca_certificate =
-        ParsedCvCertificate::parse(&sub_ca_cvc).map_err(|err| CryptoError::Asn1Decode { reason: err.to_string() })?;
-    let end_entity_certificate = ParsedCvCertificate::parse(&end_entity_cvc)
-        .map_err(|err| CryptoError::Asn1Decode { reason: err.to_string() })?;
-    let private_key = EcPrivateKey::decode_from_asn1(&private_key_der).map_err(CryptoError::from)?;
-
-    if sub_ca_certificate.is_end_entity() {
-        return Err(CryptoError::InvalidArgument {
-            reason: "configured issuer CVC is not a CA certificate".to_string(),
-        });
-    }
-    if !end_entity_certificate.is_end_entity() {
-        return Err(CryptoError::InvalidArgument {
-            reason: "configured service CVC is not an end-entity certificate".to_string(),
-        });
-    }
-    if sub_ca_certificate.certificate_holder_reference() != end_entity_certificate.certification_authority_reference() {
-        return Err(CryptoError::InvalidArgument {
-            reason: "configured CVC certificates do not form a chain".to_string(),
-        });
-    }
-    if !private_key_matches_cvc_public_key(&end_entity_certificate, &private_key)? {
-        return Err(CryptoError::InvalidArgument {
-            reason: "configured service private key does not match configured service CVC".to_string(),
-        });
-    }
-
-    Ok(())
-}
 /// Computes AES-CMAC and returns the requested number of leading tag bytes.
 #[uniffi::export]
 pub fn aes_cmac(key: Vec<u8>, message: Vec<u8>, output_length: i32) -> Result<Vec<u8>, CryptoError> {
@@ -204,43 +130,11 @@ pub fn aes_cmac(key: Vec<u8>, message: Vec<u8>, output_length: i32) -> Result<Ve
     Ok(tag[..output_length].to_vec())
 }
 
-fn private_key_matches_cvc_public_key(
-    end_entity_certificate: &ParsedCvCertificate,
-    private_key: &EcPrivateKey,
-) -> Result<bool, CryptoError> {
-    let public_point = end_entity_certificate
-        .body
-        .public_key
-        .public_point()
-        .map_err(|err| CryptoError::Asn1Decode { reason: err.to_string() })?;
-    let expected_public_key =
-        EcPublicKey::from_uncompressed(private_key.curve().clone(), public_point).map_err(CryptoError::from)?;
-    let private_scalar = BigInt::from_bytes_be(Sign::Plus, private_key.as_bytes());
-    let derived_public_key = private_key
-        .curve()
-        .g()
-        .mul(&private_scalar)
-        .map_err(CryptoError::from)?
-        .to_ec_public_key()
-        .map_err(CryptoError::from)?;
-    Ok(derived_public_key.as_bytes() == expected_public_key.as_bytes())
-}
 #[cfg(test)]
 mod tests {
     use super::*;
-    use openhealth_asn1::encoder::Asn1Encoder;
-    use openhealth_asn1::error::Asn1EncoderError;
-    use openhealth_asn1::oid::ObjectIdentifier;
-    use openhealth_asn1::tag::TagNumberExt;
     use std::fs;
     use std::path::PathBuf;
-
-    const ECDSA_PUBLIC_KEY: &str =
-        "04223ddca232b0188e6aa70f8d8beb5e67347b8b0d759c7f361a1930cfdc3571b02e59ef95e567076bff633922ae6d97514a771188171b2aa1603455d0031c168a";
-    const ECDSA_MESSAGE: &[u8] = b"OpenHealth brainpool verify test";
-    const ECDSA_MESSAGE_DIGEST_SHA256: &str = "aade9d5d08b880411fa7c2bff4d8af93cd43fa942fe9d3b2377121328be5cbc7";
-    const ECDSA_SIGNATURE: &str =
-        "96c713abe48f06e0f6cde0709501268302ee7a41b4d2b188e661fe86bfe832084e11b5995ca4fd152efa1045e573026ead3e7accb0cd4e634ddc45e6ac804fe2";
 
     fn hex_to_bytes(hex_str: &str) -> Vec<u8> {
         hex::decode(hex_str.replace(char::is_whitespace, "")).unwrap()
@@ -256,74 +150,6 @@ mod tests {
         path.push("Atos_CVC-Root-CA");
         path.push(name);
         fs::read(&path).expect("fixture should be readable")
-    }
-
-    fn build_test_cvc(car: &[u8], chr: &[u8], public_point: &[u8], end_entity: bool) -> Vec<u8> {
-        Asn1Encoder::write_nonzeroizing::<Asn1EncoderError>(|writer| {
-            writer.write_tagged_object(33u8.application_tag().constructed(), |cert| -> Result<(), Asn1EncoderError> {
-                cert.write_tagged_object(
-                    78u8.application_tag().constructed(),
-                    |body| -> Result<(), Asn1EncoderError> {
-                        body.write_tagged_object(41u8.application_tag(), |field| -> Result<(), Asn1EncoderError> {
-                            field.write_bytes(&[0x00]);
-                            Ok(())
-                        })?;
-                        body.write_tagged_object(2u8.application_tag(), |field| -> Result<(), Asn1EncoderError> {
-                            field.write_bytes(car);
-                            Ok(())
-                        })?;
-                        body.write_tagged_object(
-                            73u8.application_tag().constructed(),
-                            |field| -> Result<(), Asn1EncoderError> {
-                                field.write_object_identifier(&ObjectIdentifier::parse("1.3.36.3.5.3.1").unwrap())?;
-                                field.write_tagged_object(
-                                    0x06u8.context_tag(),
-                                    |point| -> Result<(), Asn1EncoderError> {
-                                        point.write_bytes(public_point);
-                                        Ok(())
-                                    },
-                                )?;
-                                Ok(())
-                            },
-                        )?;
-                        body.write_tagged_object(32u8.application_tag(), |field| -> Result<(), Asn1EncoderError> {
-                            field.write_bytes(chr);
-                            Ok(())
-                        })?;
-                        body.write_tagged_object(
-                            76u8.application_tag().constructed(),
-                            |chat| -> Result<(), Asn1EncoderError> {
-                                chat.write_object_identifier(&ObjectIdentifier::parse("1.2.276.0.76.4.152").unwrap())?;
-                                chat.write_tagged_object(
-                                    19u8.application_tag(),
-                                    |data| -> Result<(), Asn1EncoderError> {
-                                        data.write_bytes(if end_entity { &[0x00] } else { &[0x80] });
-                                        Ok(())
-                                    },
-                                )?;
-                                Ok(())
-                            },
-                        )?;
-                        body.write_tagged_object(37u8.application_tag(), |field| -> Result<(), Asn1EncoderError> {
-                            field.write_bytes(&[2, 6, 0, 4, 2, 1]);
-                            Ok(())
-                        })?;
-                        body.write_tagged_object(36u8.application_tag(), |field| -> Result<(), Asn1EncoderError> {
-                            field.write_bytes(&[2, 9, 0, 4, 2, 1]);
-                            Ok(())
-                        })?;
-                        Ok(())
-                    },
-                )?;
-                cert.write_tagged_object(55u8.application_tag(), |signature| -> Result<(), Asn1EncoderError> {
-                    signature.write_bytes(&[0x00]);
-                    Ok(())
-                })?;
-                Ok(())
-            })
-        })
-        .unwrap()
-        .to_vec()
     }
 
     #[test]
@@ -355,30 +181,6 @@ mod tests {
     }
 
     #[test]
-    fn verify_ecdsa_message_signature_accepts_valid_signature() {
-        let valid = verify_ecdsa_message_signature(
-            hex_to_bytes(ECDSA_PUBLIC_KEY),
-            ECDSA_MESSAGE.to_vec(),
-            hex_to_bytes(ECDSA_SIGNATURE),
-        )
-        .unwrap();
-
-        assert!(valid);
-    }
-
-    #[test]
-    fn verify_ecdsa_value_signature_accepts_valid_signature() {
-        let valid = verify_ecdsa_value_signature(
-            hex_to_bytes(ECDSA_PUBLIC_KEY),
-            hex_to_bytes(ECDSA_MESSAGE_DIGEST_SHA256),
-            hex_to_bytes(ECDSA_SIGNATURE),
-        )
-        .unwrap();
-
-        assert!(valid);
-    }
-
-    #[test]
     fn aes_cmac_truncates_to_requested_length() {
         let tag = aes_cmac(
             hex_to_bytes("2B7E151628AED2A6ABF7158809CF4F3C"),
@@ -388,43 +190,5 @@ mod tests {
         .unwrap();
 
         assert_eq!(hex::encode(tag), "070a16b46b4d4144");
-    }
-
-    #[test]
-    fn validate_configured_trusted_channel_identity_accepts_matching_material() {
-        let (sub_ca_public_key, _) = EcKeyPairSpec { curve: EcCurve::BrainpoolP256r1 }.generate_keypair().unwrap();
-        let (service_public_key, service_private_key) =
-            EcKeyPairSpec { curve: EcCurve::BrainpoolP256r1 }.generate_keypair().unwrap();
-        let sub_ca_cvc = build_test_cvc(b"ROOT0001", b"SVCISS01", sub_ca_public_key.as_bytes(), false);
-        let end_entity_cvc = build_test_cvc(b"SVCISS01", b"SVCEND01", service_public_key.as_bytes(), true);
-
-        let result = validate_configured_trusted_channel_identity(
-            sub_ca_cvc,
-            end_entity_cvc,
-            service_private_key.encode_to_asn1().unwrap().to_vec(),
-        );
-
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn validate_configured_trusted_channel_identity_rejects_mismatched_private_key() {
-        let (sub_ca_public_key, _) = EcKeyPairSpec { curve: EcCurve::BrainpoolP256r1 }.generate_keypair().unwrap();
-        let (service_public_key, _) = EcKeyPairSpec { curve: EcCurve::BrainpoolP256r1 }.generate_keypair().unwrap();
-        let (_, wrong_private_key) = EcKeyPairSpec { curve: EcCurve::BrainpoolP256r1 }.generate_keypair().unwrap();
-        let sub_ca_cvc = build_test_cvc(b"ROOT0001", b"SVCISS01", sub_ca_public_key.as_bytes(), false);
-        let end_entity_cvc = build_test_cvc(b"SVCISS01", b"SVCEND01", service_public_key.as_bytes(), true);
-
-        let result = validate_configured_trusted_channel_identity(
-            sub_ca_cvc,
-            end_entity_cvc,
-            wrong_private_key.encode_to_asn1().unwrap().to_vec(),
-        );
-
-        assert!(matches!(
-            result,
-            Err(CryptoError::InvalidArgument { reason })
-                if reason == "configured service private key does not match configured service CVC"
-        ));
     }
 }

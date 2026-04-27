@@ -19,7 +19,7 @@
 // For additional notes and disclaimer from gematik and in case of changes by gematik,
 // find details in the "Readme" file.
 
-use openhealth_asn1::cv_certificate::CvCertificate;
+use openhealth_asn1::cv_certificate::CVCertificate;
 use openhealth_asn1::decoder::Asn1Decoder;
 use openhealth_asn1::extraction::extract_context_values;
 use openhealth_asn1::tag::TagNumberExt;
@@ -140,7 +140,7 @@ where
     let mut end_entity_chr = Vec::new();
     let mut parsed = Vec::with_capacity(cvcs.len());
     for cvc in cvcs {
-        parsed.push(CvCertificate::parse(cvc).map_err(|err| TrustedChannelError {
+        parsed.push(CVCertificate::parse(cvc).map_err(|err| TrustedChannelError {
             error: err.into(),
             cvcs: cvc_infos.clone(),
             end_entity_chr: end_entity_chr.clone(),
@@ -355,13 +355,13 @@ where
 
 /// Build a CVC chain from a directory by following CHR/CAR references.
 pub fn load_cvc_chain_from_dir(end_entity: &[u8], dir: &Path) -> Result<Vec<Vec<u8>>, ExchangeError> {
-    let end_entity_cert = CvCertificate::parse(end_entity)?;
+    let end_entity_cert = CVCertificate::parse(end_entity)?;
     let mut map: HashMap<Vec<u8>, Vec<u8>> = HashMap::new();
 
     for entry in collect_files_with_extension(dir, "cvc")? {
         let bytes =
             fs::read(&entry).map_err(|err| ExchangeError::invalid_argument(format!("read CVC {entry:?}: {err}")))?;
-        let cert = CvCertificate::parse(&bytes)?;
+        let cert = CVCertificate::parse(&bytes)?;
         map.entry(cert.body.certificate_holder_reference.clone()).or_insert(bytes);
     }
 
@@ -375,7 +375,7 @@ pub fn load_cvc_chain_from_dir(end_entity: &[u8], dir: &Path) -> Result<Vec<Vec<
         }
         if let Some(issuer_bytes) = map.get(&car) {
             chain.push(issuer_bytes.clone());
-            current = CvCertificate::parse(issuer_bytes)?;
+            current = CVCertificate::parse(issuer_bytes)?;
         } else {
             break;
         }
@@ -396,7 +396,7 @@ pub fn load_cvc_chain_from_dir_for_cars(available_cars: &[Vec<u8>], dir: &Path) 
     for entry in collect_files_with_extension(dir, "cvc")? {
         let bytes =
             fs::read(&entry).map_err(|err| ExchangeError::invalid_argument(format!("read CVC {entry:?}: {err}")))?;
-        let cert = CvCertificate::parse(&bytes)?;
+        let cert = CVCertificate::parse(&bytes)?;
         certs.push((
             cert.body.certification_authority_reference.clone(),
             cert.body.certificate_holder_reference.clone(),

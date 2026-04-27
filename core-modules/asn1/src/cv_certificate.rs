@@ -38,7 +38,6 @@ use crate::decoder::{Asn1Decoder, Asn1Length, ParserScope};
 use crate::error::{Asn1DecoderError, Asn1DecoderResult};
 use crate::oid::ObjectIdentifier;
 use crate::tag::{Asn1Id, TagNumberExt};
-use std::sync::Arc;
 
 const TAG_CV_CERTIFICATE: u32 = 33;
 const TAG_CERTIFICATE_BODY: u32 = 78;
@@ -60,26 +59,9 @@ const MAX_CERT_FIELD_LEN: usize = 65_535;
 ///
 /// The signature is returned as the content octets of the signature field (no verification is
 /// performed).
-pub struct CvCertificate {
+pub struct CVCertificate {
     pub body: CertificateBody,
     pub signature: Vec<u8>,
-}
-
-impl CvCertificate {
-    /// Returns the certificate issuer reference (CAR).
-    pub fn certification_authority_reference(&self) -> &[u8] {
-        &self.body.certification_authority_reference
-    }
-
-    /// Returns the certificate holder reference (CHR).
-    pub fn certificate_holder_reference(&self) -> &[u8] {
-        &self.body.certificate_holder_reference
-    }
-
-    /// Returns whether this certificate is an end-entity certificate.
-    pub fn is_end_entity(&self) -> bool {
-        self.body.certificate_holder_authorization_template.is_end_entity()
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -110,20 +92,6 @@ pub struct CVCertPublicKey {
     pub key_data: Vec<u8>,
 }
 
-impl CVCertPublicKey {
-    /// Returns the context-specific tag `0x86` EC public point from the raw key data.
-    pub fn public_point(&self) -> Asn1DecoderResult<Vec<u8>> {
-        let decoder = Asn1Decoder::new(&self.key_data);
-        decoder.read(|scope| {
-            scope.advance_with_tag(0x06u8.context_tag(), |scope| {
-                let bytes = scope.read_bytes(scope.remaining_length())?;
-                scope.skip_to_end()?;
-                Ok(bytes)
-            })
-        })
-    }
-}
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 /// Certificate Holder Authorization Template (CHAT).
 ///
@@ -132,13 +100,6 @@ impl CVCertPublicKey {
 pub struct Chat {
     pub terminal_type: ObjectIdentifier,
     pub relative_authorization: Vec<u8>,
-}
-
-impl Chat {
-    /// Returns whether the CHAT marks an end-entity certificate.
-    pub fn is_end_entity(&self) -> bool {
-        self.relative_authorization.first().is_some_and(|byte| (byte & 0xC0) == 0x00)
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -176,64 +137,7 @@ pub struct ExtensionField {
     pub value: Vec<u8>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct ParsedCvCertificateWithRawParts {
-    pub certificate: CvCertificate,
-    /// Preserved source slices into the original certificate bytes.
-    pub raw_slices: CvCertificateRawSlices,
-}
-
-/// A validated half-open byte range into a preserved source buffer.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct SourceSpan {
-    start: usize,
-    end: usize,
-}
-
-impl SourceSpan {
-    fn new(start: usize, end: usize, source_len: usize, context: &str) -> Result<Self, Asn1DecoderError> {
-        if start > end || end > source_len {
-            return Err(Asn1DecoderError::custom(format!("{context} is out of bounds")));
-        }
-        Ok(Self { start, end })
-    }
-}
-
-/// Signature-relevant source slices preserved from the original certificate input.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct CvCertificateRawSlices {
-    source: Arc<[u8]>,
-    encoded: SourceSpan,
-    body_encoded: SourceSpan,
-    value_field: SourceSpan,
-}
-
-impl CvCertificateRawSlices {
-    fn new(source: Arc<[u8]>, encoded: SourceSpan, body_encoded: SourceSpan, value_field: SourceSpan) -> Self {
-        Self { source, encoded, body_encoded, value_field }
-    }
-}
-
-#[cfg(any(test, feature = "uniffi"))]
-impl CvCertificateRawSlices {
-    pub(crate) fn encoded(&self) -> Vec<u8> {
-        self.materialize(&self.encoded)
-    }
-
-    pub(crate) fn body_encoded(&self) -> Vec<u8> {
-        self.materialize(&self.body_encoded)
-    }
-
-    pub(crate) fn value_field(&self) -> Vec<u8> {
-        self.materialize(&self.value_field)
-    }
-
-    fn materialize(&self, span: &SourceSpan) -> Vec<u8> {
-        self.source[span.start..span.end].to_vec()
-    }
-}
-
-impl CvCertificate {
+impl CVCertificate {
     /// Parse a CV certificate from BER/DER-like TLV encoded bytes.
     ///
     /// This validates:
@@ -242,45 +146,24 @@ impl CvCertificate {
     /// - date digit ranges and basic calendar constraints (month `1..=12`, day `1..=31`),
     /// - and rejects indefinite-length values in extension fields.
     pub fn parse(data: &[u8]) -> Asn1DecoderResult<Self> {
-        Ok(parse_cv_certificate_with_raw_parts(data)?.certificate)
+        let decoder = Asn1Decoder::new(data);
+        let certificate = decoder.read(|scope| parse_cv_certificate_scope(scope))?;
+        Ok(certificate)
     }
 }
 
 /// Parse a CV certificate from bytes.
 ///
-/// This is a convenience wrapper around [`CvCertificate::parse`].
-pub fn parse_cv_certificate(data: &[u8]) -> Asn1DecoderResult<CvCertificate> {
-    CvCertificate::parse(data)
+/// This is a convenience wrapper around [`CVCertificate::parse`].
+pub fn parse_cv_certificate(data: &[u8]) -> Asn1DecoderResult<CVCertificate> {
+    CVCertificate::parse(data)
 }
 
-pub(crate) fn parse_cv_certificate_with_raw_parts(data: &[u8]) -> Asn1DecoderResult<ParsedCvCertificateWithRawParts> {
-    let source: Arc<[u8]> = Arc::from(data.to_vec());
-    let decoder = Asn1Decoder::new(source.as_ref());
-    decoder.read(|scope| parse_cv_certificate_scope(scope, source.clone()))
-}
-
-fn parse_cv_certificate_scope(
-    scope: &mut ParserScope,
-    source: Arc<[u8]>,
-) -> Result<ParsedCvCertificateWithRawParts, Asn1DecoderError> {
+fn parse_cv_certificate_scope(scope: &mut ParserScope) -> Result<CVCertificate, Asn1DecoderError> {
     scope.advance_with_tag(TAG_CV_CERTIFICATE.application_tag().constructed(), |scope| {
-        let source_len = source.len();
-        let value_start = scope.offset();
-        let body_start = scope.offset();
         let body = parse_certificate_body(scope)?;
-        let body_end = scope.offset();
         let signature = read_application_bytes(scope, TAG_SIGNATURE, 0, MAX_CERT_FIELD_LEN)?;
-        let value_end = scope.offset();
-
-        Ok(ParsedCvCertificateWithRawParts {
-            certificate: CvCertificate { body, signature },
-            raw_slices: CvCertificateRawSlices::new(
-                source.clone(),
-                SourceSpan::new(0, source_len, source_len, "Certificate slice")?,
-                SourceSpan::new(body_start, body_end, source_len, "Certificate body slice")?,
-                SourceSpan::new(value_start, value_end, source_len, "Certificate value slice")?,
-            ),
-        })
+        Ok(CVCertificate { body, signature })
     })
 }
 
@@ -725,7 +608,7 @@ mod tests {
     #[test]
     fn parse_cv_certificate_without_extensions() {
         let data = build_test_certificate(false);
-        let cert = CvCertificate::parse(&data).expect("parse should succeed");
+        let cert = CVCertificate::parse(&data).expect("parse should succeed");
 
         assert_eq!(cert.body.profile_identifier, 0);
         assert_eq!(cert.body.certification_authority_reference, b"CAR");
@@ -744,7 +627,7 @@ mod tests {
     #[test]
     fn parse_cv_certificate_with_extensions() {
         let data = build_test_certificate(true);
-        let cert = CvCertificate::parse(&data).expect("parse should succeed");
+        let cert = CVCertificate::parse(&data).expect("parse should succeed");
         let extensions = cert.body.certificate_extensions.expect("extensions should be present");
 
         assert_eq!(extensions.templates.len(), 1);
@@ -755,26 +638,6 @@ mod tests {
         assert_eq!(template.extension_data[0].value, vec![0x10]);
         assert_eq!(template.extension_data[1].tag, 1u8.context_tag());
         assert_eq!(template.extension_data[1].value, vec![0x20, 0x30]);
-    }
-
-    #[test]
-    fn parse_cv_certificate_with_raw_parts_preserves_original_tlvs() {
-        let data = build_test_certificate(false);
-        let parsed = parse_cv_certificate_with_raw_parts(&data).expect("parse should succeed");
-
-        assert_eq!(parsed.raw_slices.encoded(), data.to_vec());
-        assert_eq!(
-            parsed.raw_slices.body_encoded(),
-            hex_to_bytes(
-                "7F4E365F29010042034341527F490806032A0304A001025F200243487F4C0806022A035302AABB5F25060205000100015F2406020601020301"
-            )
-        );
-        assert_eq!(
-            parsed.raw_slices.value_field(),
-            hex_to_bytes(
-                "7F4E365F29010042034341527F490806032A0304A001025F200243487F4C0806022A035302AABB5F25060205000100015F24060206010203015F3702DEAD"
-            )
-        );
     }
 
     #[test]
@@ -797,7 +660,7 @@ mod tests {
             d54f39320e29a031641aa96e91508e3176a4d554c503d7ab4942b759ee304c99668cb9e34b1eb99\
             5890aa75d7325cc9d7262d0b410b617184fad6bcc81fbd";
         let data = hex_to_bytes(hex_data);
-        let cert = CvCertificate::parse(&data).expect("parse should succeed");
+        let cert = CVCertificate::parse(&data).expect("parse should succeed");
 
         assert_eq!(cert.body.profile_identifier, 0);
         assert_eq!(cert.body.certification_authority_reference, b"TESTCAR");
@@ -823,7 +686,7 @@ mod tests {
             4d497832172304f298bd49f91f45bf346cb306adeb44b0742017a074902146cc\
             cbdbb35426c2eb602d38253d92ebe1ac6905f388407398a474c4ea612d84";
         let data = hex_to_bytes(hex_data);
-        let cert = CvCertificate::parse(&data).expect("parse should succeed");
+        let cert = CVCertificate::parse(&data).expect("parse should succeed");
 
         assert_eq!(cert.body.profile_identifier, 0x70);
         assert_eq!(cert.body.certification_authority_reference, vec![0x44, 0x45, 0x47, 0x58, 0x58, 0x11, 0x02, 0x23]);
@@ -847,19 +710,19 @@ mod tests {
     fn reject_profile_identifier_out_of_range() {
         let data =
             build_certificate_with_fields(&[0x01, 0x00], b"CAR", b"CHR", &[2, 5, 0, 1, 0, 1], &[2, 5, 0, 1, 0, 2]);
-        assert!(CvCertificate::parse(&data).is_err());
+        assert!(CVCertificate::parse(&data).is_err());
     }
 
     #[test]
     fn reject_negative_profile_identifier() {
         let data = build_certificate_with_fields(&[0xFF], b"CAR", b"CHR", &[2, 5, 0, 1, 0, 1], &[2, 5, 0, 1, 0, 2]);
-        assert!(CvCertificate::parse(&data).is_err());
+        assert!(CVCertificate::parse(&data).is_err());
     }
 
     #[test]
     fn reject_empty_car() {
         let data = build_certificate_with_fields(&[0x00], b"", b"CHR", &[2, 5, 0, 1, 0, 1], &[2, 5, 0, 1, 0, 2]);
-        assert!(CvCertificate::parse(&data).is_err());
+        assert!(CVCertificate::parse(&data).is_err());
     }
 
     #[test]
@@ -871,37 +734,37 @@ mod tests {
             &[2, 5, 0, 1, 0, 1],
             &[2, 5, 0, 1, 0, 2],
         );
-        assert!(CvCertificate::parse(&data).is_err());
+        assert!(CVCertificate::parse(&data).is_err());
     }
 
     #[test]
     fn reject_invalid_date_length() {
         let data = build_certificate_with_fields(&[0x00], b"CAR", b"CHR", &[2, 5, 0, 1, 0], &[2, 5, 0, 1, 0, 2]);
-        assert!(CvCertificate::parse(&data).is_err());
+        assert!(CVCertificate::parse(&data).is_err());
     }
 
     #[test]
     fn reject_invalid_date_digit() {
         let data = build_certificate_with_fields(&[0x00], b"CAR", b"CHR", &[2, 5, 10, 1, 0, 1], &[2, 5, 0, 1, 0, 2]);
-        assert!(CvCertificate::parse(&data).is_err());
+        assert!(CVCertificate::parse(&data).is_err());
     }
 
     #[test]
     fn reject_invalid_month() {
         let data = build_certificate_with_fields(&[0x00], b"CAR", b"CHR", &[2, 5, 1, 3, 0, 1], &[2, 5, 0, 1, 0, 2]);
-        assert!(CvCertificate::parse(&data).is_err());
+        assert!(CVCertificate::parse(&data).is_err());
     }
 
     #[test]
     fn reject_empty_public_key() {
         let data = build_certificate_with_public_key(&[]);
-        assert!(CvCertificate::parse(&data).is_err());
+        assert!(CVCertificate::parse(&data).is_err());
     }
 
     #[test]
     fn allow_empty_chat_data() {
         let data = build_certificate_with_chat_data(&[]);
-        let cert = CvCertificate::parse(&data).expect("parse should succeed");
+        let cert = CVCertificate::parse(&data).expect("parse should succeed");
         assert!(cert.body.certificate_holder_authorization_template.relative_authorization.is_empty());
     }
 
@@ -915,7 +778,7 @@ mod tests {
             &[2, 5, 0, 1, 0, 2],
             &[],
         );
-        let cert = CvCertificate::parse(&data).expect("parse should succeed");
+        let cert = CVCertificate::parse(&data).expect("parse should succeed");
         assert!(cert.signature.is_empty());
     }
 }
