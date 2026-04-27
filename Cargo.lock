@@ -326,6 +326,7 @@ version = "0.1.0"
 dependencies = [
  "asn1",
  "base64",
+ "chrono",
  "crypto-openssl-sys",
  "hex",
  "num-bigint",

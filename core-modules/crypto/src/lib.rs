@@ -47,6 +47,7 @@ pub mod exchange;
 pub mod ffi;
 
 pub mod cipher;
+pub mod cvc;
 pub mod error;
 pub mod key;
 pub mod mac;

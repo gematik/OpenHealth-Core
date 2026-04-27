@@ -148,6 +148,19 @@ pub enum OsslErrorKind {
     #[error("Failed to compute secret")]
     EcdhComputeSecretFailed,
 
+    #[error("Failed to create EVP_MD_CTX")]
+    SignatureDigestCtxCreateFailed,
+    #[error("Failed to create EC public key import context")]
+    EcPublicKeyImportCtxCreateFailed,
+    #[error("Failed to initialize EC public key import")]
+    EcPublicKeyImportInitFailed,
+    #[error("Failed to import EC public key")]
+    EcPublicKeyImportFailed,
+    #[error("Failed to initialize ECDSA verification")]
+    EcdsaVerifyInitFailed,
+    #[error("ECDSA verification failed")]
+    EcdsaVerifyFailed,
+
     #[error("Key initialization failed")]
     MlkemKeyInitFailed,
     #[error("Failed to create context from key")]
