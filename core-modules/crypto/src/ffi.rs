@@ -183,7 +183,6 @@ pub fn validate_configured_trusted_channel_identity(
 
     Ok(())
 }
-
 /// Computes AES-CMAC and returns the requested number of leading tag bytes.
 #[uniffi::export]
 pub fn aes_cmac(key: Vec<u8>, message: Vec<u8>, output_length: i32) -> Result<Vec<u8>, CryptoError> {
@@ -224,7 +223,6 @@ fn private_key_matches_cvc_public_key(
         .map_err(CryptoError::from)?;
     Ok(derived_public_key.as_bytes() == expected_public_key.as_bytes())
 }
-
 #[cfg(test)]
 mod tests {
     use super::*;

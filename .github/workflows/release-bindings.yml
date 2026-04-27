@@ -219,7 +219,7 @@ jobs:
           if-no-files-found: warn
 
       - name: Upload Kotlin resources (asn1)
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: kotlin-asn1-bindings-${{ matrix.display_name }}
           path: |
@@ -268,7 +268,7 @@ jobs:
 
       - name: Build XCFrameworks
         run: |
-          for module in healthcard asn1; do
+          for module in healthcard asn1 crypto; do
             out_root="${OUT_ROOT_BASE}/${module}/generated/uniffi"
             OUT_ROOT="${out_root}" just swift-xcframework "${module}"
           done
@@ -277,6 +277,7 @@ jobs:
         run: |
           cp core-modules-swift/healthcard/Sources/OpenHealthHealthcard/OpenHealthHealthcard.swift OpenHealthHealthcard.swift
           cp core-modules-swift/asn1/Sources/OpenHealthAsn1/OpenHealthAsn1.swift OpenHealthAsn1.swift
+          cp core-modules-swift/crypto/Sources/OpenHealthCrypto/OpenHealthCrypto.swift OpenHealthCrypto.swift
 
       - name: Upload OpenSSL Configure logs (Swift - on failure)
         if: failure()
@@ -305,7 +306,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload healthcard XCFramework Zip
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: swift-healthcard-xcframework
           path: core-modules-swift/healthcard/OpenHealthHealthcardFFI.xcframework.zip
@@ -326,23 +327,51 @@ jobs:
           swift package compute-checksum OpenHealthAsn1FFI.xcframework.zip > OpenHealthAsn1FFI.xcframework.sha256
 
       - name: Upload Swift asn1 wrapper
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: swift-asn1-wrapper
           path: OpenHealthAsn1.swift
           if-no-files-found: error
 
       - name: Upload asn1 XCFramework Zip
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: swift-asn1-xcframework
           path: core-modules-swift/asn1/OpenHealthAsn1FFI.xcframework.zip
 
       - name: Upload asn1 XCFramework checksum
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: swift-asn1-xcframework-checksum
           path: core-modules-swift/asn1/OpenHealthAsn1FFI.xcframework.sha256
+
+      - name: Zip crypto XCFramework
+        working-directory: core-modules-swift/crypto
+        run: zip -r OpenHealthCryptoFFI.xcframework.zip OpenHealthCryptoFFI.xcframework
+
+      - name: Write crypto XCFramework checksum
+        working-directory: core-modules-swift/crypto
+        run: |
+          swift package compute-checksum OpenHealthCryptoFFI.xcframework.zip > OpenHealthCryptoFFI.xcframework.sha256
+
+      - name: Upload Swift crypto wrapper
+        uses: actions/upload-artifact@v7
+        with:
+          name: swift-crypto-wrapper
+          path: OpenHealthCrypto.swift
+          if-no-files-found: error
+
+      - name: Upload crypto XCFramework Zip
+        uses: actions/upload-artifact@v7
+        with:
+          name: swift-crypto-xcframework
+          path: core-modules-swift/crypto/OpenHealthCryptoFFI.xcframework.zip
+
+      - name: Upload crypto XCFramework checksum
+        uses: actions/upload-artifact@v7
+        with:
+          name: swift-crypto-xcframework-checksum
+          path: core-modules-swift/crypto/OpenHealthCryptoFFI.xcframework.sha256
 
   assemble-kotlin-bindings:
     name: Assemble Kotlin bindings bundle
@@ -375,7 +404,7 @@ jobs:
           path: assembly/input/healthcard
 
       - name: Download asn1 platform artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           pattern: "kotlin-asn1-bindings-*"
           path: assembly/input/asn1
@@ -403,7 +432,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload Kotlin bindings bundle (asn1)
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: kotlin-asn1-bindings-bundle
           path: |
@@ -486,22 +515,40 @@ jobs:
           path: artifacts/swift-checksum/healthcard
 
       - name: Download Swift asn1 Artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: swift-asn1-xcframework
           path: artifacts/swift/asn1
 
       - name: Download Swift asn1 wrapper
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: swift-asn1-wrapper
           path: artifacts/swift-wrapper/asn1
 
       - name: Download Swift asn1 checksum
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: swift-asn1-xcframework-checksum
           path: artifacts/swift-checksum/asn1
+
+      - name: Download Swift crypto Artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: swift-crypto-xcframework
+          path: artifacts/swift/crypto
+
+      - name: Download Swift crypto wrapper
+        uses: actions/download-artifact@v8
+        with:
+          name: swift-crypto-wrapper
+          path: artifacts/swift-wrapper/crypto
+
+      - name: Download Swift crypto checksum
+        uses: actions/download-artifact@v8
+        with:
+          name: swift-crypto-xcframework-checksum
+          path: artifacts/swift-checksum/crypto
 
       - name: Download Kotlin Artifact
         uses: actions/download-artifact@v8
@@ -517,7 +564,7 @@ jobs:
       - name: Update Package.swift
         run: |
           VERSION="${{ inputs.version }}"
-          for module in healthcard asn1; do
+          for module in healthcard asn1 crypto; do
             case "${module}" in
               healthcard)
                 ffi_name="OpenHealthHealthcardFFI"
@@ -534,6 +581,14 @@ jobs:
                 sed_path="core-modules-swift/asn1/OpenHealthAsn1FFI.xcframework"
                 checksum_path="artifacts/swift-checksum/asn1/OpenHealthAsn1FFI.xcframework.sha256"
                 wrapper_src="artifacts/swift-wrapper/asn1/OpenHealthAsn1.swift"
+                ;;
+              crypto)
+                ffi_name="OpenHealthCryptoFFI"
+                wrapper_file="OpenHealthCrypto.swift"
+                wrapper_dest="core-modules-swift/crypto/Sources/OpenHealthCrypto/OpenHealthCrypto.swift"
+                sed_path="core-modules-swift/crypto/OpenHealthCryptoFFI.xcframework"
+                checksum_path="artifacts/swift-checksum/crypto/OpenHealthCryptoFFI.xcframework.sha256"
+                wrapper_src="artifacts/swift-wrapper/crypto/OpenHealthCrypto.swift"
                 ;;
               *)
                 echo "Unknown module: ${module}" >&2
@@ -558,16 +613,18 @@ jobs:
           git add Package.swift
           git add -f core-modules-swift/healthcard/Sources/OpenHealthHealthcard/OpenHealthHealthcard.swift
           git add -f core-modules-swift/asn1/Sources/OpenHealthAsn1/OpenHealthAsn1.swift
+          git add -f core-modules-swift/crypto/Sources/OpenHealthCrypto/OpenHealthCrypto.swift
           git commit -m "Release ${VERSION}"
           git tag "${VERSION}"
           git push origin "${VERSION}"
 
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ inputs.version }}
           files: |
             artifacts/swift/healthcard/OpenHealthHealthcardFFI.xcframework.zip
             artifacts/swift/asn1/OpenHealthAsn1FFI.xcframework.zip
+            artifacts/swift/crypto/OpenHealthCryptoFFI.xcframework.zip
             maven-repo.zip
           generate_release_notes: true

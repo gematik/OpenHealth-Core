@@ -129,7 +129,7 @@ private struct SecureChannelHandle {
         return result.outcome
     }
 
-    func getRandom(_ length: UInt32) throws -> Data {
+    func getRandom(_ length: Int32) throws -> Data {
         try secureChannel.getRandom(length: length)
     }
 

@@ -598,16 +598,7 @@ pub fn read_tagged_object_value(
     }
     let number = u32::try_from(number)
         .map_err(|_| Asn1FfiError::InvalidArgument { reason: "tag number must be non-negative".into() })?;
-    read_tagged_object_value_impl(&data, class_, form, number)
-}
-
-fn read_tagged_object_value_impl(
-    data: &[u8],
-    class_: Asn1TagClass,
-    form: Asn1TagForm,
-    number: u32,
-) -> Result<Vec<u8>, Asn1FfiError> {
-    Asn1Decoder::new(data).read(|scope| {
+    Asn1Decoder::new(&data).read(|scope| {
         while scope.remaining_length() > 0 {
             let tag = scope.read_tag().map_err(Asn1FfiError::from)?;
             let length = scope.read_length().map_err(Asn1FfiError::from)?;
@@ -656,7 +647,6 @@ fn rebuild_chain(nodes: &[CvCertificate], parents: &[Option<usize>], index: usiz
 fn format_identifier(value: &[u8]) -> String {
     value.iter().map(|byte| format!("{byte:02X}")).collect()
 }
-
 impl From<crate::error::Asn1DecoderError> for Asn1FfiError {
     fn from(value: crate::error::Asn1DecoderError) -> Self {
         Asn1FfiError::Decode { reason: value.to_string() }
@@ -896,7 +886,6 @@ mod tests {
             )
         );
     }
-
     #[test]
     fn parse_cv_certificate_directory_keeps_multiple_certificates_per_chr() {
         let directory = parse_cv_certificate_directory(vec![
