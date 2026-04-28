@@ -246,10 +246,10 @@ mod tests {
         chrono::Utc.with_ymd_and_hms(year, month, day, 12, 0, 0).single().unwrap().into()
     }
 
-    fn sha256(data: &[u8]) -> Vec<u8> {
-        let mut digest = DigestSpec::Sha256.create().unwrap();
-        digest.update(data).unwrap();
-        digest.finalize().unwrap()
+    fn sha256(data: &[u8]) -> Result<Vec<u8>, CryptoError> {
+        let mut digest = DigestSpec::Sha256.create()?;
+        digest.update(data)?;
+        Ok(digest.finalize()?)
     }
 
     fn public_key_point(cvc: &Arc<CvCertificate>) -> Vec<u8> {
@@ -300,23 +300,25 @@ mod tests {
     }
 
     #[test]
-    fn verify_cvc_ecdsa_value_signature_accepts_asn1_cvc_object() {
+    fn verify_cvc_ecdsa_value_signature_accepts_asn1_cvc_object() -> Result<(), CryptoError> {
         let cvc = openhealth_asn1::ffi::parse_cv_certificate(load_fixture("DEGXX820214.cvc")).unwrap();
-        let value = sha256(&cvc.encoded_body_tlv());
+        let value = sha256(&cvc.encoded_body_tlv())?;
 
-        let valid = verify_cvc_ecdsa_value_signature(cvc.clone(), value, cvc.signature()).unwrap();
+        let valid = verify_cvc_ecdsa_value_signature(cvc.clone(), value, cvc.signature())?;
 
         assert!(valid);
+        Ok(())
     }
 
     #[test]
-    fn verify_ecdsa_value_signature_accepts_public_key_bytes() {
+    fn verify_ecdsa_value_signature_accepts_public_key_bytes() -> Result<(), CryptoError> {
         let cvc = openhealth_asn1::ffi::parse_cv_certificate(load_fixture("DEGXX820214.cvc")).unwrap();
-        let value = sha256(&cvc.encoded_body_tlv());
+        let value = sha256(&cvc.encoded_body_tlv())?;
 
-        let valid = verify_ecdsa_value_signature(public_key_point(&cvc), value, cvc.signature()).unwrap();
+        let valid = verify_ecdsa_value_signature(public_key_point(&cvc), value, cvc.signature())?;
 
         assert!(valid);
+        Ok(())
     }
 
     #[test]
