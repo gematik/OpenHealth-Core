@@ -20,6 +20,7 @@
 // find details in the "Readme" file.
 
 import Foundation
+import OpenHealthAsn1
 import OpenHealthCrypto
 import XCTest
 
@@ -34,6 +35,25 @@ final class SmokeTests: XCTestCase {
 
     func testGenerateElcEphemeralPublicKey_rejectsInvalidInput() {
         XCTAssertThrowsError(try generateElcEphemeralPublicKey(cvc: Data()))
+    }
+
+    func testValidateCvcChain_acceptsAsn1Certificate() throws {
+        let cvc = try Data(contentsOf: cvcFixture(named: "DEGXX820214.cvc"))
+        let cert = try parseCvCertificate(data: cvc)
+        let anchor = try CvcTrustAnchor.fromCertificate(certificate: cert)
+        let validationTime = try XCTUnwrap(DateComponents(
+            calendar: Calendar(identifier: .gregorian),
+            timeZone: TimeZone(secondsFromGMT: 0),
+            year: 2020,
+            month: 1,
+            day: 1,
+            hour: 12
+        ).date)
+
+        let result = try validateCvcChain(chain: [cert], trustAnchors: [anchor], validationTime: validationTime)
+
+        XCTAssertEqual(result.validatedCertificates(), 1)
+        XCTAssertEqual(result.endEntityChr().hexEncodedString(), "4445475858820214")
     }
 }
 
@@ -52,4 +72,10 @@ private func repositoryRoot() -> URL {
         url.deleteLastPathComponent()
     }
     return url
+}
+
+private extension Data {
+    func hexEncodedString() -> String {
+        map { String(format: "%02x", $0) }.joined()
+    }
 }

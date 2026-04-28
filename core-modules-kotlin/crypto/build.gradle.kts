@@ -35,7 +35,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation(project(":asn1"))
+                api(project(":asn1"))
             }
         }
         val commonTest by getting {
@@ -46,6 +46,11 @@ kotlin {
         val jvmTest by getting {
             dependencies {
                 implementation(kotlin("test-junit5"))
+            }
+        }
+        val androidDeviceTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
             }
         }
     }

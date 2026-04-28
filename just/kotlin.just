@@ -206,6 +206,8 @@ kotlin-bindings-generate-android module="healthcard" profile="release":
         done
     fi
 
+    find "${android_jni_root}" -type f -name 'lib*.so' ! -name "${android_staged_library_file}" -delete
+
 # Build Android Rust libraries for the `crypto` crate and stage them as `android-jni/`.
 kotlin-bindings-generate-android-crypto:
     #!/usr/bin/env bash

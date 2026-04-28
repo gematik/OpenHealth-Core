@@ -86,7 +86,11 @@ swift-bindings-generate *ARGS:
     swift_sources_dir="${swift_module_dir}/Sources/${swift_module_name}"
 
     mkdir -p "${swift_sources_dir}"
-    cp "${gen_dir}/${swift_module_name}.swift" "${swift_sources_dir}/"
+    swift_file="${swift_sources_dir}/${swift_module_name}.swift"
+    cp "${gen_dir}/${swift_module_name}.swift" "${swift_file}"
+    if [ "${module}" = "crypto" ] && ! grep -q '^import OpenHealthAsn1$' "${swift_file}"; then
+        perl -0pi -e 's/import Foundation\n/import Foundation\nimport OpenHealthAsn1\n/' "${swift_file}"
+    fi
 
 # Build Apple target static libraries into `<module>/build/cargo/apple` (iOS/iOS Simulator/macOS).
 swift-build-apple module="healthcard":
