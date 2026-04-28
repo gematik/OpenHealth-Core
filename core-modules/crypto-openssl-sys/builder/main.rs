@@ -320,7 +320,10 @@ fn ensure_openssl_source(src: &Path, version: &str, repo_url: &str) {
     }
 
     if src.exists() && !has_git {
-        cleanup_dir(src, "source");
+        panic!(
+            "OpenSSL source path '{}' already exists but is not a git checkout; remove it or set OPENSSL_SYS_BUILD_ROOT",
+            src.display()
+        );
     }
 
     if has_git && try_checkout_existing_repo(src, version) {
