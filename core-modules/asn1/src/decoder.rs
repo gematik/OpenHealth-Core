@@ -21,6 +21,7 @@
 
 use crate::error::Asn1DecoderError;
 use crate::oid::ObjectIdentifier;
+use crate::source::{Asn1Span, Spanned};
 use crate::tag::{Asn1Class, Asn1Form, Asn1Id, UniversalTag};
 
 /// Length returned by [`ParserScope::read_length`].
@@ -117,6 +118,77 @@ impl<'a> ParserScope<'a> {
 
         self.end_offset = original_end;
         result
+    }
+
+    /// Advances the parser with the given tag and returns the parsed value together with
+    /// source offsets for the exact TLV that was consumed.
+    pub fn advance_with_tag_spanned<T, E>(
+        &mut self,
+        expected: Asn1Id,
+        mut block: impl FnMut(&mut ParserScope<'a>) -> Result<T, E>,
+    ) -> Result<Spanned<T>, E>
+    where
+        E: From<Asn1DecoderError>,
+    {
+        let tag_start = self.offset;
+        let tag = self.read_tag()?;
+        if tag != expected {
+            let describe = |id: &Asn1Id| {
+                let class: u8 = id.class.into();
+                let form: u8 = id.form.into();
+                format!("Asn1Id(class=0x{class:02X}, form=0x{form:02X}, number=0x{:X})", id.number)
+            };
+            return Err(
+                Asn1DecoderError::UnexpectedTag { expected: describe(&expected), actual: describe(&tag) }.into()
+            );
+        }
+        let length = self.read_length()?;
+        let value_start = self.offset;
+        let original_end = self.end_offset;
+
+        match length {
+            Asn1Length::Indefinite => {
+                self.end_offset = usize::MAX;
+            }
+            Asn1Length::Definite(len) => {
+                let new_end =
+                    self.offset.checked_add(len).ok_or_else(|| Asn1DecoderError::integer_overflow("scope end"))?;
+                if new_end > original_end {
+                    return Err(Asn1DecoderError::unexpected_end_of_data("length exceeds available data").into());
+                }
+                self.end_offset = new_end;
+            }
+        };
+
+        let value = match block(self) {
+            Ok(value) => value,
+            Err(err) => {
+                self.end_offset = original_end;
+                return Err(err);
+            }
+        };
+
+        let (value_end, end) = match length {
+            Asn1Length::Indefinite => {
+                let value_end = self.offset;
+                let end = self.read_bytes(2)?;
+                if end != [0x00, 0x00] {
+                    self.end_offset = original_end;
+                    return Err(Asn1DecoderError::MissingEndOfContentMarker.into());
+                }
+                (value_end, self.offset)
+            }
+            Asn1Length::Definite(_) => {
+                if self.end_offset != self.offset {
+                    self.end_offset = original_end;
+                    return Err(Asn1DecoderError::UnparsedBytesRemaining.into());
+                }
+                (self.offset, self.offset)
+            }
+        };
+
+        self.end_offset = original_end;
+        Ok(Spanned::new(value, Asn1Span::new(tag_start, value_start, value_end, end)))
     }
 
     /// Read one byte.
@@ -337,6 +409,7 @@ impl<'a> Asn1Decoder<'a> {
 mod tests {
     use super::*;
     use crate::date_time::{Asn1Offset, Asn1Time};
+    use crate::source::Asn1Source;
     use crate::tag::UniversalTag;
 
     fn hex_bytes(s: &str) -> Vec<u8> {
@@ -366,6 +439,116 @@ mod tests {
             })
             .unwrap();
         assert_eq!(result, vec!["foo".to_string(), "bar".to_string()]);
+    }
+
+    #[test]
+    fn advance_with_tag_spanned_records_nested_tlv_offsets() {
+        let data = hex_bytes("30 0A 04 03 66 6F 6F 04 03 62 61 72");
+        let source = Asn1Source::new(data.clone());
+        let parser = Asn1Decoder::new(&data);
+
+        let result = parser
+            .read(|s| {
+                s.advance_with_tag_spanned(UniversalTag::Sequence.constructed(), |s| {
+                    let first = s.advance_with_tag_spanned(
+                        UniversalTag::OctetString.primitive(),
+                        |s| -> Result<_, Asn1DecoderError> { s.read_bytes(3) },
+                    )?;
+                    let second = s.advance_with_tag_spanned(
+                        UniversalTag::OctetString.primitive(),
+                        |s| -> Result<_, Asn1DecoderError> { s.read_bytes(3) },
+                    )?;
+                    Ok::<_, Asn1DecoderError>((first, second))
+                })
+            })
+            .unwrap();
+
+        assert_eq!(result.span, Asn1Span::new(0, 2, 12, 12));
+        assert_eq!(source.encoded(result.span), data.as_slice());
+        assert_eq!(source.value(result.span), &data[2..12]);
+
+        let (first, second) = result.value;
+        assert_eq!(first.span, Asn1Span::new(2, 4, 7, 7));
+        assert_eq!(first.value, b"foo");
+        assert_eq!(source.encoded(first.span), &data[2..7]);
+        assert_eq!(source.value(first.span), b"foo");
+
+        assert_eq!(second.span, Asn1Span::new(7, 9, 12, 12));
+        assert_eq!(second.value, b"bar");
+        assert_eq!(source.encoded(second.span), &data[7..12]);
+        assert_eq!(source.value(second.span), b"bar");
+    }
+
+    #[test]
+    fn advance_with_tag_spanned_records_long_form_length_offsets() {
+        let mut data = vec![0x04, 0x81, 0x80];
+        data.extend(0..=127);
+        let source = Asn1Source::new(data.clone());
+        let parser = Asn1Decoder::new(&data);
+
+        let result = parser
+            .read(|s| {
+                s.advance_with_tag_spanned(UniversalTag::OctetString.primitive(), |s| -> Result<_, Asn1DecoderError> {
+                    s.read_bytes(128)
+                })
+            })
+            .unwrap();
+
+        assert_eq!(result.span, Asn1Span::new(0, 3, 131, 131));
+        assert_eq!(source.encoded(result.span), data.as_slice());
+        assert_eq!(source.value(result.span), &data[3..]);
+        assert_eq!(result.value, data[3..]);
+    }
+
+    #[test]
+    fn advance_with_tag_spanned_records_indefinite_length_offsets() {
+        let data = hex_bytes("30 80 04 01 AA 00 00");
+        let source = Asn1Source::new(data.clone());
+        let parser = Asn1Decoder::new(&data);
+
+        let result = parser
+            .read(|s| {
+                s.advance_with_tag_spanned(UniversalTag::Sequence.constructed(), |s| {
+                    s.advance_with_tag_spanned(
+                        UniversalTag::OctetString.primitive(),
+                        |s| -> Result<_, Asn1DecoderError> { s.read_bytes(1) },
+                    )
+                })
+            })
+            .unwrap();
+
+        assert_eq!(result.span, Asn1Span::new(0, 2, 5, 7));
+        assert_eq!(source.encoded(result.span), data.as_slice());
+        assert_eq!(source.value(result.span), &data[2..5]);
+        assert_eq!(result.value.span, Asn1Span::new(2, 4, 5, 5));
+        assert_eq!(result.value.value, vec![0xAA]);
+    }
+
+    #[test]
+    fn advance_with_tag_spanned_restores_scope_after_block_error() {
+        let data = hex_bytes("30 06 04 01 AA 04 01 BB");
+        let parser = Asn1Decoder::new(&data);
+
+        parser
+            .read(|s| {
+                s.advance_with_tag(UniversalTag::Sequence.constructed(), |s| -> Result<(), Asn1DecoderError> {
+                    let err = s
+                        .advance_with_tag_spanned(
+                            UniversalTag::OctetString.primitive(),
+                            |s| -> Result<(), Asn1DecoderError> {
+                                let _ = s.read_bytes(1)?;
+                                Err(Asn1DecoderError::custom("forced parse error"))
+                            },
+                        )
+                        .unwrap_err();
+                    assert!(matches!(err, Asn1DecoderError::Custom { .. }));
+
+                    let remaining = s.read_bytes(3)?;
+                    assert_eq!(remaining, vec![0x04, 0x01, 0xBB]);
+                    Ok(())
+                })
+            })
+            .unwrap();
     }
 
     #[test]

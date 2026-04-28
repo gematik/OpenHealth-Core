@@ -159,6 +159,23 @@ impl WriterScope {
         })
     }
 
+    /// Write a non-negative ASN.1 integer from big-endian magnitude bytes.
+    ///
+    /// The value is encoded in the minimal positive two's-complement form required by DER:
+    /// redundant leading zeroes are removed, and a single leading zero is added when the most
+    /// significant value byte would otherwise mark the INTEGER as negative.
+    pub fn write_asn1_unsigned_integer_bytes(&mut self, value: &[u8]) -> Result<(), Asn1EncoderError> {
+        self.write_tagged_object(UniversalTag::Integer.primitive(), |s| {
+            let first_significant = value.iter().position(|byte| *byte != 0);
+            let value = first_significant.map_or(&[0][..], |idx| &value[idx..]);
+            if value.first().map(|byte| byte & 0x80 != 0).unwrap_or(false) {
+                s.write_byte(0);
+            }
+            s.write_bytes(value);
+            Ok(())
+        })
+    }
+
     /// Write an ASN.1 boolean.
     pub fn write_asn1_boolean(&mut self, value: bool) -> Result<(), Asn1EncoderError> {
         self.write_tagged_object(UniversalTag::Boolean.primitive(), |s| {
@@ -358,6 +375,25 @@ mod tests {
     fn write_int_zero() {
         let result = Asn1Encoder::write_nonzeroizing(|w| w.write_asn1_int(0)).unwrap();
         assert_eq!(hex(&result), "02 01 00");
+    }
+
+    #[test]
+    fn write_unsigned_integer_bytes_zero() {
+        let result = Asn1Encoder::write_nonzeroizing(|w| w.write_asn1_unsigned_integer_bytes(&[])).unwrap();
+        assert_eq!(hex(&result), "02 01 00");
+
+        let result = Asn1Encoder::write_nonzeroizing(|w| w.write_asn1_unsigned_integer_bytes(&[0x00, 0x00])).unwrap();
+        assert_eq!(hex(&result), "02 01 00");
+    }
+
+    #[test]
+    fn write_unsigned_integer_bytes_der_canonicalizes_positive_values() {
+        let result =
+            Asn1Encoder::write_nonzeroizing(|w| w.write_asn1_unsigned_integer_bytes(&[0x00, 0x00, 0x7F])).unwrap();
+        assert_eq!(hex(&result), "02 01 7F");
+
+        let result = Asn1Encoder::write_nonzeroizing(|w| w.write_asn1_unsigned_integer_bytes(&[0x00, 0x80])).unwrap();
+        assert_eq!(hex(&result), "02 02 00 80");
     }
 
     #[test]
