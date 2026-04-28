@@ -69,7 +69,6 @@ struct TargetBuildPaths {
 }
 
 fn target_build_paths(target: &str, openssl_target: &str) -> TargetBuildPaths {
-    let manifest = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
 
     // Keep paths short (especially on Windows) by avoiding the per-crate hash directory inside `OUT_DIR`.
@@ -84,7 +83,7 @@ fn target_build_paths(target: &str, openssl_target: &str) -> TargetBuildPaths {
         .unwrap_or_else(|| out_dir.ancestors().nth(3).unwrap_or(&out_dir).to_path_buf());
 
     let build_root = build_base.join("openssl").join(target).join(openssl_target);
-    let openssl_src_repo = manifest.join("openssl-src");
+    let openssl_src_repo = build_base.join("openssl-src");
     let build_dir = build_root.join("build");
     let install_dir = build_root.join("install");
 
@@ -316,8 +315,15 @@ fn ensure_openssl_source(src: &Path, version: &str, repo_url: &str) {
     let has_git = src.join(".git").exists();
     let git_matches = has_git && current_git_head(src).map(|rev| rev == version).unwrap_or(false);
 
-    if git_matches || (src.exists() && !has_git) {
+    if git_matches && git_reset_hard(src, version) {
         return;
+    }
+
+    if src.exists() && !has_git {
+        panic!(
+            "OpenSSL source path '{}' already exists but is not a git checkout; remove it or set OPENSSL_SYS_BUILD_ROOT",
+            src.display()
+        );
     }
 
     if has_git && try_checkout_existing_repo(src, version) {
