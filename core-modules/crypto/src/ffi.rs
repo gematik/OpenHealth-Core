@@ -143,6 +143,24 @@ pub fn validate_cvc_chain(
     Ok(Arc::new(CvcChainValidationResult { inner }))
 }
 
+#[uniffi::export]
+pub fn verify_cvc_ecdsa_value_signature(
+    certificate: Arc<CvCertificate>,
+    value: Vec<u8>,
+    signature: Vec<u8>,
+) -> Result<bool, CryptoError> {
+    core_cvc::verify_cvc_ecdsa_value_signature(certificate.as_core(), &value, &signature).map_err(CryptoError::from)
+}
+
+#[uniffi::export]
+pub fn verify_ecdsa_value_signature(
+    public_key: Vec<u8>,
+    value: Vec<u8>,
+    signature: Vec<u8>,
+) -> Result<bool, CryptoError> {
+    core_cvc::verify_ecdsa_value_signature(&public_key, &value, &signature).map_err(CryptoError::from)
+}
+
 /// Generates a fresh brainpoolP256r1 EC key pair and returns raw key bytes.
 #[uniffi::export]
 pub fn generate_brainpool_p256r1_key_pair() -> Result<Arc<BrainpoolP256r1KeyPair>, CryptoError> {
@@ -191,6 +209,7 @@ pub fn aes_cmac(key: Vec<u8>, message: Vec<u8>, output_length: i32) -> Result<Ve
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::digest::DigestSpec;
     use chrono::TimeZone;
     use std::fs;
     use std::path::PathBuf;
@@ -225,6 +244,19 @@ mod tests {
 
     fn validation_time(year: i32, month: u32, day: u32) -> SystemTime {
         chrono::Utc.with_ymd_and_hms(year, month, day, 12, 0, 0).single().unwrap().into()
+    }
+
+    fn sha256(data: &[u8]) -> Vec<u8> {
+        let mut digest = DigestSpec::Sha256.create().unwrap();
+        digest.update(data).unwrap();
+        digest.finalize().unwrap()
+    }
+
+    fn public_key_point(cvc: &Arc<CvCertificate>) -> Vec<u8> {
+        let key_data = cvc.body().public_key().key_data();
+        assert_eq!(key_data[0], 0x86);
+        assert_eq!(key_data[1] as usize, key_data.len() - 2);
+        key_data[2..].to_vec()
     }
 
     #[test]
@@ -265,6 +297,26 @@ mod tests {
         let anchor = CvcTrustAnchor::from_certificate(cvc).unwrap();
 
         assert_eq!(hex::encode(anchor.reference()), "4445475858820214");
+    }
+
+    #[test]
+    fn verify_cvc_ecdsa_value_signature_accepts_asn1_cvc_object() {
+        let cvc = openhealth_asn1::ffi::parse_cv_certificate(load_fixture("DEGXX820214.cvc")).unwrap();
+        let value = sha256(&cvc.encoded_body_tlv());
+
+        let valid = verify_cvc_ecdsa_value_signature(cvc.clone(), value, cvc.signature()).unwrap();
+
+        assert!(valid);
+    }
+
+    #[test]
+    fn verify_ecdsa_value_signature_accepts_public_key_bytes() {
+        let cvc = openhealth_asn1::ffi::parse_cv_certificate(load_fixture("DEGXX820214.cvc")).unwrap();
+        let value = sha256(&cvc.encoded_body_tlv());
+
+        let valid = verify_ecdsa_value_signature(public_key_point(&cvc), value, cvc.signature()).unwrap();
+
+        assert!(valid);
     }
 
     #[test]

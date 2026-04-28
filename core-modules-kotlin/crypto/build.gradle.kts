@@ -33,6 +33,11 @@ openHealthUniffiKmp {
 
 kotlin {
     sourceSets {
+        val commonMain by getting {
+            dependencies {
+                implementation(project(":asn1"))
+            }
+        }
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))

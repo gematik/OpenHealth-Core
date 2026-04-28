@@ -21,6 +21,8 @@
 
 package de.gematik.openhealth.crypto
 
+import de.gematik.openhealth.asn1.parseCvCertificate
+import java.security.MessageDigest
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.Test
@@ -42,6 +44,16 @@ class CryptoJvmSmokeTest {
         assertFails {
             generateElcEphemeralPublicKey(byteArrayOf())
         }
+    }
+
+    @Test
+    fun verifyCvcEcdsaValueSignature_smoke() {
+        val cert = parseCvCertificate(Files.readAllBytes(cvcFixture("DEGXX820214.cvc")))
+        val value = MessageDigest.getInstance("SHA-256").digest(cert.encodedBodyTlv())
+
+        val verified = verifyCvcEcdsaValueSignature(cert, value, cert.signature())
+
+        assertTrue(verified)
     }
 
     private fun cvcFixture(name: String): Path =
