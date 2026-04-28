@@ -148,9 +148,60 @@ pub struct EcPoint {
     point: *mut EC_POINT,
 }
 
+pub struct EcPublicKey {
+    pkey: PKey,
+}
+
+impl EcPublicKey {
+    pub fn from_uncompressed(curve_name: &str, public_key: &[u8]) -> OsslResult<Self> {
+        let algorithm = c"EC";
+        let raw_ctx = unsafe { EVP_PKEY_CTX_new_from_name(ptr::null_mut(), algorithm.as_ptr(), ptr::null()) };
+        if raw_ctx.is_null() {
+            return Err(openssl_error(OsslErrorKind::EcPublicKeyImportCtxCreateFailed));
+        }
+        let import_ctx = PKeyCtx(raw_ctx);
+        if unsafe { EVP_PKEY_fromdata_init(import_ctx.as_ptr()) } != 1 {
+            return Err(openssl_error(OsslErrorKind::EcPublicKeyImportInitFailed));
+        }
+
+        let group = CString::new(curve_name)
+            .map_err(|_| openssl_error(OsslErrorKind::EcInvalidCurveName { curve: curve_name.to_string() }))?;
+        let mut params = [
+            unsafe {
+                OSSL_PARAM_construct_utf8_string(
+                    OSSL_PKEY_PARAM_GROUP_NAME.as_ptr() as *const _,
+                    group.as_ptr() as *mut _,
+                    0,
+                )
+            },
+            unsafe {
+                OSSL_PARAM_construct_octet_string(
+                    OSSL_PKEY_PARAM_PUB_KEY.as_ptr() as *const _,
+                    public_key.as_ptr() as *mut _,
+                    public_key.len(),
+                )
+            },
+            unsafe { OSSL_PARAM_construct_end() },
+        ];
+
+        let mut pkey: *mut EVP_PKEY = ptr::null_mut();
+        if unsafe { EVP_PKEY_fromdata(import_ctx.as_ptr(), &mut pkey, EVP_PKEY_PUBLIC_KEY, params.as_mut_ptr()) } != 1
+            || pkey.is_null()
+        {
+            return Err(openssl_error(OsslErrorKind::EcPublicKeyImportFailed));
+        }
+        Ok(Self { pkey: PKey::new(pkey) })
+    }
+
+    pub(crate) fn as_pkey(&self) -> &PKey {
+        &self.pkey
+    }
+}
+
 impl EcPoint {
     pub fn create_from_curve(name: &str) -> OsslResult<Self> {
-        let cstr = CString::new(name).unwrap();
+        let cstr = CString::new(name)
+            .map_err(|_| openssl_error(OsslErrorKind::EcInvalidCurveName { curve: name.to_string() }))?;
         let nid = unsafe { OBJ_txt2nid(cstr.as_ptr()) };
         if nid == NID_undef {
             return Err(openssl_error(OsslErrorKind::EcNidLookupFailed { curve: name.to_string() }));
@@ -251,7 +302,8 @@ impl EcKeypair {
         }
         let ctx = PKeyCtx(ctx);
         ossl_check!(unsafe { EVP_PKEY_keygen_init(ctx.0) }, OsslErrorKind::EcKeygenInitFailed);
-        let cs = CString::new(curve).unwrap();
+        let cs = CString::new(curve)
+            .map_err(|_| openssl_error(OsslErrorKind::EcInvalidCurveName { curve: curve.to_string() }))?;
         let nid = unsafe { OBJ_sn2nid(cs.as_ptr()) };
         if nid == NID_undef {
             return Err(openssl_error(OsslErrorKind::EcInvalidCurveName { curve: curve.to_string() }));

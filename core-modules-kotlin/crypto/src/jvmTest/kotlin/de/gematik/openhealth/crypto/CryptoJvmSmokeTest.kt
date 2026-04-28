@@ -21,9 +21,13 @@
 
 package de.gematik.openhealth.crypto
 
+import de.gematik.openhealth.asn1.parseCvCertificate
 import java.nio.file.Files
 import java.nio.file.Path
+import java.security.MessageDigest
+import java.time.Instant
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFails
 import kotlin.test.assertTrue
 
@@ -42,6 +46,31 @@ class CryptoJvmSmokeTest {
         assertFails {
             generateElcEphemeralPublicKey(byteArrayOf())
         }
+    }
+
+    @Test
+    fun verifyCvcEcdsaValueSignature_smoke() {
+        val cert = parseCvCertificate(Files.readAllBytes(cvcFixture("DEGXX820214.cvc")))
+        val value = MessageDigest.getInstance("SHA-256").digest(cert.encodedBodyTlv())
+
+        val verified = verifyCvcEcdsaValueSignature(cert, value, cert.signature())
+
+        assertTrue(verified)
+    }
+
+    @Test
+    fun validateCvcChain_acceptsAsn1Certificate() {
+        val cert = parseCvCertificate(Files.readAllBytes(cvcFixture("DEGXX820214.cvc")))
+        val anchor = CvcTrustAnchor.fromCertificate(cert)
+
+        val result = validateCvcChain(
+            chain = listOf(cert),
+            trustAnchors = listOf(anchor),
+            validationTime = Instant.parse("2020-01-01T12:00:00Z"),
+        )
+
+        assertEquals(1uL, result.validatedCertificates())
+        assertEquals("4445475858820214", result.endEntityChr().toHex())
     }
 
     private fun cvcFixture(name: String): Path =
@@ -64,3 +93,5 @@ class CryptoJvmSmokeTest {
         error("Could not locate repository root from ${Path.of("").toAbsolutePath()}")
     }
 }
+
+private fun ByteArray.toHex(): String = joinToString(separator = "") { "%02x".format(it) }

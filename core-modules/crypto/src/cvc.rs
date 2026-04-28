@@ -29,9 +29,11 @@ use openhealth_asn1::extraction::extract_context_values;
 use openhealth_asn1::tag::{TagNumberExt, UniversalTag};
 
 use crate::error::{CryptoError, CryptoResult};
-use crate::ossl;
+use crate::ossl::ec::EcPublicKey;
+use crate::ossl::signature;
 
 const CVC_PROFILE_G2: u8 = 0x70;
+const OID_CVC_ECDSA_PUBLIC_KEY: &str = "1.3.36.3.5.3.1";
 const OID_ECDSA_SHA256: &str = "1.2.840.10045.4.3.2";
 const OID_ECDSA_SHA384: &str = "1.2.840.10045.4.3.3";
 const OID_ECDSA_SHA512: &str = "1.2.840.10045.4.3.4";
@@ -44,6 +46,7 @@ pub struct CvcTrustAnchor {
 
 impl CvcTrustAnchor {
     pub fn from_certificate(certificate: &CVCertificate) -> CryptoResult<Self> {
+        let certificate = reparse_original_certificate(certificate)?;
         let public_key = CvcPublicKey::from_cert_public_key(&certificate.body.public_key)?;
         Ok(Self { reference: certificate.body.certificate_holder_reference.clone(), public_key })
     }
@@ -108,6 +111,7 @@ pub fn validate_cvc_chain(
         return Err(invalid_chain("at least one trust anchor is required"));
     }
 
+    let chain = chain.iter().map(reparse_original_certificate).collect::<CryptoResult<Vec<_>>>()?;
     let validation_date = system_time_to_utc_date(validation_time);
     let first = &chain[0];
     validate_profile_and_date(first, validation_date)?;
@@ -130,8 +134,30 @@ pub fn validate_cvc_chain(
         issuer = child;
     }
 
-    let end_entity_chr = chain.last().expect("chain is non-empty").body.certificate_holder_reference.clone();
+    let end_entity_chr =
+        chain.last().ok_or_else(|| invalid_chain("chain must not be empty"))?.body.certificate_holder_reference.clone();
     Ok(CvcChainValidationResult { validated_certificates: chain.len(), end_entity_chr })
+}
+
+pub fn verify_cvc_ecdsa_value_signature(
+    certificate: &CVCertificate,
+    value: &[u8],
+    signature: &[u8],
+) -> CryptoResult<bool> {
+    let certificate = reparse_original_certificate(certificate)?;
+    let public_key = CvcPublicKey::from_cert_public_key(&certificate.body.public_key)?;
+    verify_ecdsa_value_signature(&public_key.point, value, signature)
+}
+
+pub fn verify_ecdsa_value_signature(public_key: &[u8], value: &[u8], signature: &[u8]) -> CryptoResult<bool> {
+    if value.is_empty() {
+        return Err(invalid_chain("ECDSA value must not be empty"));
+    }
+
+    let profile = SignatureProfile::from_point_len(public_key.len())?;
+    let signature = der_encode_plain_ecdsa_signature(signature, profile.coordinate_len)?;
+    let public_key = EcPublicKey::from_uncompressed(profile.curve_name, public_key)?;
+    signature::verify_ecdsa_digest(&public_key, value, &signature).map_err(CryptoError::from)
 }
 
 fn validate_profile_and_date(certificate: &CVCertificate, validation_date: CvcDate) -> CryptoResult<()> {
@@ -172,6 +198,10 @@ fn validate_chat_is_subset(issuer: &CVCertificate, child: &CVCertificate) -> Cry
     Ok(())
 }
 
+fn reparse_original_certificate(certificate: &CVCertificate) -> CryptoResult<CVCertificate> {
+    Ok(CVCertificate::parse(certificate.encoded_certificate_tlv())?)
+}
+
 fn verify_certificate_signature(
     certificate: &CVCertificate,
     issuer_public_key: &CvcPublicKey,
@@ -180,8 +210,9 @@ fn verify_certificate_signature(
     let profile =
         SignatureProfile::from_public_key_and_algorithm(issuer_public_key, &certificate.body.public_key.key_oid)?;
     let signature = der_encode_plain_ecdsa_signature(&certificate.signature, profile.coordinate_len)?;
-    let public_key = ossl::cvc::EcPublicKey::from_uncompressed(profile.curve_name, &issuer_public_key.point)?;
-    let valid = ossl::cvc::verify_ecdsa(&public_key, profile.digest_name, certificate.encoded_body_tlv(), &signature)?;
+    let public_key = EcPublicKey::from_uncompressed(profile.curve_name, &issuer_public_key.point)?;
+    let valid =
+        signature::verify_ecdsa_message(&public_key, profile.digest_name, certificate.encoded_body_tlv(), &signature)?;
     if valid {
         Ok(())
     } else {
@@ -236,7 +267,7 @@ impl SignatureProfile {
             _ => unreachable!(),
         };
         let algorithm_oid = algorithm_oid.to_string();
-        if algorithm_oid != expected_oid {
+        if algorithm_oid != expected_oid && algorithm_oid != OID_CVC_ECDSA_PUBLIC_KEY {
             return Err(invalid_chain(format!(
                 "unsupported or mismatched CVC signature algorithm OID {algorithm_oid}"
             )));
@@ -281,6 +312,7 @@ fn invalid_chain(context: impl Into<String>) -> CryptoError {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::digest::DigestSpec;
     use chrono::TimeZone;
     use std::fs;
     use std::path::PathBuf;
@@ -298,10 +330,13 @@ mod tests {
         path
     }
 
-    fn load_cvc(name: &str) -> CVCertificate {
+    fn load_cvc_bytes(name: &str) -> Vec<u8> {
         let path = fixture_path(&["Atos_CVC-Root-CA", name]);
-        let bytes = fs::read(path).expect("fixture should be readable");
-        CVCertificate::parse(&bytes).expect("fixture should parse")
+        fs::read(path).expect("fixture should be readable")
+    }
+
+    fn load_cvc(name: &str) -> CVCertificate {
+        CVCertificate::parse(&load_cvc_bytes(name)).expect("fixture should parse")
     }
 
     fn load_anchor(reference: &[u8], name: &str) -> CvcTrustAnchor {
@@ -312,6 +347,25 @@ mod tests {
 
     fn validation_time(year: i32, month: u32, day: u32) -> SystemTime {
         Utc.with_ymd_and_hms(year, month, day, 12, 0, 0).single().unwrap().into()
+    }
+
+    fn sha256(data: &[u8]) -> CryptoResult<Vec<u8>> {
+        let mut digest = DigestSpec::Sha256.create()?;
+        digest.update(data)?;
+        digest.finalize()
+    }
+
+    fn cvc_with_public_key_oid() -> CVCertificate {
+        let hex_data = "\
+            7f2181da7f4e81935f290170420844454758581102237f494b06062b24030503\
+            018641045e7ae614740e7012e350de71c10021ec668f21d6859591b4f709c4c7\
+            3cce91c5a7fb0be1327e59ff1d0cb402b9c2bb0dc0432fa566bd4ff5f532258c\
+            7364aecd5f200c0009802768831100001565497f4c1306082a8214004c048118\
+            5307000000000000005f25060204000400025f24060209000400015f37409d24\
+            4d497832172304f298bd49f91f45bf346cb306adeb44b0742017a074902146cc\
+            cbdbb35426c2eb602d38253d92ebe1ac6905f388407398a474c4ea612d84";
+        let data = hex::decode(hex_data.split_whitespace().collect::<String>()).unwrap();
+        CVCertificate::parse(&data).expect("fixture should parse")
     }
 
     #[test]
@@ -338,10 +392,61 @@ mod tests {
     }
 
     #[test]
-    fn rejects_tampered_signature() {
+    fn validation_ignores_mutated_parsed_fields_not_backed_by_signed_source() {
         let mut cert = load_cvc("DEGXX820214.cvc");
         let anchor = load_anchor(&hex::decode("4445475858820214").unwrap(), "4445475858820214_ELC-PublicKey.der");
-        cert.signature[0] ^= 0x01;
+        cert.body.certificate_expiration_date = CertificateDate { year: 30, month: 1, day: 1 };
+
+        let err = validate_cvc_chain(&[cert], &[anchor], validation_time(2025, 1, 1)).unwrap_err();
+
+        assert!(matches!(err, CryptoError::InvalidCvcChain { .. }));
+    }
+
+    #[test]
+    fn accepts_cvc_public_key_oid_for_signature_profile() {
+        let cert = cvc_with_public_key_oid();
+        let public_key = CvcPublicKey::from_cert_public_key(&cert.body.public_key).unwrap();
+
+        let profile =
+            SignatureProfile::from_public_key_and_algorithm(&public_key, &cert.body.public_key.key_oid).unwrap();
+
+        assert_eq!(profile.coordinate_len, 32);
+        assert_eq!(profile.curve_name, "brainpoolP256r1");
+        assert_eq!(profile.digest_name, "SHA256");
+    }
+
+    #[test]
+    fn verifies_raw_ecdsa_value_signature() -> CryptoResult<()> {
+        let cert = load_cvc("DEGXX820214.cvc");
+        let public_key = CvcPublicKey::from_cert_public_key(&cert.body.public_key)?;
+        let digest = sha256(cert.encoded_body_tlv())?;
+
+        let valid = verify_ecdsa_value_signature(&public_key.point, &digest, &cert.signature)?;
+
+        assert!(valid);
+        Ok(())
+    }
+
+    #[test]
+    fn rejects_tampered_raw_ecdsa_value_signature() -> CryptoResult<()> {
+        let cert = load_cvc("DEGXX820214.cvc");
+        let public_key = CvcPublicKey::from_cert_public_key(&cert.body.public_key)?;
+        let mut digest = sha256(cert.encoded_body_tlv())?;
+        digest[0] ^= 0x01;
+
+        let valid = verify_ecdsa_value_signature(&public_key.point, &digest, &cert.signature)?;
+
+        assert!(!valid);
+        Ok(())
+    }
+
+    #[test]
+    fn rejects_tampered_signature() {
+        let cert = load_cvc("DEGXX820214.cvc");
+        let mut cert_bytes = cert.encoded_certificate_tlv().to_vec();
+        cert_bytes[cert.signature_span().value_start()] ^= 0x01;
+        let cert = CVCertificate::parse(&cert_bytes).expect("fixture with tampered signature should parse");
+        let anchor = load_anchor(&hex::decode("4445475858820214").unwrap(), "4445475858820214_ELC-PublicKey.der");
 
         let err = validate_cvc_chain(&[cert], &[anchor], validation_time(2020, 1, 1)).unwrap_err();
 

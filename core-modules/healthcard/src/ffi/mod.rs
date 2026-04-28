@@ -31,4 +31,5 @@ mod channel;
 mod command;
 mod exchange;
 pub mod maybe_zeroizing_vec;
+mod parsing;
 mod secure_channel;

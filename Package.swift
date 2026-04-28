@@ -63,7 +63,7 @@ let package = Package(
         ),
         .target(
             name: "OpenHealthCrypto",
-            dependencies: ["OpenHealthCryptoFFI"],
+            dependencies: ["OpenHealthCryptoFFI", "OpenHealthAsn1"],
             path: "core-modules-swift/crypto/Sources/OpenHealthCrypto"
         ),
         .testTarget(

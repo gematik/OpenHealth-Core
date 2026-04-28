@@ -47,7 +47,7 @@ class CvCertificateParsingTest {
             """.trimIndent()
         val bytes = hexData.hexToByteArray(format)
 
-        val cert = parseCvCertificateJvm(bytes)
+        val cert = parseCvCertificate(bytes)
         val body = cert.body()
         val publicKey = body.publicKey()
         val chat = body.certificateHolderAuthorizationTemplate()

@@ -64,7 +64,6 @@ rust-quality-report *ARGS="":
     cargo +nightly llvm-cov --workspace --locked --no-default-features --features ci --no-report
     cargo +nightly llvm-cov report --json --output-path target/llvm-cov.json
     cargo +nightly llvm-cov report --branch --json --output-path target/llvm-cov.branch.json
-    cargo +nightly llvm-cov report --html --output-dir target/llvm-cov-html
     python3 "{{ repo_root }}/tools/quality-report.py" --ignore-file "{{ repo_root }}/tools/quality-report-ignore.txt" {{ ARGS }}
 
 # Clean instrumented artifacts created by `cargo llvm-cov`.

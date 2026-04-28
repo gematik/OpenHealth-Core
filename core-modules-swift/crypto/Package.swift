@@ -31,6 +31,9 @@ let package = Package(
     products: [
         .library(name: "OpenHealthCrypto", targets: ["OpenHealthCrypto"]),
     ],
+    dependencies: [
+        .package(path: "../asn1"),
+    ],
     targets: [
         .binaryTarget(
             name: "OpenHealthCryptoFFI",
@@ -38,7 +41,10 @@ let package = Package(
         ),
         .target(
             name: "OpenHealthCrypto",
-            dependencies: ["OpenHealthCryptoFFI"],
+            dependencies: [
+                "OpenHealthCryptoFFI",
+                .product(name: "OpenHealthAsn1", package: "asn1"),
+            ],
             path: "Sources/OpenHealthCrypto"
         ),
         .testTarget(

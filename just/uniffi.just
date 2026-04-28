@@ -97,6 +97,11 @@ uniffi-bindings-generate-crate platform arch language library_file staged_librar
 
     requested_library_file="{{ library_file }}"
     library_path="${CARGO_TARGET_DIR}/${cargo_profile_dir}/${requested_library_file}"
+    crate_name="${requested_library_file#lib}"
+    crate_name="${crate_name%.a}"
+    crate_name="${crate_name%.so}"
+    crate_name="${crate_name%.dylib}"
+    crate_name="${crate_name%.dll}"
 
     if [ ! -f "${library_path}" ]; then
         fallback_library_file="${requested_library_file/openhealth_/}"
@@ -111,6 +116,7 @@ uniffi-bindings-generate-crate platform arch language library_file staged_librar
       --quiet \
       --bin uniffi-bindgen -- \
         generate \
+        --crate "${crate_name}" \
         --config "{{ rust_crate_dir }}/uniffi.toml" \
         --library "${library_path}" \
         --language "{{ language }}" \

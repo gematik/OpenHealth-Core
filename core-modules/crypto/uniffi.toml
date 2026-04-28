@@ -22,6 +22,7 @@
 [bindings.kotlin]
 package_name = "de.gematik.openhealth.crypto"
 cdylib_name = "openhealth_crypto"
+external_packages = { asn1 = "de.gematik.openhealth.asn1", openhealth_asn1 = "de.gematik.openhealth.asn1" }
 
 [bindings.swift]
 module_name = "OpenHealthCrypto"
