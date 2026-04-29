@@ -36,7 +36,7 @@ let package = Package(
     targets: [
         .binaryTarget(
             name: "OpenHealthHealthcardFFI",
-            path: "core-modules-swift/healthcard/OpenHealthHealthcardFFI.xcframework"
+            url: "https://github.com/gematik/OpenHealth-Core/releases/download/0.4.0-alpha1/OpenHealthHealthcardFFI.xcframework.zip", checksum: "8b64ceb582f2050233157f4e7459876f792084fcd7ad65fcea81b8adb8c076a8"
         ),
         .target(
             name: "OpenHealthHealthcard",
@@ -50,7 +50,7 @@ let package = Package(
         ),
         .binaryTarget(
             name: "OpenHealthAsn1FFI",
-            path: "core-modules-swift/asn1/OpenHealthAsn1FFI.xcframework"
+            url: "https://github.com/gematik/OpenHealth-Core/releases/download/0.4.0-alpha1/OpenHealthAsn1FFI.xcframework.zip", checksum: "a1ba0c87f1a1a4927a06ddc5d1df0baf426f99f60be537aa01ddad7e03f925d7"
         ),
         .target(
             name: "OpenHealthAsn1",
@@ -59,7 +59,7 @@ let package = Package(
         ),
         .binaryTarget(
             name: "OpenHealthCryptoFFI",
-            path: "core-modules-swift/crypto/OpenHealthCryptoFFI.xcframework"
+            url: "https://github.com/gematik/OpenHealth-Core/releases/download/0.4.0-alpha1/OpenHealthCryptoFFI.xcframework.zip", checksum: "9810ae70853441fca0a5e2003af5bf1f74498378b0cb1b12e8566d5d687e5d22"
         ),
         .target(
             name: "OpenHealthCrypto",
