@@ -451,6 +451,17 @@ jobs:
             assembly/dist/crypto/generated/uniffi/android-jni/**
           if-no-files-found: error
 
+      - name: Stage assembled outputs for Gradle
+        run: |
+          set -euo pipefail
+
+          for module in healthcard asn1 crypto; do
+            dest="core-modules-kotlin/${module}/build/generated/uniffi"
+            rm -rf "${dest}"
+            mkdir -p "${dest}"
+            cp -a "assembly/dist/${module}/generated/uniffi/." "${dest}/"
+          done
+
       - name: Publish Kotlin bindings to mavenLocal (assembled outputs)
         run: |
           if [ -n "${{ inputs.version }}" ]; then
@@ -459,12 +470,10 @@ jobs:
 
           cd core-modules-kotlin
 
-          OUT_ROOT="${GITHUB_WORKSPACE}/assembly/dist/healthcard/generated/uniffi" \
-            ./gradlew --no-daemon :healthcard:publishToMavenLocal
-          OUT_ROOT="${GITHUB_WORKSPACE}/assembly/dist/asn1/generated/uniffi" \
-            ./gradlew --no-daemon :asn1:publishToMavenLocal
-          OUT_ROOT="${GITHUB_WORKSPACE}/assembly/dist/crypto/generated/uniffi" \
-            ./gradlew --no-daemon :crypto:publishToMavenLocal
+          ./gradlew --no-daemon \
+            :healthcard:publishToMavenLocal \
+            :asn1:publishToMavenLocal \
+            :crypto:publishToMavenLocal
 
       - name: Stage Maven local artifacts for upload
         run: |
