@@ -20,6 +20,5 @@ limitations under the License.
 For additional notes and disclaimer from gematik and in case of changes by gematik,
 find details in the "Readme" file.
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="de.gematik.openhealth.crypto">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 </manifest>
