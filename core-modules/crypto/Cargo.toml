@@ -37,13 +37,13 @@ uniffi = ["dep:uniffi", "openhealth_asn1/uniffi"]
 [dependencies]
 openhealth_asn1 = { package = "asn1", path = "../asn1" }
 crypto-openssl-sys = { path = "../crypto-openssl-sys" }
-regex = "1.12.2"
+regex = "1.12.3"
 base64 = "0.22.1"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 num-bigint = "0.4"
 num-traits = "0.2.19"
 zeroize = { version = "1.8.1", features = ["zeroize_derive"] }
-uniffi = { version = "0.30.0", optional = true }
-thiserror = "2.0.16"
-rand = "0.9.3"
+uniffi = { version = "0.31.1", optional = true }
+thiserror = "2.0.18"
+rand = "0.10.1"
 hex = "0.4.3"
